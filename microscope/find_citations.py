@@ -2,18 +2,12 @@
 # encoding: utf-8
 import re
 from datetime import datetime
-from functools import lru_cache
 from typing import List, Union, Optional, Dict
 
-from django.db.models import QuerySet
-from django.utils.timezone import now
-from utils import get_visible_text
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
-from cl.citations import reporter_tokenizer
-from cl.lib.roman import isroman
-from cl.search.models import Court
-from cl.citations.models import (
+from microscope.reporter_tokenizer import tokenize
+from microscope.models import (
     Citation,
     FullCitation,
     IdCitation,
@@ -21,7 +15,7 @@ from cl.citations.models import (
     ShortformCitation,
     NonopinionCitation,
 )
-
+from utils import get_visible_text, isroman
 
 FORWARD_SEEK = 20
 
@@ -102,14 +96,6 @@ def is_neutral_tc_reporter(reporter: str) -> bool:
     if re.match(r"T\. ?C\. (Summary|Memo)", reporter):
         return True
     return False
-
-
-@lru_cache
-def get_cached_courts() -> QuerySet:
-    """Provide a cached queryset so that we only have to get these results
-    once.
-    """
-    return Court.objects.all().values("citation_string", "pk")
 
 
 def get_court_by_paren(paren_string: str, citation: Citation) -> str:
@@ -456,7 +442,7 @@ def is_date_in_reporter(
     """
     for date_dict in editions.values():
         if date_dict["end"] is None:
-            date_dict["end"] = now()
+            date_dict["end"] = datetime.now()
         if date_dict["start"].year <= year <= date_dict["end"].year:
             return True
     return False
@@ -658,7 +644,7 @@ def get_citations(
 ) -> List[Union[NonopinionCitation, Citation]]:
     if html:
         text = get_visible_text(text)
-    words = reporter_tokenizer.tokenize(text)
+    words = tokenize(text)
     citations = []
 
     for i in range(0, len(words) - 1):
