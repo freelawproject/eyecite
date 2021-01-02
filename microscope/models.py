@@ -2,17 +2,6 @@
 # encoding: utf-8
 import re
 
-from reporters_db import REPORTERS
-from cl.citations.utils import map_reporter_db_cite_type
-from cl.search.models import Citation as ModelCitation
-
-"""
-The classes in this module are not proper Django models; rather, they are just
-convenience classes to help with citation extraction. None of these objects are
-actually backed in the database; they just help with structuring and parsing
-citation information and are discarded after use.
-"""
-
 
 class Citation(object):
     """Convenience class which represents a single citation found in a
@@ -79,28 +68,8 @@ class Citation(object):
     def as_regex(self):
         pass
 
-    def as_html(self):
-        pass
-
     def base_citation(self):
         return "%d %s %s" % (self.volume, self.reporter, self.page)
-
-    def to_model(self):
-        # Create a citation object as in our models. Eventually, the version in
-        # our models should probably be the only object named "Citation". Until
-        # then, this function helps map from this object to the Citation object
-        # in the models.
-        c = ModelCitation(
-            **{
-                key: value
-                for key, value in self.__dict__.items()
-                if key in ModelCitation._meta.get_all_field_names()
-            }
-        )
-        canon = REPORTERS[self.canonical_reporter]
-        cite_type = canon[self.lookup_index]["cite_type"]
-        c.type = map_reporter_db_cite_type(cite_type)
-        return c
 
     def __repr__(self):
         print_string = self.base_citation()
@@ -146,7 +115,6 @@ class Citation(object):
 class FullCitation(Citation):
     """Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
-    This kind of citation can be easily matched to an opinion in our database.
 
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
@@ -162,38 +130,12 @@ class FullCitation(Citation):
             re.escape(self.page),
         )
 
-    # TODO: Update css for no-link citations
-    def as_html(self):
-        # Uses reporter_found so that we don't update the text. This guards us
-        # against accidentally updating things like docket number 22 Cr. 1 as
-        # 22 Cranch 1, which is totally wrong.
-        template = (
-            '<span class="volume">%(volume)d</span>\\g<1>'
-            '<span class="reporter">%(reporter)s</span>\\g<2>'
-            '<span class="page">%(page)s</span>\\g<3>'
-        )
-        inner_html = template % self.__dict__
-        span_class = "citation"
-        if self.match_url:
-            inner_html = '<a href="%s">%s</a>' % (self.match_url, inner_html)
-            data_attr = ' data-id="%s"' % self.match_id
-        else:
-            span_class += " no-link"
-            data_attr = ""
-        return '<span class="%s"%s>%s</span>' % (
-            span_class,
-            data_attr,
-            inner_html,
-        )
-
 
 class ShortformCitation(Citation):
     """Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
     citation lacks a full case name and usually has a different page number
-    than the canonical citation, so this kind cannot be matched to an opinion
-    directly. Instead, we will later try to resolve it to one of the foregoing
-    full citations.
+    than the canonical citation.
 
     Example 1: Adarand, 515 U.S., at 241
     Example 2: Adarand, 515 U.S. at 241
@@ -226,35 +168,12 @@ class ShortformCitation(Citation):
             re.escape(self.page),
         )
 
-    def as_html(self):
-        # Don't include the antecedent guess in the HTML link, since the guess
-        # might be horribly wrong.
-        inner_html = (
-            '<span class="volume">%(volume)d</span>\\g<2>'
-            + '<span class="reporter">%(reporter)s</span>\\g<3>\\g<4>at\\g<5>'
-            + '<span class="page">%(page)s</span>\\g<6>'
-        )
-        inner_html = inner_html % self.__dict__
-        span_class = "citation"
-        if self.match_url:
-            inner_html = '<a href="%s">%s</a>' % (self.match_url, inner_html)
-            data_attr = ' data-id="%s"' % self.match_id
-        else:
-            span_class += " no-link"
-            data_attr = ""
-        return (
-            '<span class="%s"%s><span class="antecedent_guess">%s</span>\\g<1>%s</span>'
-            % (span_class, data_attr, self.antecedent_guess, inner_html)
-        )
-
 
 class SupraCitation(Citation):
     """Convenience class which represents a 'supra' citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
     this kind of citation lacks a full case name and usually has a different
-    page number than the canonical citation, so this kind cannot be matched to
-    an opinion directly. Instead, we will later try to resolve it to one of the
-    foregoing full citations.
+    page number than the canonical citation.
 
     Example 1: Adarand, supra, at 240
     Example 2: Adarand, 515 supra, at 240
@@ -287,44 +206,6 @@ class SupraCitation(Citation):
 
         return s + r"(\s?)"
 
-    def as_html(self):
-        inner_html = (
-            '<span class="antecedent_guess">%s</span>' % self.antecedent_guess
-        )
-        if self.volume:
-            inner_html += (
-                '\\g<1><span class="volume">%d</span>\\g<2>supra' % self.volume
-            )
-            if self.page:
-                inner_html += (
-                    ',\\g<3>at\\g<4><span class="page">%s</span>\\g<5>'
-                    % self.page
-                )
-            else:
-                inner_html += "\\g<3>"
-        else:
-            inner_html += "\\g<1>supra"
-            if self.page:
-                inner_html += (
-                    ',\\g<2>at\\g<3><span class="page">%s</span>\\g<4>'
-                    % self.page
-                )
-            else:
-                inner_html += "\\g<2>"
-
-        span_class = "citation"
-        if self.match_url:
-            inner_html = '<a href="%s">%s</a>' % (self.match_url, inner_html)
-            data_attr = ' data-id="%s"' % self.match_id
-        else:
-            span_class += " no-link"
-            data_attr = ""
-        return '<span class="%s"%s>%s</span>' % (
-            span_class,
-            data_attr,
-            inner_html,
-        )
-
 
 class IdCitation(Citation):
     """Convenience class which represents an 'id' or 'ibid' citation, i.e., a
@@ -337,14 +218,11 @@ class IdCitation(Citation):
     Example: "... foo bar," id., at 240
     """
 
-    def __init__(self, id_token=None, after_tokens=None, should_linkify=False):
+    def __init__(self, id_token=None, after_tokens=None):
         super(IdCitation, self).__init__(None, None, None)
 
         self.id_token = id_token
         self.after_tokens = after_tokens
-
-        # Whether the "after tokens" should be included in the generated link
-        self.should_linkify = should_linkify
 
     def __repr__(self):
         print_string = "%s %s" % (self.id_token, self.after_tokens)
@@ -353,8 +231,6 @@ class IdCitation(Citation):
     def as_regex(self):
         # This works by matching only the Id. token that precedes the "after
         # tokens" we collected earlier.
-        # The content matched by the matching groups in this regex will later
-        # be re-injected into the generated HTML using backreferences
 
         # Whitespace regex explanation:
         #  \s matches any whitespace character
@@ -382,57 +258,6 @@ class IdCitation(Citation):
 
         return template
 
-    def generate_after_token_html(self):
-        # First, insert the regex backreferences between each "after token"
-        # The group numbers of each backreference (g<NUMBER>) must be
-        #   dynamically generated because total number of "after tokens" varies
-        # Produces something like this:
-        # "\\g<2>after_token_1\\g<3>after_token_2\\g<4>after_token_3" ...
-        template = "\\g<%s>%s"
-        after_token_html = "".join(
-            [
-                template % (str(i + 2), t)
-                for i, t in enumerate(self.after_tokens)
-            ]
-        )
-
-        # Then, append one final backreference to the end of the string
-        after_token_html += "\\g<" + str(len(self.after_tokens) + 2) + ">"
-
-        # Return the full string
-        return after_token_html
-
-    def as_html(self):
-        span_class = "citation"
-        after_token_html = self.generate_after_token_html()
-        if self.match_url:
-            if self.should_linkify:
-                id_string_template = (
-                    '<a href="%s"><span class="id_token">%s</span>%s</a>'
-                )
-            else:
-                id_string_template = (
-                    '<a href="%s"><span class="id_token">%s</span></a>%s'
-                )
-            id_string = id_string_template % (
-                self.match_url,
-                self.id_token,
-                after_token_html,
-            )
-            data_attr = ' data-id="%s"' % self.match_id
-        else:
-            id_string = '<span class="id_token">%s</span>%s' % (
-                self.id_token,
-                after_token_html,
-            )
-            span_class += " no-link"
-            data_attr = ""
-        return '<span class="%s"%s>\\g<1>%s</span>' % (
-            span_class,
-            data_attr,
-            id_string,
-        )
-
 
 class NonopinionCitation(object):
     """Convenience class which represents a citation to something that we know
@@ -444,9 +269,7 @@ class NonopinionCitation(object):
     """
 
     def __init__(self, match_token):
-        # TODO: Do something meaningful with this (e.g., extract the strings
-        # surrounding the token to grab the full citation; linkify this
-        # citation to an external source; etc.)
+        # TODO: Make this more versatile.
         self.match_token = match_token
 
     def __repr__(self):
