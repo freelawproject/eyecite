@@ -25,6 +25,95 @@ from microscope.helpers import (
 from microscope.utils import get_visible_text, strip_punct
 
 
+def get_citations(
+    text: str,
+    html: bool = True,
+    do_post_citation: bool = True,
+    do_defendant: bool = True,
+    disambiguate: bool = True,
+) -> List[Union[NonopinionCitation, Citation]]:
+    """ Main function
+    """
+    if html:
+        text = get_visible_text(text)
+    words = tokenize(text)
+    citations = []
+
+    for i in range(0, len(words) - 1):
+        citation_token = words[i]
+
+        # CASE 1: Citation token is a reporter (e.g., "U. S.").
+        # In this case, first try extracting it as a standard, full citation,
+        # and if that fails try extracting it as a short form citation.
+        if citation_token in list(EDITIONS.keys()) + list(
+            VARIATIONS_ONLY.keys()
+        ):
+            citation = extract_full_citation(words, i)
+            if citation:
+                # CASE 1A: Standard citation found, try to add additional data
+                if do_post_citation:
+                    add_post_citation(citation, words)
+                if do_defendant:
+                    add_defendant(citation, words)
+            else:
+                # CASE 1B: Standard citation not found, so see if this
+                # reference to a reporter is a short form citation instead
+                citation = extract_shortform_citation(words, i)
+
+                if not citation:
+                    # Neither a full nor short form citation
+                    continue
+
+        # CASE 2: Citation token is an "Id." or "Ibid." reference.
+        # In this case, the citation is simply to the immediately previous
+        # document, but for safety we won't make that resolution until the
+        # previous citation has been successfully matched to an opinion.
+        elif citation_token.lower() in {"id.", "id.,", "ibid."}:
+            citation = extract_id_citation(words, i)
+
+        # CASE 3: Citation token is a "supra" reference.
+        # In this case, we're not sure yet what the citation's antecedent is.
+        # It could be any of the previous citations above. Thus, like an Id.
+        # citation, we won't be able to resolve this reference until the
+        # previous citations are actually matched to opinions.
+        elif strip_punct(citation_token.lower()) == "supra":
+            citation = extract_supra_citation(words, i)
+
+        # CASE 4: Citation token is a section marker.
+        # In this case, it's likely that this is a reference to a non-
+        # opinion document. So we record this marker in order to keep
+        # an accurate list of the possible antecedents for id citations.
+        elif "§" in citation_token:
+            citation = NonopinionCitation(match_token=citation_token)
+
+        # CASE 5: The token is not a citation.
+        else:
+            continue
+
+        citations.append(citation)
+
+    # Disambiguate each citation's reporter
+    if disambiguate:
+        citations = disambiguate_reporters(citations)
+
+    citations = remove_address_citations(citations)
+
+    # Set each citation's court property to "scotus" by default
+    for citation in citations:
+        if (
+            isinstance(citation, Citation)
+            and not citation.court
+            and is_scotus_reporter(citation)
+        ):
+            citation.court = "scotus"
+
+    # Returns a list of citations ordered in the sequence that they appear in
+    # the document. The ordering of this list is important because we will
+    # later rely on that order to reconstruct the references of the
+    # ShortformCitation, SupraCitation, and IdCitation objects.
+    return citations
+
+
 def extract_full_citation(
     words: List[str], reporter_index: int,
 ) -> Optional[FullCitation]:
@@ -206,90 +295,3 @@ def extract_id_citation(
         after_tokens=words[id_index + 1 : scan_index],
         should_linkify=has_page,
     )
-
-
-def get_citations(
-    text: str,
-    html: bool = True,
-    do_post_citation: bool = True,
-    do_defendant: bool = True,
-    disambiguate: bool = True,
-) -> List[Union[NonopinionCitation, Citation]]:
-    if html:
-        text = get_visible_text(text)
-    words = tokenize(text)
-    citations = []
-
-    for i in range(0, len(words) - 1):
-        citation_token = words[i]
-
-        # CASE 1: Citation token is a reporter (e.g., "U. S.").
-        # In this case, first try extracting it as a standard, full citation,
-        # and if that fails try extracting it as a short form citation.
-        if citation_token in list(EDITIONS.keys()) + list(
-            VARIATIONS_ONLY.keys()
-        ):
-            citation = extract_full_citation(words, i)
-            if citation:
-                # CASE 1A: Standard citation found, try to add additional data
-                if do_post_citation:
-                    add_post_citation(citation, words)
-                if do_defendant:
-                    add_defendant(citation, words)
-            else:
-                # CASE 1B: Standard citation not found, so see if this
-                # reference to a reporter is a short form citation instead
-                citation = extract_shortform_citation(words, i)
-
-                if not citation:
-                    # Neither a full nor short form citation
-                    continue
-
-        # CASE 2: Citation token is an "Id." or "Ibid." reference.
-        # In this case, the citation is simply to the immediately previous
-        # document, but for safety we won't make that resolution until the
-        # previous citation has been successfully matched to an opinion.
-        elif citation_token.lower() in {"id.", "id.,", "ibid."}:
-            citation = extract_id_citation(words, i)
-
-        # CASE 3: Citation token is a "supra" reference.
-        # In this case, we're not sure yet what the citation's antecedent is.
-        # It could be any of the previous citations above. Thus, like an Id.
-        # citation, we won't be able to resolve this reference until the
-        # previous citations are actually matched to opinions.
-        elif strip_punct(citation_token.lower()) == "supra":
-            citation = extract_supra_citation(words, i)
-
-        # CASE 4: Citation token is a section marker.
-        # In this case, it's likely that this is a reference to a non-
-        # opinion document. So we record this marker in order to keep
-        # an accurate list of the possible antecedents for id citations.
-        elif "§" in citation_token:
-            citation = NonopinionCitation(match_token=citation_token)
-
-        # CASE 5: The token is not a citation.
-        else:
-            continue
-
-        citations.append(citation)
-
-    # Disambiguate each citation's reporter
-    if disambiguate:
-        citations = disambiguate_reporters(citations)
-
-    citations = remove_address_citations(citations)
-
-    # Set each citation's court property to "scotus" by default
-    for citation in citations:
-        if (
-            isinstance(citation, Citation)
-            and not citation.court
-            and is_scotus_reporter(citation)
-        ):
-            citation.court = "scotus"
-
-    # Returns a list of citations ordered in the sequence that they appear in
-    # the document. The ordering of this list is important because we will
-    # later rely on that order to reconstruct the references of the
-    # ShortformCitation, SupraCitation, and IdCitation objects.
-    return citations
