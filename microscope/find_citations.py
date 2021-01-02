@@ -7,7 +7,7 @@ from typing import List, Union, Optional, Dict
 
 from django.db.models import QuerySet
 from django.utils.timezone import now
-from juriscraper.lib.html_utils import get_visible_text
+from utils import get_visible_text
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
 from cl.citations import reporter_tokenizer
