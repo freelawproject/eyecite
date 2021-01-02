@@ -35,3 +35,34 @@ def isroman(s):
         s,
         re.IGNORECASE,
     )
+
+
+def strip_punct(text: str) -> str:
+    """ Strips punctuation from a given string
+    Adapted from nltk Penn Treebank tokenizer
+
+    :param str: The raw string
+    :return: The stripped string
+    """
+    # starting quotes
+    text = re.sub(r"^[\"\']", r"", text)
+    text = re.sub(r"(``)", r"", text)
+    text = re.sub(r'([ (\[{<])"', r"", text)
+
+    # punctuation
+    text = re.sub(r"\.\.\.", r"", text)
+    text = re.sub(r"[,;:@#$%&]", r"", text)
+    text = re.sub(r'([^\.])(\.)([\]\)}>"\']*)\s*$', r"\1", text)
+    text = re.sub(r"[?!]", r"", text)
+
+    text = re.sub(r"([^'])' ", r"", text)
+
+    # parens, brackets, etc.
+    text = re.sub(r"[\]\[\(\)\{\}\<\>]", r"", text)
+    text = re.sub(r"--", r"", text)
+
+    # ending quotes
+    text = re.sub(r'"', "", text)
+    text = re.sub(r"(\S)(\'\'?)", r"\1", text)
+
+    return text.strip()
