@@ -293,5 +293,5 @@ def extract_id_citation(
     return IdCitation(
         id_token=words[id_index],
         after_tokens=words[id_index + 1 : scan_index],
-        should_linkify=has_page,
+        has_page=has_page,
     )
