@@ -218,11 +218,14 @@ class IdCitation(Citation):
     Example: "... foo bar," id., at 240
     """
 
-    def __init__(self, id_token=None, after_tokens=None):
+    def __init__(self, id_token=None, after_tokens=None, has_page=False):
         super(IdCitation, self).__init__(None, None, None)
 
         self.id_token = id_token
         self.after_tokens = after_tokens
+
+        # Whether the "after tokens" comprise a page number
+        self.has_page = has_page
 
     def __repr__(self):
         print_string = "%s %s" % (self.id_token, self.after_tokens)
