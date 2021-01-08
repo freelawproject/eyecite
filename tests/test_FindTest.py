@@ -54,12 +54,12 @@ class FindTest(TestCase):
                            canonical_reporter='F.', lookup_index=0,
                            reporter_index=5, reporter_found='F.2d')]),
             # Test with court and extra information
-            # ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
-            #  [FullCitation(plaintiff='lissner', defendant='test', volume=1,
-            #                reporter='U.S.', page='12', year=1982,
-            #                extra='347-348', court='ca4',
-            #                canonical_reporter='U.S.', lookup_index=0,
-            #                reporter_index=5, reporter_found='U.S.')]),
+            ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
+             [FullCitation(plaintiff='lissner', defendant='test', volume=1,
+                           reporter='U.S.', page='12', year=1982,
+                           extra='347-348', court='ca4',
+                           canonical_reporter='U.S.', lookup_index=0,
+                           reporter_index=5, reporter_found='U.S.')]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
              [FullCitation(volume=22, reporter='U.S.', page='332', year=1975,

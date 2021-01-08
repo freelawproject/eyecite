@@ -5,6 +5,7 @@ from datetime import datetime
 from typing import List, Union, Optional, Dict
 
 from reporters_db import REPORTERS, VARIATIONS_ONLY, EDITIONS
+from courts_db import courts
 
 from microscope.models import Citation, FullCitation, ShortformCitation
 from microscope.utils import isroman, strip_punct
@@ -69,9 +70,6 @@ def get_court_by_paren(paren_string: str, citation: Citation) -> str:
     Does not work on SCOTUS, since that court lacks parentheticals, and
     needs to be handled after disambiguation has been completed.
     """
-    # Cache the ALL_COURTS value the first time it's needed.
-    all_courts = get_cached_courts()
-
     if citation.year is None:
         court_str = strip_punct(paren_string)
     else:
@@ -83,11 +81,11 @@ def get_court_by_paren(paren_string: str, citation: Citation) -> str:
         court_code = None
     else:
         # Map the string to a court, if possible.
-        for court in all_courts:
+        for court in courts:
             # Use startswith because citations are often missing final period,
             # e.g. "2d Cir"
             if court["citation_string"].startswith(court_str):
-                court_code = court["pk"]
+                court_code = court["id"]
                 break
 
     return court_code
