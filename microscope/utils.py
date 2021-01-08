@@ -5,7 +5,7 @@ import re
 from lxml import html
 
 
-def get_visible_text(html_content):
+def get_visible_text(html_content: str) -> str:
     """Given HTML markup, only text that is visible
     Adopted from https://github.com/freelawproject/juriscraper/blob/master/juriscraper/lib/html_utils.py#L163
 
@@ -23,7 +23,7 @@ def get_visible_text(html_content):
     return " ".join(text)
 
 
-def isroman(s):
+def isroman(s: str) -> bool:
     """Checks if a lowercase or uppercase string is a valid Roman numeral.
     Based on: http://www.diveintopython.net/regular_expressions/n_m_syntax.html
 

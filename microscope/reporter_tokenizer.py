@@ -16,7 +16,7 @@ REGEX_STR = "|".join(map(re.escape, REGEX_LIST))
 REPORTER_RE = re.compile(r"(^|\s)(%s)(\s|,)" % REGEX_STR)
 
 
-def normalize_variation(string):
+def normalize_variation(string: str) -> str:
     """Gets the best possible canonicalization of a variant spelling of a
     reporter.
 
@@ -39,7 +39,7 @@ def normalize_variation(string):
         return string
 
 
-def tokenize(text):
+def tokenize(text: str) -> str:
     """Tokenize text using regular expressions in the following steps:
      - Split the text by the occurrences of patterns which match a federal
        reporter, including the reporter strings as part of the resulting
@@ -67,7 +67,7 @@ def tokenize(text):
     return words
 
 
-def _tokenize(text):
+def _tokenize(text: str) -> str:
     # add extra space to make things easier
     text = " " + text + " "
 
