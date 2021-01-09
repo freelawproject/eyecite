@@ -208,7 +208,8 @@ def parse_page(page: Union[str, int]) -> Optional[str]:
 
 
 def is_date_in_reporter(
-    editions: Dict[str, Dict[str, Optional[datetime]]], year: int,
+    editions: Dict[str, Dict[str, Optional[datetime]]],
+    year: int,
 ) -> bool:
     """Checks whether a year falls within the range of 1 to n editions of a
     reporter
