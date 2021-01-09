@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
-from unittest import TestCase
 from datetime import datetime
+from unittest import TestCase
 
 from reporters_db import REPORTERS
 
+from microscope.find_citations import get_citations
+from microscope.helpers import is_date_in_reporter
 from microscope.models import (
     FullCitation,
     IdCitation,
+    NonopinionCitation,
     ShortformCitation,
     SupraCitation,
-    NonopinionCitation,
 )
-from microscope.find_citations import get_citations
-from microscope.helpers import is_date_in_reporter
 
 
 class FindTest(TestCase):

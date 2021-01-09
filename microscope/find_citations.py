@@ -1,27 +1,27 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from typing import List, Union, Optional
+from typing import List, Optional, Union
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY
 
-from microscope.reporter_tokenizer import tokenize
+from microscope.helpers import (
+    add_defendant,
+    add_post_citation,
+    disambiguate_reporters,
+    is_neutral_tc_reporter,
+    is_scotus_reporter,
+    parse_page,
+    remove_address_citations,
+)
 from microscope.models import (
     Citation,
     FullCitation,
     IdCitation,
-    SupraCitation,
-    ShortformCitation,
     NonopinionCitation,
+    ShortformCitation,
+    SupraCitation,
 )
-from microscope.helpers import (
-    parse_page,
-    is_neutral_tc_reporter,
-    add_post_citation,
-    add_defendant,
-    disambiguate_reporters,
-    is_scotus_reporter,
-    remove_address_citations,
-)
+from microscope.reporter_tokenizer import tokenize
 from microscope.utils import get_visible_text, strip_punct
 
 
