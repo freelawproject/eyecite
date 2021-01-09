@@ -79,7 +79,3 @@ def _tokenize(text: str) -> str:
     text = text.strip()
 
     return text.split()
-
-
-if __name__ == "__main__":
-    exit(0)
