@@ -120,7 +120,7 @@ def extract_full_citation(
     and after for volume and page. If found, construct and return a
     FullCitation object.
 
-    Example full citation: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
 
     If we are given neutral, tax court opinions we treat them differently.
     The formats often follow {REPORTER} {YEAR}-{ITERATIVE_NUMBER}
