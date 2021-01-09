@@ -31,6 +31,7 @@ version = "1.0.0"
 python = "^3.6"
 reporters-db = "^2.0.5"
 courts-db = "^0.9.6"
+lxml = "^4.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
