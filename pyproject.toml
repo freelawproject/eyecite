@@ -15,14 +15,14 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-description = "{{PROJECT_DESCRIPTION}}"
+description = "Tool for extracting legal citations from text strings."
 keywords = ["legal", "courts"]
 license = "BSD-2-Clause"
 maintainers = ["Free Law Project <info@free.law>"]
-name = "{{PROJECT_NAME}}"
+name = "microscope"
 readme = "README.md"
-repository = "https://github.com/freelawproject/{{PROJECT_NAME}}"
-version = "0.0.1"
+repository = "https://github.com/freelawproject/microscope"
+version = "1.0.0"
 
 [tool.poetry.urls]
 "Organisation Homepage" = "https://free.law/"
