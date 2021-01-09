@@ -2,10 +2,10 @@
 # encoding: utf-8
 import re
 from datetime import datetime
-from typing import List, Union, Optional, Dict
+from typing import Dict, List, Optional, Union
 
-from reporters_db import REPORTERS, VARIATIONS_ONLY, EDITIONS
 from courts_db import courts
+from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
 from microscope.models import Citation, FullCitation, ShortformCitation
 from microscope.utils import isroman, strip_punct
