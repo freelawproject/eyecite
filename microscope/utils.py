@@ -7,7 +7,7 @@ from lxml import html
 
 def get_visible_text(html_content: str) -> str:
     """Given HTML markup, return only text that is visible
-    Adopted from https://github.com/freelawproject/juriscraper/blob/master/juriscraper/lib/html_utils.py#L163
+    Adopted from https://github.com/freelawproject/juriscraper/blob/master/juriscraper/lib/html_utils.py#L163  # noqa: E501
 
     :param html_content: The HTML string
     :return: Text that is visible
