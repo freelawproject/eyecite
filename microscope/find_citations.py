@@ -32,8 +32,7 @@ def get_citations(
     do_defendant: bool = True,
     disambiguate: bool = True,
 ) -> List[Union[NonopinionCitation, Citation]]:
-    """ Main function
-    """
+    """Main function"""
     if html:
         text = get_visible_text(text)
     words = tokenize(text)
@@ -114,7 +113,8 @@ def get_citations(
 
 
 def extract_full_citation(
-    words: List[str], reporter_index: int,
+    words: List[str],
+    reporter_index: int,
 ) -> Optional[FullCitation]:
     """Given a list of words and the index of a federal reporter, look before
     and after for volume and page. If found, construct and return a
@@ -165,7 +165,8 @@ def extract_full_citation(
 
 
 def extract_shortform_citation(
-    words: List[str], reporter_index: int,
+    words: List[str],
+    reporter_index: int,
 ) -> Optional[ShortformCitation]:
     """Given a list of words and the index of a federal reporter, look before
     and after to see if this is a short form citation. If found, construct
@@ -218,7 +219,8 @@ def extract_shortform_citation(
 
 
 def extract_supra_citation(
-    words: List[str], supra_index: int,
+    words: List[str],
+    supra_index: int,
 ) -> Optional[SupraCitation]:
     """Given a list of words and the index of a supra token, look before
     and after to see if this is a supra citation. If found, construct
@@ -255,7 +257,8 @@ def extract_supra_citation(
 
 
 def extract_id_citation(
-    words: List[str], id_index: int,
+    words: List[str],
+    id_index: int,
 ) -> Optional[IdCitation]:
     """Given a list of words and the index of an id token, gather the
     immediately succeeding tokens to construct and return an IdCitation

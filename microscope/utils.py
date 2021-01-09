@@ -38,7 +38,7 @@ def isroman(s: str) -> bool:
 
 
 def strip_punct(text: str) -> str:
-    """ Strips punctuation from a given string
+    """Strips punctuation from a given string
     Adapted from nltk Penn Treebank tokenizer
 
     :param str: The raw string
