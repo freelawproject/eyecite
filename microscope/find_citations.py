@@ -65,17 +65,16 @@ def get_citations(
                     continue
 
         # CASE 2: Citation token is an "Id." or "Ibid." reference.
-        # In this case, the citation is simply to the immediately previous
-        # document, but for safety we won't make that resolution until the
-        # previous citation has been successfully matched to an opinion.
+        # In this case, the citation should simply be to the item cited
+        # immediately prior, but for safety we will leave that resolution up
+        # to the user.
         elif citation_token.lower() in {"id.", "id.,", "ibid."}:
             citation = extract_id_citation(words, i)
 
         # CASE 3: Citation token is a "supra" reference.
         # In this case, we're not sure yet what the citation's antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
-        # citation, we won't be able to resolve this reference until the
-        # previous citations are actually matched to opinions.
+        # citation, for safety we won't resolve this reference yet.
         elif strip_punct(citation_token.lower()) == "supra":
             citation = extract_supra_citation(words, i)
 
@@ -108,9 +107,9 @@ def get_citations(
             citation.court = "scotus"
 
     # Returns a list of citations ordered in the sequence that they appear in
-    # the document. The ordering of this list is important because we will
-    # later rely on that order to reconstruct the references of the
-    # ShortformCitation, SupraCitation, and IdCitation objects.
+    # the document. The ordering of this list is important for reconstructing
+    # the references of the ShortformCitation, SupraCitation, and
+    # IdCitation objects.
     return citations
 
 
