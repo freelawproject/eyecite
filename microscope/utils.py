@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import re
+from typing import Optional
 
 from lxml import html
 
@@ -23,7 +24,7 @@ def get_visible_text(html_content: str) -> str:
     return " ".join(text)
 
 
-def isroman(s: str) -> bool:
+def isroman(s: str) -> Optional[re.Match]:
     """Checks if a lowercase or uppercase string is a valid Roman numeral.
     Based on: http://www.diveintopython.net/regular_expressions/n_m_syntax.html
 
