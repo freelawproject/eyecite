@@ -16,29 +16,6 @@ REGEX_STR = "|".join(map(re.escape, REGEX_LIST))
 REPORTER_RE = re.compile(r"(^|\s)(%s)(\s|,)" % REGEX_STR)
 
 
-def normalize_variation(string: str) -> str:
-    """Gets the best possible canonicalization of a variant spelling of a
-    reporter.
-
-    Variations map to lists of one or more result, and we need to figure out
-    which is best. Usually, this can be accomplished using the year of the
-    item.
-    """
-    if string in VARIATIONS_ONLY.keys():
-        if len(VARIATIONS_ONLY[string]) == 1:
-            # Simple case
-            return VARIATIONS_ONLY[string][0]
-        else:
-            # Hard case, resolve the variation or return as is.
-            # TODO: This must be fixed or else all resolutionsn are resolved
-            # the same way --> BAD! Once fixed, it will probably need to be
-            # removed from the tokenizer, and moved down the pipeline.
-            return VARIATIONS_ONLY[string][0]
-    else:
-        # Not a variant
-        return string
-
-
 def tokenize(text: str) -> str:
     """Tokenize text using regular expressions in the following steps:
      - Split the text by the occurrences of patterns which match a federal
