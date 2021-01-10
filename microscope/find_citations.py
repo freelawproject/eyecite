@@ -36,10 +36,11 @@ def get_citations(
     if html:
         text = get_visible_text(text)
     words = tokenize(text)
-    citations = []
+    citations: List[Union[Citation, NonopinionCitation]] = []
 
     for i in range(0, len(words) - 1):
         citation_token = words[i]
+        citation: Union[Citation, NonopinionCitation, None] = None
 
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
         # In this case, first try extracting it as a standard, full citation,
@@ -88,7 +89,8 @@ def get_citations(
         else:
             continue
 
-        citations.append(citation)
+        if citation is not None:
+            citations.append(citation)
 
     # Disambiguate each citation's reporter
     if disambiguate:
@@ -128,6 +130,10 @@ def extract_full_citation(
     """
     # Get reporter
     reporter = words[reporter_index]
+
+    # Variables to extact
+    volume: Union[int, str, None]
+    page: Union[int, str, None]
 
     # Handle tax citations
     is_tax_citation = is_neutral_tc_reporter(reporter)
@@ -178,6 +184,11 @@ def extract_shortform_citation(
     # Don't check if we are at the beginning of a string
     if reporter_index <= 2:
         return None
+
+    # Variables to extact
+    volume: Union[int, str, None]
+    page: Union[int, str, None]
+    antecedent_guess: str
 
     # Get volume
     volume = strip_punct(words[reporter_index - 1])

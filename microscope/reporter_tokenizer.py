@@ -5,6 +5,7 @@
 # URL: <http://nltk.sourceforge.net>
 
 import re
+from typing import List
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY
 
@@ -16,7 +17,7 @@ REGEX_STR = "|".join(map(re.escape, REGEX_LIST))
 REPORTER_RE = re.compile(r"(^|\s)(%s)(\s|,)" % REGEX_STR)
 
 
-def tokenize(text: str) -> str:
+def tokenize(text: str) -> List[str]:
     """Tokenize text using regular expressions in the following steps:
      - Split the text by the occurrences of patterns which match a federal
        reporter, including the reporter strings as part of the resulting
@@ -44,7 +45,7 @@ def tokenize(text: str) -> str:
     return words
 
 
-def _tokenize(text: str) -> str:
+def _tokenize(text: str) -> List[str]:
     # add extra space to make things easier
     text = " " + text + " "
 

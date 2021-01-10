@@ -7,7 +7,12 @@ from typing import Dict, List, Optional, Union
 from courts_db import courts
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
-from microscope.models import Citation, FullCitation, ShortformCitation
+from microscope.models import (
+    Citation,
+    FullCitation,
+    NonopinionCitation,
+    ShortformCitation,
+)
 from microscope.utils import isroman, strip_punct
 
 FORWARD_SEEK = 20
@@ -46,6 +51,8 @@ def is_scotus_reporter(citation: Citation) -> bool:
         ]
         if any(truisms):
             return True
+        else:
+            return False
     else:
         return False
 
@@ -63,7 +70,7 @@ def is_neutral_tc_reporter(reporter: str) -> bool:
     return False
 
 
-def get_court_by_paren(paren_string: str, citation: Citation) -> str:
+def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
     """Takes the citation string, usually something like "2d Cir", and maps
     that back to the court code.
 
@@ -181,11 +188,11 @@ def add_defendant(citation: Citation, words: List[str]) -> None:
 
 
 def parse_page(page: Union[str, int]) -> Optional[str]:
-    page = strip_punct(page)
+    page = strip_punct(str(page))
 
     if page.isdigit():
         # First, check whether the page is a simple digit. Most will be.
-        return str(page)
+        return page
     else:
         # Otherwise, check whether the "page" is really one of the following:
         # (ordered in descending order of likelihood)
@@ -223,12 +230,19 @@ def is_date_in_reporter(
     for date_dict in editions.values():
         if date_dict["end"] is None:
             date_dict["end"] = datetime.now()
+
+        # At this point, both "start" and "end" should be datetime objects
+        assert isinstance(date_dict["start"], datetime)
+        assert isinstance(date_dict["end"], datetime)
+
         if date_dict["start"].year <= year <= date_dict["end"].year:
             return True
     return False
 
 
-def disambiguate_reporters(citations: List[Citation]) -> List[Citation]:
+def disambiguate_reporters(
+    citations: List[Union[Citation, NonopinionCitation]]
+) -> List[Union[Citation, NonopinionCitation]]:
     """Convert a list of citations to a list of unambiguous ones.
 
     Goal is to figure out:
@@ -374,7 +388,9 @@ def disambiguate_reporters(citations: List[Citation]) -> List[Citation]:
     return unambiguous_citations
 
 
-def remove_address_citations(citations: List[Citation]) -> List[Citation]:
+def remove_address_citations(
+    citations: List[Union[Citation, NonopinionCitation]]
+) -> List[Union[Citation, NonopinionCitation]]:
     """Some addresses look like citations, but they're not. Remove them.
 
     An example might be 111 S.W. 23st St.
