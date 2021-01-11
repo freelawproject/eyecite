@@ -3,7 +3,7 @@
 import re
 
 
-class Citation(object):
+class Citation:
     """Convenience class which represents a single citation found in a
     document.
     """
@@ -102,10 +102,10 @@ class Citation(object):
         Overridden here to simplify away some of the attributes that can differ
         for the same citation.
         """
-        s = ""
+        str_to_hash = ""
         for attr in self.equality_attributes:
-            s += str(getattr(self, attr, None))
-        return hash(s)
+            str_to_hash += str(getattr(self, attr, None))
+        return hash(str_to_hash)
 
     def fuzzy_eq(self, other):
         """Used to override the __eq__ function."""
@@ -121,7 +121,7 @@ class FullCitation(Citation):
 
     def __init__(self, *args, **kwargs):
         # Fully implements the standard Citation object.
-        super(FullCitation, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
     def as_regex(self):
         return r"%d(\s+)%s(\s+)%s(\s?)" % (
@@ -145,9 +145,7 @@ class ShortformCitation(Citation):
     def __init__(self, reporter, page, volume, antecedent_guess, **kwargs):
         # Like a Citation object, but we have to guess who the antecedent is
         # and the page number is non-canonical
-        super(ShortformCitation, self).__init__(
-            reporter, page, volume, **kwargs
-        )
+        super().__init__(reporter, page, volume, **kwargs)
 
         self.antecedent_guess = antecedent_guess
 
@@ -184,7 +182,7 @@ class SupraCitation(Citation):
     def __init__(self, antecedent_guess, page=None, volume=None, **kwargs):
         # Like a Citation object, but without knowledge of the reporter or the
         # volume. Only has a guess at what the antecedent is.
-        super(SupraCitation, self).__init__(None, page, volume, **kwargs)
+        super().__init__(None, page, volume, **kwargs)
 
         self.antecedent_guess = antecedent_guess
 
@@ -219,7 +217,7 @@ class IdCitation(Citation):
     """
 
     def __init__(self, id_token=None, after_tokens=None, has_page=False):
-        super(IdCitation, self).__init__(None, None, None)
+        super().__init__(None, None, None)
 
         self.id_token = id_token
         self.after_tokens = after_tokens
@@ -262,7 +260,7 @@ class IdCitation(Citation):
         return template
 
 
-class NonopinionCitation(object):
+class NonopinionCitation:
     """Convenience class which represents a citation to something that we know
     is not an opinion. This could be a citation to a statute, to the U.S. code,
     the U.S. Constitution, etc.

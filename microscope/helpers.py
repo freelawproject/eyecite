@@ -13,7 +13,7 @@ from microscope.models import (
     NonopinionCitation,
     ShortformCitation,
 )
-from microscope.utils import isroman, strip_punct
+from microscope.utils import is_roman, strip_punct
 
 FORWARD_SEEK = 20
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
@@ -33,6 +33,7 @@ STOP_TOKENS = [
 
 
 def is_scotus_reporter(citation: Citation) -> bool:
+    """Check if the citation is for a SCOTUS reporter."""
     try:
         reporter = REPORTERS[citation.canonical_reporter][
             citation.lookup_index
@@ -49,12 +50,8 @@ def is_scotus_reporter(citation: Citation) -> bool:
             ),
             "scotus" in reporter["cite_type"].lower(),
         ]
-        if any(truisms):
-            return True
-        else:
-            return False
-    else:
-        return False
+        return any(truisms)
+    return False
 
 
 def is_neutral_tc_reporter(reporter: str) -> bool:
@@ -188,30 +185,30 @@ def add_defendant(citation: Citation, words: List[str]) -> None:
 
 
 def parse_page(page: Union[str, int]) -> Optional[str]:
+    """Test whether something is a valid page number."""
     page = strip_punct(str(page))
 
     if page.isdigit():
         # First, check whether the page is a simple digit. Most will be.
         return page
-    else:
-        # Otherwise, check whether the "page" is really one of the following:
-        # (ordered in descending order of likelihood)
-        # 1) A numerical page range. E.g., "123-124"
-        # 2) A roman numeral. E.g., "250 Neb. xxiv (1996)"
-        # 3) A special Connecticut or Illinois number. E.g., "13301-M"
-        # 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
-        # 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
-        match = (
-            re.match(r"\d{1,6}-\d{1,6}", page)  # Simple page range
-            or isroman(page)  # Roman numeral
-            or re.match(r"\d{1,6}[-]?[a-zA-Z]{1,6}", page)  # CT/IL page
-            or re.match(r"\d{1,6}", page)  # Weird suffix
-            or re.match(r"[*\u00b6\ ]*[0-9:\-]+", page)  # ¶, star, colon
-        )
-        if match:
-            return str(match.group(0))
-        else:
-            return None
+
+    # Otherwise, check whether the "page" is really one of the following:
+    # (ordered in descending order of likelihood)
+    # 1) A numerical page range. E.g., "123-124"
+    # 2) A roman numeral. E.g., "250 Neb. xxiv (1996)"
+    # 3) A special Connecticut or Illinois number. E.g., "13301-M"
+    # 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
+    # 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
+    match = (
+        re.match(r"\d{1,6}-\d{1,6}", page)  # Simple page range
+        or is_roman(page)  # Roman numeral
+        or re.match(r"\d{1,6}[-]?[a-zA-Z]{1,6}", page)  # CT/IL page
+        or re.match(r"\d{1,6}", page)  # Weird suffix
+        or re.match(r"[*\u00b6\ ]*[0-9:\-]+", page)  # ¶, star, colon
+    )
+    if match:
+        return str(match.group(0))
+    return None
 
 
 def is_date_in_reporter(
@@ -269,42 +266,37 @@ def disambiguate_reporters(
     unambiguous_citations = []
     for citation in citations:
         # Only disambiguate citations with a reporter
-        if not (
-            isinstance(citation, FullCitation)
-            or isinstance(citation, ShortformCitation)
-        ):
+        if not isinstance(citation, (FullCitation, ShortformCitation)):
             unambiguous_citations.append(citation)
             continue
 
         # Non-variant items (P.R.R., A.2d, Wash., etc.)
-        elif REPORTERS.get(EDITIONS.get(citation.reporter)) is not None:
+        if REPORTERS.get(EDITIONS.get(citation.reporter)) is not None:
             citation.canonical_reporter = EDITIONS[citation.reporter]
             if len(REPORTERS[EDITIONS[citation.reporter]]) == 1:
                 # Single reporter, easy-peasy.
                 citation.lookup_index = 0
                 unambiguous_citations.append(citation)
                 continue
-            else:
-                # Multiple books under this key, but which is correct?
-                if citation.year:
-                    # attempt resolution by date
-                    possible_citations = []
-                    rep_len = len(REPORTERS[EDITIONS[citation.reporter]])
-                    for i in range(0, rep_len):
-                        if is_date_in_reporter(
-                            REPORTERS[EDITIONS[citation.reporter]][i][
-                                "editions"
-                            ],
-                            citation.year,
-                        ):
-                            possible_citations.append((citation.reporter, i))
-                    if len(possible_citations) == 1:
-                        # We were able to identify only one hit
-                        # after filtering by year.
-                        citation.reporter = possible_citations[0][0]
-                        citation.lookup_index = possible_citations[0][1]
-                        unambiguous_citations.append(citation)
-                        continue
+
+            # Multiple books under this key, but which is correct?
+            if citation.year:
+                # attempt resolution by date
+                possible_citations = []
+                rep_len = len(REPORTERS[EDITIONS[citation.reporter]])
+                for i in range(0, rep_len):
+                    if is_date_in_reporter(
+                        REPORTERS[EDITIONS[citation.reporter]][i]["editions"],
+                        citation.year,
+                    ):
+                        possible_citations.append((citation.reporter, i))
+                if len(possible_citations) == 1:
+                    # We were able to identify only one hit
+                    # after filtering by year.
+                    citation.reporter = possible_citations[0][0]
+                    citation.lookup_index = possible_citations[0][1]
+                    unambiguous_citations.append(citation)
+                    continue
 
         # Try doing a variation of an edition.
         elif VARIATIONS_ONLY.get(citation.reporter) is not None:
@@ -320,46 +312,44 @@ def disambiguate_reporters(
                     citation.lookup_index = 0
                     unambiguous_citations.append(citation)
                     continue
-                else:
-                    # Multiple reporters under a single misspelled key
-                    # (e.g. Wn.2d --> Wash --> Va Reports, Wash or
-                    #                          Washington Reports).
-                    if citation.year:
-                        # attempt resolution by date
-                        possible_citations = []
-                        rep_can = len(REPORTERS[citation.canonical_reporter])
-                        for i in range(0, rep_can):
-                            if is_date_in_reporter(
-                                REPORTERS[citation.canonical_reporter][i][
-                                    "editions"
-                                ],
-                                citation.year,
-                            ):
-                                possible_citations.append(
-                                    (citation.reporter, i)
-                                )
-                        if len(possible_citations) == 1:
-                            # We were able to identify only one hit after
-                            # filtering by year.
-                            citation.lookup_index = possible_citations[0][1]
-                            unambiguous_citations.append(citation)
-                            continue
-                    # Attempt resolution by unique variation
-                    # (e.g. Cr. can only be Cranch[0])
+
+                # Multiple reporters under a single misspelled key
+                # (e.g. Wn.2d --> Wash --> Va Reports, Wash or
+                #                          Washington Reports).
+                if citation.year:
+                    # attempt resolution by date
                     possible_citations = []
-                    reps = REPORTERS[citation.canonical_reporter]
-                    for i in range(0, len(reps)):
-                        for variation in REPORTERS[
-                            citation.canonical_reporter
-                        ][i]["variations"].items():
-                            if variation[0] == cached_variation:
-                                possible_citations.append((variation[1], i))
+                    rep_can = len(REPORTERS[citation.canonical_reporter])
+                    for i in range(0, rep_can):
+                        if is_date_in_reporter(
+                            REPORTERS[citation.canonical_reporter][i][
+                                "editions"
+                            ],
+                            citation.year,
+                        ):
+                            possible_citations.append((citation.reporter, i))
                     if len(possible_citations) == 1:
-                        # We were able to find a single match after filtering
-                        # by variation.
+                        # We were able to identify only one hit after
+                        # filtering by year.
                         citation.lookup_index = possible_citations[0][1]
                         unambiguous_citations.append(citation)
                         continue
+                # Attempt resolution by unique variation
+                # (e.g. Cr. can only be Cranch[0])
+                possible_citations = []
+                reps = REPORTERS[citation.canonical_reporter]
+                for i in range(0, len(reps)):
+                    for variation in REPORTERS[citation.canonical_reporter][i][
+                        "variations"
+                    ].items():
+                        if variation[0] == cached_variation:
+                            possible_citations.append((variation[1], i))
+                if len(possible_citations) == 1:
+                    # We were able to find a single match after filtering
+                    # by variation.
+                    citation.lookup_index = possible_citations[0][1]
+                    unambiguous_citations.append(citation)
+                    continue
             else:
                 # Multiple variations, deal with them.
                 possible_citations = []

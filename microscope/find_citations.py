@@ -279,13 +279,13 @@ def extract_id_citation(
     has_page = False
 
     # List of literals that could come after an id token
-    ID_REFERENCE_TOKEN_LITERALS = set(
+    id_reference_token_literals = set(
         ["at", "p.", "p", "pp.", "p", "@", "pg", "pg.", "¶", "¶¶"]
     )
 
     # Helper function to see whether a token qualifies as a page candidate
     def is_page_candidate(token):
-        return token in ID_REFERENCE_TOKEN_LITERALS or parse_page(token)
+        return token in id_reference_token_literals or parse_page(token)
 
     # Check if the post-id token is indeed a page candidate
     if is_page_candidate(words[id_index + 1]):
