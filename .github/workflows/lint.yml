@@ -86,7 +86,6 @@ jobs:
 
       - name: pylint Generate Report
         run: |
-          pip3 install pylint-json2html
           pylint --load-plugins=pylint_json2html -f jsonextended microscope > pylint-report.json
           pylint-json2html -f jsonextended -o pylint-report.html pylint-report.json
 
