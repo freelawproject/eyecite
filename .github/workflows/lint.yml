@@ -95,3 +95,10 @@ jobs:
         with:
           name: pylint report
           path: pylint-report.html
+
+      - name: Upload report again
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: pylint report
+          path: pylint-report.json
