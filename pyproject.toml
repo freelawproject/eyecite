@@ -55,7 +55,7 @@ multi_line_output = 3
 use_parentheses = true
 
 [tool.pylint.messages_control]
-disable = "C0330, C0326"
+disable = "C0330, C0326, C0114"
 
 [tool.pylint.format]
 max-line-length = "79"
