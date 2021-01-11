@@ -86,8 +86,9 @@ jobs:
 
       - name: pylint Generate Report
         run: |
+          pip install --upgrade pip
           pip install pylint-json2html
-          pylint --load-plugins=pylint_json2html -f jsonextended project_name > pylint-report.json
+          pylint --load-plugins=pylint_json2html -f jsonextended microscope > pylint-report.json
           pylint-json2html -f jsonextended -o pylint-report.html pylint-report.json
 
       - name: Upload report
