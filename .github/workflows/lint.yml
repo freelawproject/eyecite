@@ -86,8 +86,9 @@ jobs:
 
       - name: pylint Generate Report
         run: |
-          pylint --load-plugins=pylint_json2html -f jsonextended microscope > pylint-report.json
-          pylint-json2html -f jsonextended -o pylint-report.html pylint-report.json
+          set -o pipefail && \
+          pylint --load-plugins=pylint_json2html -f jsonextended microscope |
+          pylint-json2html -f jsonextended -o pylint-report.html
 
       - name: Upload report
         uses: actions/upload-artifact@v2
@@ -95,10 +96,3 @@ jobs:
         with:
           name: pylint report
           path: pylint-report.html
-
-      - name: Upload report again
-        uses: actions/upload-artifact@v2
-        if: failure()
-        with:
-          name: pylint report
-          path: pylint-report.json
