@@ -31,7 +31,6 @@ python-versions = ">=3.6"
 [package.dependencies]
 appdirs = "*"
 click = ">=7.1.2"
-dataclasses = {version = ">=0.6", markers = "python_version < \"3.7\""}
 mypy-extensions = ">=0.4.3"
 pathspec = ">=0.6,<1"
 regex = ">=2020.1.8"
@@ -69,14 +68,6 @@ python-versions = "*"
 
 [package.dependencies]
 six = "*"
-
-[[package]]
-name = "dataclasses"
-version = "0.8"
-description = "A backport of the dataclasses module for Python 3.6"
-category = "dev"
-optional = false
-python-versions = ">=3.6, <3.7"
 
 [[package]]
 name = "flake8"
@@ -321,8 +312,8 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.6"
-content-hash = "1ee4cce5ef1c709303ff7b4ef36c41958e0e80524609b71a695171ac494e1dd2"
+python-versions = "^3.7"
+content-hash = "12abe1efe4779c8bc91b315b1839f8f0dce97b30c4648a055dbfac638d8208d6"
 
 [metadata.files]
 appdirs = [
@@ -347,10 +338,6 @@ colorama = [
 courts-db = [
     {file = "courts-db-0.9.7.tar.gz", hash = "sha256:abe01ee93ce26c458a411521a888a3ad920b8ed1d4f8c2f6410d35935bc6f058"},
     {file = "courts_db-0.9.7-py2.py3-none-any.whl", hash = "sha256:cdfc3dbcee0b83aa9aa03a2c969611a7ea89b9c8a3dc7530be252c2538ef76e0"},
-]
-dataclasses = [
-    {file = "dataclasses-0.8-py3-none-any.whl", hash = "sha256:0201d89fa866f68c8ebd9d08ee6ff50c0b255f8ec63a71c16fda7af82bb887bf"},
-    {file = "dataclasses-0.8.tar.gz", hash = "sha256:8479067f342acf957dc82ec415d355ab5edb7e7646b90dc6e2fd1d96ad084c97"},
 ]
 flake8 = [
     {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},
