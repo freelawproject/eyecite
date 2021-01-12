@@ -87,7 +87,7 @@ jobs:
       - name: pylint Generate Report
         run: >
           set -o pipefail &&
-          pylint --load-plugins=pylint_json2html -f jsonextended microscope |
+          pylint --fail-under 9 --load-plugins=pylint_json2html -f jsonextended microscope |
           pylint-json2html -f jsonextended -o pylint-report.html
 
       - name: Upload report
