@@ -30,7 +30,7 @@ version = "1.0.0"
 [tool.poetry.dependencies]
 python = "^3.6"
 reporters-db = "^2.0.5"
-courts-db = "^0.9.6"
+courts-db = "^0.9.7"
 lxml = "^4.6.2"
 
 [tool.poetry.dev-dependencies]

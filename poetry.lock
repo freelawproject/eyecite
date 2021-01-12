@@ -61,7 +61,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "courts-db"
-version = "0.9.6"
+version = "0.9.7"
 description = "Database of Courts"
 category = "main"
 optional = false
@@ -322,7 +322,7 @@ testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pyt
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.6"
-content-hash = "7b0f32873d5795143f940acd0984733fe9d0272202295d96866ba85699863ce6"
+content-hash = "1ee4cce5ef1c709303ff7b4ef36c41958e0e80524609b71a695171ac494e1dd2"
 
 [metadata.files]
 appdirs = [
@@ -345,8 +345,8 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 courts-db = [
-    {file = "courts-db-0.9.6.tar.gz", hash = "sha256:7e275288dd2e566bf82cbfb6a58e8a08de8ae486475e53770173715b56299d2b"},
-    {file = "courts_db-0.9.6-py2.py3-none-any.whl", hash = "sha256:5b8e00cc9ba770709edc5a95572375714e3c38a7b8f4f1f6fbeb4cc26f437bc6"},
+    {file = "courts-db-0.9.7.tar.gz", hash = "sha256:abe01ee93ce26c458a411521a888a3ad920b8ed1d4f8c2f6410d35935bc6f058"},
+    {file = "courts_db-0.9.7-py2.py3-none-any.whl", hash = "sha256:cdfc3dbcee0b83aa9aa03a2c969611a7ea89b9c8a3dc7530be252c2538ef76e0"},
 ]
 dataclasses = [
     {file = "dataclasses-0.8-py3-none-any.whl", hash = "sha256:0201d89fa866f68c8ebd9d08ee6ff50c0b255f8ec63a71c16fda7af82bb887bf"},
