@@ -17,6 +17,23 @@ from microscope.models import (
 
 
 class FindTest(TestCase):
+    def run_test_pairs(self, test_pairs, message):
+        for q, a, *kwargs in test_pairs:
+            print(message % q, end=" ")
+            kwargs = kwargs[0] if kwargs else {}
+            cites_found = get_citations(q, **kwargs)
+            self.assertEqual(
+                cites_found,
+                a,
+                msg="%s\n%s\n\n    !=\n\n%s"
+                % (
+                    q,
+                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
+                    ",\n".join([str(cite.__dict__) for cite in a]),
+                ),
+            )
+            print("✓")
+
     def test_find_citations(self):
         """Can we find and make citation objects from strings?"""
         # fmt: off
@@ -198,7 +215,8 @@ class FindTest(TestCase):
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [IdCitation(id_token='Ibid.',
-                         after_tokens=['foo', 'bar', 'lorem'])]),
+                         after_tokens=['foo', 'bar', 'lorem'])],
+             {'clean': ['html', 'whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
@@ -212,12 +230,14 @@ class FindTest(TestCase):
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [IdCitation(id_token='Id.,',
                          after_tokens=['at', '123.'],
-                         has_page=True)]),
+                         has_page=True)],
+             {'clean': ['html', 'whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
              [IdCitation(id_token='Id.,',
                          after_tokens=['at', '123.'],
-                         has_page=True)]),
+                         has_page=True)],
+             {'clean': ['html', 'whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
@@ -286,20 +306,9 @@ class FindTest(TestCase):
              [],),
         )
         # fmt: on
-        for q, a in test_pairs:
-            print("Testing citation extraction for %s..." % q, end=" ")
-            cites_found = get_citations(q)
-            self.assertEqual(
-                cites_found,
-                a,
-                msg="%s\n%s\n\n    !=\n\n%s"
-                % (
-                    q,
-                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
-                    ",\n".join([str(cite.__dict__) for cite in a]),
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(
+            test_pairs, "Testing citation extraction for %s..."
+        )
 
     def test_find_tc_citations(self):
         """Can we parse tax court citations properly?"""
@@ -354,20 +363,9 @@ class FindTest(TestCase):
                            reporter_found='U.S.')]),
         )
         # fmt: on
-        for q, a in test_pairs:
-            print("Testing citation extraction for %s..." % q, end=" ")
-            cites_found = get_citations(q)
-            self.assertEqual(
-                cites_found,
-                a,
-                msg="%s\n%s\n\n    !=\n\n%s"
-                % (
-                    q,
-                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
-                    ",\n".join([str(cite.__dict__) for cite in a]),
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(
+            test_pairs, "Testing tax court citation extraction for %s..."
+        )
 
     def test_date_in_editions(self):
         test_pairs = [
@@ -478,17 +476,4 @@ class FindTest(TestCase):
             ('1 Johnson 1 (1806)', []),
         ]
         # fmt: on
-        for pair in test_pairs:
-            print("Testing disambiguation for %s..." % pair[0], end=" ")
-            citations = get_citations(pair[0], html=False)
-            self.assertEqual(
-                citations,
-                pair[1],
-                msg="%s\n%s != \n%s"
-                % (
-                    pair[0],
-                    [cite.__dict__ for cite in citations],
-                    [cite.__dict__ for cite in pair[1]],
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(test_pairs, "Testing disambiguation for %s...")

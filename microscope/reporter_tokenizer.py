@@ -41,19 +41,5 @@ def tokenize(text: str) -> List[str]:
             words.append(string)
         else:
             # Normalize spaces
-            words.extend(_tokenize(string))
+            words.extend(string.strip().split())
     return words
-
-
-def _tokenize(text: str) -> List[str]:
-    # add extra space to make things easier
-    text = " " + text + " "
-
-    # get rid of all the annoying underscores in text from pdfs
-    text = re.sub(r"__+", "", text)
-
-    # reduce excess whitespace
-    text = re.sub(" +", " ", text)
-    text = text.strip()
-
-    return text.split()

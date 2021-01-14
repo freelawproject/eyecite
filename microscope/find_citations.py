@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
-from typing import List, Optional, Union
+from typing import Callable, Iterable, List, Optional, Union
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY
 
@@ -22,19 +22,20 @@ from microscope.models import (
     SupraCitation,
 )
 from microscope.reporter_tokenizer import tokenize
-from microscope.utils import get_visible_text, strip_punct
+from microscope.utils import clean_text, strip_punct
 
 
 def get_citations(
     text: str,
-    html: bool = True,
     do_post_citation: bool = True,
     do_defendant: bool = True,
     disambiguate: bool = True,
+    clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
 ) -> List[Union[NonopinionCitation, Citation]]:
     """Main function"""
-    if html:
-        text = get_visible_text(text)
+    if clean:
+        text = clean_text(text, clean)
+
     words = tokenize(text)
     citations: List[Union[Citation, NonopinionCitation]] = []
 
