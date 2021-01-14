@@ -1,27 +1,9 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import re
-from typing import Optional
+from typing import Callable, Iterable, Optional, Union
 
-from lxml import html
-
-
-def get_visible_text(html_content: str) -> str:
-    """Given HTML markup, return only text that is visible
-    Adopted from freelawproject/juriscraper/lib/html_utils.py#L163
-
-    :param html_content: The HTML string
-    :return: Text that is visible
-    """
-    html_tree = html.fromstring(html_content)
-    text = html_tree.xpath(
-        """//text()[normalize-space() and not(
-            parent::style |
-            parent::link |
-            parent::head |
-            parent::script)]"""
-    )
-    return " ".join(text)
+from microscope.cleaners import cleaners_lookup
 
 
 def is_roman(token: str) -> Optional[re.Match]:
@@ -67,3 +49,22 @@ def strip_punct(text: str) -> str:
     text = re.sub(r"(\S)(\'\'?)", r"\1", text)
 
     return text.strip()
+
+
+def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
+    """Applies each step in order to text, returning the result.
+    Steps may be the names of functions in microscope.cleaners, or callables.
+    """
+    for step in steps:
+        if step in cleaners_lookup:
+            step_func = cleaners_lookup[step]  # type: ignore
+        elif callable(step):
+            step_func = step
+        else:
+            raise ValueError(
+                "clean_text steps must be callable "
+                f"or one of {list(cleaners_lookup.keys())}"
+            )
+        text = step_func(text)
+
+    return text  # type: ignore
