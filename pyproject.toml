@@ -7,7 +7,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.6",
   "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
@@ -15,20 +14,23 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
-description = "{{PROJECT_DESCRIPTION}}"
+description = "Tool for extracting legal citations from text strings."
 keywords = ["legal", "courts"]
 license = "BSD-2-Clause"
 maintainers = ["Free Law Project <info@free.law>"]
-name = "{{PROJECT_NAME}}"
+name = "microscope"
 readme = "README.md"
-repository = "https://github.com/freelawproject/{{PROJECT_NAME}}"
-version = "0.0.1"
+repository = "https://github.com/freelawproject/microscope"
+version = "1.0.0"
 
 [tool.poetry.urls]
 "Organisation Homepage" = "https://free.law/"
 
 [tool.poetry.dependencies]
-python = "^3.6"
+python = "^3.7"
+reporters-db = "^2.0.5"
+courts-db = "^0.9.7"
+lxml = "^4.6.2"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
@@ -37,21 +39,18 @@ isort = "^5.6.4"
 mypy = "^0.790"
 pylint = "^2.6.0"
 wheel = "^0.35.1"
+pylint-json2html = "^0.2.0"
 
 [tool.black]
 include = '''.*\.pyi?$'''
 line-length = 79
 
 [tool.isort]
-force_grid_wrap = 0
-include_trailing_comma = true
-known_third_party = []
+profile = "black"
 line_length = 79
-multi_line_output = 3
-use_parentheses = true
 
 [tool.pylint.messages_control]
-disable = "C0330, C0326"
+disable = "C0330, C0326, C0114"
 
 [tool.pylint.format]
 max-line-length = "79"
