@@ -17,6 +17,23 @@ from microscope.models import (
 
 
 class FindTest(TestCase):
+    def run_test_pairs(self, test_pairs, message):
+        for q, a, *kwargs in test_pairs:
+            print(message % q, end=" ")
+            kwargs = kwargs[0] if kwargs else {}
+            cites_found = get_citations(q, **kwargs)
+            self.assertEqual(
+                cites_found,
+                a,
+                msg="%s\n%s\n\n    !=\n\n%s"
+                % (
+                    q,
+                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
+                    ",\n".join([str(cite.__dict__) for cite in a]),
+                ),
+            )
+            print("✓")
+
     def test_find_citations(self):
         """Can we find and make citation objects from strings?"""
         # fmt: off
@@ -286,20 +303,9 @@ class FindTest(TestCase):
              [],),
         )
         # fmt: on
-        for q, a in test_pairs:
-            print("Testing citation extraction for %s..." % q, end=" ")
-            cites_found = get_citations(q)
-            self.assertEqual(
-                cites_found,
-                a,
-                msg="%s\n%s\n\n    !=\n\n%s"
-                % (
-                    q,
-                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
-                    ",\n".join([str(cite.__dict__) for cite in a]),
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(
+            test_pairs, "Testing citation extraction for %s..."
+        )
 
     def test_find_tc_citations(self):
         """Can we parse tax court citations properly?"""
@@ -354,20 +360,9 @@ class FindTest(TestCase):
                            reporter_found='U.S.')]),
         )
         # fmt: on
-        for q, a in test_pairs:
-            print("Testing citation extraction for %s..." % q, end=" ")
-            cites_found = get_citations(q)
-            self.assertEqual(
-                cites_found,
-                a,
-                msg="%s\n%s\n\n    !=\n\n%s"
-                % (
-                    q,
-                    ",\n".join([str(cite.__dict__) for cite in cites_found]),
-                    ",\n".join([str(cite.__dict__) for cite in a]),
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(
+            test_pairs, "Testing tax court citation extraction for %s..."
+        )
 
     def test_date_in_editions(self):
         test_pairs = [
@@ -478,17 +473,4 @@ class FindTest(TestCase):
             ('1 Johnson 1 (1806)', []),
         ]
         # fmt: on
-        for pair in test_pairs:
-            print("Testing disambiguation for %s..." % pair[0], end=" ")
-            citations = get_citations(pair[0], html=False)
-            self.assertEqual(
-                citations,
-                pair[1],
-                msg="%s\n%s != \n%s"
-                % (
-                    pair[0],
-                    [cite.__dict__ for cite in citations],
-                    [cite.__dict__ for cite in pair[1]],
-                ),
-            )
-            print("✓")
+        self.run_test_pairs(test_pairs, "Testing disambiguation for %s...")
