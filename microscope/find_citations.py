@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
+import re
 from typing import Callable, Iterable, List, Optional, Union
 
 from microscope.helpers import (
@@ -73,7 +74,7 @@ def get_citations(
         # In this case, we're not sure yet what the citation's antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
-        elif strip_punct(citation_token.lower()) == "supra":
+        elif re.match(r"[^a-z0-9]*supra[^a-z0-9]*$", citation_token.lower()):
             citation = extract_supra_citation(words, i)
 
         # CASE 4: Citation token is a section marker.
