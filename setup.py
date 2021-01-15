@@ -3,7 +3,7 @@ import os
 
 from setuptools import find_packages, setup
 
-VERSION = "0.0.1"
+VERSION = "0.0.5"
 AUTHOR = "Free Law Project"
 EMAIL = "info@free.law"
 HERE = os.path.abspath(os.path.dirname(__file__))
@@ -23,7 +23,7 @@ def read(*parts):
 
 setup(
     name="eyecite",
-    description="A data extraction tool from judge financial disclosures.",
+    description="A citation extraction tool.",
     license="BSD",
     url="https://github.com/freelawproject/eyecite",
     version=VERSION,
@@ -33,6 +33,8 @@ setup(
     maintainer_email=EMAIL,
     keywords=[
         "legal",
+        "citations",
+        "cites"
     ],
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
