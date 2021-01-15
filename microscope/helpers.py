@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# encoding: utf-8
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
