@@ -34,7 +34,7 @@ setup(
     keywords=[
         "legal",
     ],
-    long_description=read("README.md"),
+    long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
     package_data={"microscrope": ["*.json"]},
     include_package_data=True,
