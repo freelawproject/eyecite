@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 from typing import Callable, Iterable, List, Optional, Union
 
 from reporters_db import EDITIONS, VARIATIONS_ONLY

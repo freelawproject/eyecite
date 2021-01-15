@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # Loosely adapted from the Natural Language Toolkit: Tokenizers
 # URL: <http://nltk.sourceforge.net>
 

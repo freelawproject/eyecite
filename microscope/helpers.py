@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 import re
 from datetime import datetime
 from typing import Dict, List, Optional, Union
