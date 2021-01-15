@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from unittest import TestCase
 
 from microscope.reporter_tokenizer import tokenize
