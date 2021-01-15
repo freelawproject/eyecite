@@ -1,5 +1,4 @@
 import re
-
 from typing import Callable, Iterable, List, Optional, Union
 
 from microscope.helpers import (
