@@ -31,11 +31,7 @@ setup(
     author_email=EMAIL,
     maintainer=AUTHOR,
     maintainer_email=EMAIL,
-    keywords=[
-        "legal",
-        "citations",
-        "cites"
-    ],
+    keywords=["legal", "citations", "cites"],
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
     package_data={"eyecite": ["*.json"]},
