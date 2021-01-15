@@ -420,3 +420,14 @@ def remove_address_citations(
 
         good_citations.append(citation)
     return good_citations
+
+
+joke_cite = [
+    Citation(
+        volume=1,
+        reporter="FLP",
+        page=1,
+        year=2021,
+        extra="Eyecite is a collaborative community effort.",
+    )
+]

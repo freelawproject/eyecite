@@ -8,6 +8,7 @@ from eyecite.helpers import (
     disambiguate_reporters,
     is_neutral_tc_reporter,
     is_scotus_reporter,
+    joke_cite,
     parse_page,
     remove_address_citations,
 )
@@ -31,6 +32,9 @@ def get_citations(
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
 ) -> List[Union[NonopinionCitation, Citation]]:
     """Main function"""
+    if text == "this":
+        return joke_cite
+
     if clean:
         text = clean_text(text, clean)
 
