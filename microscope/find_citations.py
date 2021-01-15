@@ -1,8 +1,8 @@
+import re
 from typing import Callable, Iterable, List, Optional, Union
 
-from reporters_db import EDITIONS, VARIATIONS_ONLY
-
 from microscope.helpers import (
+    REPORTER_STRINGS,
     add_defendant,
     add_post_citation,
     disambiguate_reporters,
@@ -44,9 +44,7 @@ def get_citations(
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
         # In this case, first try extracting it as a standard, full citation,
         # and if that fails try extracting it as a short form citation.
-        if citation_token in list(EDITIONS.keys()) + list(
-            VARIATIONS_ONLY.keys()
-        ):
+        if citation_token in REPORTER_STRINGS:
             citation = extract_full_citation(words, i)
             if citation:
                 # CASE 1A: Standard citation found, try to add additional data
@@ -74,7 +72,7 @@ def get_citations(
         # In this case, we're not sure yet what the citation's antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
-        elif strip_punct(citation_token.lower()) == "supra":
+        elif re.match(r"[^a-z0-9]*supra[^a-z0-9]*$", citation_token.lower()):
             citation = extract_supra_citation(words, i)
 
         # CASE 4: Citation token is a section marker.

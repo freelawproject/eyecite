@@ -1,6 +1,6 @@
 import re
 from datetime import datetime
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Set, Union
 
 from courts_db import courts
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
@@ -28,6 +28,9 @@ STOP_TOKENS = [
     "granted",
     "dismissed",
 ]
+REPORTER_STRINGS: Set[str] = set(
+    list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())
+)
 
 
 def is_scotus_reporter(citation: Citation) -> bool:
