@@ -1,7 +1,7 @@
 import re
 from typing import Callable, Iterable, List, Optional, Union
 
-from microscope.helpers import (
+from eyecite.helpers import (
     REPORTER_STRINGS,
     add_defendant,
     add_post_citation,
@@ -11,7 +11,7 @@ from microscope.helpers import (
     parse_page,
     remove_address_citations,
 )
-from microscope.models import (
+from eyecite.models import (
     Citation,
     FullCitation,
     IdCitation,
@@ -19,8 +19,8 @@ from microscope.models import (
     ShortformCitation,
     SupraCitation,
 )
-from microscope.reporter_tokenizer import tokenize
-from microscope.utils import clean_text, strip_punct
+from eyecite.reporter_tokenizer import tokenize
+from eyecite.utils import clean_text, strip_punct
 
 
 def get_citations(

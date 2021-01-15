@@ -18,9 +18,9 @@ description = "Tool for extracting legal citations from text strings."
 keywords = ["legal", "courts"]
 license = "BSD-2-Clause"
 maintainers = ["Free Law Project <info@free.law>"]
-name = "microscope"
+name = "eyecite"
 readme = "README.md"
-repository = "https://github.com/freelawproject/microscope"
+repository = "https://github.com/freelawproject/eyecite"
 version = "1.0.0"
 
 [tool.poetry.urls]

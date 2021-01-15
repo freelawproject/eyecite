@@ -3,9 +3,9 @@ from unittest import TestCase
 
 from reporters_db import REPORTERS
 
-from microscope.find_citations import get_citations
-from microscope.helpers import is_date_in_reporter
-from microscope.models import (
+from eyecite.find_citations import get_citations
+from eyecite.helpers import is_date_in_reporter
+from eyecite.models import (
     FullCitation,
     IdCitation,
     NonopinionCitation,

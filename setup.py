@@ -22,10 +22,10 @@ def read(*parts):
 
 
 setup(
-    name="microscope",
+    name="eyecite",
     description="A data extraction tool from judge financial disclosures.",
     license="BSD",
-    url="https://github.com/freelawproject/microscope",
+    url="https://github.com/freelawproject/eyecite",
     version=VERSION,
     author=AUTHOR,
     author_email=EMAIL,
@@ -36,7 +36,7 @@ setup(
     ],
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
-    package_data={"microscrope": ["*.json"]},
+    package_data={"eyecite": ["*.json"]},
     include_package_data=True,
     classifiers=[
         "Development Status :: 1 - Planning",

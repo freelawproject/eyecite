@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from microscope.reporter_tokenizer import tokenize
+from eyecite.reporter_tokenizer import tokenize
 
 
 class TokenizerTest(TestCase):

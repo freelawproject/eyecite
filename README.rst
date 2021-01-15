@@ -1,7 +1,7 @@
-microscope
+eyecite
 ==========
 
-microscope is an open source tool for extracting legal citations from text strings. Originally built for use with [Courtlistener.com](https://www.courtlistener.com/), it is now a freestanding package.
+eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with [Courtlistener.com](https://www.courtlistener.com/), it is now a freestanding package.
 
 Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., `Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., `531 U.S., at 99`), "supra" references (e.g., `Bush, supra, at 100`), "id." references (e.g., `Id., at 101`), and "ibid." references (e.g., `Ibid.`).
 
@@ -19,7 +19,7 @@ Simply feed in a raw string of text (or HTML), and receive a list of structured 
 
 ::
 
-    from microscope.find_citations import get_citations
+    from eyecite.find_citations import get_citations
 
     text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
     found_citations = get_citations(text)
@@ -75,12 +75,12 @@ Some things to keep in mind are:
 
 Installation
 ============
-Installing microscope is easy.
+Installing eyecite is easy.
 
 ::
 
     sh
-    pip install microscope
+    pip install eyecite
 
 
 
@@ -89,7 +89,7 @@ Or install the latest dev version from github
 ::
 
     sh
-    pip install git+https://github.com/freelawproject/microscope.git@master
+    pip install git+https://github.com/freelawproject/eyecite.git@master
 
 
 
@@ -120,7 +120,7 @@ If you wish to create a new version manually, the process is:
 
 Testing
 =======
-microscope comes with a robust test suite of different citation strings that it is equipped to handle. Run these tests as follows:
+eyecite comes with a robust test suite of different citation strings that it is equipped to handle. Run these tests as follows:
 
 ::
 
