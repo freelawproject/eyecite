@@ -1,5 +1,6 @@
 import codecs
 import os
+
 from setuptools import setup, find_packages
 
 VERSION = "0.0.1"
