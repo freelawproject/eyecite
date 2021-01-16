@@ -95,15 +95,19 @@ Or install the latest dev version from github
 
 Deployment
 ==========
-If you wish to create a new version manually, the process is:
 
-1. Update version info in :code:`setup.py`
+1. Update version info in :code:`setup.py` and in :code:`pyproject.toml`.
 
-2. Install the requirements using :code:`poetry install`
+For an automated deployment, tag the commit with vx.y.z, and push it to master.
+An automated deploy will be completed for you.
 
-3. Set up a config file at :code:`~/.pypirc`
+For a manual deployment, follow these steps:
 
-4. Generate a universal distribution that works in py2 and py3 (see setup.cfg)
+1. Install the requirements using :code:`poetry install`
+
+2. Set up a config file at :code:`~/.pypirc`
+
+3. Generate a universal distribution that works in py2 and py3 (see setup.cfg)
 
 ::
 
@@ -116,6 +120,7 @@ If you wish to create a new version manually, the process is:
 
     sh
     twine upload dist/* -r pypi (or pypitest)
+
 
 
 Testing

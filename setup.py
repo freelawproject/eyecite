@@ -3,7 +3,7 @@ import os
 
 from setuptools import find_packages, setup
 
-VERSION = "0.0.5"
+VERSION = "1.0.0"
 AUTHOR = "Free Law Project"
 EMAIL = "info@free.law"
 HERE = os.path.abspath(os.path.dirname(__file__))
