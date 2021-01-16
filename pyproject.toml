@@ -19,7 +19,7 @@ keywords = ["legal", "courts"]
 license = "BSD-2-Clause"
 maintainers = ["Free Law Project <info@free.law>"]
 name = "eyecite"
-readme = "README.md"
+readme = "README.rst"
 repository = "https://github.com/freelawproject/eyecite"
 version = "1.0.0"
 

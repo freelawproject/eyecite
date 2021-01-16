@@ -55,14 +55,6 @@ class Citation:
         self.match_url = match_url
         self.match_id = match_id
 
-        self.equality_attributes = [
-            "reporter",
-            "volume",
-            "page",
-            "canonical_reporter",
-            "lookup_index",
-        ]
-
     def as_regex(self):
         pass
 
@@ -94,20 +86,8 @@ class Citation:
     def __ne__(self, other):
         return not self.__eq__(other)
 
-    def fuzzy_hash(self):
-        """Used to test equality in dicts.
-
-        Overridden here to simplify away some of the attributes that can differ
-        for the same citation.
-        """
-        str_to_hash = ""
-        for attr in self.equality_attributes:
-            str_to_hash += str(getattr(self, attr, None))
-        return hash(str_to_hash)
-
-    def fuzzy_eq(self, other):
-        """Used to override the __eq__ function."""
-        return self.fuzzy_hash() == other.fuzzy_hash()
+    def __hash__(self):
+        return hash(tuple(self.__dict__.values()))
 
 
 class FullCitation(Citation):
