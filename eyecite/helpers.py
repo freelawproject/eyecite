@@ -422,7 +422,7 @@ def remove_address_citations(
     return good_citations
 
 
-joke_cite = [
+joke_cite: List[Citation] = [
     Citation(
         volume=1,
         reporter="FLP",

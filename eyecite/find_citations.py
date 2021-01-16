@@ -30,7 +30,7 @@ def get_citations(
     do_defendant: bool = True,
     disambiguate: bool = True,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
-) -> List[Union[NonopinionCitation, Citation]]:
+) -> Iterable[Union[NonopinionCitation, Citation]]:
     """Main function"""
     if text == "this":
         return joke_cite
