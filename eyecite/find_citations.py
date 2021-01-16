@@ -1,17 +1,18 @@
 import re
 from typing import Callable, Iterable, List, Optional, Union
 
-from microscope.helpers import (
+from eyecite.helpers import (
     REPORTER_STRINGS,
     add_defendant,
     add_post_citation,
     disambiguate_reporters,
     is_neutral_tc_reporter,
     is_scotus_reporter,
+    joke_cite,
     parse_page,
     remove_address_citations,
 )
-from microscope.models import (
+from eyecite.models import (
     Citation,
     FullCitation,
     IdCitation,
@@ -19,8 +20,8 @@ from microscope.models import (
     ShortformCitation,
     SupraCitation,
 )
-from microscope.reporter_tokenizer import tokenize
-from microscope.utils import clean_text, strip_punct
+from eyecite.reporter_tokenizer import tokenize
+from eyecite.utils import clean_text, strip_punct
 
 
 def get_citations(
@@ -29,8 +30,11 @@ def get_citations(
     do_defendant: bool = True,
     disambiguate: bool = True,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
-) -> List[Union[NonopinionCitation, Citation]]:
+) -> Iterable[Union[NonopinionCitation, Citation]]:
     """Main function"""
+    if text == "this":
+        return joke_cite
+
     if clean:
         text = clean_text(text, clean)
 

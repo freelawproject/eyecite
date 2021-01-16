@@ -4,7 +4,7 @@
 import re
 from typing import List
 
-from microscope.helpers import REPORTER_STRINGS
+from eyecite.helpers import REPORTER_STRINGS
 
 # We need to build a REGEX that has all the variations and the reporters in
 # order from longest to shortest.

@@ -1,7 +1,7 @@
 import re
 from typing import Callable, Iterable, Optional, Union
 
-from microscope.cleaners import cleaners_lookup
+from eyecite.cleaners import cleaners_lookup
 
 
 def is_roman(token: str) -> Optional[re.Match]:
@@ -51,7 +51,7 @@ def strip_punct(text: str) -> str:
 
 def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
     """Applies each step in order to text, returning the result.
-    Steps may be the names of functions in microscope.cleaners, or callables.
+    Steps may be the names of functions in eyecite.cleaners, or callables.
     """
     for step in steps:
         if step in cleaners_lookup:

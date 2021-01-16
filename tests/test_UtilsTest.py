@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from microscope.utils import clean_text
+from eyecite.utils import clean_text
 
 
 class UtilsTest(TestCase):

@@ -5,13 +5,13 @@ from typing import Dict, List, Optional, Set, Union
 from courts_db import courts
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
-from microscope.models import (
+from eyecite.models import (
     Citation,
     FullCitation,
     NonopinionCitation,
     ShortformCitation,
 )
-from microscope.utils import is_roman, strip_punct
+from eyecite.utils import is_roman, strip_punct
 
 FORWARD_SEEK = 20
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
@@ -420,3 +420,14 @@ def remove_address_citations(
 
         good_citations.append(citation)
     return good_citations
+
+
+joke_cite: List[Citation] = [
+    Citation(
+        volume=1,
+        reporter="FLP",
+        page=1,
+        year=2021,
+        extra="Eyecite is a collaborative community effort.",
+    )
+]

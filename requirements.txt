@@ -1,0 +1,4 @@
+courts-db==0.9.7
+lxml==4.6.2
+reporters-db==2.0.5
+six==1.15.0
