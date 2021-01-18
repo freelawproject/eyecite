@@ -60,10 +60,10 @@ Options
 =======
 :code:`get_citations()`, the main executable function, takes several parameters.
 
-1. :code:`html` ==> bool; whether the passed string is HTML or not
-2. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
-3. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
-4. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
+1. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
+2. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
+3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
+4. :code:`clean` ==> tuple; a tuple of cleaning steps to undertake before parsing; options include :code:`whitespace` (remove extraneous whitespace [default]), :code:`underscores` (remove extraneous underscores), and :code:`html` (remove non-visible HTML content)
 
 Some notes
 ----------
