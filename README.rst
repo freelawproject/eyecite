@@ -3,7 +3,7 @@ eyecite
 
 eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with `Courtlistener.com <https://www.courtlistener.com/>`_, it is now a freestanding package.
 
-Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., `Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., `531 U.S., at 99`), "supra" references (e.g., `Bush, supra, at 100`), "id." references (e.g., `Id., at 101`), and "ibid." references (e.g., `Ibid.`).
+Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., :code:`Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., :code:`531 U.S., at 99`), "supra" references (e.g., :code:`Bush, supra, at 100`), "id." references (e.g., :code:`Id., at 101`), and "ibid." references (e.g., :code:`Ibid.`).
 
 Further development is intended and all contributors, corrections, and additions are welcome.
 
@@ -33,7 +33,7 @@ Simply feed in a raw string of text (or HTML), and receive a list of structured 
 
 
 
-Once these `Citation` objects are obtained, you can find them in the original text by calling their `as_regex()` methods, which return a bespoke regex representation for each extracted citation.
+Once these :code:`Citation` objects are obtained, you can find them in the original text by calling their :code:`as_regex()` methods, which return a bespoke regex representation for each extracted citation.
 
 
 ::
