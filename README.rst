@@ -1,15 +1,15 @@
 eyecite
 ==========
 
-eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with [Courtlistener.com](https://www.courtlistener.com/), it is now a freestanding package.
+eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with `Courtlistener.com <https://www.courtlistener.com/>`_, it is now a freestanding package.
 
-Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., `Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., `531 U.S., at 99`), "supra" references (e.g., `Bush, supra, at 100`), "id." references (e.g., `Id., at 101`), and "ibid." references (e.g., `Ibid.`).
+Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., :code:`Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., :code:`531 U.S., at 99`), "supra" references (e.g., :code:`Bush, supra, at 100`), "id." references (e.g., :code:`Id., at 101`), and "ibid." references (e.g., :code:`Ibid.`).
 
 Further development is intended and all contributors, corrections, and additions are welcome.
 
 Background
 ==========
-This project is the culmination of [years](https://free.law/2012/05/11/building-a-citator-on-courtlistener/) [of](https://free.law/2015/11/30/our-new-citation-finder/) [work](https://free.law/2020/03/05/citation-data-gets-richer/) to build a citator within Courtlistener.com. This project represents the next step in that development: Decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
+This project is the culmination of `years <https://free.law/2012/05/11/building-a-citator-on-courtlistener/>`_ `of <https://free.law/2015/11/30/our-new-citation-finder/>`_ `work <https://free.law/2020/03/05/citation-data-gets-richer/>`_ to build a citator within Courtlistener.com. This project represents the next step in that development: Decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
 
 Quickstart
 ==========
@@ -33,7 +33,7 @@ Simply feed in a raw string of text (or HTML), and receive a list of structured 
 
 
 
-Once these `Citation` objects are obtained, you can find them in the original text by calling their `as_regex()` methods, which return a bespoke regex representation for each extracted citation.
+Once these :code:`Citation` objects are obtained, you can find them in the original text by calling their :code:`as_regex()` methods, which return a bespoke regex representation for each extracted citation.
 
 
 ::
@@ -60,17 +60,17 @@ Options
 =======
 :code:`get_citations()`, the main executable function, takes several parameters.
 
-1. :code:`html` ==> bool; whether the passed string is HTML or not
-2. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
-3. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
-4. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
+1. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
+2. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
+3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
+4. :code:`clean` ==> tuple; a tuple of cleaning steps to undertake before parsing; options include :code:`whitespace` (remove extraneous whitespace [default]), :code:`underscores` (remove extraneous underscores), and :code:`html` (remove non-visible HTML content)
 
 Some notes
 ----------
 Some things to keep in mind are:
 
-1. This project depends on information made available in two other Free Law Project packages, [reporters-db](https://github.com/freelawproject/reporters-db) and [courts-db](https://github.com/freelawproject/courts-db).
-2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See [here](https://github.com/freelawproject/courtlistener/tree/master/cl/citations) for an example of how Courtlistener implements this package and handles this problem.
+1. This project depends on information made available in two other Free Law Project packages, `reporters-db <https://github.com/freelawproject/reporters-db>`_ and `courts-db <https://github.com/freelawproject/courts-db>`_.
+2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See `here <https://github.com/freelawproject/courtlistener/tree/master/cl/citations>`_ for an example of how Courtlistener implements this package and handles this problem.
 
 
 Installation
