@@ -1,7 +1,7 @@
 eyecite
 ==========
 
-eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with [Courtlistener.com](https://www.courtlistener.com/), it is now a freestanding package.
+eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with `Courtlistener.com <https://www.courtlistener.com/>`_, it is now a freestanding package.
 
 Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., `Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., `531 U.S., at 99`), "supra" references (e.g., `Bush, supra, at 100`), "id." references (e.g., `Id., at 101`), and "ibid." references (e.g., `Ibid.`).
 
@@ -9,7 +9,7 @@ Further development is intended and all contributors, corrections, and additions
 
 Background
 ==========
-This project is the culmination of [years](https://free.law/2012/05/11/building-a-citator-on-courtlistener/) [of](https://free.law/2015/11/30/our-new-citation-finder/) [work](https://free.law/2020/03/05/citation-data-gets-richer/) to build a citator within Courtlistener.com. This project represents the next step in that development: Decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
+This project is the culmination of `years <https://free.law/2012/05/11/building-a-citator-on-courtlistener/>`_ `of <https://free.law/2015/11/30/our-new-citation-finder/>`_ `work <https://free.law/2020/03/05/citation-data-gets-richer/>`_ to build a citator within Courtlistener.com. This project represents the next step in that development: Decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
 
 Quickstart
 ==========
@@ -69,8 +69,8 @@ Some notes
 ----------
 Some things to keep in mind are:
 
-1. This project depends on information made available in two other Free Law Project packages, [reporters-db](https://github.com/freelawproject/reporters-db) and [courts-db](https://github.com/freelawproject/courts-db).
-2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See [here](https://github.com/freelawproject/courtlistener/tree/master/cl/citations) for an example of how Courtlistener implements this package and handles this problem.
+1. This project depends on information made available in two other Free Law Project packages, `reporters-db <https://github.com/freelawproject/reporters-db>`_ and `courts-db <https://github.com/freelawproject/courts-db>`_.
+2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See `here <https://github.com/freelawproject/courtlistener/tree/master/cl/citations>`_ for an example of how Courtlistener implements this package and handles this problem.
 
 
 Installation
