@@ -1,10 +1,8 @@
+import re
 from datetime import datetime
 from unittest import TestCase
 
-from reporters_db import REPORTERS
-
 from eyecite.find_citations import get_citations
-from eyecite.helpers import is_date_in_reporter
 from eyecite.models import (
     FullCitation,
     IdCitation,
@@ -12,22 +10,44 @@ from eyecite.models import (
     ShortformCitation,
     SupraCitation,
 )
+from eyecite.reporter_tokenizer import EDITIONS_LOOKUP, ReporterToken, Token
 
 
 class FindTest(TestCase):
     def run_test_pairs(self, test_pairs, message):
-        for q, a, *kwargs in test_pairs:
+        for q, expected_cites, *kwargs in test_pairs:
             print(message % q, end=" ")
             kwargs = kwargs[0] if kwargs else {}
             cites_found = get_citations(q, **kwargs)
-            self.assertEqual(
-                cites_found,
-                a,
+            match_attrs = [
+                "reporter_index",
+                "reporter_found",
+                "year",
+                "court",
+                "plaintiff",
+                "defendant",
+                "extra",
+                "canonical_reporter",
+                "volume",
+                "page",
+                "reporter",
+            ]
+            match = [type(i) for i in cites_found] == [
+                type(i) for i in expected_cites
+            ] and all(
+                getattr(a, attr, None) == getattr(b, attr, None)
+                for a, b in zip(cites_found, expected_cites)
+                for attr in match_attrs
+            )
+            self.assertTrue(
+                match,
                 msg="%s\n%s\n\n    !=\n\n%s"
                 % (
                     q,
                     ",\n".join([str(cite.__dict__) for cite in cites_found]),
-                    ",\n".join([str(cite.__dict__) for cite in a]),
+                    ",\n".join(
+                        [str(cite.__dict__) for cite in expected_cites]
+                    ),
                 ),
             )
             print("✓")
@@ -39,139 +59,139 @@ class FindTest(TestCase):
             # Basic test
             ('1 U.S. 1',
              [FullCitation(volume=1, reporter='U.S.', page='1',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=1,
                            reporter_found='U.S.')]),
             # Basic test of non-case name before citation (should not be found)
             ('lissner test 1 U.S. 1',
              [FullCitation(volume=1, reporter='U.S.', page='1',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=3,
                            reporter_found='U.S.')]),
             # Test with plaintiff and defendant
             ('lissner v. test 1 U.S. 1',
              [FullCitation(plaintiff='lissner', defendant='test', volume=1,
                            reporter='U.S.', page='1',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=4,
                            reporter_found='U.S.')]),
             # Test with plaintiff, defendant and year
             ('lissner v. test 1 U.S. 1 (1982)',
              [FullCitation(plaintiff='lissner', defendant='test', volume=1,
                            reporter='U.S.', page='1', year=1982,
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=4,
                            reporter_found='U.S.')]),
             # Test with different reporter than all of above.
             ('bob lissner v. test 1 F.2d 1 (1982)',
              [FullCitation(plaintiff='lissner', defendant='test', volume=1,
                            reporter='F.2d', page='1', year=1982,
-                           canonical_reporter='F.', lookup_index=0,
+                           canonical_reporter='F.',
                            reporter_index=5, reporter_found='F.2d')]),
             # Test with court and extra information
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [FullCitation(plaintiff='lissner', defendant='test', volume=1,
                            reporter='U.S.', page='12', year=1982,
                            extra='347-348', court='ca4',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            reporter_index=5, reporter_found='U.S.')]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
              [FullCitation(volume=22, reporter='U.S.', page='332', year=1975,
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=2,
                            reporter_found='U. S.')]),
             # Test with finding reporter when it's a second edition
             ('asdf 22 A.2d 332 asdf',
              [FullCitation(volume=22, reporter='A.2d', page='332',
-                           canonical_reporter='A.', lookup_index=0,
+                           canonical_reporter='A.',
                            reporter_index=2, reporter_found='A.2d')]),
             # Test if reporter in string will find proper citation string
             ('A.2d 332 11 A.2d 333',
              [FullCitation(volume=11, reporter='A.2d', page='333',
-                           canonical_reporter='A.', lookup_index=0,
+                           canonical_reporter='A.',
                            reporter_index=3, reporter_found='A.2d')]),
             # Test finding a variant second edition reporter
             ('asdf 22 A. 2d 332 asdf',
              [FullCitation(volume=22, reporter='A.2d', page='332',
-                           canonical_reporter='A.', lookup_index=0,
+                           canonical_reporter='A.',
                            reporter_index=2, reporter_found='A. 2d')]),
             # Test finding a variant of an edition resolvable by variant alone.
             ('171 Wn.2d 1016',
              [FullCitation(volume=171, reporter='Wash. 2d', page='1016',
-                           canonical_reporter='Wash.', lookup_index=1,
+                           canonical_reporter='Wash.',
                            reporter_index=1, reporter_found='Wn.2d')]),
             # Test finding two citations where one of them has abutting
             # punctuation.
             ('2 U.S. 3, 4-5 (3 Atl. 33)',
              [FullCitation(volume=2, reporter="U.S.", page='3', extra='4-5',
-                           canonical_reporter="U.S.", lookup_index=0,
+                           canonical_reporter="U.S.",
                            reporter_index=1, reporter_found="U.S.",
                            court='scotus'),
               FullCitation(volume=3, reporter="A.", page='33',
-                           canonical_reporter="A.", lookup_index=0,
+                           canonical_reporter="A.",
                            reporter_index=5, reporter_found="Atl.")]),
             # Test with the page number as a Roman numeral
             ('12 Neb. App. lxiv (2004)',
              [FullCitation(volume=12, reporter='Neb. Ct. App.', page='lxiv',
                            year=2004, canonical_reporter='Neb. Ct. App.',
-                           lookup_index=0, reporter_index=1,
+                           reporter_index=1,
                            reporter_found='Neb. App.')]),
             # Test with page range with a weird suffix
             ('559 N.W.2d 826|N.D.',
              [FullCitation(volume=559, reporter='N.W.2d', page='826',
-                           canonical_reporter='N.W.', lookup_index=0,
+                           canonical_reporter='N.W.',
                            reporter_index=1, reporter_found='N.W.2d')]),
             # Test with malformed/missing page number
             ('1 U.S. f24601', []),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [FullCitation(volume=2007, reporter='NMCERT', page='008',
-                           canonical_reporter='NMCERT', lookup_index=0,
+                           canonical_reporter='NMCERT',
                            reporter_index=1, reporter_found='NMCERT')]),
             ('2006-Ohio-2095',
              [FullCitation(volume=2006, reporter='Ohio', page='2095',
-                           canonical_reporter='Ohio', lookup_index=0,
+                           canonical_reporter='Ohio',
                            reporter_index=1, reporter_found='Ohio')]),
             ('2017 IL App (4th) 160407WC',
              [FullCitation(volume=2017, reporter='IL App (4th)',
                            page='160407WC', canonical_reporter='IL App (4th)',
-                           lookup_index=0, reporter_index=1,
+                           reporter_index=1,
                            reporter_found='IL App (4th)')]),
             ('2017 IL App (1st) 143684-B',
              [FullCitation(volume=2017, reporter='IL App (1st)',
                            page='143684-B', canonical_reporter='IL App (1st)',
-                           lookup_index=0, reporter_index=1,
+                           reporter_index=1,
                            reporter_found='IL App (1st)')]),
             # Test first kind of short form citation (meaningless antecedent)
             ('before asdf 1 U. S., at 2',
              [ShortformCitation(reporter='U.S.', page='2', volume=1,
                                 antecedent_guess='asdf', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test second kind of short form citation (meaningful antecedent)
             ('before asdf, 1 U. S., at 2',
              [ShortformCitation(reporter='U.S.', page='2', volume=1,
                                 antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test short form citation with preceding ASCII quotation
             ('before asdf,” 1 U. S., at 2',
              [ShortformCitation(reporter='U.S.', page='2', volume=1,
                                 antecedent_guess='asdf,”', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test short form citation when case name looks like a reporter
             ('before Johnson, 1 U. S., at 2',
              [ShortformCitation(reporter='U.S.', page='2', volume=1,
                                 antecedent_guess='Johnson,', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=4)]),
             # Test short form citation with no comma after reporter
             ('before asdf, 1 U. S. at 2',
              [ShortformCitation(reporter='U.S.', page='2', volume=1,
                                 antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
@@ -179,13 +199,13 @@ class FindTest(TestCase):
             ('before asdf, 1 U. S., at 20-25',
              [ShortformCitation(reporter='U.S.', page='20-25', volume=1,
                                 antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test short form citation with a page range with weird suffix
             ('before asdf, 1 U. S., at 20-25\\& n. 4',
              [ShortformCitation(reporter='U.S.', page='20-25', volume=1,
                                 antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.', lookup_index=0,
+                                canonical_reporter='U.S.',
                                 reporter_found='U. S.', reporter_index=3)]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
@@ -205,7 +225,7 @@ class FindTest(TestCase):
             # Test Ibid. citation
             ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Ibid.',
@@ -218,7 +238,7 @@ class FindTest(TestCase):
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.,',
@@ -239,7 +259,7 @@ class FindTest(TestCase):
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.',
@@ -247,7 +267,7 @@ class FindTest(TestCase):
                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.',
@@ -255,7 +275,7 @@ class FindTest(TestCase):
                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.,',
@@ -263,7 +283,7 @@ class FindTest(TestCase):
                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.',
@@ -271,7 +291,7 @@ class FindTest(TestCase):
                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.',
@@ -279,7 +299,7 @@ class FindTest(TestCase):
                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='id.',
@@ -288,7 +308,7 @@ class FindTest(TestCase):
             # Test Id. citation without page number
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
              [FullCitation(plaintiff='foo', defendant='bar', volume=1,
-                           reporter='U.S.', page='12', lookup_index=0,
+                           reporter='U.S.', page='12',
                            canonical_reporter='U.S.', reporter_index=4,
                            reporter_found='U.S.', court='scotus'),
               IdCitation(id_token='Id.',
@@ -315,47 +335,47 @@ class FindTest(TestCase):
             # Test with atypical formatting for Tax Court Memos
             ('the 1 T.C. No. 233',
              [FullCitation(volume=1, reporter='T.C. No.', page='233',
-                           canonical_reporter='T.C. No.', lookup_index=0,
+                           canonical_reporter='T.C. No.',
                            reporter_index=2, reporter_found='T.C. No.')]),
             ('word T.C. Memo. 2019-233',
              [FullCitation(volume=2019, reporter='T.C. Memo.', page='233',
-                           canonical_reporter='T.C. Memo.', lookup_index=0,
+                           canonical_reporter='T.C. Memo.',
                            reporter_index=1, reporter_found='T.C. Memo.')]),
             ('something T.C. Summary Opinion 2019-233',
              [FullCitation(volume=2019, reporter='T.C. Summary Opinion', page='233',
                            canonical_reporter='T.C. Summary Opinion',
-                           lookup_index=0,
+
                            reporter_index=1,
                            reporter_found='T.C. Summary Opinion')]),
             ('T.C. Summary Opinion 2018-133',
              [FullCitation(volume=2018, reporter='T.C. Summary Opinion', page='133',
                            canonical_reporter='T.C. Summary Opinion',
-                           lookup_index=0,
+
                            reporter_index=0,
                            reporter_found='T.C. Summary Opinion')]),
             ('1     UNITED STATES TAX COURT REPORT   (2018)',
              [FullCitation(volume=1, reporter='T.C.', page='2018',
                            canonical_reporter='T.C.',
-                           lookup_index=0,
+
                            reporter_index=1,
                            reporter_found='UNITED STATES TAX COURT REPORT')]),
             ('U.S. of A. 1     UNITED STATES TAX COURT REPORT   (2018)',
              [FullCitation(volume=1, reporter='T.C.', page='2018',
                            canonical_reporter='T.C.',
-                           lookup_index=0,
+
                            reporter_index=4,
                            reporter_found='UNITED STATES TAX COURT REPORT')]),
             # Added this after failing in production
             ('     202                 140 UNITED STATES TAX COURT REPORTS                                   (200)',
              [FullCitation(volume=140, reporter='T.C.', page='200',
                            canonical_reporter='T.C.',
-                           lookup_index=0,
+
                            reporter_index=2,
                            reporter_found='UNITED STATES TAX COURT REPORTS')]),
             ('U.S. 1234 1 U.S. 1',
              [FullCitation(volume=1, reporter='U.S.', page='1',
                            canonical_reporter='U.S.',
-                           lookup_index=0,
+
                            reporter_index=3,
                            court='scotus',
                            reporter_found='U.S.')]),
@@ -367,24 +387,23 @@ class FindTest(TestCase):
 
     def test_date_in_editions(self):
         test_pairs = [
-            ("S.E.", 1886, False),
-            ("S.E.", 1887, True),
-            ("S.E.", 1939, True),
-            ("S.E.", 2012, True),
-            ("T.C.M.", 1950, True),
-            ("T.C.M.", 1940, False),
-            ("T.C.M.", datetime.now().year + 1, False),
+            (EDITIONS_LOOKUP["S.E."], 1886, False),
+            (EDITIONS_LOOKUP["S.E."], 1887, True),
+            (EDITIONS_LOOKUP["S.E."], 1940, False),
+            (EDITIONS_LOOKUP["S.E.2d"], 1940, True),
+            (EDITIONS_LOOKUP["S.E.2d"], 2012, True),
+            (EDITIONS_LOOKUP["T.C.M."], 1950, True),
+            (EDITIONS_LOOKUP["T.C.M."], 1940, False),
+            (EDITIONS_LOOKUP["T.C.M."], datetime.now().year + 1, False),
         ]
-        for pair in test_pairs:
-            date_in_reporter = is_date_in_reporter(
-                REPORTERS[pair[0]][0]["editions"], pair[1]
-            )
+        for edition, year, expected in test_pairs:
+            date_in_reporter = edition[0].includes_year(year)
             self.assertEqual(
                 date_in_reporter,
-                pair[2],
-                msg='is_date_in_reporter(REPORTERS[%s][0]["editions"], %s) != '
+                expected,
+                msg="is_date_in_reporter(%s, %s) != "
                 "%s\nIt's equal to: %s"
-                % (pair[0], pair[1], pair[2], date_in_reporter),
+                % (edition[0], year, expected, date_in_reporter),
             )
 
     def test_disambiguate_citations(self):
@@ -393,50 +412,50 @@ class FindTest(TestCase):
             # 1. P.R.R --> Correct abbreviation for a reporter.
             ('1 P.R.R. 1',
              [FullCitation(volume=1, reporter='P.R.R.', page='1',
-                           canonical_reporter='P.R.R.', lookup_index=0,
+                           canonical_reporter='P.R.R.',
                            reporter_index=1, reporter_found='P.R.R.')]),
             # 2. U. S. --> A simple variant to resolve.
             ('1 U. S. 1',
              [FullCitation(volume=1, reporter='U.S.', page='1',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=1,
                            reporter_found='U. S.')]),
             # 3. A.2d --> Not a variant, but needs to be looked up in the
             #    EDITIONS variable.
             ('1 A.2d 1',
              [FullCitation(volume=1, reporter='A.2d', page='1',
-                           canonical_reporter='A.', lookup_index=0,
+                           canonical_reporter='A.',
                            reporter_index=1, reporter_found='A.2d')]),
             # 4. A. 2d --> An unambiguous variant of an edition
             ('1 A. 2d 1',
              [FullCitation(volume=1, reporter='A.2d', page='1',
-                           canonical_reporter='A.', lookup_index=0,
+                           canonical_reporter='A.',
                            reporter_index=1, reporter_found='A. 2d')]),
             # 5. P.R. --> A variant of 'Pen. & W.', 'P.R.R.', or 'P.' that's
             #    resolvable by year
             ('1 P.R. 1 (1831)',
              # Of the three, only Pen & W. was being published this year.
              [FullCitation(volume=1, reporter='Pen. & W.', page='1',
-                           canonical_reporter='Pen. & W.', lookup_index=0,
+                           canonical_reporter='Pen. & W.',
                            year=1831, reporter_index=1, reporter_found='P.R.')]),
             # 5.1: W.2d --> A variant of an edition that either resolves to
             #      'Wis. 2d' or 'Wash. 2d' and is resolvable by year.
             ('1 W.2d 1 (1854)',
              # Of the two, only Wis. 2d was being published this year.
              [FullCitation(volume=1, reporter='Wis. 2d', page='1',
-                           canonical_reporter='Wis.', lookup_index=0,
+                           canonical_reporter='Wis.',
                            year=1854, reporter_index=1, reporter_found='W.2d')]),
             # 5.2: Wash. --> A non-variant that has more than one reporter for
             #      the key, but is resolvable by year
             ('1 Wash. 1 (1890)',
              [FullCitation(volume=1, reporter='Wash.', page='1',
-                           canonical_reporter='Wash.', lookup_index=1,
+                           canonical_reporter='Wash.',
                            year=1890, reporter_index=1, reporter_found='Wash.')]),
             # 6. Cr. --> A variant of Cranch, which is ambiguous, except with
             #    paired with this variation.
             ('1 Cra. 1',
              [FullCitation(volume=1, reporter='Cranch', page='1',
-                           canonical_reporter='Cranch', lookup_index=0,
+                           canonical_reporter='Cranch',
                            court='scotus', reporter_index=1,
                            reporter_found='Cra.')]),
             # 7. Cranch. --> Not a variant, but could refer to either Cranch's
@@ -445,9 +464,10 @@ class FindTest(TestCase):
             #    clues. We must simply drop Cranch from the results.
             ('1 Cranch 1 1 U.S. 23',
              [FullCitation(volume=1, reporter='U.S.', page='23',
-                           canonical_reporter='U.S.', lookup_index=0,
+                           canonical_reporter='U.S.',
                            court='scotus', reporter_index=4,
-                           reporter_found='U.S.')]),
+                           reporter_found='U.S.')],
+             {'remove_ambiguous': True}),
             # 8. Unsolved problem. In theory, we could use parallel citations
             #    to resolve this, because Rob is getting cited next to La., but
             #    we don't currently know the proximity of citations to each
@@ -458,20 +478,42 @@ class FindTest(TestCase):
             #                8.3: Robinson's Virgina Reports (1842-1865)
             # ('1 Rob. 1 1 La. 1',
             # [FullCitation(volume=1, reporter='Rob.', page='1',
-            #                          canonical_reporter='Rob.',
-            #                          lookup_index=0),
+            #                          canonical_reporter='Rob.',),
             #  FullCitation(volume=1, reporter='La.', page='1',
-            #                          canonical_reporter='La.',
-            #                          lookup_index=0)]),
+            #                          canonical_reporter='La.',)]),
             # 9. Johnson #1 should pass and identify the citation
             ('1 Johnson 1 (1890)',
              [FullCitation(volume=1, reporter='N.M. (J.)', page='1',
-                           canonical_reporter='N.M. (J.)', lookup_index=0,
+                           canonical_reporter='N.M. (J.)',
                            reporter_index=1, reporter_found='Johnson',
                            year=1890,
                            )]),
             # 10. Johnson #2 should fail to disambiguate with year alone
-            ('1 Johnson 1 (1806)', []),
+            ('1 Johnson 1 (1806)', [], {'remove_ambiguous': True}),
         ]
         # fmt: on
         self.run_test_pairs(test_pairs, "Testing disambiguation for %s...")
+
+    def test_custom_tokenizer(self):
+        def tokenizer(text):
+            """Simple tokenizer that recognizes just the reporter U.S.,
+            but allows periods to come through OCR as commas."""
+            us_edition = EDITIONS_LOOKUP["U.S."][0]
+            return [
+                ReporterToken(s, [us_edition], [])
+                if re.match(r"U[.,]S[.,]$", s)
+                else Token(s)
+                for s in text.split()
+            ]
+
+        # fmt: off
+        test_pairs = [
+            ('1 U,S, 1',
+             [FullCitation(volume=1, reporter='U.S.', page='1',
+                           canonical_reporter='U.S.',
+                           court='scotus', reporter_index=1,
+                           reporter_found='U,S,')],
+             {'tokenizer': tokenizer}),
+        ]
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Testing custom tokenizer for %s...")

@@ -1,9 +1,7 @@
 import re
-from datetime import datetime
-from typing import Dict, List, Optional, Set, Union
+from typing import List, Optional, Sequence, Union, cast
 
 from courts_db import courts
-from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
 from eyecite.models import (
     Citation,
@@ -11,61 +9,18 @@ from eyecite.models import (
     NonopinionCitation,
     ShortformCitation,
 )
+from eyecite.reporter_tokenizer import ReporterToken, StopWordToken, Token
 from eyecite.utils import is_roman, strip_punct
 
 FORWARD_SEEK = 20
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
-STOP_TOKENS = [
-    "v",
-    "re",
-    "parte",
-    "denied",
-    "citing",
-    "aff'd",
-    "affirmed",
-    "remanded",
-    "see",
-    "granted",
-    "dismissed",
-]
-REPORTER_STRINGS: Set[str] = set(
-    list(EDITIONS.keys()) + list(VARIATIONS_ONLY.keys())
-)
 
 
-def is_scotus_reporter(citation: Citation) -> bool:
-    """Check if the citation is for a SCOTUS reporter."""
-    try:
-        reporter = REPORTERS[citation.canonical_reporter][
-            citation.lookup_index
-        ]
-    except (TypeError, KeyError):
-        # Occurs when citation.lookup_index is None
-        return False
-
-    if reporter:
-        truisms = [
-            (
-                reporter["cite_type"] == "federal"
-                and "supreme" in reporter["name"].lower()
-            ),
-            "scotus" in reporter["cite_type"].lower(),
-        ]
-        return any(truisms)
-    return False
-
-
-def is_neutral_tc_reporter(reporter: str) -> bool:
+def is_neutral_tc_reporter(token: ReporterToken) -> bool:
     """Test whether the reporter is a neutral Tax Court reporter.
 
-    These take the format of T.C. Memo YEAR-SERIAL
-
-    :param reporter: A string of the reporter, e.g. "F.2d" or "T.C. Memo"
-    :return True if a T.C. neutral citation, else False
-    """
-    if re.match(r"T\. ?C\. (Summary|Memo)", reporter):
-        return True
-    return False
+    These take the format of T.C. Memo YEAR-SERIAL"""
+    return any(e.reporter.is_neutral_tc_reporter for e in token.all_editions)
 
 
 def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
@@ -96,25 +51,25 @@ def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
     return court_code
 
 
-def get_year(token: str) -> Optional[int]:
+def get_year(token: Token) -> Optional[int]:
     """Given a string token, look for a valid 4-digit number at the start and
     return its value.
     """
-    token = strip_punct(token)
-    if not token.isdigit():
+    word = strip_punct(str(token))
+    if not word.isdigit():
         # Sometimes funny stuff happens?
-        token = re.sub(r"(\d{4}).*", r"\1", token)
-        if not token.isdigit():
+        word = re.sub(r"(\d{4}).*", r"\1", word)
+        if not word.isdigit():
             return None
-    if len(token) != 4:
+    if len(word) != 4:
         return None
-    year = int(token)
+    year = int(word)
     if year < 1754:  # Earliest case in the database
         return None
     return year
 
 
-def add_post_citation(citation: Citation, words: List[str]) -> None:
+def add_post_citation(citation: Citation, words: Sequence[Token]) -> None:
     """Add to a citation object any additional information found after the base
     citation, including court, year, and possibly page range.
 
@@ -146,7 +101,8 @@ def add_post_citation(citation: Citation, words: List[str]) -> None:
                     else:
                         citation.year = get_year(words[end])
                     citation.court = get_court_by_paren(
-                        " ".join(words[start : end + 1]), citation
+                        " ".join(str(w) for w in words[start : end + 1]),
+                        citation,
                     )
                     break
 
@@ -154,12 +110,12 @@ def add_post_citation(citation: Citation, words: List[str]) -> None:
                 # Then there's content between page and (), starting with a
                 # comma, which we skip
                 citation.extra = " ".join(
-                    words[citation.reporter_index + 2 : start]
+                    str(w) for w in words[citation.reporter_index + 2 : start]
                 )
             break
 
 
-def add_defendant(citation: Citation, words: List[str]) -> None:
+def add_defendant(citation: Citation, words: Sequence[Token]) -> None:
     """Scan backwards from 2 tokens before reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
@@ -171,9 +127,9 @@ def add_defendant(citation: Citation, words: List[str]) -> None:
         if word == ",":
             # Skip it
             continue
-        if strip_punct(word).lower() in STOP_TOKENS:
+        if type(word) is StopWordToken:
             if word == "v.":
-                citation.plaintiff = words[index - 1]
+                citation.plaintiff = str(words[index - 1])
             start_index = index + 1
             break
         if word.endswith(";"):
@@ -181,7 +137,7 @@ def add_defendant(citation: Citation, words: List[str]) -> None:
             break
     if start_index:
         citation.defendant = " ".join(
-            words[start_index : citation.reporter_index - 1]
+            str(w) for w in words[start_index : citation.reporter_index - 1]
         )
 
 
@@ -212,171 +168,16 @@ def parse_page(page: Union[str, int]) -> Optional[str]:
     return None
 
 
-def is_date_in_reporter(
-    editions: Dict[str, Dict[str, Optional[datetime]]],
-    year: int,
-) -> bool:
-    """Checks whether a year falls within the range of 1 to n editions of a
-    reporter
-
-    Editions will look something like:
-        'editions': {'S.E.': {'start': datetime.datetime(1887, 1, 1),
-                              'end': datetime.datetime(1939, 12, 31)},
-                     'S.E.2d': {'start': datetime.datetime(1939, 1, 1),
-                                'end': None}},
-    """
-    for date_dict in editions.values():
-        if date_dict["end"] is None:
-            date_dict["end"] = datetime.now()
-
-        # At this point, both "start" and "end" should be datetime objects
-        assert isinstance(date_dict["start"], datetime)
-        assert isinstance(date_dict["end"], datetime)
-
-        if date_dict["start"].year <= year <= date_dict["end"].year:
-            return True
-    return False
-
-
 def disambiguate_reporters(
     citations: List[Union[Citation, NonopinionCitation]]
 ) -> List[Union[Citation, NonopinionCitation]]:
-    """Convert a list of citations to a list of unambiguous ones.
-
-    Goal is to figure out:
-     - citation.canonical_reporter
-     - citation.lookup_index
-
-    And there are a few things that can be ambiguous:
-     - More than one variation.
-     - More than one reporter for the key.
-     - Could be an edition (or not)
-     - All combinations of the above:
-        - More than one variation.
-        - More than one variation, with more than one reporter for the key.
-        - More than one variation, with more than one reporter for the key,
-          which is an edition.
-        - More than one variation, which is an edition
-        - ...
-
-    For variants, we just need to sort out the canonical_reporter.
-
-    If it's not possible to disambiguate the reporter, we simply have to drop
-    it.
-    """
-    unambiguous_citations = []
-    for citation in citations:
-        # Only disambiguate citations with a reporter
-        if not isinstance(citation, (FullCitation, ShortformCitation)):
-            unambiguous_citations.append(citation)
-            continue
-
-        # Non-variant items (P.R.R., A.2d, Wash., etc.)
-        if REPORTERS.get(EDITIONS.get(citation.reporter)) is not None:
-            citation.canonical_reporter = EDITIONS[citation.reporter]
-            if len(REPORTERS[EDITIONS[citation.reporter]]) == 1:
-                # Single reporter, easy-peasy.
-                citation.lookup_index = 0
-                unambiguous_citations.append(citation)
-                continue
-
-            # Multiple books under this key, but which is correct?
-            if citation.year:
-                # attempt resolution by date
-                possible_citations = []
-                rep_len = len(REPORTERS[EDITIONS[citation.reporter]])
-                for i in range(0, rep_len):
-                    if is_date_in_reporter(
-                        REPORTERS[EDITIONS[citation.reporter]][i]["editions"],
-                        citation.year,
-                    ):
-                        possible_citations.append((citation.reporter, i))
-                if len(possible_citations) == 1:
-                    # We were able to identify only one hit
-                    # after filtering by year.
-                    citation.reporter = possible_citations[0][0]
-                    citation.lookup_index = possible_citations[0][1]
-                    unambiguous_citations.append(citation)
-                    continue
-
-        # Try doing a variation of an edition.
-        elif VARIATIONS_ONLY.get(citation.reporter) is not None:
-            if len(VARIATIONS_ONLY[citation.reporter]) == 1:
-                # Only one variation -- great, use it.
-                citation.canonical_reporter = EDITIONS[
-                    VARIATIONS_ONLY[citation.reporter][0]
-                ]
-                cached_variation = citation.reporter
-                citation.reporter = VARIATIONS_ONLY[citation.reporter][0]
-                if len(REPORTERS[citation.canonical_reporter]) == 1:
-                    # It's a single reporter under a misspelled key.
-                    citation.lookup_index = 0
-                    unambiguous_citations.append(citation)
-                    continue
-
-                # Multiple reporters under a single misspelled key
-                # (e.g. Wn.2d --> Wash --> Va Reports, Wash or
-                #                          Washington Reports).
-                if citation.year:
-                    # attempt resolution by date
-                    possible_citations = []
-                    rep_can = len(REPORTERS[citation.canonical_reporter])
-                    for i in range(0, rep_can):
-                        if is_date_in_reporter(
-                            REPORTERS[citation.canonical_reporter][i][
-                                "editions"
-                            ],
-                            citation.year,
-                        ):
-                            possible_citations.append((citation.reporter, i))
-                    if len(possible_citations) == 1:
-                        # We were able to identify only one hit after
-                        # filtering by year.
-                        citation.lookup_index = possible_citations[0][1]
-                        unambiguous_citations.append(citation)
-                        continue
-                # Attempt resolution by unique variation
-                # (e.g. Cr. can only be Cranch[0])
-                possible_citations = []
-                reps = REPORTERS[citation.canonical_reporter]
-                for i in range(0, len(reps)):
-                    for variation in REPORTERS[citation.canonical_reporter][i][
-                        "variations"
-                    ].items():
-                        if variation[0] == cached_variation:
-                            possible_citations.append((variation[1], i))
-                if len(possible_citations) == 1:
-                    # We were able to find a single match after filtering
-                    # by variation.
-                    citation.lookup_index = possible_citations[0][1]
-                    unambiguous_citations.append(citation)
-                    continue
-            else:
-                # Multiple variations, deal with them.
-                possible_citations = []
-                for reporter_key in VARIATIONS_ONLY[citation.reporter]:
-                    for i in range(0, len(REPORTERS[EDITIONS[reporter_key]])):
-                        # This inner loop works regardless of the number of
-                        # reporters under the key.
-                        key = REPORTERS[EDITIONS[reporter_key]]
-                        if citation.year:
-                            cite_year = citation.year
-                            if is_date_in_reporter(
-                                key[i]["editions"], cite_year
-                            ):
-                                possible_citations.append((reporter_key, i))
-                if len(possible_citations) == 1:
-                    # We were able to identify only one hit after filtering by
-                    # year.
-                    citation.canonical_reporter = EDITIONS[
-                        possible_citations[0][0]
-                    ]
-                    citation.reporter = possible_citations[0][0]
-                    citation.lookup_index = possible_citations[0][1]
-                    unambiguous_citations.append(citation)
-                    continue
-
-    return unambiguous_citations
+    """Filter out citations where there is more than one possible reporter."""
+    return [
+        c
+        for c in citations
+        if not isinstance(c, (FullCitation, ShortformCitation))
+        or cast(Citation, c).edition_guess
+    ]
 
 
 def remove_address_citations(
