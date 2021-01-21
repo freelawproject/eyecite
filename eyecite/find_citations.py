@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, List, Optional, Sequence, Union, cast
+from typing import Callable, Iterable, List, Optional, Union, cast
 
 from eyecite.helpers import (
     add_defendant,
@@ -22,7 +22,8 @@ from eyecite.reporter_tokenizer import (
     ReporterToken,
     SectionToken,
     SupraToken,
-    Token,
+    TokenOrStr,
+    Tokens,
     tokenize,
 )
 from eyecite.utils import clean_text, strip_punct
@@ -34,7 +35,7 @@ def get_citations(
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
-    tokenizer: Callable[[str], Iterable[Token]] = tokenize,
+    tokenizer: Callable[[str], Iterable[TokenOrStr]] = tokenize,
 ) -> Iterable[Union[NonopinionCitation, Citation]]:
     """Main function"""
     if text == "this":
@@ -116,7 +117,7 @@ def get_citations(
 
 
 def extract_full_citation(
-    words: Sequence[Token],
+    words: Tokens,
     reporter_index: int,
 ) -> Optional[FullCitation]:
     """Given a list of words and the index of a federal reporter, look before
@@ -175,7 +176,7 @@ def extract_full_citation(
 
 
 def extract_shortform_citation(
-    words: Sequence[Token],
+    words: Tokens,
     reporter_index: int,
 ) -> Optional[ShortformCitation]:
     """Given a list of words and the index of a federal reporter, look before
@@ -237,7 +238,7 @@ def extract_shortform_citation(
 
 
 def extract_supra_citation(
-    words: Sequence[Token],
+    words: Tokens,
     supra_index: int,
 ) -> Optional[SupraCitation]:
     """Given a list of words and the index of a supra token, look before
@@ -275,7 +276,7 @@ def extract_supra_citation(
 
 
 def extract_id_citation(
-    words: Sequence[Token],
+    words: Tokens,
     id_index: int,
 ) -> Optional[IdCitation]:
     """Given a list of words and the index of an id token, gather the

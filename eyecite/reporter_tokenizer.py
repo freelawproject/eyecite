@@ -3,7 +3,7 @@
 
 import re
 from collections import UserString, defaultdict
-from typing import List, Set
+from typing import List, Sequence, Set, Union
 
 from reporters_db import EDITIONS, REPORTERS, VARIATIONS_ONLY
 
@@ -63,7 +63,8 @@ STOP_RE = re.compile(rf"[^a-z0-9]*({'|'.join(STOP_TOKENS)})[^a-z0-9]*$")
 
 
 class Token(UserString):
-    """ Any word in the tokenized case, not otherwise identified. """
+    """Base class for special tokens. For performance, this isn't used
+    for generic words."""
 
     def __repr__(self):
         return f"{type(self).__name__}({repr(self.data)})"
@@ -105,7 +106,14 @@ class StopWordToken(Token):
     pass
 
 
-def tokenize(text: str) -> List[Token]:
+# For performance, tokens can be either Token subclasses
+# or bare strings (the typical case of words that aren't
+# related to citations)
+TokenOrStr = Union[Token, str]
+Tokens = Sequence[TokenOrStr]
+
+
+def tokenize(text: str) -> Tokens:
     """Tokenize text using regular expressions in the following steps:
      - Split the text by the occurrences of patterns which match a federal
        reporter, including the reporter strings as part of the resulting
@@ -131,7 +139,7 @@ def tokenize(text: str) -> List[Token]:
         ]
     # otherwise, we just split on spaces to find words
     strings = REPORTER_RE.split(text)
-    tokens: List[Token] = []
+    tokens: List[TokenOrStr] = []
     for string in strings:
         if string in REPORTER_STRINGS:
             tokens.append(
@@ -153,6 +161,6 @@ def tokenize(text: str) -> List[Token]:
                 elif "§" in word:
                     token = SectionToken(word)
                 else:
-                    token = Token(word)
+                    token = word
                 tokens.append(token)
     return tokens

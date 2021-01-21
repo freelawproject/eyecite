@@ -1,5 +1,5 @@
 import re
-from typing import List, Optional, Sequence, Union, cast
+from typing import List, Optional, Union, cast
 
 from courts_db import courts
 
@@ -9,7 +9,12 @@ from eyecite.models import (
     NonopinionCitation,
     ShortformCitation,
 )
-from eyecite.reporter_tokenizer import ReporterToken, StopWordToken, Token
+from eyecite.reporter_tokenizer import (
+    ReporterToken,
+    StopWordToken,
+    TokenOrStr,
+    Tokens,
+)
 from eyecite.utils import is_roman, strip_punct
 
 FORWARD_SEEK = 20
@@ -51,7 +56,7 @@ def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
     return court_code
 
 
-def get_year(token: Token) -> Optional[int]:
+def get_year(token: TokenOrStr) -> Optional[int]:
     """Given a string token, look for a valid 4-digit number at the start and
     return its value.
     """
@@ -69,7 +74,7 @@ def get_year(token: Token) -> Optional[int]:
     return year
 
 
-def add_post_citation(citation: Citation, words: Sequence[Token]) -> None:
+def add_post_citation(citation: Citation, words: Tokens) -> None:
     """Add to a citation object any additional information found after the base
     citation, including court, year, and possibly page range.
 
@@ -115,7 +120,7 @@ def add_post_citation(citation: Citation, words: Sequence[Token]) -> None:
             break
 
 
-def add_defendant(citation: Citation, words: Sequence[Token]) -> None:
+def add_defendant(citation: Citation, words: Tokens) -> None:
     """Scan backwards from 2 tokens before reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
