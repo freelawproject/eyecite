@@ -43,6 +43,9 @@ REGEX_LIST = sorted(REPORTER_STRINGS, key=len, reverse=True)
 REGEX_STR = "|".join(map(re.escape, REGEX_LIST))
 REPORTER_RE = re.compile(r"(^|\s)(%s)(\s|,)" % REGEX_STR)
 
+# Regexes for recognizing other tokens
+
+SUPRA_RE = re.compile(r"[^a-z0-9]*supra[^a-z0-9]*$")
 STOP_TOKENS = {
     "v",
     "re",
@@ -56,6 +59,7 @@ STOP_TOKENS = {
     "granted",
     "dismissed",
 }
+STOP_RE = re.compile(rf"[^a-z0-9]*({'|'.join(STOP_TOKENS)})[^a-z0-9]*$")
 
 
 class Token(UserString):
@@ -139,15 +143,12 @@ def tokenize(text: str) -> List[Token]:
             )
         else:
             for word in string.strip().split():
-                token: Token
-                stripped_word = re.sub(
-                    r"^[^a-z0-9]*|[^a-z0-9]*$", "", word.lower()
-                )
+                token: TokenOrStr
                 if word.lower() in {"id.", "id.,", "ibid."}:
                     token = IdToken(word)
-                elif stripped_word == "supra":
+                elif SUPRA_RE.match(word.lower()):
                     token = SupraToken(word)
-                elif stripped_word in STOP_TOKENS:
+                elif STOP_RE.match(word.lower()):
                     token = StopWordToken(word)
                 elif "§" in word:
                     token = SectionToken(word)
