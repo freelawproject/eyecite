@@ -4,29 +4,25 @@ from eyecite.helpers import (
     add_defendant,
     add_post_citation,
     disambiguate_reporters,
-    is_neutral_tc_reporter,
     joke_cite,
     parse_page,
     remove_address_citations,
 )
 from eyecite.models import (
     Citation,
+    CitationToken,
     FullCitation,
     IdCitation,
+    IdToken,
     NonopinionCitation,
+    SectionToken,
     ShortformCitation,
     SupraCitation,
-)
-from eyecite.reporter_tokenizer import (
-    IdToken,
-    ReporterToken,
-    SectionToken,
     SupraToken,
-    TokenOrStr,
     Tokens,
-    tokenize,
 )
-from eyecite.utils import clean_text, strip_punct
+from eyecite.tokenizers import BaseTokenizer, default_tokenizer
+from eyecite.utils import clean_text
 
 
 def get_citations(
@@ -35,7 +31,7 @@ def get_citations(
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
-    tokenizer: Callable[[str], Iterable[TokenOrStr]] = tokenize,
+    tokenizer: BaseTokenizer = default_tokenizer,
 ) -> Iterable[Union[NonopinionCitation, Citation]]:
     """Main function"""
     if text == "this":
@@ -44,33 +40,26 @@ def get_citations(
     if clean:
         text = clean_text(text, clean)
 
-    words = list(tokenizer(text))
+    words = cast(Tokens, list(tokenizer.tokenize(text)))
     citations: List[Union[Citation, NonopinionCitation]] = []
 
-    for i, citation_token in enumerate(words[:-1]):
-        citation: Union[Citation, NonopinionCitation, None] = None
-        token_type = type(citation_token)
+    for i, token in enumerate(words):
+        citation: Union[Citation, NonopinionCitation, None]
+        token_type = type(token)
 
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
         # In this case, first try extracting it as a standard, full citation,
         # and if that fails try extracting it as a short form citation.
-        if token_type is ReporterToken:
-            citation = extract_full_citation(words, i)
-            if citation:
-                # CASE 1A: Standard citation found, try to add additional data
+        if token_type is CitationToken:
+            citation_token = cast(CitationToken, token)
+            if citation_token.short:
+                citation = extract_shortform_citation(words, i)
+            else:
+                citation = extract_full_citation(words, i)
                 if do_post_citation:
                     add_post_citation(citation, words)
                 if do_defendant:
                     add_defendant(citation, words)
-            else:
-                # CASE 1B: Standard citation not found, so see if this
-                # reference to a reporter is a short form citation instead
-                citation = extract_shortform_citation(words, i)
-
-                if not citation:
-                    # Neither a full nor short form citation
-                    continue
-
             citation.guess_edition()
             citation.guess_court()
 
@@ -93,7 +82,7 @@ def get_citations(
         # opinion document. So we record this marker in order to keep
         # an accurate list of the possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = NonopinionCitation(match_token=citation_token)
+            citation = NonopinionCitation(match_token=token)
 
         # CASE 5: The token is not a citation.
         else:
@@ -119,7 +108,7 @@ def get_citations(
 def extract_full_citation(
     words: Tokens,
     reporter_index: int,
-) -> Optional[FullCitation]:
+) -> FullCitation:
     """Given a list of words and the index of a federal reporter, look before
     and after for volume and page. If found, construct and return a
     FullCitation object.
@@ -131,54 +120,25 @@ def extract_full_citation(
     ex. T.C. Memo. 2019-13
     """
     # Get reporter
-    reporter = cast(ReporterToken, words[reporter_index])
-
-    # Variables to extract
-    volume: Union[int, str, None]
-    page: Union[int, str, None]
-
-    # Handle tax citations
-    is_tax_citation = is_neutral_tc_reporter(reporter)
-    if is_tax_citation:
-        volume, page = words[reporter_index + 1].replace("–", "-").split("-")
-
-    # Handle "normal" citations, e.g., XX F.2d YY
-    else:
-        # Don't check if we are at the beginning of a string
-        if reporter_index == 0:
-            return None
-        volume = strip_punct(str(words[reporter_index - 1]))
-        page = strip_punct(str(words[reporter_index + 1]))
-
-    # Get volume
-    if volume.isdigit():
-        volume = int(volume)
-    else:
-        # No volume, therefore not a valid citation
-        return None
-
-    # Get page
-    page = parse_page(page)
-    if not page:
-        return None
+    cite_token = cast(CitationToken, words[reporter_index])
 
     # Return FullCitation
     return FullCitation(
-        str(reporter),
-        page,
-        volume,
-        reporter_found=str(reporter),
+        cite_token.reporter,
+        cite_token.page,
+        cite_token.volume,
+        reporter_found=cite_token.reporter,
         reporter_index=reporter_index,
-        all_editions=reporter.all_editions,
-        exact_editions=reporter.exact_editions,
-        variation_editions=reporter.variation_editions,
+        all_editions=cite_token.exact_editions + cite_token.variation_editions,
+        exact_editions=cite_token.exact_editions,
+        variation_editions=cite_token.variation_editions,
     )
 
 
 def extract_shortform_citation(
     words: Tokens,
     reporter_index: int,
-) -> Optional[ShortformCitation]:
+) -> ShortformCitation:
     """Given a list of words and the index of a federal reporter, look before
     and after to see if this is a short form citation. If found, construct
     and return a ShortformCitation object.
@@ -186,54 +146,28 @@ def extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     """
-    # Don't check if we are at the beginning of a string
-    if reporter_index <= 2:
-        return None
-
     # Variables to extact
-    volume: Union[int, str, None]
-    page: Union[int, str, None]
     antecedent_guess: str
 
-    # Get volume
-    volume = strip_punct(str(words[reporter_index - 1]))
-    if volume.isdigit():
-        volume = int(volume)
-    else:
-        # No volume, therefore not a valid citation
-        return None
-
-    # Get page
-    try:
-        page = parse_page(str(words[reporter_index + 2]))
-        if not page:
-            # There might be a comma in the way, so try one more index
-            page = parse_page(str(words[reporter_index + 3]))
-            if not page:
-                # No page, therefore not a valid citation
-                return None
-    except IndexError:
-        return None
-
     # Get antecedent
-    antecedent_guess = str(words[reporter_index - 2])
+    antecedent_guess = str(words[reporter_index - 1])
     if antecedent_guess == ",":
-        antecedent_guess = str(words[reporter_index - 3]) + ","
+        antecedent_guess = str(words[reporter_index - 2]) + ","
 
     # Get reporter
-    reporter = cast(ReporterToken, words[reporter_index])
+    cite_token = cast(CitationToken, words[reporter_index])
 
     # Return ShortformCitation
     return ShortformCitation(
-        str(reporter),
-        page,
-        volume,
+        cite_token.reporter,
+        cite_token.page,
+        cite_token.volume,
         antecedent_guess,
-        reporter_found=str(reporter),
+        reporter_found=cite_token.reporter,
         reporter_index=reporter_index,
-        all_editions=reporter.all_editions,
-        exact_editions=reporter.exact_editions,
-        variation_editions=reporter.variation_editions,
+        all_editions=cite_token.exact_editions + cite_token.variation_editions,
+        exact_editions=cite_token.exact_editions,
+        variation_editions=cite_token.variation_editions,
     )
 
 
@@ -266,7 +200,7 @@ def extract_supra_citation(
     # Get antecedent
     antecedent_guess = str(words[supra_index - 1])
     if antecedent_guess.isdigit():
-        volume = int(antecedent_guess)
+        volume = antecedent_guess
         antecedent_guess = str(words[supra_index - 2])
     elif antecedent_guess == ",":
         antecedent_guess = str(words[supra_index - 2]) + ","
@@ -287,9 +221,18 @@ def extract_id_citation(
     has_page = False
 
     # List of literals that could come after an id token
-    id_reference_token_literals = set(
-        ["at", "p.", "p", "pp.", "p", "@", "pg", "pg.", "¶", "¶¶"]
-    )
+    id_reference_token_literals = {
+        "at",
+        "p.",
+        "p",
+        "pp.",
+        "p",
+        "@",
+        "pg",
+        "pg.",
+        "¶",
+        "¶¶",
+    }
 
     # Helper function to see whether a token qualifies as a page candidate
     def is_page_candidate(token):

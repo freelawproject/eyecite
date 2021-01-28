@@ -60,7 +60,7 @@ python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
 
 [[package]]
 name = "courts-db"
-version = "0.9.7"
+version = "0.9.11"
 description = "Database of Courts"
 category = "main"
 optional = false
@@ -84,6 +84,14 @@ pycodestyle = ">=2.6.0a1,<2.7.0"
 pyflakes = ">=2.2.0,<2.3.0"
 
 [[package]]
+name = "hyperscan"
+version = "0.2.0"
+description = "Python bindings for Hyperscan."
+category = "dev"
+optional = false
+python-versions = ">=3.6.1,<4.0"
+
+[[package]]
 name = "importlib-metadata"
 version = "3.4.0"
 description = "Read metadata from Python packages"
@@ -97,7 +105,7 @@ zipp = ">=0.5"
 
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=8.2)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "packaging", "pep517", "pyfakefs", "flufl.flake8", "pytest-black (>=0.3.7)", "pytest-mypy", "importlib-resources (>=1.3)"]
+testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "pytest-enabler", "packaging", "pep517", "pyfakefs", "flufl.flake8", "pytest-black (>=0.3.7)", "pytest-mypy", "importlib-resources (>=1.3)"]
 
 [[package]]
 name = "isort"
@@ -195,6 +203,14 @@ description = "Utility library for gitignore style pattern matching of file path
 category = "dev"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*, !=3.4.*"
+
+[[package]]
+name = "pyahocorasick"
+version = "1.4.1"
+description = "pyahocorasick is a fast and memory efficient library for exact or approximate multi-pattern string search.  With the ahocorasick.Automaton class, you can find multiple key strings occurrences at once in some input text.  You can use it as a plain dict-like Trie or convert a Trie to an automaton for efficient Aho-Corasick search.  Implemented in C and tested on Python 2.7 and 3.4+.  Works on Linux, Mac and Windows. BSD-3-clause license."
+category = "main"
+optional = false
+python-versions = "*"
 
 [[package]]
 name = "pycodestyle"
@@ -306,15 +322,14 @@ category = "dev"
 optional = false
 python-versions = ">=3.6"
 
-
 [package.extras]
 docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
-testing = ["pytest (>=3.5,<3.7.3 || >3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
+testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake8", "pytest-cov", "jaraco.test (>=3.2.0)", "jaraco.itertools", "func-timeout", "pytest-black (>=0.3.7)", "pytest-mypy"]
 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "12abe1efe4779c8bc91b315b1839f8f0dce97b30c4648a055dbfac638d8208d6"
+content-hash = "73dd613661ff7895f2af3189aea895625a3a55d5d0c7fb84e62d4238419887dd"
 
 [metadata.files]
 appdirs = [
@@ -337,12 +352,19 @@ colorama = [
     {file = "colorama-0.4.4.tar.gz", hash = "sha256:5941b2b48a20143d2267e95b1c2a7603ce057ee39fd88e7329b0c292aa16869b"},
 ]
 courts-db = [
-    {file = "courts-db-0.9.7.tar.gz", hash = "sha256:abe01ee93ce26c458a411521a888a3ad920b8ed1d4f8c2f6410d35935bc6f058"},
-    {file = "courts_db-0.9.7-py2.py3-none-any.whl", hash = "sha256:cdfc3dbcee0b83aa9aa03a2c969611a7ea89b9c8a3dc7530be252c2538ef76e0"},
+    {file = "courts-db-0.9.11.tar.gz", hash = "sha256:5c1b626893d644052c2307904f5b73f274932a5f101dd637a7a6d883d25d6aac"},
+    {file = "courts_db-0.9.11-py2.py3-none-any.whl", hash = "sha256:b3ebfcae196dd332e725fa7ec7ba80dabd8e555968abae56cc874b9198674ee2"},
 ]
 flake8 = [
     {file = "flake8-3.8.4-py2.py3-none-any.whl", hash = "sha256:749dbbd6bfd0cf1318af27bf97a14e28e5ff548ef8e5b1566ccfb25a11e7c839"},
     {file = "flake8-3.8.4.tar.gz", hash = "sha256:aadae8761ec651813c24be05c6f7b4680857ef6afaae4651a4eccaef97ce6c3b"},
+]
+hyperscan = [
+    {file = "hyperscan-0.2.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:47ef10b4297f9976d257b7f260ae4ae8834e87e1abb7f46cf0707ba496fb6e49"},
+    {file = "hyperscan-0.2.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:78e97de71896b9fda4368c185e6609e53bb240c85302909ac46e738f14621f40"},
+    {file = "hyperscan-0.2.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:794eecc13fa9bcf061004340582aab342471fb22b710f92020e3ea508776ff53"},
+    {file = "hyperscan-0.2.0-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:fd0d0fe64484443b9e5ee1e8b156a30f2ba91494b1343fae5c943130ff847607"},
+    {file = "hyperscan-0.2.0.tar.gz", hash = "sha256:10cb8939d7db85d522ed319031ff5ab86fd0133126b986290f01aa83dbfb9ff7"},
 ]
 importlib-metadata = [
     {file = "importlib_metadata-3.4.0-py3-none-any.whl", hash = "sha256:ace61d5fc652dc280e7b6b4ff732a9c2d40db2c0f92bc6cb74e07b73d53a1771"},
@@ -480,6 +502,9 @@ mypy-extensions = [
 pathspec = [
     {file = "pathspec-0.8.1-py2.py3-none-any.whl", hash = "sha256:aa0cb481c4041bf52ffa7b0d8fa6cd3e88a2ca4879c533c9153882ee2556790d"},
     {file = "pathspec-0.8.1.tar.gz", hash = "sha256:86379d6b86d75816baba717e64b1a3a3469deb93bb76d613c9ce79edc5cb68fd"},
+]
+pyahocorasick = [
+    {file = "pyahocorasick-1.4.1.tar.gz", hash = "sha256:fe076da3b0b20dbb619b0fb6478af8766b06679c0e359a2bfb189d3f07ddeecf"},
 ]
 pycodestyle = [
     {file = "pycodestyle-2.6.0-py2.py3-none-any.whl", hash = "sha256:2295e7b2f6b5bd100585ebcb1f616591b652db8a741695b3d8f5d28bdc934367"},

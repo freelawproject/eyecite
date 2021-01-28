@@ -8,24 +8,14 @@ from eyecite.models import (
     FullCitation,
     NonopinionCitation,
     ShortformCitation,
-)
-from eyecite.reporter_tokenizer import (
-    ReporterToken,
     StopWordToken,
     TokenOrStr,
     Tokens,
 )
-from eyecite.utils import is_roman, strip_punct
+from eyecite.utils import PAGE_NUMBER_REGEX, strip_punct
 
 FORWARD_SEEK = 20
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
-
-
-def is_neutral_tc_reporter(token: ReporterToken) -> bool:
-    """Test whether the reporter is a neutral Tax Court reporter.
-
-    These take the format of T.C. Memo YEAR-SERIAL"""
-    return any(e.reporter.is_neutral_tc_reporter for e in token.all_editions)
 
 
 def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
@@ -90,16 +80,11 @@ def add_post_citation(citation: Citation, words: Tokens) -> None:
     # either the end of the words list or to FORWARD_SEEK tokens from where you
     # started.
     fwd_sk = citation.reporter_index + FORWARD_SEEK
-    for start in range(citation.reporter_index + 2, min(fwd_sk, len(words))):
+    for start in range(citation.reporter_index + 1, min(fwd_sk, len(words))):
         if words[start].startswith("("):
             # Get the year by looking for a token that ends in a paren.
             for end in range(start, start + FORWARD_SEEK):
-                try:
-                    has_ending_paren = words[end].find(")") > -1
-                except IndexError:
-                    # Happens with words like "(1982"
-                    break
-                if has_ending_paren:
+                if ")" in words[end]:
                     # Sometimes the paren gets split from the preceding content
                     if words[end].startswith(")"):
                         citation.year = get_year(words[end - 1])
@@ -111,7 +96,7 @@ def add_post_citation(citation: Citation, words: Tokens) -> None:
                     )
                     break
 
-            if start > citation.reporter_index + 2:
+            if start > citation.reporter_index + 1:
                 # Then there's content between page and (), starting with a
                 # comma, which we skip
                 citation.extra = " ".join(
@@ -121,19 +106,19 @@ def add_post_citation(citation: Citation, words: Tokens) -> None:
 
 
 def add_defendant(citation: Citation, words: Tokens) -> None:
-    """Scan backwards from 2 tokens before reporter until you find v., in re,
+    """Scan backwards from reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
     start_index = None
     back_seek = citation.reporter_index - BACKWARD_SEEK
-    for index in range(citation.reporter_index - 1, max(back_seek, 0), -1):
+    for index in range(citation.reporter_index - 1, max(back_seek, -1), -1):
         word = words[index]
         if word == ",":
             # Skip it
             continue
-        if type(word) is StopWordToken:
-            if word == "v.":
+        if isinstance(word, StopWordToken):
+            if word.stop_word == "v":
                 citation.plaintiff = str(words[index - 1])
             start_index = index + 1
             break
@@ -142,7 +127,7 @@ def add_defendant(citation: Citation, words: Tokens) -> None:
             break
     if start_index:
         citation.defendant = " ".join(
-            str(w) for w in words[start_index : citation.reporter_index - 1]
+            str(w) for w in words[start_index : citation.reporter_index]
         )
 
 
@@ -161,13 +146,7 @@ def parse_page(page: Union[str, int]) -> Optional[str]:
     # 3) A special Connecticut or Illinois number. E.g., "13301-M"
     # 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
     # 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
-    match = (
-        re.match(r"\d{1,6}-\d{1,6}", page)  # Simple page range
-        or is_roman(page)  # Roman numeral
-        or re.match(r"\d{1,6}[-]?[a-zA-Z]{1,6}", page)  # CT/IL page
-        or re.match(r"\d{1,6}", page)  # Weird suffix
-        or re.match(r"[*\u00b6\ ]*[0-9:\-]+", page)  # ¶, star, colon
-    )
+    match = re.match(PAGE_NUMBER_REGEX, page)
     if match:
         return str(match.group(0))
     return None

@@ -1,38 +1,33 @@
 import re
+from collections import UserString
+from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Optional
+from typing import Callable, ClassVar, Dict, List, Optional, Sequence, Union
 
 
+@dataclass
 class Reporter:
     """Class for top-level reporters in reporters_db, like "S.W." """
 
-    def __init__(self, short_name: str, name: str, cite_type: str):
-        self.short_name = short_name
-        self.name = name
-        self.cite_type = cite_type
+    short_name: str
+    name: str
+    cite_type: str
+
+    def __post_init__(self):
         self.is_scotus = (
             self.cite_type == "federal" and "supreme" in self.name.lower()
         ) or "scotus" in self.cite_type.lower()
-        self.is_neutral_tc_reporter = re.match(
-            r"T\. ?C\. (Summary|Memo)", short_name
-        )
 
 
+@dataclass
 class Edition:
     """Class for individual editions in reporters_db,
     like "S.W." and "S.W.2d"."""
 
-    def __init__(
-        self,
-        reporter: Reporter,
-        short_name: str,
-        start: Optional[datetime],
-        end: Optional[datetime],
-    ):
-        self.reporter = reporter
-        self.short_name = short_name
-        self.start = start
-        self.end = end
+    reporter: Reporter
+    short_name: str
+    start: Optional[datetime]
+    end: Optional[datetime]
 
     def includes_year(
         self,
@@ -115,7 +110,7 @@ class Citation:
         pass
 
     def base_citation(self):
-        return "%d %s %s" % (self.volume, self.reporter, self.page)
+        return "%s %s %s" % (self.volume, self.reporter, self.page)
 
     def __repr__(self):
         print_string = self.base_citation()
@@ -249,17 +244,17 @@ class SupraCitation(Citation):
 
     def as_regex(self):
         if self.volume:
-            s = r"%s(\s+)%d(\s+)supra" % (
+            regex = r"%s(\s+)%d(\s+)supra" % (
                 re.escape(self.antecedent_guess),
                 self.volume,
             )
         else:
-            s = r"%s(\s+)supra" % re.escape(self.antecedent_guess)
+            regex = r"%s(\s+)supra" % re.escape(self.antecedent_guess)
 
         if self.page:
-            s += r",(\s+)at(\s+)%s" % re.escape(self.page)
+            regex += r",(\s+)at(\s+)%s" % re.escape(self.page)
 
-        return s + r"(\s?)"
+        return regex + r"(\s?)"
 
 
 class IdCitation(Citation):
@@ -338,3 +333,135 @@ class NonopinionCitation:
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+
+@dataclass
+class Token(UserString):
+    """Base class for special tokens. For performance, this isn't used
+    for generic words."""
+
+    data: str
+
+    @classmethod
+    def from_match(cls, m, extra):
+        """Return a token object based on a regular expression match.
+        This gets called by TokenExtractor. By default, just use the
+        entire matched string."""
+        return cls(m[0])
+
+
+# For performance, lists of tokens can include either Token subclasses
+# or bare strings (the typical case of words that aren't
+# related to citations)
+TokenOrStr = Union[Token, str]
+Tokens = Sequence[TokenOrStr]
+
+
+@dataclass
+class CitationToken(Token):
+    """ String matching a citation regex. """
+
+    volume: str
+    reporter: str
+    page: str
+    exact_editions: List[Edition]
+    variation_editions: List[Edition]
+    short: bool = False
+
+    @classmethod
+    def from_match(cls, m, extra):
+        """Citation regex matches have volume, reporter, and page match groups
+        in their regular expressions, and "exact_editions" and
+        "variation_editions" in their extra config. Pass all of that through
+        to the constructor."""
+        return cls(
+            m[0],
+            **m.groupdict(),
+            **extra,
+        )
+
+
+@dataclass
+class SectionToken(Token):
+    """ Word containing a section symbol. """
+
+    pass
+
+
+@dataclass
+class SupraToken(Token):
+    """ Word matching "supra" with or without punctuation. """
+
+    @classmethod
+    def from_match(cls, m, extra):
+        """Only use the captured part of the match to omit whitespace."""
+        return cls(m[1])
+
+
+@dataclass
+class IdToken(Token):
+    """ Word matching "id" or "ibid". """
+
+    @classmethod
+    def from_match(cls, m, extra):
+        """Only use the captured part of the match to omit whitespace."""
+        return cls(m[1])
+
+
+@dataclass
+class StopWordToken(Token):
+    """ Word matching one of the STOP_TOKENS. """
+
+    stop_word: str
+    stop_tokens: ClassVar[List[str]] = [
+        "v",
+        "re",
+        "parte",
+        "denied",
+        "citing",
+        "aff'd",
+        "affirmed",
+        "remanded",
+        "see",
+        "granted",
+        "dismissed",
+    ]
+
+    @classmethod
+    def from_match(cls, m, extra):
+        """m[1] is the captured part of the match, including punctuation.
+        m[2] is just the underlying stopword like 'v', useful for comparison.
+        """
+        return cls(m[1], m[2].lower())
+
+
+@dataclass
+class TokenExtractor:
+    """Object to extract all matches from a given string for the given regex,
+    and then to return Token objects for all matches."""
+
+    regex: str
+    constructor: Callable
+    extra: Dict = field(default_factory=dict)
+    flags: int = 0
+    strings: List = field(default_factory=list)
+
+    def get_matches(self, text):
+        """Return match objects for all matches in text."""
+        return self.compiled_regex.finditer(text)
+
+    def get_token(self, m):
+        """For a given match object, return a Token."""
+        return self.constructor(m, self.extra)
+
+    def __hash__(self):
+        """This needs to be hashable so we can remove redundant
+        extractors returned by the pyahocorasick filter."""
+        return hash(repr(self))
+
+    @property
+    def compiled_regex(self):
+        """Cache compiled regex as a property."""
+        if not hasattr(self, "_compiled_regex"):
+            self._compiled_regex = re.compile(self.regex, flags=self.flags)
+        return self._compiled_regex

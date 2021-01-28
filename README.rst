@@ -64,6 +64,7 @@ Options
 2. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
 3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
 4. :code:`clean` ==> tuple; a tuple of cleaning steps to undertake before parsing; options include :code:`whitespace` (remove extraneous whitespace [default]), :code:`underscores` (remove extraneous underscores), and :code:`html` (remove non-visible HTML content)
+5. :code:`tokenizer` ==> Tokenizer; an instance of a Tokenizer object (see "Tokenizers" below)
 
 Some notes
 ----------
@@ -72,6 +73,64 @@ Some things to keep in mind are:
 1. This project depends on information made available in two other Free Law Project packages, `reporters-db <https://github.com/freelawproject/reporters-db>`_ and `courts-db <https://github.com/freelawproject/courts-db>`_.
 2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See `here <https://github.com/freelawproject/courtlistener/tree/master/cl/citations>`_ for an example of how Courtlistener implements this package and handles this problem.
 
+
+Tokenizers
+==========
+
+Internally, eyecite works by applying a list of regular expressions to the source text to convert it to a list
+of tokens:
+
+::
+
+    In [1]: from eyecite.tokenizers import default_tokenizer
+
+    In [2]: list(default_tokenizer.tokenize("Foo v. Bar, 123 U.S. 456 (2016). Id. at 457."))
+    Out[2]:
+    ['Foo',
+     StopWordToken(data='v.', stop_word='v'),
+     'Bar,',
+     CitationToken(data='123 U.S. 456', volume='123', reporter='U.S.', page='456' ...),
+     '(2016).',
+     IdToken(data='Id.'),
+     'at',
+     '457.']
+
+Tokens are then scanned to determine values like the citation year or case name for citation resolution.
+
+Alternate tokenizers can be substituted by providing a tokenizer instance to :code:`get_citations()`:
+
+::
+
+    from eyecite.tokenizers import HyperscanTokenizer
+    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
+    cites = get_citations(text, tokenizer=hyperscan_tokenizer)
+
+test_FindTest.py includes a simplified example of using a custom tokenizer that uses modified
+regular expressions to extract citations with OCR errors.
+
+eyecite ships with two tokenizers:
+
+AhocorasickTokenizer (default)
+------------------------------
+
+The default tokenizer uses the pyahocorasick library to filter down eyecite's list of
+extractor regexes. It then performs extraction using the builtin :code:`re` library.
+
+HyperscanTokenizer
+------------------
+
+The alternate HyperscanTokenizer compiles all extraction regexes into a hyperscan database
+so they can be extracted in a single pass. This is far faster than the default tokenizer
+(exactly how much faster depends on how many citation formats are included in the target text),
+but requires the optional :code:`hyperscan` dependency that is limited to the x86 platform.
+
+Compiling the hyperscan database takes several seconds, so short-running scripts may want to
+provide a cache directory where the database can be stored. The directory should be writeable
+only by the user:
+
+::
+
+    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
 
 Installation
 ============
