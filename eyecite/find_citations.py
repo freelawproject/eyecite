@@ -107,20 +107,11 @@ def get_citations(
 
 def extract_full_citation(
     words: Tokens,
-    reporter_index: int,
+    index: int,
 ) -> FullCitation:
-    """Given a list of words and the index of a federal reporter, look before
-    and after for volume and page. If found, construct and return a
-    FullCitation object.
-
-    Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
-
-    If we are given neutral, tax court opinions we treat them differently.
-    The formats often follow {REPORTER} {YEAR}-{ITERATIVE_NUMBER}
-    ex. T.C. Memo. 2019-13
-    """
-    # Get reporter
-    cite_token = cast(CitationToken, words[reporter_index])
+    """Given a list of words and the index of a citation, return
+    a FullCitation object."""
+    cite_token = cast(CitationToken, words[index])
 
     # Return FullCitation
     return FullCitation(
@@ -128,7 +119,7 @@ def extract_full_citation(
         cite_token.page,
         cite_token.volume,
         reporter_found=cite_token.reporter,
-        reporter_index=reporter_index,
+        reporter_index=index,
         all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
@@ -137,11 +128,10 @@ def extract_full_citation(
 
 def extract_shortform_citation(
     words: Tokens,
-    reporter_index: int,
+    index: int,
 ) -> ShortformCitation:
-    """Given a list of words and the index of a federal reporter, look before
-    and after to see if this is a short form citation. If found, construct
-    and return a ShortformCitation object.
+    """Given a list of words and the index of a citation, construct and return
+    a ShortformCitation object.
 
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
@@ -150,12 +140,12 @@ def extract_shortform_citation(
     antecedent_guess: str
 
     # Get antecedent
-    antecedent_guess = str(words[reporter_index - 1])
+    antecedent_guess = str(words[index - 1])
     if antecedent_guess == ",":
-        antecedent_guess = str(words[reporter_index - 2]) + ","
+        antecedent_guess = str(words[index - 2]) + ","
 
-    # Get reporter
-    cite_token = cast(CitationToken, words[reporter_index])
+    # Get citation
+    cite_token = cast(CitationToken, words[index])
 
     # Return ShortformCitation
     return ShortformCitation(
@@ -164,7 +154,7 @@ def extract_shortform_citation(
         cite_token.volume,
         antecedent_guess,
         reporter_found=cite_token.reporter,
-        reporter_index=reporter_index,
+        reporter_index=index,
         all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
@@ -173,7 +163,7 @@ def extract_shortform_citation(
 
 def extract_supra_citation(
     words: Tokens,
-    supra_index: int,
+    index: int,
 ) -> Optional[SupraCitation]:
     """Given a list of words and the index of a supra token, look before
     and after to see if this is a supra citation. If found, construct
@@ -185,7 +175,7 @@ def extract_supra_citation(
     Supra 4: Adrand, supra. somethingelse
     """
     # Don't check if we are at the beginning of a string
-    if supra_index <= 1:
+    if index <= 1:
         return None
 
     # Get volume
@@ -193,17 +183,17 @@ def extract_supra_citation(
 
     # Get page
     try:
-        page = parse_page(str(words[supra_index + 2]))
+        page = parse_page(str(words[index + 2]))
     except IndexError:
         page = None
 
     # Get antecedent
-    antecedent_guess = str(words[supra_index - 1])
+    antecedent_guess = str(words[index - 1])
     if antecedent_guess.isdigit():
         volume = antecedent_guess
-        antecedent_guess = str(words[supra_index - 2])
+        antecedent_guess = str(words[index - 2])
     elif antecedent_guess == ",":
-        antecedent_guess = str(words[supra_index - 2]) + ","
+        antecedent_guess = str(words[index - 2]) + ","
 
     # Return SupraCitation
     return SupraCitation(antecedent_guess, page=page, volume=volume)
@@ -211,7 +201,7 @@ def extract_supra_citation(
 
 def extract_id_citation(
     words: Tokens,
-    id_index: int,
+    index: int,
 ) -> Optional[IdCitation]:
     """Given a list of words and the index of an id token, gather the
     immediately succeeding tokens to construct and return an IdCitation
@@ -239,9 +229,9 @@ def extract_id_citation(
         return token in id_reference_token_literals or parse_page(token)
 
     # Check if the post-id token is indeed a page candidate
-    if is_page_candidate(words[id_index + 1]):
+    if is_page_candidate(words[index + 1]):
         # If it is, set the scan_index appropriately
-        scan_index = id_index + 2
+        scan_index = index + 2
         has_page = True
 
         # Also, keep trying to scan for more pages
@@ -251,11 +241,11 @@ def extract_id_citation(
     # If it is not, simply set a naive anchor for the end of the scan_index
     else:
         has_page = False
-        scan_index = id_index + 4
+        scan_index = index + 4
 
     # Only linkify the after tokens if a page is found
     return IdCitation(
-        id_token=words[id_index],
-        after_tokens=words[id_index + 1 : scan_index],
+        id_token=words[index],
+        after_tokens=words[index + 1 : scan_index],
         has_page=has_page,
     )
