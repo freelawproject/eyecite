@@ -1,21 +1,46 @@
 import re
-from typing import Callable, Iterable, Optional, Union
+from typing import Callable, Iterable, Union
 
 from eyecite.cleaners import cleaners_lookup
 
+# We need a regex that matches roman numerals but not the empty string,
+# without using lookahead assertions that aren't supported by hyperscan.
+# Since people don't always follow the correct format for these anyway,
+# we can use a simple regex that allows any order:
+ROMAN_NUMERAL_REGEX = r"[IVXLCDM]+\b"
+# Alternatively this regex claims to match roman numerals but not the empty
+# string without lookaheads:
+# https://stackoverflow.com/a/60469651/307769
+# roman_numeral_regex = "|".join(
+#     r"(I[VX]|VI{0,3}|I{1,3})"
+#     r"((X[LC]|LX{0,3}|X{1,3})(I[VX]|V?I{0,3}))"
+#     r"((C[DM]|DC{0,3}|C{1,3})(X[LC]|L?X{0,3})(I[VX]|V?I{0,3}))"
+#     r"(M+(C[DM]|D?C{0,3})(X[LC]|L?X{0,3})(I[VX]|V?I{0,3}))"
+# )
 
-def is_roman(token: str) -> Optional[re.Match]:
-    """Checks if a lowercase or uppercase string is a valid Roman numeral.
-    Based on: http://www.diveintopython.net/regular_expressions/n_m_syntax.html
 
-    :param token: A string
-    :return: Boolean
-    """
-    return re.match(
-        "^M{0,4}(CM|CD|D?C{0,3})(XC|XL|L?X{0,3})(IX|IV|V?I{0,3})$",
-        token,
-        re.IGNORECASE,
-    )
+# Page number regex to match one of the following:
+# (ordered in descending order of likelihood)
+# 1) A numerical page range. E.g., "123-124"
+# 2) A roman numeral. E.g., "250 Neb. xxiv (1996)"
+# 3) A special Connecticut or Illinois number. E.g., "13301-M"
+# 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
+# 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
+PAGE_NUMBER_REGEX = r"(?:%s)" % "|".join(
+    [
+        r"\d{1,6}[-]?[a-zA-Z]{1,6}",  # CT/IL page
+        r"\d{1,6}-\d{1,6}",  # page range
+        r"\d+",  # simple digit
+        ROMAN_NUMERAL_REGEX,
+        ROMAN_NUMERAL_REGEX.lower(),
+        r"[*¶]*[\d:\-]+",  # ¶, star, colon
+    ]
+)
+
+
+# Regex to match punctuation around volume numbers and stopwords.
+# This could potentially be more precise.
+PUNCTUATION_REGEX = r"[^\sa-zA-Z0-9]*"
 
 
 def strip_punct(text: str) -> str:
@@ -66,3 +91,13 @@ def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
         text = step_func(text)
 
     return text  # type: ignore
+
+
+def space_boundaries_re(regex):
+    """Wrap regex with space or end of string."""
+    return rf"(?:^|\s)({regex})(?:\s|$)"
+
+
+def strip_punctuation_re(regex):
+    """Wrap regex with punctuation pattern."""
+    return rf"{PUNCTUATION_REGEX}{regex}{PUNCTUATION_REGEX}"

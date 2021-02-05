@@ -31,6 +31,7 @@ python = "^3.7"
 reporters-db = "^2.0.5"
 courts-db = "^0.9.7"
 lxml = "^4.6.2"
+pyahocorasick = ">= 1.2"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
@@ -40,6 +41,7 @@ mypy = "^0.790"
 pylint = "^2.6.0"
 wheel = "^0.35.1"
 pylint-json2html = "^0.2.0"
+hyperscan = ">= 0.1.5"
 
 [tool.black]
 include = '''.*\.pyi?$'''
@@ -49,11 +51,19 @@ line-length = 79
 profile = "black"
 line_length = 79
 
+[tool.pylint.master]
+# C extensions pylint is allowed to inspect
+extension-pkg-whitelist = ["ahocorasick", "hyperscan"]
+
 [tool.pylint.messages_control]
-disable = "C0330, C0326, C0114"
+# R0901: too-many-ancestors
+# W0613: unused-argument
+disable = "C0330, C0326, C0114, R0901, W0613"
 
 [tool.pylint.format]
 max-line-length = "79"
+# allow "m" as a standard variable name for re Match objects
+good-names = "i,j,k,ex,Run,_,m"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
