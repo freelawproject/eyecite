@@ -21,7 +21,7 @@ from eyecite.models import (
     SupraToken,
     Tokens,
 )
-from eyecite.tokenizers import BaseTokenizer, default_tokenizer
+from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import clean_text
 
 
@@ -31,7 +31,7 @@ def get_citations(
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
-    tokenizer: BaseTokenizer = default_tokenizer,
+    tokenizer: Tokenizer = default_tokenizer,
 ) -> Iterable[Union[NonopinionCitation, Citation]]:
     """Main function"""
     if text == "this":

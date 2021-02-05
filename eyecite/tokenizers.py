@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import (
     Any,
+    AnyStr,
     Dict,
     Generator,
     Iterable,
@@ -20,6 +21,7 @@ from reporters_db import REPORTERS
 from eyecite.models import (
     CitationToken,
     Edition,
+    ExtractorMatch,
     IdToken,
     Reporter,
     SectionToken,
@@ -208,57 +210,71 @@ _populate_reporter_extractors()
 
 
 @dataclass
-class BaseTokenizer:
+class Tokenizer:
     """A tokenizer takes a list of extractors, and provides a tokenize()
-    method to tokenize text using those extractors."""
+    method to tokenize text using those extractors.
+    This base class should be overridden by tokenizers that use a
+    more efficient strategy for running all the extractors."""
 
     extractors: List[TokenExtractor] = field(
         default_factory=lambda: list(EXTRACTORS)
     )
 
     def tokenize(self, text: str) -> Generator[Tokens, None, None]:
-        """Main interface for callers."""
-        raise NotImplementedError
+        """Tokenize text and yield tokens."""
+        # Get all matches
+        extractors = self.get_extractors(text)
+        matches: List[ExtractorMatch] = [
+            ExtractorMatch(e, m, *m.span())
+            for e in extractors
+            for m in e.get_matches(text)
+        ]
+
+        # Yield tokens
+        for text_slice, match in self.non_overlapping_matches(matches, text):
+            if match:
+                yield match.extractor.get_token(match.m)
+            else:
+                yield from text_slice.strip().split()
 
     def get_extractors(self, text: str):
         """Subclasses can override this to filter extractors based on text."""
         return self.extractors
 
+    @staticmethod
+    def non_overlapping_matches(matches: List[ExtractorMatch], text: AnyStr):
+        """Sort all matches by start offset ascending, then end offset
+        descending. Remove overlaps by returning only matches
+        where the current start offset is greater than the previously
+        returned end offset. Also return text between matches.
 
-@dataclass
-class Tokenizer(BaseTokenizer):
-    """The simplest working tokenizer: find all matches for all
-    extractors and return all non-overlapping tokens."""
+        For example, suppose we have two candidate matches for the input string
+        "foo 123 F. 2d. 456 bar" -- "123 F. 2d. 456" or "123 F. 2d". Then:
 
-    def tokenize(self, text: str) -> Generator[Tokens, None, None]:
-        """Tokenize text and yield tokens."""
-        # Get all matches. This may include overlaps.
-        # Entries in matches are
-        # ((start_offset, end_offset), Match, TokenExtractor)
-        extractors = self.get_extractors(text)
-        matches = [
-            (m.span(), m, e) for e in extractors for m in e.get_matches(text)
-        ]
-
-        # Sort all matches by start offset ascending, then end offset
-        # descending. Remove overlaps by iteratively returning only matches
-        # where the current start offset is greater than the previously
-        # returned end offset:
-        matches.sort(key=lambda m: (m[0][0], -m[0][1]))
+        >>> list(self.non_overlapping_matches([
+        ...     ((4, 18), m1, TokenExtractor("F. 2d.")),
+        ...     ((4, 12), m2, TokenExtractor("F.")),
+        ... ], "foo 123 F. 2d. 456 bar")) == [
+        ...     ("foo ", None, None),
+        ...     ("123 F. 2d. 456", TokenExtractor("F. 2d."), m1),
+        ...     (" bar", None, None),
+        ... ]
+        """
+        matches.sort(key=lambda m: (m.start, -m.end))
         offset = 0
-        for (start, end), m, extractor in matches:
-            # skip overlaps
-            if offset > start:
+        for match in matches:
+            if offset > match.start:
+                # skip overlaps
                 continue
-            # yield plain text tokens before current token
-            if offset < start:
-                yield from text[offset:start].strip().split()
-            # yield current token
-            yield extractor.get_token(m)
-            offset = end
-        # yield plain text tokens after final token
+            if offset < match.start:
+                # yield plain text before each match
+                yield text[offset : match.start], None
+            # yield match
+            yield text[match.start : match.end], match
+            offset = match.end
+        # yield plain text after final match
         if offset < len(text):
-            yield from text[offset:].strip().split()
+            yield text[offset:], None
 
 
 @dataclass
@@ -328,7 +344,7 @@ class AhocorasickTokenizer(Tokenizer):
 
 
 @dataclass
-class HyperscanTokenizer(BaseTokenizer):
+class HyperscanTokenizer(Tokenizer):
     """A performance-optimized Tokenizer using the
     hyperscan library. Precompiles a database of all
     extractors and runs them in a single pass through
@@ -346,37 +362,29 @@ class HyperscanTokenizer(BaseTokenizer):
         # helper to convert back from a given range.
         text_bytes = text.encode("utf8")
 
-        def get_text(start, end):
-            return text_bytes[start:end].decode("utf8")
-
-        # Get all matches. This may include overlaps.
-        # Entries in matches are
-        # ((start_offset, end_offset), Match, TokenExtractor)
-        matches = []
+        # Get all matches
+        matches: List[ExtractorMatch] = []
 
         def on_match(index, start, end, flags, context):
-            matches.append(((start, end), None, self.extractors[index]))
+            matches.append(
+                ExtractorMatch(self.extractors[index], None, start, end)
+            )
 
         self.hyperscan_db.scan(text_bytes, match_event_handler=on_match)
 
-        # Sort all matches by start offset ascending, then end offset
-        # descending. Remove overlaps by iteratively returning only matches
-        # where the current start offset is greater than the previously
-        # returned end offset:
-        matches.sort(key=lambda m: (m[0][0], -m[0][1]))
-        offset = 0
-        for (start, end), m, extractor in matches:
-            if offset > start:
-                continue
-            if offset < start:
-                yield from get_text(offset, start).strip().split()
-            # To get match groups, re-run the regex using the
-            # builtin regex library.
-            m = extractor.compiled_regex.match(get_text(start, end))
-            yield extractor.get_token(m)
-            offset = end
-        if offset < len(text_bytes):
-            yield from get_text(offset, None).strip().split()
+        # Yield tokens
+        for text_slice, match in self.non_overlapping_matches(
+            matches, text_bytes
+        ):
+            if match:
+                # To get match groups, re-run the regex using the
+                # builtin regex library.
+                m = match.extractor.compiled_regex.match(
+                    text_slice.decode("utf8")
+                )
+                yield match.extractor.get_token(m)
+            else:
+                yield from text_slice.decode("utf8").strip().split()
 
     @property
     def hyperscan_db(self):

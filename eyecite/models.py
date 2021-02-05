@@ -465,3 +465,13 @@ class TokenExtractor:
         if not hasattr(self, "_compiled_regex"):
             self._compiled_regex = re.compile(self.regex, flags=self.flags)
         return self._compiled_regex
+
+
+@dataclass
+class ExtractorMatch:
+    """Data for a single match found by a TokenExtractor."""
+
+    extractor: TokenExtractor
+    m: Optional[re.Match]
+    start: int
+    end: int
