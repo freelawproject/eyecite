@@ -5,21 +5,24 @@ from datetime import datetime
 from typing import Callable, ClassVar, Dict, List, Optional, Sequence, Union
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Reporter:
     """Class for top-level reporters in reporters_db, like "S.W." """
 
     short_name: str
     name: str
     cite_type: str
+    is_scotus: bool = False
 
     def __post_init__(self):
-        self.is_scotus = (
+        if (
             self.cite_type == "federal" and "supreme" in self.name.lower()
-        ) or "scotus" in self.cite_type.lower()
+        ) or "scotus" in self.cite_type.lower():
+            # use setattr because this class is frozen
+            object.__setattr__(self, "is_scotus", True)
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Edition:
     """Class for individual editions in reporters_db,
     like "S.W." and "S.W.2d"."""
@@ -41,70 +44,58 @@ class Edition:
         )
 
 
-class Citation:
+@dataclass(eq=True, unsafe_hash=True)
+class CitationBase:
+    """Base class for objects returned by get_citations()."""
+
+    token: "Token"  # token this citation came from
+    index: int  # index of _token in the token list
+
+    def matched_text(self):
+        """Text that identified this citation, such as '1 U.S. 1' or 'Id.'"""
+        return str(self.token)
+
+
+@dataclass(eq=True, unsafe_hash=True)
+class CaseCitation(CitationBase):
     """Convenience class which represents a single citation found in a
     document.
     """
 
-    def __init__(
-        self,
-        reporter,
-        page,
-        volume,
-        canonical_reporter=None,
-        extra=None,
-        defendant=None,
-        plaintiff=None,
-        court=None,
-        year=None,
-        match_url=None,
-        match_id=None,
-        reporter_found=None,
-        reporter_index=None,
-        all_editions=None,
-        exact_editions=None,
-        variation_editions=None,
-    ):
+    # Core data.
+    reporter: str
+    page: Optional[str] = None
+    volume: Optional[str] = None
 
-        # Core data.
-        self.reporter = reporter
-        self.volume = volume
-        self.page = page
+    # Set during disambiguation.
+    # For a citation to F.2d, the canonical reporter is F.
+    canonical_reporter: Optional[str] = None
 
-        # These values are set during disambiguation.
-        # For a citation to F.2d, the canonical reporter is F.
-        self.canonical_reporter = canonical_reporter
+    # Supplementary data, if possible.
+    extra: Optional[str] = None
+    defendant: Optional[str] = None
+    plaintiff: Optional[str] = None
+    court: Optional[str] = None
+    year: Optional[int] = None
 
-        # Supplementary data, if possible.
-        self.extra = extra
-        self.defendant = defendant
-        self.plaintiff = plaintiff
-        self.court = court
-        self.year = year
+    # The reporter found in the text is often different from the reporter
+    # once it's normalized. We need to keep the original value so we can
+    # linkify it with a regex.
+    reporter_found: Optional[str] = None
 
-        # The reporter found in the text is often different from the reporter
-        # once it's normalized. We need to keep the original value so we can
-        # linkify it with a regex.
-        self.reporter_found = reporter_found
+    # Editions that might match this reporter string
+    exact_editions: Sequence[Edition] = field(default_factory=tuple)
+    variation_editions: Sequence[Edition] = field(default_factory=tuple)
+    all_editions: Sequence[Edition] = field(default_factory=tuple)
+    edition_guess: Optional[Edition] = None
 
-        # The location of the reporter is useful for tasks like finding
-        # parallel citations, and finding supplementary info like defendants
-        # and years.
-        self.reporter_index = reporter_index
-
-        # Attributes of the matching item, for URL generation.
-        self.match_url = match_url
-        self.match_id = match_id
-
-        # List of reporter models that may match this reporter string
-        self.all_editions = tuple(all_editions) if all_editions else tuple()
-        self.exact_editions = (
-            tuple(exact_editions) if all_editions else tuple()
+    def __post_init__(self):
+        """Make iterables into tuples to make sure we're hashable."""
+        self.exact_editions = tuple(self.exact_editions)
+        self.variation_editions = tuple(self.variation_editions)
+        self.all_editions = tuple(self.exact_editions) + tuple(
+            self.variation_editions
         )
-        self.variation_editions = (
-            tuple(variation_editions) if all_editions else tuple()
-        )
-        self.edition_guess: Optional[Edition] = None
 
     def as_regex(self):
         pass
@@ -131,15 +122,6 @@ class Citation:
         print_string = " ".join([print_string, paren])
         return print_string
 
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
-
-    def __hash__(self):
-        return hash(tuple(self.__dict__.values()))
-
     def guess_edition(self):
         """Set canonical_reporter, edition_guess, and reporter."""
         # Use exact matches if possible, otherwise try variations
@@ -164,26 +146,24 @@ class Citation:
             self.court = "scotus"
 
 
-class FullCitation(Citation):
+@dataclass(eq=True, unsafe_hash=True)
+class FullCaseCitation(CaseCitation):
     """Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
 
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
 
-    def __init__(self, *args, **kwargs):
-        # Fully implements the standard Citation object.
-        super().__init__(*args, **kwargs)
-
     def as_regex(self):
-        return r"%d(\s+)%s(\s+)%s(\s?)" % (
+        return r"%s(\s+)%s(\s+)%s(\s?)" % (
             self.volume,
             re.escape(self.reporter_found),
             re.escape(self.page),
         )
 
 
-class ShortformCitation(Citation):
+@dataclass(eq=True, unsafe_hash=True)
+class ShortCaseCitation(CaseCitation):
     """Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
     citation lacks a full case name and usually has a different page number
@@ -194,15 +174,12 @@ class ShortformCitation(Citation):
     Example 3: 515 U.S., at 241
     """
 
-    def __init__(self, reporter, page, volume, antecedent_guess, **kwargs):
-        # Like a Citation object, but we have to guess who the antecedent is
-        # and the page number is non-canonical
-        super().__init__(reporter, page, volume, **kwargs)
-
-        self.antecedent_guess = antecedent_guess
+    # Like a Citation object, but we have to guess who the antecedent is
+    # and the page number is non-canonical
+    antecedent_guess: Optional[str] = None
 
     def __repr__(self):
-        print_string = "%s, %d %s, at %s" % (
+        print_string = "%s, %s %s, at %s" % (
             self.antecedent_guess,
             self.volume,
             self.reporter,
@@ -211,7 +188,7 @@ class ShortformCitation(Citation):
         return print_string
 
     def as_regex(self):
-        return r"%s(\s+)%d(\s+)%s(,?)(\s+)at(\s+)%s(\s?)" % (
+        return r"%s(\s+)%s(\s+)%s(,?)(\s+)at(\s+)%s(\s?)" % (
             re.escape(self.antecedent_guess),
             self.volume,
             re.escape(self.reporter_found),
@@ -219,7 +196,8 @@ class ShortformCitation(Citation):
         )
 
 
-class SupraCitation(Citation):
+@dataclass(eq=True, unsafe_hash=True)
+class SupraCitation(CitationBase):
     """Convenience class which represents a 'supra' citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
     this kind of citation lacks a full case name and usually has a different
@@ -231,12 +209,11 @@ class SupraCitation(Citation):
     Example 4: Adarand, supra. somethingelse
     """
 
-    def __init__(self, antecedent_guess, page=None, volume=None, **kwargs):
-        # Like a Citation object, but without knowledge of the reporter or the
-        # volume. Only has a guess at what the antecedent is.
-        super().__init__(None, page, volume, **kwargs)
-
-        self.antecedent_guess = antecedent_guess
+    # Like a Citation object, but without knowledge of the reporter or the
+    # volume. Only has a guess at what the antecedent is.
+    antecedent_guess: Optional[str] = None
+    page: Optional[str] = None
+    volume: Optional[str] = None
 
     def __repr__(self):
         print_string = "%s supra, at %s" % (self.antecedent_guess, self.page)
@@ -244,7 +221,7 @@ class SupraCitation(Citation):
 
     def as_regex(self):
         if self.volume:
-            regex = r"%s(\s+)%d(\s+)supra" % (
+            regex = r"%s(\s+)%s(\s+)supra" % (
                 re.escape(self.antecedent_guess),
                 self.volume,
             )
@@ -257,7 +234,8 @@ class SupraCitation(Citation):
         return regex + r"(\s?)"
 
 
-class IdCitation(Citation):
+@dataclass(eq=True, unsafe_hash=True)
+class IdCitation(CitationBase):
     """Convenience class which represents an 'id' or 'ibid' citation, i.e., a
     citation to the document referenced immediately prior. An 'id' citation is
     unlike a regular citation object since it has no knowledge of its reporter,
@@ -268,17 +246,12 @@ class IdCitation(Citation):
     Example: "... foo bar," id., at 240
     """
 
-    def __init__(self, id_token=None, after_tokens=None, has_page=False):
-        super().__init__(None, None, None)
-
-        self.id_token = id_token
-        self.after_tokens = after_tokens
-
-        # Whether the "after tokens" comprise a page number
-        self.has_page = has_page
+    after_tokens: Optional["Tokens"] = None
+    # Whether the "after tokens" comprise a page number
+    has_page: bool = False
 
     def __repr__(self):
-        print_string = "%s %s" % (self.id_token, self.after_tokens)
+        print_string = "%s %s" % (self.token, self.after_tokens)
         return print_string
 
     def as_regex(self):
@@ -296,7 +269,7 @@ class IdCitation(Citation):
         template = whitespace_regex
 
         # Add the id_token
-        template += re.escape(self.id_token)
+        template += re.escape(str(self.token))
 
         # Add a matching group for any whitespace
         template += whitespace_regex
@@ -312,7 +285,8 @@ class IdCitation(Citation):
         return template
 
 
-class NonopinionCitation:
+@dataclass(eq=True, unsafe_hash=True)
+class NonopinionCitation(CitationBase):
     """Convenience class which represents a citation to something that we know
     is not an opinion. This could be a citation to a statute, to the U.S. code,
     the U.S. Constitution, etc.
@@ -321,21 +295,10 @@ class NonopinionCitation:
     Example 2: U. S. Const., Art. I, §8
     """
 
-    def __init__(self, match_token):
-        # TODO: Make this more versatile.
-        self.match_token = match_token
-
-    def __repr__(self):
-        return "NonopinionCitation"
-
-    def __eq__(self, other):
-        return self.__dict__ == other.__dict__
-
-    def __ne__(self, other):
-        return not self.__eq__(other)
+    pass
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class Token(UserString):
     """Base class for special tokens. For performance, this isn't used
     for generic words."""
@@ -357,16 +320,24 @@ TokenOrStr = Union[Token, str]
 Tokens = Sequence[TokenOrStr]
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class CitationToken(Token):
     """ String matching a citation regex. """
 
     volume: str
     reporter: str
     page: str
-    exact_editions: List[Edition]
-    variation_editions: List[Edition]
+    exact_editions: Sequence[Edition] = field(default_factory=tuple)
+    variation_editions: Sequence[Edition] = field(default_factory=tuple)
     short: bool = False
+
+    def __post_init__(self):
+        """Make iterables into tuples to make sure we're hashable."""
+        # use setattr because this class is frozen
+        object.__setattr__(self, "exact_editions", tuple(self.exact_editions))
+        object.__setattr__(
+            self, "variation_editions", tuple(self.variation_editions)
+        )
 
     @classmethod
     def from_match(cls, m, extra):
@@ -381,14 +352,14 @@ class CitationToken(Token):
         )
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class SectionToken(Token):
     """ Word containing a section symbol. """
 
     pass
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class SupraToken(Token):
     """ Word matching "supra" with or without punctuation. """
 
@@ -398,7 +369,7 @@ class SupraToken(Token):
         return cls(m[1])
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class IdToken(Token):
     """ Word matching "id" or "ibid". """
 
@@ -408,12 +379,12 @@ class IdToken(Token):
         return cls(m[1])
 
 
-@dataclass
+@dataclass(eq=True, frozen=True)
 class StopWordToken(Token):
     """ Word matching one of the STOP_TOKENS. """
 
     stop_word: str
-    stop_tokens: ClassVar[List[str]] = [
+    stop_tokens: ClassVar[Sequence[str]] = (
         "v",
         "re",
         "parte",
@@ -425,7 +396,7 @@ class StopWordToken(Token):
         "see",
         "granted",
         "dismissed",
-    ]
+    )
 
     @classmethod
     def from_match(cls, m, extra):

@@ -1,14 +1,14 @@
 import re
-from typing import List, Optional, Union, cast
+from typing import List, Optional, Union
 
 from courts_db import courts
 
 from eyecite.models import (
-    Citation,
-    FullCitation,
-    NonopinionCitation,
-    ShortformCitation,
+    CaseCitation,
+    CitationBase,
+    FullCaseCitation,
     StopWordToken,
+    Token,
     TokenOrStr,
     Tokens,
 )
@@ -18,7 +18,9 @@ FORWARD_SEEK = 20
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
 
-def get_court_by_paren(paren_string: str, citation: Citation) -> Optional[str]:
+def get_court_by_paren(
+    paren_string: str, citation: CaseCitation
+) -> Optional[str]:
     """Takes the citation string, usually something like "2d Cir", and maps
     that back to the court code.
 
@@ -64,7 +66,7 @@ def get_year(token: TokenOrStr) -> Optional[int]:
     return year
 
 
-def add_post_citation(citation: Citation, words: Tokens) -> None:
+def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     """Add to a citation object any additional information found after the base
     citation, including court, year, and possibly page range.
 
@@ -79,8 +81,8 @@ def add_post_citation(citation: Citation, words: Tokens) -> None:
     # Start looking 2 tokens after the reporter (1 after page), and go to
     # either the end of the words list or to FORWARD_SEEK tokens from where you
     # started.
-    fwd_sk = citation.reporter_index + FORWARD_SEEK
-    for start in range(citation.reporter_index + 1, min(fwd_sk, len(words))):
+    fwd_sk = citation.index + FORWARD_SEEK
+    for start in range(citation.index + 1, min(fwd_sk, len(words))):
         if words[start].startswith("("):
             # Get the year by looking for a token that ends in a paren.
             for end in range(start, start + FORWARD_SEEK):
@@ -96,23 +98,23 @@ def add_post_citation(citation: Citation, words: Tokens) -> None:
                     )
                     break
 
-            if start > citation.reporter_index + 1:
+            if start > citation.index + 1:
                 # Then there's content between page and (), starting with a
                 # comma, which we skip
                 citation.extra = " ".join(
-                    str(w) for w in words[citation.reporter_index + 2 : start]
+                    str(w) for w in words[citation.index + 2 : start]
                 )
             break
 
 
-def add_defendant(citation: Citation, words: Tokens) -> None:
+def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     """Scan backwards from reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
     start_index = None
-    back_seek = citation.reporter_index - BACKWARD_SEEK
-    for index in range(citation.reporter_index - 1, max(back_seek, -1), -1):
+    back_seek = citation.index - BACKWARD_SEEK
+    for index in range(citation.index - 1, max(back_seek, -1), -1):
         word = words[index]
         if word == ",":
             # Skip it
@@ -127,7 +129,7 @@ def add_defendant(citation: Citation, words: Tokens) -> None:
             break
     if start_index:
         citation.defendant = " ".join(
-            str(w) for w in words[start_index : citation.reporter_index]
+            str(w) for w in words[start_index : citation.index]
         )
 
 
@@ -153,20 +155,19 @@ def parse_page(page: Union[str, int]) -> Optional[str]:
 
 
 def disambiguate_reporters(
-    citations: List[Union[Citation, NonopinionCitation]]
-) -> List[Union[Citation, NonopinionCitation]]:
+    citations: List[CitationBase],
+) -> List[CitationBase]:
     """Filter out citations where there is more than one possible reporter."""
     return [
         c
         for c in citations
-        if not isinstance(c, (FullCitation, ShortformCitation))
-        or cast(Citation, c).edition_guess
+        if not isinstance(c, CaseCitation) or c.edition_guess
     ]
 
 
 def remove_address_citations(
-    citations: List[Union[Citation, NonopinionCitation]]
-) -> List[Union[Citation, NonopinionCitation]]:
+    citations: List[CitationBase],
+) -> List[CitationBase]:
     """Some addresses look like citations, but they're not. Remove them.
 
     An example might be 111 S.W. 23st St.
@@ -178,7 +179,7 @@ def remove_address_citations(
     coordinate_reporters = ("N.E.", "S.E.", "S.W.", "N.W.")
     good_citations = []
     for citation in citations:
-        if not isinstance(citation, FullCitation):
+        if not isinstance(citation, FullCaseCitation):
             good_citations.append(citation)
             continue
 
@@ -207,11 +208,13 @@ def remove_address_citations(
     return good_citations
 
 
-joke_cite: List[Citation] = [
-    Citation(
-        volume=1,
+joke_cite: List[CaseCitation] = [
+    CaseCitation(
+        Token("1 FLP 1", 0, 7),
+        0,
+        volume="1",
         reporter="FLP",
-        page=1,
+        page="1",
         year=2021,
         extra="Eyecite is a collaborative community effort.",
     )

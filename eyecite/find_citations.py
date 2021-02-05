@@ -9,14 +9,14 @@ from eyecite.helpers import (
     remove_address_citations,
 )
 from eyecite.models import (
-    Citation,
+    CitationBase,
     CitationToken,
-    FullCitation,
+    FullCaseCitation,
     IdCitation,
     IdToken,
     NonopinionCitation,
     SectionToken,
-    ShortformCitation,
+    ShortCaseCitation,
     SupraCitation,
     SupraToken,
     Tokens,
@@ -32,7 +32,7 @@ def get_citations(
     remove_ambiguous: bool = False,
     clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
     tokenizer: Tokenizer = default_tokenizer,
-) -> Iterable[Union[NonopinionCitation, Citation]]:
+) -> Iterable[CitationBase]:
     """Main function"""
     if text == "this":
         return joke_cite
@@ -41,10 +41,10 @@ def get_citations(
         text = clean_text(text, clean)
 
     words = cast(Tokens, list(tokenizer.tokenize(text)))
-    citations: List[Union[Citation, NonopinionCitation]] = []
+    citations: List[CitationBase] = []
 
     for i, token in enumerate(words):
-        citation: Union[Citation, NonopinionCitation, None]
+        citation: Optional[CitationBase]
         token_type = type(token)
 
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
@@ -75,14 +75,14 @@ def get_citations(
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
         elif token_type is SupraToken:
-            citation = extract_supra_citation(words, i)
+            citation = extract_supra_citation(cast(SupraToken, words), i)
 
         # CASE 4: Citation token is a section marker.
         # In this case, it's likely that this is a reference to a non-
         # opinion document. So we record this marker in order to keep
         # an accurate list of the possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = NonopinionCitation(match_token=token)
+            citation = NonopinionCitation(cast(SectionToken, token), i)
 
         # CASE 5: The token is not a citation.
         else:
@@ -100,7 +100,7 @@ def get_citations(
 
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
-    # the references of the ShortformCitation, SupraCitation, and
+    # the references of the ShortCaseCitation, SupraCitation, and
     # IdCitation objects.
     return citations
 
@@ -108,19 +108,19 @@ def get_citations(
 def extract_full_citation(
     words: Tokens,
     index: int,
-) -> FullCitation:
+) -> FullCaseCitation:
     """Given a list of words and the index of a citation, return
-    a FullCitation object."""
+    a FullCaseCitation object."""
     cite_token = cast(CitationToken, words[index])
 
-    # Return FullCitation
-    return FullCitation(
-        cite_token.reporter,
-        cite_token.page,
-        cite_token.volume,
+    # Return FullCaseCitation
+    return FullCaseCitation(
+        cite_token,
+        index,
+        reporter=cite_token.reporter,
+        page=cite_token.page,
+        volume=cite_token.volume,
         reporter_found=cite_token.reporter,
-        reporter_index=index,
-        all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
     )
@@ -129,9 +129,9 @@ def extract_full_citation(
 def extract_shortform_citation(
     words: Tokens,
     index: int,
-) -> ShortformCitation:
+) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
-    a ShortformCitation object.
+    a ShortCaseCitation object.
 
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
@@ -147,15 +147,15 @@ def extract_shortform_citation(
     # Get citation
     cite_token = cast(CitationToken, words[index])
 
-    # Return ShortformCitation
-    return ShortformCitation(
-        cite_token.reporter,
-        cite_token.page,
-        cite_token.volume,
-        antecedent_guess,
+    # Return ShortCaseCitation
+    return ShortCaseCitation(
+        cite_token,
+        index,
+        reporter=cite_token.reporter,
+        page=cite_token.page,
+        volume=cite_token.volume,
+        antecedent_guess=antecedent_guess,
         reporter_found=cite_token.reporter,
-        reporter_index=index,
-        all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
     )
@@ -196,7 +196,13 @@ def extract_supra_citation(
         antecedent_guess = str(words[index - 2]) + ","
 
     # Return SupraCitation
-    return SupraCitation(antecedent_guess, page=page, volume=volume)
+    return SupraCitation(
+        cast(SupraToken, words[index]),
+        index,
+        antecedent_guess,
+        page=page,
+        volume=volume,
+    )
 
 
 def extract_id_citation(
@@ -245,7 +251,8 @@ def extract_id_citation(
 
     # Only linkify the after tokens if a page is found
     return IdCitation(
-        id_token=words[index],
+        cast(IdToken, words[index]),
+        index,
         after_tokens=words[index + 1 : scan_index],
         has_page=has_page,
     )
