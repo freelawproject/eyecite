@@ -30,7 +30,7 @@ def get_citations(
     do_post_citation: bool = True,
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
-    clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
+    clean: Iterable[Union[str, Callable[[str], str]]] = tuple(),
     tokenizer: Tokenizer = default_tokenizer,
 ) -> Iterable[CitationBase]:
     """Main function"""
