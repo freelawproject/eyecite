@@ -101,9 +101,6 @@ class CaseCitation(CitationBase):
             self.variation_editions
         )
 
-    def as_regex(self):
-        pass
-
     def base_citation(self):
         return "%s %s %s" % (self.volume, self.reporter, self.page)
 
@@ -158,12 +155,7 @@ class FullCaseCitation(CaseCitation):
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
 
-    def as_regex(self):
-        return r"%s(\s+)%s(\s+)%s(\s?)" % (
-            self.volume,
-            re.escape(self.reporter_found),
-            re.escape(self.page),
-        )
+    pass
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -191,14 +183,6 @@ class ShortCaseCitation(CaseCitation):
         )
         return print_string
 
-    def as_regex(self):
-        return r"%s(\s+)%s(\s+)%s(,?)(\s+)at(\s+)%s(\s?)" % (
-            re.escape(self.antecedent_guess),
-            self.volume,
-            re.escape(self.reporter_found),
-            re.escape(self.page),
-        )
-
 
 @dataclass(eq=True, unsafe_hash=True)
 class SupraCitation(CitationBase):
@@ -223,20 +207,6 @@ class SupraCitation(CitationBase):
         print_string = "%s supra, at %s" % (self.antecedent_guess, self.page)
         return print_string
 
-    def as_regex(self):
-        if self.volume:
-            regex = r"%s(\s+)%s(\s+)supra" % (
-                re.escape(self.antecedent_guess),
-                self.volume,
-            )
-        else:
-            regex = r"%s(\s+)supra" % re.escape(self.antecedent_guess)
-
-        if self.page:
-            regex += r",(\s+)at(\s+)%s" % re.escape(self.page)
-
-        return regex + r"(\s?)"
-
 
 @dataclass(eq=True, unsafe_hash=True)
 class IdCitation(CitationBase):
@@ -257,36 +227,6 @@ class IdCitation(CitationBase):
     def __repr__(self):
         print_string = "%s %s" % (self.token, self.after_tokens)
         return print_string
-
-    def as_regex(self):
-        # This works by matching only the Id. token that precedes the "after
-        # tokens" we collected earlier.
-
-        # Whitespace regex explanation:
-        #  \s matches any whitespace character
-        #  </?\w+> matches any HTML tag
-        #  , matches a comma
-        #  The whole thing matches greedily, saved into a single group
-        whitespace_regex = r"((?:\s|</?\w+>|,)*)"
-
-        # Start with a matching group for any whitespace
-        template = whitespace_regex
-
-        # Add the id_token
-        template += re.escape(str(self.token))
-
-        # Add a matching group for any whitespace
-        template += whitespace_regex
-
-        # Add all the "after tokens", with whitespace groups in between
-        template += whitespace_regex.join(
-            [re.escape(t) for t in self.after_tokens]
-        )
-
-        # Add a final matching group for any non-HTML whitespace at the end
-        template += r"(\s?)"
-
-        return template
 
 
 @dataclass(eq=True, unsafe_hash=True)
