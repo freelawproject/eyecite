@@ -55,6 +55,10 @@ class CitationBase:
         """Text that identified this citation, such as '1 U.S. 1' or 'Id.'"""
         return str(self.token)
 
+    def span(self):
+        """Start and stop offsets in source text for matched_text.()"""
+        return (self.token.start, self.token.end)
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class CaseCitation(CitationBase):
@@ -304,13 +308,16 @@ class Token(UserString):
     for generic words."""
 
     data: str
+    start: int
+    end: int
 
     @classmethod
-    def from_match(cls, m, extra):
+    def from_match(cls, m, extra, offset=0):
         """Return a token object based on a regular expression match.
         This gets called by TokenExtractor. By default, just use the
         entire matched string."""
-        return cls(m[0])
+        start, end = m.span(0)
+        return cls(m[0], start + offset, end + offset)
 
 
 # For performance, lists of tokens can include either Token subclasses
@@ -340,13 +347,16 @@ class CitationToken(Token):
         )
 
     @classmethod
-    def from_match(cls, m, extra):
+    def from_match(cls, m, extra, offset=0):
         """Citation regex matches have volume, reporter, and page match groups
         in their regular expressions, and "exact_editions" and
         "variation_editions" in their extra config. Pass all of that through
         to the constructor."""
+        start, end = m.span(0)
         return cls(
             m[0],
+            start + offset,
+            end + offset,
             **m.groupdict(),
             **extra,
         )
@@ -364,9 +374,10 @@ class SupraToken(Token):
     """ Word matching "supra" with or without punctuation. """
 
     @classmethod
-    def from_match(cls, m, extra):
+    def from_match(cls, m, extra, offset=0):
         """Only use the captured part of the match to omit whitespace."""
-        return cls(m[1])
+        start, end = m.span(1)
+        return cls(m[1], start + offset, end + offset)
 
 
 @dataclass(eq=True, frozen=True)
@@ -374,9 +385,10 @@ class IdToken(Token):
     """ Word matching "id" or "ibid". """
 
     @classmethod
-    def from_match(cls, m, extra):
+    def from_match(cls, m, extra, offset=0):
         """Only use the captured part of the match to omit whitespace."""
-        return cls(m[1])
+        start, end = m.span(1)
+        return cls(m[1], start + offset, end + offset)
 
 
 @dataclass(eq=True, frozen=True)
@@ -399,11 +411,12 @@ class StopWordToken(Token):
     )
 
     @classmethod
-    def from_match(cls, m, extra):
+    def from_match(cls, m, extra, offset=0):
         """m[1] is the captured part of the match, including punctuation.
         m[2] is just the underlying stopword like 'v', useful for comparison.
         """
-        return cls(m[1], m[2].lower())
+        start, end = m.span(1)
+        return cls(m[1], start + offset, end + offset, m[2].lower())
 
 
 @dataclass
@@ -421,9 +434,9 @@ class TokenExtractor:
         """Return match objects for all matches in text."""
         return self.compiled_regex.finditer(text)
 
-    def get_token(self, m):
+    def get_token(self, m, offset=0):
         """For a given match object, return a Token."""
-        return self.constructor(m, self.extra)
+        return self.constructor(m, self.extra, offset)
 
     def __hash__(self):
         """This needs to be hashable so we can remove redundant

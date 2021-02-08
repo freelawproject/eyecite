@@ -30,6 +30,8 @@ def case_citation(
     edition = EDITIONS_LOOKUP[reporter][0]
     token = CitationToken(
         source_text,
+        0,  # fake start offset
+        99,  # fake end offset
         volume,
         reporter,
         page,
@@ -44,12 +46,12 @@ def case_citation(
 
 
 def id_citation(index, source_text, **kwargs):
-    return IdCitation(IdToken(source_text), index, **kwargs)
+    return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
 
 
 def nonopinion_citation(index, source_text):
-    return NonopinionCitation(SectionToken(source_text), index)
+    return NonopinionCitation(SectionToken(source_text, 0, 99), index)
 
 
 def supra_citation(index, source_text, **kwargs):
-    return SupraCitation(SupraToken(source_text), index, **kwargs)
+    return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)

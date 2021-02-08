@@ -55,6 +55,9 @@ class FindTest(TestCase):
                         "volume",
                         "page",
                         "reporter",
+                        "antecedent_guess",
+                        "has_page",
+                        "after_tokens",
                     ]
                     try:
                         self.assertEqual(
@@ -287,6 +290,16 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
+            # Test that the tokenizer handles whitespace well. In the past, the
+            # capital letter P in 5243-P matched the abbreviation for the Pacific
+            # reporter ("P"), and the tokenizing would be wrong.
+            ('Failed to recognize 1993 Ct. Sup. 5243-P',
+             [case_citation(3, volume='1993', reporter='Conn. Super. Ct.',
+                            reporter_found='Ct. Sup.', page='5243-P')]),
+            # Test that the tokenizer handles commas after a reporter. In the
+            # past, " U. S. " would match but not " U. S., "
+            ('foo 1 U.S., 1 bar',
+             [case_citation(0)]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
@@ -322,10 +335,10 @@ class FindTest(TestCase):
              {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             # Added this after failing in production
             ('     202                 140 UNITED STATES TAX COURT REPORTS                                   (200)',
-            [case_citation(1, '140 UNITED STATES TAX COURT REPORTS (200)',
-                           volume='140', reporter='T.C.', page='200',
-                           reporter_found='UNITED STATES TAX COURT REPORTS')],
-            {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
+             [case_citation(1, '140 UNITED STATES TAX COURT REPORTS (200)',
+                            volume='140', reporter='T.C.', page='200',
+                            reporter_found='UNITED STATES TAX COURT REPORTS')],
+             {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             ('U.S. 1234 1 U.S. 1',
              [case_citation(2, volume='1', reporter='U.S.', page='1')]),
         )
@@ -431,6 +444,8 @@ class FindTest(TestCase):
         for e in EXTRACTORS:
             e = copy(e)
             e.regex = e.regex.replace(r"\.", r"[.,]")
+            if hasattr(e, "_compiled_regex"):
+                del e._compiled_regex
             extractors.append(e)
         tokenizer = Tokenizer(extractors)
 
