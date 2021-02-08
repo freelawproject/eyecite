@@ -234,6 +234,9 @@ class FindTest(TestCase):
                             defendant='bar'),
               id_citation(8, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)]),
+            # Test Id. citation at end of text
+            ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
+            ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
