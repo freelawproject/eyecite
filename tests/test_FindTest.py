@@ -3,7 +3,7 @@ from copy import copy
 from datetime import datetime
 from unittest import TestCase
 
-from eyecite.find_citations import get_citations
+from eyecite import clean_text, get_citations
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
     EXTRACTORS,
@@ -40,6 +40,9 @@ class FindTest(TestCase):
                 with self.subTest(
                     message, tokenizer=type(tokenizer).__name__, q=q
                 ):
+                    clean_steps = kwargs.pop("clean", None)
+                    if clean_steps:
+                        q = clean_text(q, clean_steps)
                     cites_found = get_citations(
                         q, tokenizer=tokenizer, **kwargs
                     )

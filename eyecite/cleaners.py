@@ -23,10 +23,8 @@ def html(html_content: str) -> str:
 
 
 def whitespace(text: str) -> str:
-    """Collapse multiple spaces into one, and strip whitespace."""
-    text = re.sub(" +", " ", text)
-
-    return text.strip()
+    """Collapse multiple spaces into one space character."""
+    return re.sub(r"[ \t]+", " ", text)
 
 
 def underscores(text: str) -> str:

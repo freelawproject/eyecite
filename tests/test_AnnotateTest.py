@@ -49,7 +49,7 @@ class AnnotateTest(TestCase):
                 orig_text, clean_steps=clean_steps, wrap_elisions=wrap_elisions
             ):
                 text = clean_text(orig_text, clean_steps)
-                cites = get_citations(text, clean=[])
+                cites = get_citations(text)
                 annotations = [
                     (c.span(), f"<{i}>", f"</{i}>")
                     for i, c in enumerate(cites)
