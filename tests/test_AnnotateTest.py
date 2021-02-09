@@ -5,6 +5,9 @@ from eyecite import annotate, clean_text, get_citations
 
 class AnnotateTest(TestCase):
     def test_annotate(self):
+        def straighten_quotes(text):
+            return text.replace("’", "'")
+
         test_pairs = (
             # single cite
             ("1 U.S. 1", "<0>1 U.S. 1</0>", [], True),
@@ -31,6 +34,13 @@ class AnnotateTest(TestCase):
                 "1 U.S. 1. Id. 2 U.S. 2. Id.",
                 "<0>1 U.S. 1</0>. <1>Id.</1> <2>2 U.S. 2</2>. <3>Id.</3>",
                 [],
+                True,
+            ),
+            # replacement in cleaners
+            (
+                "1 Abbott’s Pr.Rep. 1",
+                "<0>1 Abbott</0>’<0>s Pr.Rep. 1</0>",
+                [straighten_quotes],
                 True,
             ),
         )

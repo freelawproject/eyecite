@@ -132,6 +132,9 @@ class SpanUpdater:
         for operation, a1, a2, b1, b2 in diffs.get_opcodes():
             if operation == "insert":
                 yield operation, b2 - b1
+            elif operation == "replace":
+                yield "delete", a2 - a1
+                yield "insert", b2 - b1
             else:  # 'delete', 'equal'
                 yield operation, a2 - a1
 
