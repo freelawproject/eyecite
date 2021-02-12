@@ -5,39 +5,40 @@ from typing import Iterable, Optional, Tuple
 
 
 def annotate(
-    text: str,
+    plain_text: str,
     annotations: Iterable[Tuple[Tuple[int, int], str, str]],
-    target_text: Optional[str] = None,
+    source_text: Optional[str] = None,
     wrap_elisions: bool = True,
 ):
     """Insert annotations into text around each citation.
-    Each annotation is a tuple of an extracted citation, before text, and
-    after text.
+        Each annotation is a tuple of an extracted citation, before text, and
+        after text.
 
-    Example:
-    >>> text = "foo 1 U.S. 1 bar"
-    >>> citations = get_citations(text)
-    >>> annotate("foo 1 U.S. 1 bar", [citations[0].span(), "<a>", "</a>")])
-    "foo <a>1 U.S. 1</a> bar"
+        Example:
+        >>> plain_text = "foo 1 U.S. 1 bar"
+        >>> citations = get_citations(plain_text)
+        >>> annotate("foo 1 U.S. 1 bar",[citations[0].span(), "<a>", "</a>")
+    ])
+        "foo <a>1 U.S. 1</a> bar"
 
-    If target_text is provided, apply annotations to that text
-    instead using diff_match_patch.
+        If source_text is provided, apply annotations to that text
+        instead using diff_match_patch.
 
-    If target_text is provided and wrap_elisions is False, don't wrap
-    internal elisions from target_text.
+        If source_text is provided and wrap_elisions is False, don't wrap
+        internal elisions from source_text.
     """
-    # set up offset_updater if we have to move annotations to target_text
+    # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
-    if target_text and target_text != text:
-        offset_updater = SpanUpdater(text, target_text)
-        text = target_text
+    if source_text and source_text != plain_text:
+        offset_updater = SpanUpdater(plain_text, source_text)
+        plain_text = source_text
 
     # append text for each annotation to out
     annotations = sorted(annotations)
     out = []
     last_end = 0
     for span, before, after in annotations:
-        # if we're applying to target_text, get target spans
+        # if we're applying to source_text, get target spans
         if offset_updater:
             spans = sorted(offset_updater.get_spans(*span))
             if not wrap_elisions:
@@ -49,17 +50,17 @@ def annotate(
         for start, end in spans:
             out.extend(
                 [
-                    text[last_end:start],
+                    plain_text[last_end:start],
                     before,
-                    text[start:end],
+                    plain_text[start:end],
                     after,
                 ]
             )
             last_end = end
 
     # append text after final citation
-    if last_end < len(text):
-        out.append(text[last_end:])
+    if last_end < len(plain_text):
+        out.append(plain_text[last_end:])
 
     return "".join(out)
 

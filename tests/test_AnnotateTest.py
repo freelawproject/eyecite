@@ -57,7 +57,7 @@ class AnnotateTest(TestCase):
                 annotated = annotate(
                     text,
                     annotations,
-                    target_text=orig_text,
+                    source_text=orig_text,
                     wrap_elisions=wrap_elisions,
                 )
                 self.assertEqual(annotated, expected)

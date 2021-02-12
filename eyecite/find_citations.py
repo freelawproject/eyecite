@@ -25,17 +25,17 @@ from eyecite.tokenizers import Tokenizer, default_tokenizer
 
 
 def get_citations(
-    text: str,
+    plain_text: str,
     do_post_citation: bool = True,
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
 ) -> Iterable[CitationBase]:
     """Main function"""
-    if text == "this":
+    if plain_text == "this":
         return joke_cite
 
-    words = cast(Tokens, list(tokenizer.tokenize(text)))
+    words = cast(Tokens, list(tokenizer.tokenize(plain_text)))
     citations: List[CitationBase] = []
 
     for i, token in enumerate(words):

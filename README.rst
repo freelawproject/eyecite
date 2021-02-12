@@ -65,14 +65,14 @@ You can use :code:`clean_text` to help with this:
 
     from eyecite import clean_text, get_citations
 
-    text = '<p>foo   1  U.S.  1   </p>'
-    cleaned_text = clean_text(text, ['html', 'whitespace', my_func])
-    found_citations = get_citations(cleaned_text)
+    source_text = '<p>foo   1  U.S.  1   </p>'
+    plain_text = clean_text(text, ['html', 'whitespace', my_func])
+    found_citations = get_citations(plain_text)
 
 See the Annotating Citations section for how to insert links into the original text using
 citations extracted from the cleaned text.
 
-:code:`clean_text` accepts these values as cleaners:
+:code:`clean_text` currently accepts these values as cleaners:
 
 1. :code:`whitespace`: replace all runs of tab and space characters with a single space character
 2. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
@@ -83,41 +83,41 @@ citations extracted from the cleaned text.
 Annotating Citations
 ====================
 
-You can insert links to citations using the :code:`annotate` function:
+For simple plain text, you can insert links to citations using the :code:`annotate` function:
 
 ::
 
     from eyecite import get_citations, annotate
 
-    text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
-    citations = get_citations(text)
-    linked_text = annotate(text, [[c.span(), "<a>", "</a>"] for c in citations])
+    plain_text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
+    citations = get_citations(plain_text)
+    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations])
 
     returns:
     'bob lissner v. test <a>1 U.S. 12</a>, 347-348 (4th Cir. 1982)'
 
-:code:`annotate` should be called with the *same* cleaned text used by :code:`get_citations`
-to extract citations, so the offsets returned by :code:`span` are correct. This means
-you should never pass :code:`clean=[...]` to :code:`get_citations` when planning to use
-:code:`annotate`.
+Each citation returned by get_citations keeps track of where it was found in the source text.
+As a result, :code:`annotate` must be called with the *same* cleaned text used by :code:`get_citations`
+to extract citations. If you do not, the offsets returned by the citation's :code:`span` method will
+not align with the text, and your annotations will be in the wrong place.
 
 If you want to clean text and then insert annotations into the original text, you can pass
-the original text in as :code:`target_text`:
+the original text in as :code:`source_text`:
 
 ::
 
     from eyecite import get_citations, annotate, clean_text
 
-    text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
-    cleaned_text = clean_text(text, ['html', 'whitespace'])
-    citations = get_citations(cleaned_text)
-    linked_text = annotate(cleaned_text, [[c.span(), "<a>", "</a>"] for c in citations], target_text=text)
+    source_text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
+    plain_text = clean_text(source_text, ['html', 'whitespace'])
+    citations = get_citations(plain_text)
+    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
 
     returns:
     '<p>bob lissner v. <i>test   <a>1 U.S.</a></i><a> 12</a>,   347-348 (4th Cir. 1982)</p>'
 
-The above example extracts citations from :code:`cleaned_text` and applies them to
-:code:`text`, using a diffing algorithm to insert annotations in the correct locations
+The above example extracts citations from :code:`plain_text` and applies them to
+:code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
 in the original text.
 
 Note that the annotations are wrapped around each spot where the cleaning steps removed text
@@ -126,7 +126,7 @@ emit valid HTML. If you don't want that, use :code:`wrap_elisions=False`:
 
 ::
 
-    linked_text = annotate(cleaned_text, [[c, "<a>", "</a>"] for c in citations], target_text=text, wrap_elisions=False)
+    linked_text = annotate(plain_text, [[c, "<a>", "</a>"] for c in citations], source_text=source_text, wrap_elisions=False)
 
     returns:
     '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
