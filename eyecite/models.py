@@ -102,6 +102,7 @@ class CaseCitation(CitationBase):
         )
 
     def base_citation(self):
+        """Return a simple version of the citation."""
         return "%s %s %s" % (self.volume, self.reporter, self.page)
 
     def __repr__(self):
@@ -154,8 +155,6 @@ class FullCaseCitation(CaseCitation):
 
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
-
-    pass
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -239,8 +238,6 @@ class NonopinionCitation(CitationBase):
     Example 2: U. S. Const., Art. I, §8
     """
 
-    pass
-
 
 @dataclass(eq=True, frozen=True)
 class Token(UserString):
@@ -305,8 +302,6 @@ class CitationToken(Token):
 @dataclass(eq=True, frozen=True)
 class SectionToken(Token):
     """ Word containing a section symbol. """
-
-    pass
 
 
 @dataclass(eq=True, frozen=True)
