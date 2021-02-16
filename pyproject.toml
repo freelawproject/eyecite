@@ -53,7 +53,7 @@ line_length = 79
 
 [tool.pylint.master]
 # C extensions pylint is allowed to inspect
-extension-pkg-whitelist = ["ahocorasick", "hyperscan"]
+extension-pkg-whitelist = ["ahocorasick", "hyperscan", "lxml"]
 
 [tool.pylint.messages_control]
 # R0901: too-many-ancestors

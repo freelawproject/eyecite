@@ -3,12 +3,14 @@ from difflib import SequenceMatcher
 from functools import partial
 from typing import Iterable, Optional, Tuple
 
+from eyecite.utils import is_balanced_html, wrap_html_tags
+
 
 def annotate(
     plain_text: str,
     annotations: Iterable[Tuple[Tuple[int, int], str, str]],
     source_text: Optional[str] = None,
-    wrap_elisions: bool = True,
+    unbalanced_tags: str = "unchecked",
 ):
     """Insert annotations into text around each citation.
         Each annotation is a tuple of an extracted citation, before text, and
@@ -24,8 +26,9 @@ def annotate(
         If source_text is provided, apply annotations to that text
         instead using diff_match_patch.
 
-        If source_text is provided and wrap_elisions is False, don't wrap
-        internal elisions from source_text.
+        If source_text is provided, unbalanced_tags="skip" will skip inserting
+        annotations that result in invalid HTML. unbalanced_tags="wrap" will
+        ensure valid HTML by wrapping annotations around any unbalanced tags.
     """
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
@@ -37,26 +40,44 @@ def annotate(
     annotations = sorted(annotations)
     out = []
     last_end = 0
-    for span, before, after in annotations:
-        # if we're applying to source_text, get target spans
+    for (start, end), before, after in annotations:
+        # if we're applying to source_text, update offsets
         if offset_updater:
-            spans = sorted(offset_updater.get_spans(*span))
-            if not wrap_elisions:
-                spans = [[spans[0][0], spans[-1][1]]]
+            start = offset_updater.update(start)
+            end = offset_updater.update(end)
+
+        # handle overlaps
+        if start < last_end:
+            # include partial annotation if possible
+            start = last_end
+            if start >= end:
+                # if annotation is entirely covered, skip
+                continue
+
+        span_text = plain_text[start:end]
+
+        # handle HTML tags
+        if unbalanced_tags == "unchecked":
+            pass
+        elif unbalanced_tags == "skip" or unbalanced_tags == "wrap":
+            if not is_balanced_html(span_text):
+                if unbalanced_tags == "skip":
+                    continue
+                else:
+                    span_text = wrap_html_tags(span_text, after, before)
         else:
-            spans = [span]
+            raise ValueError(f"Unknown option '{unbalanced_tags}")
 
         # append each span
-        for start, end in spans:
-            out.extend(
-                [
-                    plain_text[last_end:start],
-                    before,
-                    plain_text[start:end],
-                    after,
-                ]
-            )
-            last_end = end
+        out.extend(
+            [
+                plain_text[last_end:start],
+                before,
+                span_text,
+                after,
+            ]
+        )
+        last_end = end
 
     # append text after final citation
     if last_end < len(plain_text):
@@ -66,17 +87,19 @@ def annotate(
 
 
 class SpanUpdater:
-    """Helper object to shift offsets from text_before to text_after
-    using the diff-match-patch algorithm.
+    """Helper object to shift offsets from text_before to text_after.
 
     For example:
     >>> text_before = "foo bar"
     >>> text_after = "foo baz bar"
-    >>> SpanUpdater(text_before, text_after).get_spans(1, 6)
-    [(1, 4), (8, 10)]
+    >>> updater = SpanUpdater(text_before, text_after)
 
-    This result indicates that text_before[1:6] ("oo ba") moved
-    to text_after[1:4] ("oo ") + text_after[8:10] ("ba").
+    Offset 1 is still at offset 1:
+    >>> updater.update(1)
+
+    Offset 8 has moved to offset 10:
+    >>> updater.update(8)
+    10
     """
 
     def __init__(self, text_before, text_after):
@@ -154,21 +177,8 @@ class SpanUpdater:
     #         else: # operation == diff_match_patch.DIFF_DELETE
     #             yield 'delete', len(text)
 
-    def get_spans(self, start, end):
-        """Given an input span, return one or more output spans."""
-        # Get offset ranges that are covered by the start and
-        # end of the input span:
-        index_start = bisect_right(self.offsets, start)
-        index_end = bisect_right(self.offsets, end)
-        offsets = [start] + self.offsets[index_start:index_end] + [end]
-        # Get updater for each offset range:
-        updaters = self.updaters[index_start - 1 : index_end]
-        # Return each output range:
-        for updater, (span_start, span_end) in zip(
-            updaters, zip(offsets, offsets[1:])
-        ):
-            span_start = updater(span_start)
-            span_end = updater(span_end)
-            # skip empty ranges
-            if span_start != span_end:
-                yield span_start, span_end
+    def update(self, offset):
+        """Shift an offset left or right."""
+        index = bisect_right(self.offsets, offset) - 1
+        updater = self.updaters[index]
+        return updater(offset)

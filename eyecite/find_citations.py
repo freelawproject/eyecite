@@ -19,6 +19,7 @@ from eyecite.models import (
     ShortCaseCitation,
     SupraCitation,
     SupraToken,
+    Token,
     Tokens,
 )
 from eyecite.tokenizers import Tokenizer, default_tokenizer
@@ -224,7 +225,9 @@ def extract_id_citation(
 
     # Helper function to see whether a token qualifies as a page candidate
     def is_page_candidate(token):
-        return token in id_reference_token_literals or parse_page(token)
+        return token in id_reference_token_literals or (
+            not isinstance(token, Token) and parse_page(token)
+        )
 
     # Check if the post-id token is indeed a page candidate
     scan_index = index

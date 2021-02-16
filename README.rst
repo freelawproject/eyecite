@@ -114,22 +114,26 @@ the original text in as :code:`source_text`:
     linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
 
     returns:
-    '<p>bob lissner v. <i>test   <a>1 U.S.</a></i><a> 12</a>,   347-348 (4th Cir. 1982)</p>'
+    '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
 
 The above example extracts citations from :code:`plain_text` and applies them to
 :code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
 in the original text.
 
-Note that the annotations are wrapped around each spot where the cleaning steps removed text
-from the citation: "<a>1 U.S.</a></i><a> 12</a>". This ensures that :code:`annotate` will
-emit valid HTML. If you don't want that, use :code:`wrap_elisions=False`:
+Wrapping HTML Tags
+------------------
 
-::
+Note that the above example includes mismatched HTML tags: "<a>1 U.S.</i> 12</a>".
+To specify handling for unbalanced tags, use the :code:`unbalanced_tags` parameter:
 
-    linked_text = annotate(plain_text, [[c, "<a>", "</a>"] for c in citations], source_text=source_text, wrap_elisions=False)
+* :code:`unbalanced_tags="skip"`: annotations that would result in unbalanced tags will not be inserted.
+* :code:`unbalanced_tags="wrap"`: unbalanced tags will be wrapped, resulting in :code:`<a>1 U.S.</a></i><a> 12</a>`
 
-    returns:
-    '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
+**Important:** :code:`unbalanced_tags="wrap"` uses a simple regular expression and will only work for HTML where
+angle brackets are properly escaped, such as the HTML emitted by :code:`lxml.html.tostring`. It is intended for
+regularly formatted documents such as case text published by courts. It may have
+unpredictable results for deliberately-constructed challenging inputs such as citations containing partial HTML
+comments or :code:`<pre>` tags.
 
 
 Tokenizers

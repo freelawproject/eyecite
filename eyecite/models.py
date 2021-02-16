@@ -227,6 +227,17 @@ class IdCitation(CitationBase):
         print_string = "%s %s" % (self.token, self.after_tokens)
         return print_string
 
+    def span(self):
+        """Extend citation's span to include after_tokens, like 'Id. at 5'"""
+        if self.has_page:
+            end_offset = (
+                self.token.end
+                + sum(len(t) for t in self.after_tokens)
+                + len(self.after_tokens)
+            )
+            return (self.token.start, end_offset)
+        return super().span()
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class NonopinionCitation(CitationBase):
