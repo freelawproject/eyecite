@@ -11,6 +11,7 @@ def annotate(
     annotations: Iterable[Tuple[Tuple[int, int], str, str]],
     source_text: Optional[str] = None,
     unbalanced_tags: str = "unchecked",
+    use_dmp: bool = False,
 ):
     """Insert annotations into text around each citation.
         Each annotation is a tuple of an extracted citation, before text, and
@@ -29,11 +30,14 @@ def annotate(
         If source_text is provided, unbalanced_tags="skip" will skip inserting
         annotations that result in invalid HTML. unbalanced_tags="wrap" will
         ensure valid HTML by wrapping annotations around any unbalanced tags.
+
+        If use_dmp=True, use the optional diff-match-patch library, which
+        guarantees minimal diffs, instead of the built in Python diff library.
     """
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
     if source_text and source_text != plain_text:
-        offset_updater = SpanUpdater(plain_text, source_text)
+        offset_updater = SpanUpdater(plain_text, source_text, use_dmp=use_dmp)
         plain_text = source_text
 
     # append text for each annotation to out
@@ -102,7 +106,7 @@ class SpanUpdater:
     10
     """
 
-    def __init__(self, text_before, text_after):
+    def __init__(self, text_before, text_after, use_dmp=False):
         """To set up, we need to populate self.offsets and self.updaters:
             >>> SpanUpdater(text_before, text_after).offsets
             [0, 4]
@@ -110,6 +114,9 @@ class SpanUpdater:
             [partial(shift_offset, delta=0), partial(shift_offset, delta=4)]
         This indicates that offsets 0 to 4 need to be shifted by 0,
         and offsets 4 and up need to be shifted by 4.
+
+        use_dmp=True will use the optional diff-match-patch library, which
+        guarantees minimal diffs, instead of the built in Python diff library.
         """
         # helpers for the two kinds of updates we need to apply to offsets:
         def shift_offset(offset, delta):
@@ -123,7 +130,10 @@ class SpanUpdater:
         delta = 0
         self.offsets = offsets = []
         self.updaters = updaters = []
-        for operation, amount in self.get_diff_steps(text_before, text_after):
+        get_diff_steps = (
+            self.get_dmp_diff_steps if use_dmp else self.get_diff_steps
+        )
+        for operation, amount in get_diff_steps(text_before, text_after):
             if operation == "equal":
                 # start a new range with a relative delta,
                 # and push the offset forward
@@ -162,20 +172,24 @@ class SpanUpdater:
             else:  # 'delete', 'equal'
                 yield operation, a2 - a1
 
-    # same as above using the diff-match-patch library, which may
-    # work better with some inputs because it offers minimal edit sequences:
-    # @staticmethod
-    # def get_dmp_diff_steps(self, a: str, b: str):
-    #     from diff_match_patch import diff_match_patch
-    #     dmp = diff_match_patch()
-    #     diffs = dmp.diff_main(a, b)
-    #     for operation, text in diffs:
-    #         if operation == diff_match_patch.DIFF_EQUAL:
-    #             yield 'equal', len(text)
-    #         elif operation == diff_match_patch.DIFF_INSERT:
-    #             yield 'insert', len(text)
-    #         else: # operation == diff_match_patch.DIFF_DELETE
-    #             yield 'delete', len(text)
+    @staticmethod
+    def get_dmp_diff_steps(a: str, b: str):
+        """Same as get_diff_steps but using the diff-match-patch library, which
+        may work better with some inputs because it offers minimal edit
+        sequences."""
+        # pylint: disable=import-outside-toplevel
+        # import here so the dependency is optional
+        from diff_match_patch import diff_match_patch
+
+        dmp = diff_match_patch()
+        diffs = dmp.diff_main(a, b)
+        for operation, text in diffs:
+            if operation == diff_match_patch.DIFF_EQUAL:
+                yield "equal", len(text)
+            elif operation == diff_match_patch.DIFF_INSERT:
+                yield "insert", len(text)
+            else:  # operation == diff_match_patch.DIFF_DELETE
+                yield "delete", len(text)
 
     def update(self, offset):
         """Shift an offset left or right."""
