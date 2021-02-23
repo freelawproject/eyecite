@@ -19,41 +19,17 @@ Simply feed in a raw string of text (or HTML), and receive a list of structured 
 
 ::
 
-    from eyecite.find_citations import get_citations
+    from eyecite import get_citations
 
     text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
     found_citations = get_citations(text)
 
     returns:
-    [FullCitation(plaintiff='lissner', defendant='test', volume=1,
+    [FullCaseCitation(plaintiff='lissner', defendant='test', volume=1,
                reporter='U.S.', page='12', year=1982,
                extra='347-348', court='ca4',
                canonical_reporter='U.S.', lookup_index=0,
-               reporter_index=5, reporter_found='U.S.')]
-
-
-
-Once these :code:`Citation` objects are obtained, you can find them in the original text by calling their :code:`as_regex()` methods, which return a bespoke regex representation for each extracted citation.
-
-
-::
-
-    citation_regex = found_citations[0].as_regex()
-
-    returns:
-    '1(\s+)U\.S\.(\s+)12(\s?)'
-
-
-
-::
-
-    import re
-
-    match = re.search(citation_regex, text)
-
-    returns:
-    <re.Match object; span=(20, 29), match='1 U.S. 12'>
-
+               token_index=5, reporter_found='U.S.')]
 
 
 Options
@@ -63,8 +39,7 @@ Options
 1. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
 2. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
 3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
-4. :code:`clean` ==> tuple; a tuple of cleaning steps to undertake before parsing; options include :code:`whitespace` (remove extraneous whitespace [default]), :code:`underscores` (remove extraneous underscores), and :code:`html` (remove non-visible HTML content)
-5. :code:`tokenizer` ==> Tokenizer; an instance of a Tokenizer object (see "Tokenizers" below)
+4. :code:`tokenizer` ==> Tokenizer; an instance of a Tokenizer object (see "Tokenizers" below)
 
 Some notes
 ----------
@@ -72,6 +47,93 @@ Some things to keep in mind are:
 
 1. This project depends on information made available in two other Free Law Project packages, `reporters-db <https://github.com/freelawproject/reporters-db>`_ and `courts-db <https://github.com/freelawproject/courts-db>`_.
 2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See `here <https://github.com/freelawproject/courtlistener/tree/master/cl/citations>`_ for an example of how Courtlistener implements this package and handles this problem.
+
+
+Cleaning Input Text
+===================
+
+For a given citation text such as "... 1 Baldwin's Rep. 1 ...", eyecite expects that the text
+will be "clean" before being passed to :code:`get_citation`. This means:
+
+* Spaces will be single space characters, not multiple spaces or other whitespace.
+* Quotes and hyphens will be standard quote and hyphen characters.
+* No junk such as HTML tags inside the citation.
+
+You can use :code:`clean_text` to help with this:
+
+::
+
+    from eyecite import clean_text, get_citations
+
+    source_text = '<p>foo   1  U.S.  1   </p>'
+    plain_text = clean_text(text, ['html', 'whitespace', my_func])
+    found_citations = get_citations(plain_text)
+
+See the Annotating Citations section for how to insert links into the original text using
+citations extracted from the cleaned text.
+
+:code:`clean_text` currently accepts these values as cleaners:
+
+1. :code:`whitespace`: replace all runs of tab and space characters with a single space character
+2. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
+3. :code:`html`: remove non-visible HTML content using the lxml library
+4. Custom function: any function taking a string and returning a string.
+
+
+Annotating Citations
+====================
+
+For simple plain text, you can insert links to citations using the :code:`annotate` function:
+
+::
+
+    from eyecite import get_citations, annotate
+
+    plain_text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
+    citations = get_citations(plain_text)
+    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations])
+
+    returns:
+    'bob lissner v. test <a>1 U.S. 12</a>, 347-348 (4th Cir. 1982)'
+
+Each citation returned by get_citations keeps track of where it was found in the source text.
+As a result, :code:`annotate` must be called with the *same* cleaned text used by :code:`get_citations`
+to extract citations. If you do not, the offsets returned by the citation's :code:`span` method will
+not align with the text, and your annotations will be in the wrong place.
+
+If you want to clean text and then insert annotations into the original text, you can pass
+the original text in as :code:`source_text`:
+
+::
+
+    from eyecite import get_citations, annotate, clean_text
+
+    source_text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
+    plain_text = clean_text(source_text, ['html', 'whitespace'])
+    citations = get_citations(plain_text)
+    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
+
+    returns:
+    '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
+
+The above example extracts citations from :code:`plain_text` and applies them to
+:code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
+in the original text.
+
+Wrapping HTML Tags
+------------------
+
+Note that the above example includes mismatched HTML tags: "<a>1 U.S.</i> 12</a>".
+To specify handling for unbalanced tags, use the :code:`unbalanced_tags` parameter:
+
+* :code:`unbalanced_tags="skip"`: annotations that would result in unbalanced tags will not be inserted.
+* :code:`unbalanced_tags="wrap"`: unbalanced tags will be wrapped, resulting in :code:`<a>1 U.S.</a></i><a> 12</a>`
+
+**Important:** :code:`unbalanced_tags="wrap"` uses a simple regular expression and will only work for HTML where
+angle brackets are properly escaped, such as the HTML emitted by :code:`lxml.html.tostring`. It is intended for
+regularly formatted documents such as case text published by courts. It may have
+unpredictable results for deliberately-constructed challenging inputs such as citations containing partial HTML
+comments or :code:`<pre>` tags.
 
 
 Tokenizers

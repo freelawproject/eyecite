@@ -1,4 +1,4 @@
-from typing import Callable, Iterable, List, Optional, Union, cast
+from typing import Iterable, List, Optional, cast
 
 from eyecite.helpers import (
     add_defendant,
@@ -9,42 +9,38 @@ from eyecite.helpers import (
     remove_address_citations,
 )
 from eyecite.models import (
-    Citation,
+    CitationBase,
     CitationToken,
-    FullCitation,
+    FullCaseCitation,
     IdCitation,
     IdToken,
     NonopinionCitation,
     SectionToken,
-    ShortformCitation,
+    ShortCaseCitation,
     SupraCitation,
     SupraToken,
+    Token,
     Tokens,
 )
 from eyecite.tokenizers import Tokenizer, default_tokenizer
-from eyecite.utils import clean_text
 
 
 def get_citations(
-    text: str,
+    plain_text: str,
     do_post_citation: bool = True,
     do_defendant: bool = True,
     remove_ambiguous: bool = False,
-    clean: Iterable[Union[str, Callable[[str], str]]] = ("whitespace",),
     tokenizer: Tokenizer = default_tokenizer,
-) -> Iterable[Union[NonopinionCitation, Citation]]:
+) -> Iterable[CitationBase]:
     """Main function"""
-    if text == "this":
+    if plain_text == "this":
         return joke_cite
 
-    if clean:
-        text = clean_text(text, clean)
-
-    words = cast(Tokens, list(tokenizer.tokenize(text)))
-    citations: List[Union[Citation, NonopinionCitation]] = []
+    words = cast(Tokens, list(tokenizer.tokenize(plain_text)))
+    citations: List[CitationBase] = []
 
     for i, token in enumerate(words):
-        citation: Union[Citation, NonopinionCitation, None]
+        citation: Optional[CitationBase]
         token_type = type(token)
 
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
@@ -75,14 +71,14 @@ def get_citations(
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
         elif token_type is SupraToken:
-            citation = extract_supra_citation(words, i)
+            citation = extract_supra_citation(cast(SupraToken, words), i)
 
         # CASE 4: Citation token is a section marker.
         # In this case, it's likely that this is a reference to a non-
         # opinion document. So we record this marker in order to keep
         # an accurate list of the possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = NonopinionCitation(match_token=token)
+            citation = NonopinionCitation(cast(SectionToken, token), i)
 
         # CASE 5: The token is not a citation.
         else:
@@ -100,7 +96,7 @@ def get_citations(
 
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
-    # the references of the ShortformCitation, SupraCitation, and
+    # the references of the ShortCaseCitation, SupraCitation, and
     # IdCitation objects.
     return citations
 
@@ -108,19 +104,19 @@ def get_citations(
 def extract_full_citation(
     words: Tokens,
     index: int,
-) -> FullCitation:
+) -> FullCaseCitation:
     """Given a list of words and the index of a citation, return
-    a FullCitation object."""
+    a FullCaseCitation object."""
     cite_token = cast(CitationToken, words[index])
 
-    # Return FullCitation
-    return FullCitation(
-        cite_token.reporter,
-        cite_token.page,
-        cite_token.volume,
+    # Return FullCaseCitation
+    return FullCaseCitation(
+        cite_token,
+        index,
+        reporter=cite_token.reporter,
+        page=cite_token.page,
+        volume=cite_token.volume,
         reporter_found=cite_token.reporter,
-        reporter_index=index,
-        all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
     )
@@ -129,9 +125,9 @@ def extract_full_citation(
 def extract_shortform_citation(
     words: Tokens,
     index: int,
-) -> ShortformCitation:
+) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
-    a ShortformCitation object.
+    a ShortCaseCitation object.
 
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
@@ -147,15 +143,15 @@ def extract_shortform_citation(
     # Get citation
     cite_token = cast(CitationToken, words[index])
 
-    # Return ShortformCitation
-    return ShortformCitation(
-        cite_token.reporter,
-        cite_token.page,
-        cite_token.volume,
-        antecedent_guess,
+    # Return ShortCaseCitation
+    return ShortCaseCitation(
+        cite_token,
+        index,
+        reporter=cite_token.reporter,
+        page=cite_token.page,
+        volume=cite_token.volume,
+        antecedent_guess=antecedent_guess,
         reporter_found=cite_token.reporter,
-        reporter_index=index,
-        all_editions=cite_token.exact_editions + cite_token.variation_editions,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
     )
@@ -196,7 +192,13 @@ def extract_supra_citation(
         antecedent_guess = str(words[index - 2]) + ","
 
     # Return SupraCitation
-    return SupraCitation(antecedent_guess, page=page, volume=volume)
+    return SupraCitation(
+        cast(SupraToken, words[index]),
+        index,
+        antecedent_guess,
+        page=page,
+        volume=volume,
+    )
 
 
 def extract_id_citation(
@@ -207,9 +209,6 @@ def extract_id_citation(
     immediately succeeding tokens to construct and return an IdCitation
     object.
     """
-    # Keep track of whether a page is detected or not
-    has_page = False
-
     # List of literals that could come after an id token
     id_reference_token_literals = {
         "at",
@@ -226,26 +225,28 @@ def extract_id_citation(
 
     # Helper function to see whether a token qualifies as a page candidate
     def is_page_candidate(token):
-        return token in id_reference_token_literals or parse_page(token)
+        return token in id_reference_token_literals or (
+            not isinstance(token, Token) and parse_page(token)
+        )
 
     # Check if the post-id token is indeed a page candidate
-    if is_page_candidate(words[index + 1]):
-        # If it is, set the scan_index appropriately
-        scan_index = index + 2
+    scan_index = index
+    has_page = False
+    while scan_index + 1 < len(words) and is_page_candidate(
+        words[scan_index + 1]
+    ):
+        scan_index += 1
         has_page = True
 
-        # Also, keep trying to scan for more pages
-        while is_page_candidate(words[scan_index]):
-            scan_index += 1
-
     # If it is not, simply set a naive anchor for the end of the scan_index
-    else:
+    if scan_index == index:
         has_page = False
-        scan_index = index + 4
+        scan_index = index + 3
 
     # Only linkify the after tokens if a page is found
     return IdCitation(
-        id_token=words[index],
-        after_tokens=words[index + 1 : scan_index],
+        cast(IdToken, words[index]),
+        index,
+        after_tokens=words[index + 1 : scan_index + 1],
         has_page=has_page,
     )

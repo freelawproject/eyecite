@@ -53,12 +53,12 @@ line_length = 79
 
 [tool.pylint.master]
 # C extensions pylint is allowed to inspect
-extension-pkg-whitelist = ["ahocorasick", "hyperscan"]
+extension-pkg-whitelist = ["ahocorasick", "hyperscan", "lxml"]
 
 [tool.pylint.messages_control]
 # R0901: too-many-ancestors
 # W0613: unused-argument
-disable = "C0330, C0326, C0114, R0901, W0613"
+disable = "C0330, C0326, C0114, R0901, W0613, E1121"
 
 [tool.pylint.format]
 max-line-length = "79"

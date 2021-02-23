@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from eyecite.models import Citation
+from tests.factories import case_citation
 
 
 class ModelsTest(TestCase):
@@ -8,8 +8,8 @@ class ModelsTest(TestCase):
         """Are two citation objects equal when their attributes are
         the same?"""
         citations = [
-            Citation(reporter=2, volume="U.S.", page="2", reporter_index=2),
-            Citation(reporter=2, volume="U.S.", page="2", reporter_index=2),
+            case_citation(2, volume="2", reporter="U.S.", page="2"),
+            case_citation(2, volume="2", reporter="U.S.", page="2"),
         ]
         print("Testing citation comparison...", end=" ")
         self.assertEqual(citations[0], citations[1])

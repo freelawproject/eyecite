@@ -3,14 +3,7 @@ from copy import copy
 from datetime import datetime
 from unittest import TestCase
 
-from eyecite.find_citations import get_citations
-from eyecite.models import (
-    FullCitation,
-    IdCitation,
-    NonopinionCitation,
-    ShortformCitation,
-    SupraCitation,
-)
+from eyecite import clean_text, get_citations
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
     EXTRACTORS,
@@ -21,6 +14,13 @@ from eyecite.tokenizers import (
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
+from tests.factories import (
+    case_citation,
+    id_citation,
+    nonopinion_citation,
+    supra_citation,
+)
+
 cache_dir = os.environ.get("EYECITE_CACHE_DIR", ".test_cache") or None
 tested_tokenizers = [
     Tokenizer(),
@@ -40,11 +40,14 @@ class FindTest(TestCase):
                 with self.subTest(
                     message, tokenizer=type(tokenizer).__name__, q=q
                 ):
+                    clean_steps = kwargs.pop("clean", None)
+                    if clean_steps:
+                        q = clean_text(q, clean_steps)
                     cites_found = get_citations(
                         q, tokenizer=tokenizer, **kwargs
                     )
                     match_attrs = [
-                        "reporter_index",
+                        "token_index",
                         "reporter_found",
                         "year",
                         "court",
@@ -55,6 +58,9 @@ class FindTest(TestCase):
                         "volume",
                         "page",
                         "reporter",
+                        "antecedent_guess",
+                        "has_page",
+                        "after_tokens",
                     ]
                     try:
                         self.assertEqual(
@@ -92,272 +98,214 @@ class FindTest(TestCase):
         test_pairs = (
             # Basic test
             ('1 U.S. 1',
-             [FullCitation(volume='1', reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=0,
-                           reporter_found='U.S.')]),
+             [case_citation(0)]),
             # Basic test of non-case name before citation (should not be found)
             ('lissner test 1 U.S. 1',
-             [FullCitation(volume='1', reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=2,
-                           reporter_found='U.S.')]),
+             [case_citation(2)]),
             # Test with plaintiff and defendant
             ('lissner v. test 1 U.S. 1',
-             [FullCitation(plaintiff='lissner', defendant='test', volume='1',
-                           reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=3,
-                           reporter_found='U.S.')]),
+             [case_citation(3, plaintiff='lissner', defendant='test')]),
             # Test with plaintiff, defendant and year
             ('lissner v. test 1 U.S. 1 (1982)',
-             [FullCitation(plaintiff='lissner', defendant='test', volume='1',
-                           reporter='U.S.', page='1', year=1982,
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=3,
-                           reporter_found='U.S.')]),
+             [case_citation(3, plaintiff='lissner', defendant='test',
+                            year=1982)]),
             # Test with different reporter than all of above.
             ('bob lissner v. test 1 F.2d 1 (1982)',
-             [FullCitation(plaintiff='lissner', defendant='test', volume='1',
-                           reporter='F.2d', page='1', year=1982,
-                           canonical_reporter='F.',
-                           reporter_index=4, reporter_found='F.2d')]),
+             [case_citation(4, reporter='F.2d', canonical_reporter='F.',
+                            plaintiff='lissner', defendant='test',
+                            year=1982)]),
             # Test with court and extra information
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
-             [FullCitation(plaintiff='lissner', defendant='test', volume='1',
-                           reporter='U.S.', page='12', year=1982,
-                           extra='347-348', court='ca4',
-                           canonical_reporter='U.S.',
-                           reporter_index=4, reporter_found='U.S.')]),
+             [case_citation(4, page='12', court='ca4',
+                            plaintiff='lissner', defendant='test', year=1982,
+                            extra='347-348')]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
-             [FullCitation(volume='22', reporter='U.S.', page='332', year=1975,
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=1,
-                           reporter_found='U. S.')]),
+             [case_citation(1, page='332', volume='22',
+                            reporter_found='U. S.', year=1975)]),
             # Test with finding reporter when it's a second edition
             ('asdf 22 A.2d 332 asdf',
-             [FullCitation(volume='22', reporter='A.2d', page='332',
-                           canonical_reporter='A.',
-                           reporter_index=1, reporter_found='A.2d')]),
+             [case_citation(1, page='332', reporter='A.2d',
+                            canonical_reporter='A.', volume='22')]),
             # Test if reporter in string will find proper citation string
             ('A.2d 332 11 A.2d 333',
-             [FullCitation(volume='11', reporter='A.2d', page='333',
-                           canonical_reporter='A.',
-                           reporter_index=2, reporter_found='A.2d')]),
+             [case_citation(2, page='333', reporter='A.2d',
+                            canonical_reporter='A.', volume='11')]),
             # Test finding a variant second edition reporter
             ('asdf 22 A. 2d 332 asdf',
-             [FullCitation(volume='22', reporter='A.2d', page='332',
-                           canonical_reporter='A.',
-                           reporter_index=1, reporter_found='A. 2d')]),
+             [case_citation(1, page='332', reporter='A.2d',
+                            canonical_reporter='A.', volume='22',
+                            reporter_found='A. 2d')]),
             # Test finding a variant of an edition resolvable by variant alone.
             ('171 Wn.2d 1016',
-             [FullCitation(volume='171', reporter='Wash. 2d', page='1016',
-                           canonical_reporter='Wash.',
-                           reporter_index=0, reporter_found='Wn.2d')]),
+             [case_citation(0, page='1016', reporter='Wash. 2d',
+                            canonical_reporter='Wash.', volume='171',
+                            reporter_found='Wn.2d')]),
             # Test finding two citations where one of them has abutting
             # punctuation.
             ('2 U.S. 3, 4-5 (3 Atl. 33)',
-             [FullCitation(volume='2', reporter="U.S.", page='3', extra='4-5',
-                           canonical_reporter="U.S.",
-                           reporter_index=0, reporter_found="U.S.",
-                           court='scotus'),
-              FullCitation(volume='3', reporter="A.", page='33',
-                           canonical_reporter="A.",
-                           reporter_index=3, reporter_found="Atl.")]),
+             [case_citation(0, page='3', volume='2', extra='4-5'),
+              case_citation(3, page='33', reporter="A.", volume='3',
+                            reporter_found="Atl.")]),
             # Test with the page number as a Roman numeral
             ('12 Neb. App. lxiv (2004)',
-             [FullCitation(volume='12', reporter='Neb. Ct. App.', page='lxiv',
-                           year=2004, canonical_reporter='Neb. Ct. App.',
-                           reporter_index=0,
-                           reporter_found='Neb. App.')]),
+             [case_citation(0, page='lxiv', reporter='Neb. Ct. App.',
+                            canonical_reporter='Neb. Ct. App.', volume='12',
+                            reporter_found='Neb. App.', year=2004)]),
             # Test with page range with a weird suffix
             ('559 N.W.2d 826|N.D.',
-             [FullCitation(volume='559', reporter='N.W.2d', page='826',
-                           canonical_reporter='N.W.',
-                           reporter_index=0, reporter_found='N.W.2d')]),
+             [case_citation(0, page='826', reporter='N.W.2d',
+                            canonical_reporter='N.W.', volume='559')]),
             # Test with malformed/missing page number
             ('1 U.S. f24601', []),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
-             [FullCitation(volume='2007', reporter='NMCERT', page='008',
-                           canonical_reporter='NMCERT',
-                           reporter_index=0, reporter_found='NMCERT')],
+             [case_citation(0, source_text='2007-NMCERT-008', page='008',
+                            reporter='NMCERT', volume='2007')],
              {'expect_fail': 'reporters.json needs NMCERT pattern'}),
             ('2006-Ohio-2095',
-             [FullCitation(volume='2006', reporter='Ohio', page='2095',
-                           canonical_reporter='Ohio',
-                           reporter_index=0, reporter_found='Ohio')],
+             [case_citation(0, source_text='2006-Ohio-2095', page='2095',
+                            reporter='Ohio', volume='2006')],
              {'expect_fail': 'reporters.json needs Ohio pattern'}),
             ('2017 IL App (4th) 160407WC',
-             [FullCitation(volume='2017', reporter='IL App (4th)',
-                           page='160407WC', canonical_reporter='IL App (4th)',
-                           reporter_index=0,
-                           reporter_found='IL App (4th)')]),
+             [case_citation(0, page='160407WC', reporter='IL App (4th)',
+                            volume='2017')]),
             ('2017 IL App (1st) 143684-B',
-             [FullCitation(volume='2017', reporter='IL App (1st)',
-                           page='143684-B', canonical_reporter='IL App (1st)',
-                           reporter_index=0,
-                           reporter_found='IL App (1st)')]),
+             [case_citation(0, page='143684-B', reporter='IL App (1st)',
+                            volume='2017')]),
             # Test first kind of short form citation (meaningless antecedent)
             ('before asdf 1 U. S., at 2',
-             [ShortformCitation(reporter='U.S.', page='2', volume='1',
-                                antecedent_guess='asdf', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='2', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf')]),
             # Test second kind of short form citation (meaningful antecedent)
             ('before asdf, 1 U. S., at 2',
-             [ShortformCitation(reporter='U.S.', page='2', volume='1',
-                                antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            antecedent_guess='asdf,')]),
             # Test short form citation with preceding ASCII quotation
             ('before asdf,” 1 U. S., at 2',
-             [ShortformCitation(reporter='U.S.', page='2', volume='1',
-                                antecedent_guess='asdf,”', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='2', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf,”')]),
             # Test short form citation when case name looks like a reporter
             ('before Johnson, 1 U. S., at 2',
-             [ShortformCitation(reporter='U.S.', page='2', volume='1',
-                                antecedent_guess='Johnson,', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='2', reporter_found='U. S.',
+                            short=True, antecedent_guess='Johnson,')]),
             # Test short form citation with no comma after reporter
             ('before asdf, 1 U. S. at 2',
-             [ShortformCitation(reporter='U.S.', page='2', volume='1',
-                                antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            antecedent_guess='asdf,')]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
             # Test short form citation with a page range
             ('before asdf, 1 U. S., at 20-25',
-             [ShortformCitation(reporter='U.S.', page='20-25', volume='1',
-                                antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='20-25', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf,')]),
             # Test short form citation with a page range with weird suffix
             ('before asdf, 1 U. S., at 20-25\\& n. 4',
-             [ShortformCitation(reporter='U.S.', page='20-25', volume='1',
-                                antecedent_guess='asdf,', court='scotus',
-                                canonical_reporter='U.S.',
-                                reporter_found='U. S.', reporter_index=2)]),
+             [case_citation(2, page='20-25', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf,')]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
-             [SupraCitation(antecedent_guess='asdf,', page='2', volume=None)]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf,',
+                             page='2')]),
             # Test second kind of supra citation (with volume)
             ('before asdf, 123 supra, at 2',
-             [SupraCitation(antecedent_guess='asdf,', page='2', volume='123')]),
+             [supra_citation(3, "supra,", antecedent_guess='asdf,',
+                             page='2', volume='123')]),
             # Test third kind of supra citation (sans page)
             ('before asdf, supra, foo bar',
-             [SupraCitation(antecedent_guess='asdf,', page=None, volume=None)]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
             # Test third kind of supra citation (with period)
             ('before asdf, supra. foo bar',
-             [SupraCitation(antecedent_guess='asdf,', page=None, volume=None)]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
             # Test supra citation at end of document (issue #1171)
             ('before asdf, supra end',
-             [SupraCitation(antecedent_guess='asdf,', page=None, volume=None)]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
             # Test Ibid. citation
             ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Ibid.',
-                         after_tokens=['foo', 'bar', 'lorem'])]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(7, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])]),
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
-             [IdCitation(id_token='Ibid.',
-                         after_tokens=['foo', 'bar', 'lorem'])],
+             [id_citation(2, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])],
              {'clean': ['html', 'whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.,',
-                         after_tokens=['at', '123.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.,', after_tokens=['at', '123.'],
+                          has_page=True)]),
+            # Test Id. citation at end of text
+            ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
+            ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
-             [IdCitation(id_token='Id.,',
-                         after_tokens=['at', '123.'],
-                         has_page=True)],
+             [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
+                          has_page=True)],
              {'clean': ['html', 'whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
-             [IdCitation(id_token='Id.,',
-                         after_tokens=['at', '123.'],
-                         has_page=True)],
+             [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
+                          has_page=True)],
              {'clean': ['html', 'whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.',
-                         after_tokens=['¶', '34.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.', after_tokens=['¶', '34.'],
+                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.',
-                         after_tokens=['at', '62-63,', '67-68.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.', after_tokens=['at', '62-63,', '67-68.'],
+                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.,',
-                         after_tokens=['at', '*10.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.,', after_tokens=['at', '*10.'],
+                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.',
-                         after_tokens=['at', '7-9,', '¶¶', '38-53.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.',
+                          after_tokens=['at', '7-9,', '¶¶', '38-53.'],
+                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.',
-                         after_tokens=['at', 'pp.', '45,', '64.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.', after_tokens=['at', 'pp.', '45,', '64.'],
+                          has_page=True)]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='id.',
-                         after_tokens=['119:12-14.'],
-                         has_page=True)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'id.', after_tokens=['119:12-14.'],
+                          has_page=True)]),
             # Test Id. citation without page number
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
-             [FullCitation(plaintiff='foo', defendant='bar', volume='1',
-                           reporter='U.S.', page='12',
-                           canonical_reporter='U.S.', reporter_index=3,
-                           reporter_found='U.S.', court='scotus'),
-              IdCitation(id_token='Id.',
-                         after_tokens=['No', 'page', 'number.'],
-                         has_page=False)]),
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.', after_tokens=['No', 'page', 'number.'],
+                          has_page=False)]),
             # Test non-opinion citation
             ('lorem ipsum see §99 of the U.S. code.',
-             [NonopinionCitation(match_token='§99')]),
+             [nonopinion_citation(3, '§99')]),
             # Test address that's not a citation (#1338)
             ('lorem 111 S.W. 12th St.',
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
+            # Test that the tokenizer handles whitespace well. In the past, the
+            # capital letter P in 5243-P matched the abbreviation for the Pacific
+            # reporter ("P"), and the tokenizing would be wrong.
+            ('Failed to recognize 1993 Ct. Sup. 5243-P',
+             [case_citation(3, volume='1993', reporter='Conn. Super. Ct.',
+                            reporter_found='Ct. Sup.', page='5243-P')]),
+            # Test that the tokenizer handles commas after a reporter. In the
+            # past, " U. S. " would match but not " U. S., "
+            ('foo 1 U.S., 1 bar',
+             [case_citation(0)]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
@@ -368,48 +316,37 @@ class FindTest(TestCase):
         test_pairs = (
             # Test with atypical formatting for Tax Court Memos
             ('the 1 T.C. No. 233',
-             [FullCitation(volume='1', reporter='T.C. No.', page='233',
-                           canonical_reporter='T.C. No.',
-                           reporter_index=1, reporter_found='T.C. No.')]),
+             [case_citation(1, page='233', reporter='T.C. No.')]),
             ('word T.C. Memo. 2019-233',
-             [FullCitation(volume='2019', reporter='T.C. Memo.', page='233',
-                           canonical_reporter='T.C. Memo.',
-                           reporter_index=1, reporter_found='T.C. Memo.')]),
+             [case_citation(1, 'T.C. Memo. 2019-233',
+                            page='233', reporter='T.C. Memo.',
+                            volume='2019')]),
             ('something T.C. Summary Opinion 2019-233',
-             [FullCitation(volume='2019', reporter='T.C. Summary Opinion', page='233',
-                           canonical_reporter='T.C. Summary Opinion',
-                           reporter_index=1,
-                           reporter_found='T.C. Summary Opinion')]),
+             [case_citation(1, 'T.C. Summary Opinion 2019-233',
+                            page='233', reporter='T.C. Summary Opinion',
+                            volume='2019')]),
             ('T.C. Summary Opinion 2018-133',
-             [FullCitation(volume='2018', reporter='T.C. Summary Opinion', page='133',
-                           canonical_reporter='T.C. Summary Opinion',
-                           reporter_index=0,
-                           reporter_found='T.C. Summary Opinion')]),
+             [case_citation(0, 'T.C. Summary Opinion 2018-133',
+                            page='133', reporter='T.C. Summary Opinion',
+                            volume='2018')]),
             ('1     UNITED STATES TAX COURT REPORT   (2018)',
-             [FullCitation(volume='1', reporter='T.C.', page='2018',
-                           canonical_reporter='T.C.',
-                           reporter_index=0,
-                           reporter_found='UNITED STATES TAX COURT REPORT')],
+             [case_citation(0, '1 UNITED STATES TAX COURT REPORT (2018)',
+                            volume='1', reporter='T.C.', page='2018',
+                            reporter_found='UNITED STATES TAX COURT REPORT')],
              {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             ('U.S. of A. 1     UNITED STATES TAX COURT REPORT   (2018)',
-             [FullCitation(volume='1', reporter='T.C.', page='2018',
-                           canonical_reporter='T.C.',
-                           reporter_index=3,
-                           reporter_found='UNITED STATES TAX COURT REPORT')],
+             [case_citation(3, '1 UNITED STATES TAX COURT REPORT (2018)',
+                            volume='1', reporter='T.C.', page='2018',
+                            reporter_found='UNITED STATES TAX COURT REPORT')],
              {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             # Added this after failing in production
             ('     202                 140 UNITED STATES TAX COURT REPORTS                                   (200)',
-             [FullCitation(volume='140', reporter='T.C.', page='200',
-                           canonical_reporter='T.C.',
-                           reporter_index=1,
-                           reporter_found='UNITED STATES TAX COURT REPORTS')],
+             [case_citation(1, '140 UNITED STATES TAX COURT REPORTS (200)',
+                            volume='140', reporter='T.C.', page='200',
+                            reporter_found='UNITED STATES TAX COURT REPORTS')],
              {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             ('U.S. 1234 1 U.S. 1',
-             [FullCitation(volume='1', reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           reporter_index=2,
-                           court='scotus',
-                           reporter_found='U.S.')]),
+             [case_citation(2, volume='1', reporter='U.S.', page='1')]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Tax court citation extraction")
@@ -440,63 +377,46 @@ class FindTest(TestCase):
         test_pairs = [
             # 1. P.R.R --> Correct abbreviation for a reporter.
             ('1 P.R.R. 1',
-             [FullCitation(volume='1', reporter='P.R.R.', page='1',
-                           canonical_reporter='P.R.R.',
-                           reporter_index=0, reporter_found='P.R.R.')]),
+             [case_citation(0, reporter='P.R.R.')]),
             # 2. U. S. --> A simple variant to resolve.
             ('1 U. S. 1',
-             [FullCitation(volume='1', reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=0,
-                           reporter_found='U. S.')]),
+             [case_citation(0, reporter_found='U. S.')]),
             # 3. A.2d --> Not a variant, but needs to be looked up in the
             #    EDITIONS variable.
             ('1 A.2d 1',
-             [FullCitation(volume='1', reporter='A.2d', page='1',
-                           canonical_reporter='A.',
-                           reporter_index=0, reporter_found='A.2d')]),
+             [case_citation(0, reporter='A.2d',
+                            canonical_reporter='A.')]),
             # 4. A. 2d --> An unambiguous variant of an edition
             ('1 A. 2d 1',
-             [FullCitation(volume='1', reporter='A.2d', page='1',
-                           canonical_reporter='A.',
-                           reporter_index=0, reporter_found='A. 2d')]),
+             [case_citation(0, reporter='A.2d',
+                            canonical_reporter='A.', reporter_found='A. 2d')]),
             # 5. P.R. --> A variant of 'Pen. & W.', 'P.R.R.', or 'P.' that's
             #    resolvable by year
             ('1 P.R. 1 (1831)',
              # Of the three, only Pen & W. was being published this year.
-             [FullCitation(volume='1', reporter='Pen. & W.', page='1',
-                           canonical_reporter='Pen. & W.',
-                           year=1831, reporter_index=0, reporter_found='P.R.')]),
+             [case_citation(0, reporter='Pen. & W.',
+                            year=1831, reporter_found='P.R.')]),
             # 5.1: W.2d --> A variant of an edition that either resolves to
             #      'Wis. 2d' or 'Wash. 2d' and is resolvable by year.
             ('1 W.2d 1 (1854)',
              # Of the two, only Wis. 2d was being published this year.
-             [FullCitation(volume='1', reporter='Wis. 2d', page='1',
-                           canonical_reporter='Wis.',
-                           year=1854, reporter_index=0, reporter_found='W.2d')]),
+             [case_citation(0, reporter='Wis. 2d', canonical_reporter='Wis.',
+                            year=1854, reporter_found='W.2d')]),
             # 5.2: Wash. --> A non-variant that has more than one reporter for
             #      the key, but is resolvable by year
             ('1 Wash. 1 (1890)',
-             [FullCitation(volume='1', reporter='Wash.', page='1',
-                           canonical_reporter='Wash.',
-                           year=1890, reporter_index=0, reporter_found='Wash.')]),
+             [case_citation(0, reporter='Wash.', year=1890)]),
             # 6. Cr. --> A variant of Cranch, which is ambiguous, except with
             #    paired with this variation.
             ('1 Cra. 1',
-             [FullCitation(volume='1', reporter='Cranch', page='1',
-                           canonical_reporter='Cranch',
-                           court='scotus', reporter_index=0,
-                           reporter_found='Cra.')]),
+             [case_citation(0, reporter='Cranch', reporter_found='Cra.',
+                            court='scotus')]),
             # 7. Cranch. --> Not a variant, but could refer to either Cranch's
             #    Supreme Court cases or his DC ones. In this case, we cannot
             #    disambiguate. Years are not known, and we have no further
             #    clues. We must simply drop Cranch from the results.
             ('1 Cranch 1 1 U.S. 23',
-             [FullCitation(volume='1', reporter='U.S.', page='23',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=1,
-                           reporter_found='U.S.')],
-             {'remove_ambiguous': True}),
+             [case_citation(1, page='23')]),
             # 8. Unsolved problem. In theory, we could use parallel citations
             #    to resolve this, because Rob is getting cited next to La., but
             #    we don't currently know the proximity of citations to each
@@ -506,21 +426,23 @@ class FindTest(TestCase):
             #                8.2: Robinson's Louisiana Reports (1841-1846) or
             #                8.3: Robinson's Virgina Reports (1842-1865)
             # ('1 Rob. 1 1 La. 1',
-            # [FullCitation(volume='1', reporter='Rob.', page='1',
+            # [case_citation(volume='1', reporter='Rob.', page='1',
             #                          canonical_reporter='Rob.',),
-            #  FullCitation(volume='1', reporter='La.', page='1',
+            #  case_citation(volume='1', reporter='La.', page='1',
             #                          canonical_reporter='La.',)]),
             # 9. Johnson #1 should pass and identify the citation
             ('1 Johnson 1 (1890)',
-             [FullCitation(volume='1', reporter='N.M. (J.)', page='1',
-                           canonical_reporter='N.M. (J.)',
-                           reporter_index=0, reporter_found='Johnson',
-                           year=1890,
-                           )]),
+             [case_citation(0, reporter='N.M. (J.)', reporter_found='Johnson',
+                            year=1890,
+                            )]),
             # 10. Johnson #2 should fail to disambiguate with year alone
-            ('1 Johnson 1 (1806)', [], {'remove_ambiguous': True}),
+            ('1 Johnson 1 (1806)', []),
         ]
         # fmt: on
+        # all tests in this suite require disambiguation:
+        test_pairs = [
+            pair + ({"remove_ambiguous": True},) for pair in test_pairs
+        ]
         self.run_test_pairs(test_pairs, "Disambiguation")
 
     def test_custom_tokenizer(self):
@@ -528,16 +450,15 @@ class FindTest(TestCase):
         for e in EXTRACTORS:
             e = copy(e)
             e.regex = e.regex.replace(r"\.", r"[.,]")
+            if hasattr(e, "_compiled_regex"):
+                del e._compiled_regex
             extractors.append(e)
         tokenizer = Tokenizer(extractors)
 
         # fmt: off
         test_pairs = [
             ('1 U,S, 1',
-             [FullCitation(volume='1', reporter='U.S.', page='1',
-                           canonical_reporter='U.S.',
-                           court='scotus', reporter_index=0,
-                           reporter_found='U,S,')]),
+             [case_citation(0, reporter_found='U,S,')]),
         ]
         # fmt: on
         self.run_test_pairs(

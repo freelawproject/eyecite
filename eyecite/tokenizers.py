@@ -60,9 +60,7 @@ def _populate_reporter_extractors():
         if cite_format is None:
             cite_format = "{volume} {reporter},? {page}"
         return (
-            cite_format.replace(
-                "{volume}", strip_punctuation_re(r"(?P<volume>\d+)")
-            )
+            cite_format.replace("{volume}", r"(?P<volume>\d+)")
             .replace("{reporter}", rf"(?P<reporter>{re.escape(reporter)})")
             .replace("{page}", rf"(?P<page>{PAGE_NUMBER_REGEX})")
         )
@@ -379,10 +377,11 @@ class HyperscanTokenizer(Tokenizer):
             if match:
                 # To get match groups, re-run the regex using the
                 # builtin regex library.
+                offset = len(text_bytes[: match.start].decode("utf8"))
                 m = match.extractor.compiled_regex.match(
                     text_slice.decode("utf8")
                 )
-                yield match.extractor.get_token(m)
+                yield match.extractor.get_token(m, offset=offset)
             else:
                 yield from text_slice.decode("utf8").strip().split()
 

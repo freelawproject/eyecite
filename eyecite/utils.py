@@ -1,6 +1,8 @@
 import re
 from typing import Callable, Iterable, Union
 
+from lxml import etree
+
 from eyecite.cleaners import cleaners_lookup
 
 # We need a regex that matches roman numerals but not the empty string,
@@ -101,3 +103,22 @@ def space_boundaries_re(regex):
 def strip_punctuation_re(regex):
     """Wrap regex with punctuation pattern."""
     return rf"{PUNCTUATION_REGEX}{regex}{PUNCTUATION_REGEX}"
+
+
+def is_balanced_html(text: str) -> bool:
+    """Return False if text contains un-balanced HTML, otherwise True."""
+    # fast check for strings without angle brackets
+    if not ("<" in text or ">" in text):
+        return True
+
+    # lxml will throw an error while parsing if the string is unbalanced
+    try:
+        etree.fromstring(f"<div>{text}</div>")
+        return True
+    except etree.XMLSyntaxError:
+        return False
+
+
+def wrap_html_tags(text: str, before: str, after: str):
+    """Wrap any html tags in text with before and after strings."""
+    return re.sub(r"(<[^>]+>)", rf"{before}\1{after}", text)
