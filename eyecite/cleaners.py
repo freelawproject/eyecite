@@ -27,6 +27,11 @@ def spaces_and_tabs(text: str) -> str:
     return re.sub(r"[ \t]+", " ", text)
 
 
+def all_whitespace(text: str) -> str:
+    """Collapse multiple whitespace characters into one space character."""
+    return re.sub(r"\s+", " ", text)
+
+
 def underscores(text: str) -> str:
     """Remove strings of two or more underscores that are common
     in text extracted from PDFs."""
@@ -36,5 +41,6 @@ def underscores(text: str) -> str:
 cleaners_lookup: Dict[str, Callable[[str], str]] = {
     "html": html,
     "spaces_and_tabs": spaces_and_tabs,
+    "all_whitespace": all_whitespace,
     "underscores": underscores,
 }
