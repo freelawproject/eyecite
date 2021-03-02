@@ -6,11 +6,11 @@ from eyecite.utils import clean_text
 class UtilsTest(TestCase):
     def test_clean_text(self):
         test_pairs = (
-            (["whitespace"], "  word \t \n  word  ", " word \n word "),
+            (["spaces_and_tabs"], "  word \t \n  word  ", " word \n word "),
             (["underscores"], "__word__word_", "wordword_"),
             (["html"], " <style>ignore</style> <i> word </i> ", " word "),
             (
-                ["html", "underscores", "whitespace"],
+                ["html", "underscores", "spaces_and_tabs"],
                 " <style>ignore</style> __ <i> word  word </i>",
                 " word word ",
             ),

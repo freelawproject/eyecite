@@ -230,7 +230,7 @@ class FindTest(TestCase):
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [id_citation(2, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'spaces_and_tabs']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
@@ -244,12 +244,12 @@ class FindTest(TestCase):
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'spaces_and_tabs']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'spaces_and_tabs']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
