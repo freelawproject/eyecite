@@ -7,6 +7,7 @@ class UtilsTest(TestCase):
     def test_clean_text(self):
         test_pairs = (
             (["spaces_and_tabs"], "  word \t \n  word  ", " word \n word "),
+            (["all_whitespace"], "  word \t \n  word  ", " word word "),
             (["underscores"], "__word__word_", "wordword_"),
             (["html"], " <style>ignore</style> <i> word </i> ", " word "),
             (

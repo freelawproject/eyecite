@@ -47,6 +47,8 @@ class AnnotateTest(TestCase):
                 ["html", "spaces_and_tabs"],
                 {"unbalanced_tags": "wrap"},
             ),
+            # whitespace containing linebreaks
+            ("1\nU.S. 1", "<0>1\nU.S. 1</0>", ["all_whitespace"]),
             # multiple Id. tags
             (
                 "1 U.S. 1. Id. 2 U.S. 2. Id.",
