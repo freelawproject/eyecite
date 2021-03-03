@@ -282,40 +282,36 @@ class AhocorasickTokenizer(Tokenizer):
     the target text contains one of the strings from
     TokenExtractor.strings."""
 
+    def __post_init__(self):
+        """Set up helpers to narrow down possible extractors."""
+        # Build a set of all extractors that don't list required strings
+        self.unfiltered_extractors = set(
+            e for e in EXTRACTORS if not e.strings
+        )
+        # Build a pyahocorasick filter for all case-sensitive extractors
+        self.case_sensitive_filter = self.make_ahocorasick_filter(
+            (s, e)
+            for e in EXTRACTORS
+            if e.strings and not e.flags & re.I
+            for s in e.strings
+        )
+        # Build a pyahocorasick filter for all case-insensitive extractors
+        self.case_insensitive_filter = self.make_ahocorasick_filter(
+            (s.lower(), e)
+            for e in EXTRACTORS
+            if e.strings and e.flags & re.I
+            for s in e.strings
+        )
+
     def get_extractors(self, text: str) -> Set[TokenExtractor]:
         """Override get_extractors() to filter out extractors
         that can't possibly match."""
-        unique_extractors = set()
+        unique_extractors = set(self.unfiltered_extractors)
         for _, extractors in self.case_sensitive_filter.iter(text):
             unique_extractors.update(extractors)
         for _, extractors in self.case_insensitive_filter.iter(text.lower()):
             unique_extractors.update(extractors)
         return unique_extractors
-
-    @property
-    def case_sensitive_filter(self):
-        """Build a pyahocorasick filter for all case-sensitive extractors."""
-        if not hasattr(self, "_case_sensitive_filter"):
-            self._case_sensitive_filter = self.make_ahocorasick_filter(
-                (s, e)
-                for e in EXTRACTORS
-                if not e.flags & re.I
-                for s in e.strings
-            )
-            self._case_insensitive_filter = self.make_ahocorasick_filter(
-                (s.lower(), e)
-                for e in EXTRACTORS
-                if e.flags & re.I
-                for s in e.strings
-            )
-        return self._case_sensitive_filter
-
-    @property
-    def case_insensitive_filter(self):
-        """Build a pyahocorasick filter for all case-insensitive extractors."""
-        if not hasattr(self, "_case_insensitive_filter"):
-            _ = self._case_sensitive_filter
-        return self._case_insensitive_filter
 
     @staticmethod
     def make_ahocorasick_filter(
