@@ -31,20 +31,20 @@ class AnnotateTest(TestCase):
             (
                 "<body>foo  <i>1   <b>U.S.</b></i>   1 bar</body>",
                 "<body>foo  <i><0>1   <b>U.S.</b></i>   1</0> bar</body>",
-                ["html", "spaces_and_tabs"],
+                ["html", "inline_whitespace"],
             ),
             # whitespace and html -- skip unbalanced tags
             (
                 "foo  <i>1 U.S.</i> 1; 2 <i>U.S.</i> 2",
                 "foo  <i>1 U.S.</i> 1; <1>2 <i>U.S.</i> 2</1>",
-                ["html", "spaces_and_tabs"],
+                ["html", "inline_whitespace"],
                 {"unbalanced_tags": "skip"},
             ),
             # whitespace and html -- wrap unbalanced tags
             (
                 "<i>1 U.S.</i> 1; 2 <i>U.S.</i> 2",
                 "<i><0>1 U.S.</0></i><0> 1</0>; <1>2 <i>U.S.</i> 2</1>",
-                ["html", "spaces_and_tabs"],
+                ["html", "inline_whitespace"],
                 {"unbalanced_tags": "wrap"},
             ),
             # whitespace containing linebreaks
