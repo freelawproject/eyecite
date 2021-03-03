@@ -66,7 +66,7 @@ You can use :code:`clean_text` to help with this:
     from eyecite import clean_text, get_citations
 
     source_text = '<p>foo   1  U.S.  1   </p>'
-    plain_text = clean_text(text, ['html', 'whitespace', my_func])
+    plain_text = clean_text(text, ['html', 'inline_whitespace', my_func])
     found_citations = get_citations(plain_text)
 
 See the Annotating Citations section for how to insert links into the original text using
@@ -74,10 +74,11 @@ citations extracted from the cleaned text.
 
 :code:`clean_text` currently accepts these values as cleaners:
 
-1. :code:`whitespace`: replace all runs of tab and space characters with a single space character
-2. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
-3. :code:`html`: remove non-visible HTML content using the lxml library
-4. Custom function: any function taking a string and returning a string.
+1. :code:`inline_whitespace`: replace all runs of tab and space characters with a single space character
+2. :code:`all_whitespace`: replace all runs of any whitespace character with a single space character
+3. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
+4. :code:`html`: remove non-visible HTML content using the lxml library
+5. Custom function: any function taking a string and returning a string.
 
 
 Annotating Citations
@@ -109,7 +110,7 @@ the original text in as :code:`source_text`:
     from eyecite import get_citations, annotate, clean_text
 
     source_text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
-    plain_text = clean_text(source_text, ['html', 'whitespace'])
+    plain_text = clean_text(source_text, ['html', 'inline_whitespace'])
     citations = get_citations(plain_text)
     linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
 
