@@ -22,9 +22,14 @@ def html(html_content: str) -> str:
     return " ".join(text)
 
 
-def whitespace(text: str) -> str:
-    """Collapse multiple spaces into one space character."""
+def inline_whitespace(text: str) -> str:
+    """Collapse multiple spaces or tabs into one space character."""
     return re.sub(r"[ \t]+", " ", text)
+
+
+def all_whitespace(text: str) -> str:
+    """Collapse multiple whitespace characters into one space character."""
+    return re.sub(r"\s+", " ", text)
 
 
 def underscores(text: str) -> str:
@@ -35,6 +40,7 @@ def underscores(text: str) -> str:
 
 cleaners_lookup: Dict[str, Callable[[str], str]] = {
     "html": html,
-    "whitespace": whitespace,
+    "inline_whitespace": inline_whitespace,
+    "all_whitespace": all_whitespace,
     "underscores": underscores,
 }

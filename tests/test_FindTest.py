@@ -99,6 +99,14 @@ class FindTest(TestCase):
             # Basic test
             ('1 U.S. 1',
              [case_citation(0)]),
+            # Basic test with a line break
+            ('1 U.S.\n1',
+             [case_citation(0)],
+             {'clean': ['all_whitespace']}),
+            # Basic test with a line break within a reporter
+            ('1 U.\nS. 1',
+             [case_citation(0, reporter_found='U. S.')],
+             {'clean': ['all_whitespace']}),
             # Basic test of non-case name before citation (should not be found)
             ('lissner test 1 U.S. 1',
              [case_citation(2)]),
@@ -197,6 +205,11 @@ class FindTest(TestCase):
                             antecedent_guess='asdf,')]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
+            # Test supra citation across line break
+            ('before asdf, supra,\nat 2',
+             [supra_citation(2, "supra,", antecedent_guess='asdf,',
+                             page='2')],
+             {'clean': ['all_whitespace']}),
             # Test short form citation with a page range
             ('before asdf, 1 U. S., at 20-25',
              [case_citation(2, page='20-25', reporter_found='U. S.',
@@ -230,13 +243,20 @@ class FindTest(TestCase):
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [id_citation(2, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'inline_whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
                             defendant='bar'),
               id_citation(8, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)]),
+            # Test Id. citation across line break
+            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
+             [case_citation(3, page='12', plaintiff='foo',
+                            defendant='bar'),
+              id_citation(8, 'Id.,', after_tokens=['at', '123.'],
+                          has_page=True)],
+             {'clean': ['all_whitespace']}),
             # Test Id. citation at end of text
             ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
             ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
@@ -244,12 +264,12 @@ class FindTest(TestCase):
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'inline_whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)],
-             {'clean': ['html', 'whitespace']}),
+             {'clean': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
