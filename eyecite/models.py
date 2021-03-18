@@ -285,6 +285,7 @@ class CitationToken(Token):
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     short: bool = False
+    extra_match_groups: dict = field(default_factory=dict, compare=False)
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
@@ -301,11 +302,15 @@ class CitationToken(Token):
         "variation_editions" in their extra config. Pass all of that through
         to the constructor."""
         start, end = m.span(0)
+        match_groups = m.groupdict()
         return cls(
             m[0],
             start + offset,
             end + offset,
-            **m.groupdict(),
+            volume=match_groups.pop("volume", ""),
+            reporter=match_groups.pop("reporter", ""),
+            page=match_groups.pop("page", ""),
+            extra_match_groups=match_groups,
             **extra,
         )
 

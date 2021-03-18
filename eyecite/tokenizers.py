@@ -1,12 +1,13 @@
 import hashlib
 import re
 from collections import defaultdict
+from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
+from string import Template
 from typing import (
     Any,
     AnyStr,
-    Dict,
     Generator,
     Iterable,
     List,
@@ -16,7 +17,8 @@ from typing import (
 )
 
 import ahocorasick
-from reporters_db import REPORTERS
+from reporters_db import RAW_REGEX_VARIABLES, REPORTERS
+from reporters_db.utils import process_variables, recursive_substitute
 
 from eyecite.models import (
     CitationToken,
@@ -50,44 +52,22 @@ EDITIONS_LOOKUP = defaultdict(list)
 def _populate_reporter_extractors():
     """Populate EXTRACTORS and EDITIONS_LOOKUP."""
 
-    # Extractors step one: add an extractor for each reporter string
+    # Set up regex replacement variables from reporters-db
+    raw_regex_variables = deepcopy(RAW_REGEX_VARIABLES)
+    raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
+    raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
+    regex_variables = process_variables(raw_regex_variables)
+    short_cite_template = recursive_substitute(
+        "$volume $reporter,? at $page", regex_variables
+    )
 
-    def _cite_regex(reporter: str, cite_format: Optional[str] = None):
-        """Helper to generate cite-matching regexes from a
-        reporter like "U.S" and a cite_format like
-        "{volume} {reporter} {page}"
-        """
-        if cite_format is None:
-            cite_format = "{volume} {reporter},? {page}"
-        return (
-            cite_format.replace("{volume}", r"(?P<volume>\d+)")
-            .replace("{reporter}", rf"(?P<reporter>{re.escape(reporter)})")
-            .replace("{page}", rf"(?P<page>{PAGE_NUMBER_REGEX})")
+    def _substitute_edition(template, edition_name):
+        """Helper to replace $edition in template with edition_name."""
+        return Template(template).safe_substitute(
+            edition=re.escape(edition_name)
         )
 
-    def _add_reporter_regex(
-        editions_by_regex: Dict,
-        kind: str,
-        reporter: str,
-        edition: Edition,
-        cite_format: str,
-    ):
-        """Helper to generate citations for a reporter
-        and insert into editions_by_regex."""
-        EDITIONS_LOOKUP[reporter].append(edition)
-
-        # insert long cite
-        regex = _cite_regex(reporter, cite_format)
-        editions_by_regex[regex][kind].append(edition)
-        editions_by_regex[regex]["strings"].add(reporter)
-
-        # insert short cite -- we can currently only do this if there's
-        # no custom cite_format in reporters_db
-        if cite_format is None:
-            regex = _cite_regex(reporter, "{volume} {reporter},? at {page}")
-            editions_by_regex[regex][kind].append(edition)
-            editions_by_regex[regex]["strings"].add(reporter)
-            editions_by_regex[regex]["short"] = True
+    # Extractors step one: add an extractor for each reporter string
 
     # Build a lookup of regex -> edition.
     # Keys in this dict will be regular expressions to handle a
@@ -111,6 +91,27 @@ def _populate_reporter_extractors():
         }
     )
 
+    def _add_reporter_regex(
+        kind: str,
+        reporter: str,
+        edition: Edition,
+        regex: str,
+        standard_cite: bool,
+    ):
+        """Helper to generate citations for a reporter
+        and insert into editions_by_regex."""
+        EDITIONS_LOOKUP[reporter].append(edition)
+        editions_by_regex[regex][kind].append(edition)
+
+        if standard_cite:
+            editions_by_regex[regex]["strings"].add(reporter)
+
+            # add short cite
+            regex = _substitute_edition(short_cite_template, reporter)
+            editions_by_regex[regex][kind].append(edition)
+            editions_by_regex[regex]["strings"].add(reporter)
+            editions_by_regex[regex]["short"] = True
+
     # Use our helper functions to insert a regex into editions_by_regex
     # for each reporter string in reporters_db:
     for reporter_key, reporter_cluster in REPORTERS.items():
@@ -120,30 +121,38 @@ def _populate_reporter_extractors():
                 name=reporter["name"],
                 cite_type=reporter["cite_type"],
             )
-            editions = {}
-            cite_format = reporter.get("cite_format")
-            for edition_name, dates in reporter["editions"].items():
-                editions[edition_name] = Edition(
+            variations = reporter["variations"]
+
+            for edition_name, edition_data in reporter["editions"].items():
+                edition = Edition(
                     short_name=edition_name,
                     reporter=reporter_obj,
-                    start=dates["start"],
-                    end=dates["end"],
+                    start=edition_data["start"],
+                    end=edition_data["end"],
                 )
-                _add_reporter_regex(
-                    editions_by_regex,
-                    "editions",
-                    edition_name,
-                    editions[edition_name],
-                    cite_format,
-                )
-            for variation, edition_name in reporter["variations"].items():
-                _add_reporter_regex(
-                    editions_by_regex,
-                    "variations",
-                    variation,
-                    editions[edition_name],
-                    cite_format,
-                )
+                for regex_template in edition_data.get(
+                    "regexes", ["$full_cite"]
+                ):
+                    standard_cite = regex_template == "$full_cite"
+                    regex_template = recursive_substitute(
+                        regex_template, regex_variables
+                    )
+                    regex = _substitute_edition(regex_template, edition_name)
+                    _add_reporter_regex(
+                        "editions", edition_name, edition, regex, standard_cite
+                    )
+                    for variation, variation_target in variations.items():
+                        if edition_name == variation_target:
+                            regex = _substitute_edition(
+                                regex_template, variation
+                            )
+                            _add_reporter_regex(
+                                "variations",
+                                variation,
+                                edition,
+                                regex,
+                                standard_cite,
+                            )
 
     # Add each regex to EXTRACTORS:
     for regex, cluster in editions_by_regex.items():

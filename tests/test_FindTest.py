@@ -324,6 +324,13 @@ class FindTest(TestCase):
             # past, " U. S. " would match but not " U. S., "
             ('foo 1 U.S., 1 bar',
              [case_citation(0)]),
+            # Test reporter with custom regex
+            ('blah blah Bankr. L. Rep. (CCH) P12,345. blah blah',
+             [case_citation(2, volume='', reporter='Bankr. L. Rep.',
+                            reporter_found='Bankr. L. Rep. (CCH)', page='12,345')]),
+            ('blah blah, 2009 12345 (La.App. 1 Cir. 05/10/10). blah blah',
+             [case_citation(2, volume='2009', reporter='La.App. 1 Cir.',
+                            page='12345')]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
