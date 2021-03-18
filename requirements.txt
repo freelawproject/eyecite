@@ -1,5 +1,5 @@
 courts-db==0.9.7
 lxml==4.6.2
 pyahocorasick
-reporters-db==2.0.5
+reporters-db>=3
 six==1.15.0
