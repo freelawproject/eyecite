@@ -247,7 +247,7 @@ docs = ["sphinx (==3.5.1)", "python-docs-theme (==2020.12)"]
 
 [[package]]
 name = "pylint-json2html"
-version = "0.2.0"
+version = "0.3.0"
 description = "Pylint JSON report to HTML"
 category = "dev"
 optional = false
@@ -331,7 +331,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "88766920a8171d3670fa2247a1f4258f5ae6073b84664bccfd2381b93ca08500"
+content-hash = "1e03cb9763ac2627b88b4877d1d1371ae79457e2d8aae7333a0d94c1b2272a85"
 
 [metadata.files]
 appdirs = [
@@ -548,7 +548,8 @@ pylint = [
     {file = "pylint-2.7.2.tar.gz", hash = "sha256:0e21d3b80b96740909d77206d741aa3ce0b06b41be375d92e1f3244a274c1f8a"},
 ]
 pylint-json2html = [
-    {file = "pylint-json2html-0.2.0.tar.gz", hash = "sha256:79ee5d2b4733f53f450b66fb329088d6c7868443b0fdea39661ee41015ad4b22"},
+    {file = "pylint-json2html-0.3.0.tar.gz", hash = "sha256:1a7a3b4e018ba6b46cf44c20de5f3b7b3bd0d5604963456dae6ea733d2ee5ac8"},
+    {file = "pylint_json2html-0.3.0-py3-none-any.whl", hash = "sha256:b646a6b1e190e730967219cd4ae9bb8217e218cd8f34ecc7f15d0803cb13f9d8"},
 ]
 regex = [
     {file = "regex-2020.11.13-cp36-cp36m-macosx_10_9_x86_64.whl", hash = "sha256:8b882a78c320478b12ff024e81dc7d43c1462aa4a3341c754ee65d857a521f85"},
