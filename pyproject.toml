@@ -36,7 +36,7 @@ pyahocorasick = ">= 1.2"
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
 flake8 = "^3.9.0"
-isort = "^5.6.4"
+isort = "^5.8.0"
 mypy = "^0.812"
 pylint = "^2.7.2"
 wheel = "^0.35.1"
