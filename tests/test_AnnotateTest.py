@@ -1,3 +1,4 @@
+from pathlib import Path
 from unittest import TestCase
 
 from eyecite import annotate, clean_text, get_citations
@@ -82,3 +83,14 @@ class AnnotateTest(TestCase):
                     **annotate_kwargs,
                 )
                 self.assertEqual(annotated, expected)
+
+    def test_long_diff(self):
+        """Does diffing work across a long text with many changes?"""
+        opinion_text = (
+            Path(__file__).parent / "assets" / "opinion.txt"
+        ).read_text()
+        cleaned_text = clean_text(opinion_text, ["all_whitespace"])
+        annotated_text = annotate(
+            cleaned_text, [((902, 915), "~FOO~", "~BAR~")], opinion_text
+        )
+        self.assertIn("~FOO~539\n  U. S. 306~BAR~", annotated_text)
