@@ -1,0 +1,1632 @@
+(Slip Opinion)              OCTOBER TERM, 2012                                       1
+
+                                       Syllabus
+
+         NOTE: Where it is feasible, a syllabus (headnote) will be released, as is
+       being done in connection with this case, at the time the opinion is issued.
+       The syllabus constitutes no part of the opinion of the Court but has been
+       prepared by the Reporter of Decisions for the convenience of the reader.
+       See United States v. Detroit Timber & Lumber Co., 200 U. S. 321, 337.
+
+
+SUPREME COURT OF THE UNITED STATES
+
+                                       Syllabus
+
+ FISHER v. UNIVERSITY OF TEXAS AT AUSTIN ET AL.
+
+CERTIORARI TO THE UNITED STATES COURT OF APPEALS FOR
+                  THE FIFTH CIRCUIT
+
+     No. 11–345.      Argued October 10, 2012—Decided June 24, 2013
+The University of Texas at Austin considers race as one of various fac-
+  tors in its undergraduate admissions process. The University, which
+  is committed to increasing racial minority enrollment, adopted its
+  current program after this Court decided Grutter v. Bollinger, 539
+  U. S. 306, upholding the use of race as one of many “plus factors” in
+  an admissions program that considered the overall individual contri-
+  bution of each candidate, and decided Gratz v. Bollinger, 539 U. S.
+  244, holding unconstitutional an admissions program that automati-
+  cally awarded points to applicants from certain racial minorities.
+     Petitioner, who is Caucasian, was rejected for admission to the
+  University’s 2008 entering class. She sued the University and school
+  officials, alleging that the University’s consideration of race in admis-
+  sions violated the Equal Protection Clause. The District Court
+  granted summary judgment to the University. Affirming, the Fifth
+  Circuit held that Grutter required courts to give substantial defer-
+  ence to the University, both in the definition of the compelling inter-
+  est in diversity’s benefits and in deciding whether its specific plan
+  was narrowly tailored to achieve its stated goal. Applying that
+  standard, the court upheld the University’s admissions plan.
+Held: Because the Fifth Circuit did not hold the University to the de-
+ manding burden of strict scrutiny articulated in Grutter and Regents
+ of Univ. of Cal. v. Bakke, 438 U. S. 265, its decision affirming the Dis-
+ trict Court’s grant of summary judgment to the University was incor-
+ rect. Pp. 5–13.
+    (a) Bakke, Gratz, and Grutter, which directly address the question
+ considered here, are taken as given for purposes of deciding this case.
+ In Bakke’s principal opinion, Justice Powell recognized that state
+ university “decisions based on race or ethnic origin . . . are reviewable
+2           FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                                  Syllabus
+
+    under the Fourteenth Amendment,” 438 U. S., at 287, using a strict
+    scrutiny standard, id. at 299. He identified as a compelling interest
+    that could justify the consideration of race the interest in the educa-
+    tional benefits that flow from a diverse student body, but noted that
+    this interest is complex, encompassing a broad array “of qualifica-
+    tions and characteristics of which racial or ethnic origin is but a sin-
+    gle though important element.” Id., at 315
+       In Gratz and Grutter, the Court endorsed these precepts, observing
+    that an admissions process with such an interest is subject to judicial
+    review and must withstand strict scrutiny, Gratz, supra, at 275, i.e.,
+    a university must clearly demonstrate that its “ ‘purpose or interest is
+    both constitutionally permissible and substantial, and that its use of
+    the classification is “necessary . . . to the accomplishment” of its pur-
+    pose,’ ” Bakke, supra, at 305. Additional guidance may be found in
+    the Court’s broader equal protection jurisprudence. See, e.g., Rice v.
+    Cayetano, 528 U. S. 495, 517; Richmond v. J. A. Croson Co., 488 U. S.
+    469, 505. Strict scrutiny is a searching examination, and the gov-
+    ernment bears the burden to prove “ ‘that the reasons for any [racial]
+    classification [are] clearly identified and unquestionably legitimate.’ ”
+    Ibid. Pp. 5–8.
+       (b) Under Grutter, strict scrutiny must be applied to any admis-
+    sions program using racial categories or classifications. A court may
+    give some deference to a university’s “judgment that such diversity is
+    essential to its educational mission,” 539 U. S., at 328, provided that
+    diversity is not defined as mere racial balancing and there is a rea-
+    soned, principled explanation for the academic decision. On this
+    point, the courts below were correct in finding that Grutter calls for
+    deference to the University’s experience and expertise about its edu-
+    cational mission. However, once the University has established that
+    its goal of diversity is consistent with strict scrutiny, the University
+    must prove that the means it chose to attain that diversity are nar-
+    rowly tailored to its goal. On this point, the University receives no
+    deference. Id., at 333. It is at all times the University’s obligation to
+    demonstrate, and the Judiciary’s obligation to determine, that admis-
+    sions processes “ensure that each applicant is evaluated as an indi-
+    vidual and not in a way that makes an applicant’s race or ethnicity
+    the defining feature of his or her application.” Id., at 337. Narrow
+    tailoring also requires a reviewing court to verify that it is “neces-
+    sary” for the university to use race to achieve the educational benefits
+    of diversity. Bakke, supra, at 305. The reviewing court must ulti-
+    mately be satisfied that no workable race-neutral alternatives would
+    produce the educational benefits of diversity.
+       Rather than perform this searching examination, the Fifth Circuit
+    held petitioner could challenge only whether the University’s decision
+                     Cite as: 570 U. S. ____ (2013)                    3
+
+                                Syllabus
+
+  to use race as an admissions factor “was made in good faith.” It pre-
+  sumed that the school had acted in good faith and gave petitioner the
+  burden of rebutting that presumption. It thus undertook the narrow-
+  tailoring requirement with a “degree of deference” to the school.
+  These expressions of the controlling standard are at odds with Grut-
+  ter’s command that “all racial classifications imposed by government
+  ‘must be analyzed by a reviewing court under strict scrutiny.’ ” 539
+  U. S., at 326. Strict scrutiny does not permit a court to accept a
+  school’s assertion that its admissions process uses race in a permissi-
+  ble way without closely examining how the process works in practice,
+  yet that is what the District Court and Fifth Circuit did here. The
+  Court vacates the Fifth Circuit’s judgment. But fairness to the liti-
+  gants and the courts that heard the case requires that it be remanded
+  so that the admissions process can be considered and judged under a
+  correct analysis. In determining whether summary judgment in the
+  University’s favor was appropriate, the Fifth Circuit must assess
+  whether the University has offered sufficient evidence to prove that
+  its admissions program is narrowly tailored to obtain the educational
+  benefits of diversity. Pp. 8–13.
+631 F. 3d 213, vacated and remanded.
+
+   KENNEDY, J., delivered the opinion of the Court, in which ROBERTS,
+C. J., and SCALIA, THOMAS, BREYER, ALITO, and SOTOMAYOR, JJ., joined.
+SCALIA, J., and THOMAS, J., filed concurring opinions. GINSBURG, J.,
+filed a dissenting opinion. KAGAN, J., took no part in the consideration
+or decision of the case.
+                        Cite as: 570 U. S. ____ (2013)                              1
+
+                             Opinion of the Court
+
+     NOTICE: This opinion is subject to formal revision before publication in the
+     preliminary print of the United States Reports. Readers are requested to
+     notify the Reporter of Decisions, Supreme Court of the United States, Wash-
+     ington, D. C. 20543, of any typographical or other formal errors, in order
+     that corrections may be made before the preliminary print goes to press.
+
+
+SUPREME COURT OF THE UNITED STATES
+                                   _________________
+
+                                   No. 11–345
+                                   _________________
+
+
+ABIGAIL NOEL FISHER, PETITIONER v. UNIVERSITY
+          OF TEXAS AT AUSTIN ET AL.
+ ON WRIT OF CERTIORARI TO THE UNITED STATES COURT OF
+            APPEALS FOR THE FIFTH CIRCUIT
+                                 [June 24, 2013]
+
+   JUSTICE KENNEDY delivered the opinion of the Court.
+   The University of Texas at Austin considers race as one
+of various factors in its undergraduate admissions process.
+Race is not itself assigned a numerical value for each ap-
+plicant, but the University has committed itself to
+increasing racial minority enrollment on campus. It refers
+to this goal as a “critical mass.” Petitioner, who is Cauca-
+sian, sued the University after her application was re-
+jected. She contends that the University’s use of race in
+the admissions process violated the Equal Protection Clause
+of the Fourteenth Amendment.
+   The parties asked the Court to review whether the
+judgment below was consistent with “this Court’s deci-
+sions interpreting the Equal Protection Clause of the Four-
+teenth Amendment, including Grutter v. Bollinger, 539
+U. S. 306 (2003).” Pet. for Cert. i. The Court concludes
+that the Court of Appeals did not hold the University
+to the demanding burden of strict scrutiny articulated
+in Grutter and Regents of Univ. of Cal. v. Bakke, 438 U. S.
+265, 305 (1978) (opinion of Powell, J.). Because the Court
+of Appeals did not apply the correct standard of strict
+2       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     Opinion of the Court
+
+scrutiny, its decision affirming the District Court’s grant
+of summary judgment to the University was incorrect.
+That decision is vacated, and the case is remanded for
+further proceedings.
+                               I
+                              A
+   Located in Austin, Texas, on the most renowned campus
+of the Texas state university system, the University is one
+of the leading institutions of higher education in the Na-
+tion. Admission is prized and competitive. In 2008, when
+petitioner sought admission to the University’s entering
+class, she was 1 of 29,501 applicants. From this group
+12,843 were admitted, and 6,715 accepted and enrolled.
+Petitioner was denied admission.
+   In recent years the University has used three different
+programs to evaluate candidates for admission. The first
+is the program it used for some years before 1997, when
+the University considered two factors: a numerical score
+reflecting an applicant’s test scores and academic perform-
+ance in high school (Academic Index or AI), and the
+applicant’s race. In 1996, this system was held unconsti-
+tutional by the United States Court of Appeals for the
+Fifth Circuit. It ruled the University’s consideration of
+race violated the Equal Protection Clause because it did
+not further any compelling government interest. Hopwood
+v. Texas, 78 F. 3d 932, 955 (1996).
+   The second program was adopted to comply with the
+Hopwood decision. The University stopped considering
+race in admissions and substituted instead a new holistic
+metric of a candidate’s potential contribution to the Uni-
+versity, to be used in conjunction with the Academic In-
+dex. This “Personal Achievement Index” (PAI) measures a
+student’s leadership and work experience, awards, extra-
+curricular activities, community service, and other special
+circumstances that give insight into a student’s back-
+                 Cite as: 570 U. S. ____ (2013)           3
+
+                     Opinion of the Court
+
+ground. These included growing up in a single-parent
+home, speaking a language other than English at home,
+significant family responsibilities assumed by the appli-
+cant, and the general socioeconomic condition of the stu-
+dent’s family. Seeking to address the decline in minority
+enrollment after Hopwood, the University also expanded
+its outreach programs.
+   The Texas State Legislature also responded to the Hop­
+wood decision. It enacted a measure known as the Top
+Ten Percent Law, codified at Tex. Educ. Code Ann. §51.803
+(West 2009). Also referred to as H. B. 588, the Top
+Ten Percent Law grants automatic admission to any pub-
+lic state college, including the University, to all students
+in the top 10% of their class at high schools in Texas
+that comply with certain standards.
+   The University’s revised admissions process, coupled
+with the operation of the Top Ten Percent Law, resulted in
+a more racially diverse environment at the University.
+Before the admissions program at issue in this case, in the
+last year under the post-Hopwood AI/PAI system that did
+not consider race, the entering class was 4.5% African-
+American and 16.9% Hispanic. This is in contrast with
+the 1996 pre-Hopwood and Top Ten Percent regime, when
+race was explicitly considered, and the University’s enter-
+ing freshman class was 4.1% African-American and 14.5%
+Hispanic.
+   Following this Court’s decisions in Grutter v. Bollinger,
+supra, and Gratz v. Bollinger, 539 U. S. 244 (2003), the
+University adopted a third admissions program, the 2004
+program in which the University reverted to explicit con-
+sideration of race. This is the program here at issue. In
+Grutter, the Court upheld the use of race as one of many
+“plus factors” in an admissions program that considered
+the overall individual contribution of each candidate. In
+Gratz, by contrast, the Court held unconstitutional Michi-
+gan’s undergraduate admissions program, which automat-
+4       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     Opinion of the Court
+
+ically awarded points to applicants from certain racial
+minorities.
+   The University’s plan to resume race-conscious admis-
+sions was given formal expression in June 2004 in an in-
+ternal document entitled Proposal to Consider Race and
+Ethnicity in Admissions (Proposal). Supp. App. 1a. The
+Proposal relied in substantial part on a study of a subset
+of undergraduate classes containing between 5 and 24
+students. It showed that few of these classes had signifi-
+cant enrollment by members of racial minorities. In addi-
+tion the Proposal relied on what it called “anecdotal”
+reports from students regarding their “interaction in the
+classroom.” The Proposal concluded that the University
+lacked a “critical mass” of minority students and that to
+remedy the deficiency it was necessary to give explicit
+consideration to race in the undergraduate admissions
+program.
+   To implement the Proposal the University included a
+student’s race as a component of the PAI score, begin-
+ning with applicants in the fall of 2004. The University
+asks students to classify themselves from among five
+predefined racial categories on the application. Race is not
+assigned an explicit numerical value, but it is undisputed
+that race is a meaningful factor.
+   Once applications have been scored, they are plotted
+on a grid with the Academic Index on the x-axis and the
+Personal Achievement Index on the y-axis. On that grid
+students are assigned to so-called cells based on their
+individual scores. All students in the cells falling above a
+certain line are admitted. All students below the line are
+not. Each college—such as Liberal Arts or Engineering—
+admits students separately. So a student is considered
+initially for her first-choice college, then for her second
+choice, and finally for general admission as an undeclared
+major.
+   Petitioner applied for admission to the University’s 2008
+                 Cite as: 570 U. S. ____ (2013)            5
+
+                     Opinion of the Court
+
+entering class and was rejected. She sued the University
+and various University officials in the United States Dis-
+trict Court for the Western District of Texas. She alleged
+that the University’s consideration of race in admissions
+violated the Equal Protection Clause. The parties cross-
+moved for summary judgment. The District Court granted
+summary judgment to the University. The United States
+Court of Appeals for the Fifth Circuit affirmed. It held
+that Grutter required courts to give substantial deference
+to the University, both in the definition of the compelling
+interest in diversity’s benefits and in deciding whether its
+specific plan was narrowly tailored to achieve its stated
+goal. Applying that standard, the court upheld the Uni-
+versity’s admissions plan. 631 F. 3d 213, 217–218 (2011).
+   Over the dissent of seven judges, the Court of Appeals
+denied petitioner’s request for rehearing en banc. See 644
+F. 3d 301, 303 (CA5 2011) (per curiam). Petitioner sought
+a writ of certiorari. The writ was granted. 565 U. S. ___
+(2012).
+                              B
+  Among the Court’s cases involving racial classifications
+in education, there are three decisions that directly ad-
+dress the question of considering racial minority status as
+a positive or favorable factor in a university’s admissions
+process, with the goal of achieving the educational benefits
+of a more diverse student body: Bakke, 438 U. S. 265;
+Gratz, supra; and Grutter, 539 U. S. 306. We take those
+cases as given for purposes of deciding this case.
+  We begin with the principal opinion authored by Justice
+Powell in Bakke, supra. In Bakke, the Court considered
+a system used by the medical school of the University of
+California at Davis. From an entering class of 100 stu-
+dents the school had set aside 16 seats for minority appli-
+cants. In holding this program impermissible under the
+Equal Protection Clause Justice Powell’s opinion stated
+6        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     Opinion of the Court
+
+certain basic premises. First, “decisions based on race
+or ethnic origin by faculties and administrations of state
+universities are reviewable under the Fourteenth Amend-
+ment.” Id., at 287 (separate opinion). The principle
+of equal protection admits no “artificial line of a ‘two-
+class theory’ ” that “permits the recognition of special
+wards entitled to a degree of protection greater than that
+accorded others.” Id., at 295. It is therefore irrelevant
+that a system of racial preferences in admissions may
+seem benign. Any racial classification must meet strict
+scrutiny, for when government decisions “touch upon an
+individual’s race or ethnic background, he is entitled to a
+judicial determination that the burden he is asked to bear
+on that basis is precisely tailored to serve a compelling
+governmental interest.” Id., at 299.
+   Next, Justice Powell identified one compelling interest
+that could justify the consideration of race: the interest in
+the educational benefits that flow from a diverse student
+body. Redressing past discrimination could not serve as a
+compelling interest, because a university’s “broad mission
+[of] education” is incompatible with making the “judicial,
+legislative, or administrative findings of constitutional or
+statutory violations” necessary to justify remedial racial
+classification. Id., at 307–309.
+   The attainment of a diverse student body, by contrast,
+serves values beyond race alone, including enhanced class-
+room dialogue and the lessening of racial isolation and
+stereotypes. The academic mission of a university is
+“a special concern of the First Amendment.” Id., at 312.
+Part of “ ‘the business of a university [is] to provide that
+atmosphere which is most conducive to speculation, exper-
+iment, and creation,’ ” and this in turn leads to the ques-
+tion of “ ‘who may be admitted to study.’ ” Sweezy v. New
+Hampshire, 354 U. S. 234, 263 (1957) (Frankfurter, J.,
+concurring in judgment).
+   Justice Powell’s central point, however, was that this
+                 Cite as: 570 U. S. ____ (2013)            7
+
+                     Opinion of the Court
+
+interest in securing diversity’s benefits, although a per-
+missible objective, is complex. “It is not an interest in
+simple ethnic diversity, in which a specified percentage of
+the student body is in effect guaranteed to be members
+of selected ethnic groups, with the remaining percentage
+an undifferentiated aggregation of students. The diversity
+that furthers a compelling state interest encompasses a
+far broader array of qualifications and characteristics of
+which racial or ethnic origin is but a single though im-
+portant element.” Bakke, 438 U. S., at 315 (separate
+opinion).
+   In Gratz, 539 U. S. 244, and Grutter, supra, the Court
+endorsed the precepts stated by Justice Powell. In Grut­
+ter, the Court reaffirmed his conclusion that obtaining the
+educational benefits of “student body diversity is a compel-
+ling state interest that can justify the use of race in uni-
+versity admissions.” Id., at 325.
+   As Gratz and Grutter observed, however, this follows
+only if a clear precondition is met: The particular admis-
+sions process used for this objective is subject to judicial
+review. Race may not be considered unless the admissions
+process can withstand strict scrutiny. “Nothing in Justice
+Powell’s opinion in Bakke signaled that a university may
+employ whatever means it desires to achieve the stated
+goal of diversity without regard to the limits imposed by
+our strict scrutiny analysis.” Gratz, supra, at 275. “To be
+narrowly tailored, a race-conscious admissions program
+cannot use a quota system,” Grutter, 539 U. S., at 334, but
+instead must “remain flexible enough to ensure that each
+applicant is evaluated as an individual and not in a way
+that makes an applicant’s race or ethnicity the defining
+feature of his or her application,” id., at 337. Strict scru-
+tiny requires the university to demonstrate with clarity that
+its “purpose or interest is both constitutionally permissible
+and substantial, and that its use of the classification is
+necessary . . . to the accomplishment of its purpose.”
+8        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                      Opinion of the Court
+
+Bakke, 438 U. S., at 305 (opinion of Powell, J.) (internal
+quotation marks omitted).
+   While these are the cases that most specifically address
+the central issue in this case, additional guidance may
+be found in the Court’s broader equal protection jurispru-
+dence which applies in this context. “Distinctions between
+citizens solely because of their ancestry are by their very
+nature odious to a free people,” Rice v. Cayetano, 528 U. S.
+495, 517 (2000) (internal quotation marks omitted), and
+therefore “are contrary to our traditions and hence consti-
+tutionally suspect,” Bolling v. Sharpe, 347 U. S. 497, 499
+(1954). “ ‘[B]ecause racial characteristics so seldom pro-
+vide a relevant basis for disparate treatment,’ ” Richmond
+v. J. A. Croson Co., 488 U. S. 469, 505 (1989) (quoting
+Fullilove v. Klutznick, 448 U. S. 448, 533–534 (1980)
+(Stevens, J., dissenting)), “the Equal Protection Clause
+demands that racial classifications . . . be subjected to the
+‘most rigid scrutiny.’ ” Loving v. Virginia, 388 U. S. 1, 11
+(1967).
+   To implement these canons, judicial review must begin
+from the position that “any official action that treats a
+person differently on account of his race or ethnic origin is
+inherently suspect.” Fullilove, supra, at 523 (Stewart, J.,
+dissenting); McLaughlin v. Florida, 379 U. S. 184, 192
+(1964). Strict scrutiny is a searching examination, and it
+is the government that bears the burden to prove “ ‘that
+the reasons for any [racial] classification [are] clearly iden-
+tified and unquestionably legitimate,’ ” Croson, supra, at
+505 (quoting Fullilove, 448 supra, at 533–535 (Stevens, J.,
+dissenting)).
+                             II
+  Grutter made clear that racial “classifications are consti-
+tutional only if they are narrowly tailored to further com-
+pelling governmental interests.” 539 U. S., at 326. And
+Grutter endorsed Justice Powell’s conclusion in Bakke that
+                 Cite as: 570 U. S. ____ (2013)            9
+
+                     Opinion of the Court
+
+“the attainment of a diverse student body . . . is a consti-
+tutionally permissible goal for an institution of higher
+education.” 438 U. S., at 311–312 (separate opinion).
+Thus, under Grutter, strict scrutiny must be applied
+to any admissions program using racial categories or
+classifications.
+   According to Grutter, a university’s “educational judg-
+ment that such diversity is essential to its educational
+mission is one to which we defer.” 539 U. S., at 328.
+Grutter concluded that the decision to pursue “the educa-
+tional benefits that flow from student body diversity,” id.,
+at 330, that the University deems integral to its mission
+is, in substantial measure, an academic judgment to which
+some, but not complete, judicial deference is proper under
+Grutter. A court, of course, should ensure that there is a
+reasoned, principled explanation for the academic deci-
+sion. On this point, the District Court and Court of
+Appeals were correct in finding that Grutter calls for de-
+ference to the University’s conclusion, “ ‘based on its
+experience and expertise,’ ” 631 F. 3d, at 230 (quoting 645
+F. Supp. 2d 587, 603 (WD Tex. 2009)), that a diverse stu-
+dent body would serve its educational goals. There is
+disagreement about whether Grutter was consistent with
+the principles of equal protection in approving this compel-
+ling interest in diversity. See post, at 1 (SCALIA, J., con-
+curring); post, at 4–5 (THOMAS, J., concurring); post, at 1–2
+(GINSBURG, J., dissenting). But the parties here do not
+ask the Court to revisit that aspect of Grutter’s holding.
+   A university is not permitted to define diversity as
+“some specified percentage of a particular group merely
+because of its race or ethnic origin.” Bakke, supra, at
+307 (opinion of Powell, J.). “That would amount to out-
+right racial balancing, which is patently unconstitutional.”
+Grutter, supra, at 330. “Racial balancing is not trans-
+formed from ‘patently unconstitutional’ to a compelling
+state interest simply by relabeling it ‘racial diversity.’ ”
+10       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                      Opinion of the Court
+
+Parents Involved in Community Schools v. Seattle School
+Dist. No. 1, 551 U. S. 701, 732 (2007).
+  Once the University has established that its goal of di-
+versity is consistent with strict scrutiny, however, there
+must still be a further judicial determination that the
+admissions process meets strict scrutiny in its implemen-
+tation. The University must prove that the means chosen
+by the University to attain diversity are narrowly tailored
+to that goal. On this point, the University receives no
+deference. Grutter made clear that it is for the courts, not
+for university administrators, to ensure that “[t]he means
+chosen to accomplish the [government’s] asserted purpose
+must be specifically and narrowly framed to accomplish
+that purpose.” 539 U. S., at 333 (internal quotation marks
+omitted). True, a court can take account of a university’s
+experience and expertise in adopting or rejecting certain
+admissions processes. But, as the Court said in Grutter, it
+remains at all times the University’s obligation to demon-
+strate, and the Judiciary’s obligation to determine, that
+admissions processes “ensure that each applicant is evalu-
+ated as an individual and not in a way that makes an
+applicant’s race or ethnicity the defining feature of his or
+her application.” Id., at 337.
+  Narrow tailoring also requires that the reviewing court
+verify that it is “necessary” for a university to use race
+to achieve the educational benefits of diversity. Bakke,
+supra, at 305. This involves a careful judicial inquiry into
+whether a university could achieve sufficient diversity
+without using racial classifications. Although “[n]arrow
+tailoring does not require exhaustion of every conceivable
+race-neutral alternative,” strict scrutiny does require a
+court to examine with care, and not defer to, a university’s
+“serious, good faith consideration of workable race-neutral
+alternatives.” See Grutter, 539 U. S., at 339–340 (empha-
+sis added). Consideration by the university is of course
+necessary, but it is not sufficient to satisfy strict scrutiny:
+                 Cite as: 570 U. S. ____ (2013)           11
+
+                     Opinion of the Court
+
+The reviewing court must ultimately be satisfied that no
+workable race-neutral alternatives would produce the edu-
+cational benefits of diversity. If “ ‘a nonracial approach
+ . . . could promote the substantial interest about as well
+and at tolerable administrative expense,’ ” Wygant v.
+Jackson Bd. of Ed., 476 U. S. 267, 280, n. 6 (1986) (quoting
+Greenawalt, Judicial Scrutiny of “Benign” Racial Prefer-
+ence in Law School Admissions, 75 Colum. L. Rev. 559,
+578–579 (1975)), then the university may not consider
+race. A plaintiff, of course, bears the burden of placing the
+validity of a university’s adoption of an affirmative action
+plan in issue. But strict scrutiny imposes on the univer-
+sity the ultimate burden of demonstrating, before turning to
+racial classifications, that available, workable race-neutral
+alternatives do not suffice.
+    Rather than perform this searching examination, how-
+ever, the Court of Appeals held petitioner could challenge
+only “whether [the University’s] decision to reintroduce
+race as a factor in admissions was made in good faith.”
+631 F. 3d, at 236. And in considering such a challenge,
+the court would “presume the University acted in good
+faith” and place on petitioner the burden of rebutting that
+presumption. Id., at 231–232. The Court of Appeals
+held that to “second-guess the merits” of this aspect of
+the University’s decision was a task it was “ill-equipped to
+perform” and that it would attempt only to “ensure that
+[the University’s] decision to adopt a race-conscious ad-
+missions policy followed from [a process of] good faith
+consideration.” Id., at 231. The Court of Appeals thus
+concluded that “the narrow-tailoring inquiry—like the
+compelling-interest inquiry—is undertaken with a degree
+of deference to the Universit[y].” Id., at 232. Because “the
+efforts of the University have been studied, serious, and of
+high purpose,” the Court of Appeals held that the use of
+race in the admissions program fell within “a constitution-
+ally protected zone of discretion.” Id., at 231.
+12       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                      Opinion of the Court
+
+    These expressions of the controlling standard are at
+odds with Grutter’s command that “all racial classifica-
+tions imposed by government ‘must be analyzed by a
+reviewing court under strict scrutiny.’ ” 539 U. S., at 326
+(quoting Adarand Constructors, Inc. v. Peña, 515 U. S.
+200, 227 (1995)). In Grutter, the Court approved the plan
+at issue upon concluding that it was not a quota, was
+sufficiently flexible, was limited in time, and followed
+“serious, good faith consideration of workable race-neutral
+alternatives.” 539 U. S., at 339. As noted above, see
+supra, at 1, the parties do not challenge, and the Court
+therefore does not consider, the correctness of that
+determination.
+    Grutter did not hold that good faith would forgive an
+impermissible consideration of race. It must be remem-
+bered that “the mere recitation of a ‘benign’ or legitimate
+purpose for a racial classification is entitled to little or no
+weight.” Croson, 488 U. S., at 500. Strict scrutiny does
+not permit a court to accept a school’s assertion that its
+admissions process uses race in a permissible way without
+a court giving close analysis to the evidence of how the
+process works in practice.
+    The higher education dynamic does not change the
+narrow tailoring analysis of strict scrutiny applicable in
+other contexts. “[T]he analysis and level of scrutiny ap-
+plied to determine the validity of [a racial] classification do
+not vary simply because the objective appears acceptable
+. . . . While the validity and importance of the objective
+may affect the outcome of the analysis, the analysis itself
+does not change.” Mississippi Univ. for Women v. Hogan,
+458 U. S. 718, 724, n. 9 (1982).
+    The District Court and Court of Appeals confined the
+strict scrutiny inquiry in too narrow a way by deferring
+to the University’s good faith in its use of racial classifica-
+tions and affirming the grant of summary judgment on
+that basis. The Court vacates that judgment, but fairness
+                  Cite as: 570 U. S. ____ (2013)            13
+
+                      Opinion of the Court
+
+to the litigants and the courts that heard the case requires
+that it be remanded so that the admissions process can
+be considered and judged under a correct analysis. See
+Adarand, supra, at 237. Unlike Grutter, which was decided
+after trial, this case arises from cross-motions for sum-
+mary judgment. In this case, as in similar cases, in de-
+termining whether summary judgment in favor of the
+University would be appropriate, the Court of Appeals
+must assess whether the University has offered sufficient
+evidence that would prove that its admissions program is
+narrowly tailored to obtain the educational benefits of
+diversity. Whether this record—and not “simple . . . as-
+surances of good intention,” Croson, supra, at 500—is
+sufficient is a question for the Court of Appeals in the first
+instance.
+                          *     *    *
+  Strict scrutiny must not be “ ‘strict in theory, but fatal in
+fact,’ ” Adarand, supra, at 237; see also Grutter, supra, at
+326. But the opposite is also true. Strict scrutiny must
+not be strict in theory but feeble in fact. In order for judi-
+cial review to be meaningful, a university must make a
+showing that its plan is narrowly tailored to achieve the
+only interest that this Court has approved in this context:
+the benefits of a student body diversity that “encompasses
+a . . . broa[d] array of qualifications and characteristics of
+which racial or ethnic origin is but a single though im-
+portant element.” Bakke, 438 U. S., at 315 (opinion of
+Powell, J.). The judgment of the Court of Appeals is va-
+cated, and the case is remanded for further proceedings
+consistent with this opinion.
+                                              It is so ordered.
+
+  JUSTICE KAGAN took no part in the consideration or
+decision of this case.
+                 Cite as: 570 U. S. ____ (2013)           1
+
+                     SCALIA, J., concurring
+
+SUPREME COURT OF THE UNITED STATES
+                         _________________
+
+                          No. 11–345
+                         _________________
+
+
+ABIGAIL NOEL FISHER, PETITIONER v. UNIVERSITY
+          OF TEXAS AT AUSTIN ET AL.
+ ON WRIT OF CERTIORARI TO THE UNITED STATES COURT OF
+            APPEALS FOR THE FIFTH CIRCUIT
+                        [June 24, 2013]
+
+   JUSTICE SCALIA, concurring.
+   I adhere to the view I expressed in Grutter v. Bollinger:
+“The Constitution proscribes government discrimination
+on the basis of race, and state-provided education is no
+exception.” 539 U. S. 306, 349 (2003) (opinion concurring
+in part and dissenting in part). The petitioner in this case
+did not ask us to overrule Grutter’s holding that a “compel-
+ling interest” in the educational benefits of diversity can
+justify racial preferences in university admissions. Tr. of
+Oral Arg. 8–9. I therefore join the Court’s opinion in full.
+                  Cite as: 570 U. S. ____ (2013)            1
+
+                     THOMAS, J., concurring
+
+SUPREME COURT OF THE UNITED STATES
+                          _________________
+
+                           No. 11–345
+                          _________________
+
+
+ABIGAIL NOEL FISHER, PETITIONER v. UNIVERSITY
+          OF TEXAS AT AUSTIN ET AL.
+ ON WRIT OF CERTIORARI TO THE UNITED STATES COURT OF
+            APPEALS FOR THE FIFTH CIRCUIT
+                         [June 24, 2013]
+
+  JUSTICE THOMAS, concurring.
+  I join the Court’s opinion because I agree that the Court
+of Appeals did not apply strict scrutiny to the University
+of Texas at Austin’s (University) use of racial discrimi-
+nation in admissions decisions. Ante, at 1. I write sepa-
+rately to explain that I would overrule Grutter v. Bollinger,
+539 U. S. 306 (2003), and hold that a State’s use of race in
+higher education admissions decisions is categorically
+prohibited by the Equal Protection Clause.
+                             I
+                             A
+  The Fourteenth Amendment provides that no State
+shall “deny to any person . . . the equal protection of the
+laws.” The Equal Protection Clause guarantees every
+person the right to be treated equally by the State, with-
+out regard to race. “At the heart of this [guarantee] lies
+the principle that the government must treat citizens as
+individuals, and not as members of racial, ethnic, or reli-
+gious groups.” Missouri v. Jenkins, 515 U. S. 70, 120–121
+(1995) (THOMAS, J., concurring). “It is for this reason that
+we must subject all racial classifications to the strictest of
+scrutiny.” Id., at 121.
+  Under strict scrutiny, all racial classifications are cate-
+gorically prohibited unless they are “ ‘necessary to further
+2         FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                        THOMAS, J., concurring
+
+a compelling governmental interest’ ” and “narrowly tai-
+lored to that end.” Johnson v. California, 543 U. S. 499,
+514 (2005) (quoting Grutter, supra, at 327). This most
+exacting standard “has proven automatically fatal” in
+almost every case. Jenkins, supra, at 121 (THOMAS, J.,
+concurring). And rightly so. “Purchased at the price of
+immeasurable human suffering, the equal protection
+principle reflects our Nation’s understanding that [racial]
+classifications ultimately have a destructive impact on the
+individual and our society.” Adarand Constructors, Inc. v.
+Peña, 515 U. S. 200, 240 (1995) (THOMAS, J., concurring in
+part and concurring in judgment). “The Constitution
+abhors classifications based on race” because “every time
+the government places citizens on racial registers and
+makes race relevant to the provision of burdens or bene-
+fits, it demeans us all.” Grutter, supra, at 353 (THOMAS,
+J., concurring in part and dissenting in part).
+                              B
+                              1
+   The Court first articulated the strict-scrutiny standard
+in Korematsu v. United States, 323 U. S. 214 (1944).
+There, we held that “[p]ressing public necessity may some-
+times justify the existence of [racial discrimination]; racial
+antagonism never can.” Id., at 216.1 Aside from Grutter,
+the Court has recognized only two instances in which a
+“[p]ressing public necessity” may justify racial discrimina-
+tion by the government. First, in Korematsu, the Court
+recognized that protecting national security may satisfy
+this exacting standard. In that case, the Court upheld an
+evacuation order directed at “all persons of Japanese
+ancestry” on the grounds that the Nation was at war with
+Japan and that the order had “a definite and close rela-
+
+——————
+  1 The standard of “pressing public necessity” is more frequently called
+
+a “compelling governmental interest.” I use the terms interchangeably.
+                 Cite as: 570 U. S. ____ (2013)            3
+
+                    THOMAS, J., concurring
+
+tionship to the prevention of espionage and sabotage.” 323
+U. S., at 217–218. Second, the Court has recognized that
+the government has a compelling interest in remedying
+past discrimination for which it is responsible, but we
+have stressed that a government wishing to use race must
+provide “a ‘strong basis in evidence for its conclusion that
+remedial action [is] necessary.’ ” Richmond v. J. A. Croson
+Co., 488 U. S. 469, 500, 504 (1989) (quoting Wygant v.
+Jackson Bd. of Ed., 476 U. S. 267, 277 (1986) (plurality
+opinion)).
+   In contrast to these compelling interests that may, in a
+narrow set of circumstances, justify racial discrimination,
+the Court has frequently found other asserted interests
+insufficient. For example, in Palmore v. Sidoti, 466 U. S.
+429 (1984), the Court flatly rejected a claim that the best
+interests of a child justified the government’s racial dis-
+crimination. In that case, a state court awarded custody
+to a child’s father because the mother was in a mixed-race
+marriage. The state court believed the child might be
+stigmatized by living in a mixed-race household and
+sought to avoid this perceived problem in its custody
+determination. We acknowledged the possibility of stigma
+but nevertheless concluded that “the reality of private
+biases and the possible injury they might inflict” do not
+justify racial discrimination. Id., at 433. As we explained,
+“The Constitution cannot control such prejudices but
+neither can it tolerate them. Private biases may be out-
+side the reach of the law, but the law cannot, directly or
+indirectly, give them effect.” Ibid.
+   Two years later, in Wygant, supra, the Court held that
+even asserted interests in remedying societal discrimina-
+tion and in providing role models for minority students
+could not justify governmentally imposed racial discrimi-
+nation. In that case, a collective-bargaining agreement
+between a school board and a teacher’s union favored
+teachers who were “ ‘Black, American Indian, Oriental, or
+4        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                    THOMAS, J., concurring
+
+of Spanish descendancy.’ ” Id., at 270–271, and n. 2 (plu-
+rality opinion). We rejected the interest in remedying
+societal discrimination because it had no logical stopping
+point. Id., at 276. We similarly rebuffed as inadequate
+the interest in providing role models to minority students
+and added that the notion that “black students are better
+off with black teachers could lead to the very system the
+Court rejected in Brown v. Board of Education, 347 U. S.
+483 (1954).” Ibid.
+                              2
+   Grutter was a radical departure from our strict-scrutiny
+precedents. In Grutter, the University of Michigan Law
+School (Law School) claimed that it had a compelling
+reason to discriminate based on race. The reason it ad-
+vanced did not concern protecting national security or
+remedying its own past discrimination. Instead, the Law
+School argued that it needed to discriminate in admissions
+decisions in order to obtain the “educational benefits that
+flow from a diverse student body.” 539 U. S., at 317.
+Contrary to the very meaning of strict scrutiny, the Court
+deferred to the Law School’s determination that this inter-
+est was sufficiently compelling to justify racial discrimina-
+tion. Id., at 325.
+   I dissented from that part of the Court’s decision. I
+explained that “only those measures the State must take
+to provide a bulwark against anarchy, or to prevent vio-
+lence, will constitute a ‘pressing public necessity’ ” suffi-
+cient to satisfy strict scrutiny. Id., at 353. Cf. Lee v.
+Washington, 390 U. S. 333, 334 (1968) (Black, J., concur-
+ring) (protecting prisoners from violence might justify
+narrowly tailored discrimination); J. A. Croson, supra, at
+521 (SCALIA, J., concurring in judgment) (“At least where
+state or local action is at issue, only a social emergency
+rising to the level of imminent danger to life and limb . . .
+can justify [racial discrimination]”). I adhere to that view
+                  Cite as: 570 U. S. ____ (2013)            5
+
+                     THOMAS, J., concurring
+
+today. As should be obvious, there is nothing “pressing” or
+“necessary” about obtaining whatever educational benefits
+may flow from racial diversity.
+                              II
+                               A
+   The University claims that the District Court found that
+it has a compelling interest in attaining “a diverse stu-
+dent body and the educational benefits flowing from such
+diversity.” Brief for Respondents 18. The use of the con-
+junction, “and,” implies that the University believes its
+discrimination furthers two distinct interests. The first is
+an interest in attaining diversity for its own sake. The sec-
+ond is an interest in attaining educational benefits that
+allegedly flow from diversity.
+   Attaining diversity for its own sake is a nonstarter. As
+even Grutter recognized, the pursuit of diversity as an end
+is nothing more than impermissible “racial balancing.”
+539 U. S., at 329–330 (“The Law School’s interest is not
+simply ‘to assure within its student body some specified
+percentage of a particular group merely because of its race
+or ethnic origin.’ That would amount to outright racial
+balancing, which is patently unconstitutional” (quoting
+Regents of Univ. of Cal. v. Bakke, 438 U. S. 265, 307
+(1978); citation omitted)); see also id., at 307 (“Preferring
+members of any one group for no reason other than race or
+ethnic origin is discrimination for its own sake. This the
+Constitution forbids”). Rather, diversity can only be the
+means by which the University obtains educational benefits;
+it cannot be an end pursued for its own sake. Therefore,
+the educational benefits allegedly produced by diversity
+must rise to the level of a compelling state interest in order
+for the program to survive strict scrutiny.
+   Unfortunately for the University, the educational bene-
+fits flowing from student body diversity—assuming they
+exist—hardly qualify as a compelling state interest. In-
+6        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     THOMAS, J., concurring
+
+deed, the argument that educational benefits justify racial
+discrimination was advanced in support of racial segrega-
+tion in the 1950’s, but emphatically rejected by this Court.
+And just as the alleged educational benefits of segregation
+were insufficient to justify racial discrimination then, see
+Brown v. Board of Education, 347 U. S. 483 (1954), the
+alleged educational benefits of diversity cannot justify
+racial discrimination today.
+                               1
+   Our desegregation cases establish that the Constitution
+prohibits public schools from discriminating based on race,
+even if discrimination is necessary to the schools’ survival.
+In Davis v. School Bd. of Prince Edward Cty., decided with
+Brown, supra, the school board argued that if the Court
+found segregation unconstitutional, white students would
+migrate to private schools, funding for public schools
+would decrease, and public schools would either decline in
+quality or cease to exist altogether. Brief for Appellees in
+Davis v. School Bd. of Prince Edward Cty., O. T. 1952, No.
+191, p. 30 (hereinafter Brief for Appellees in Davis) (“Vir-
+ginians . . . would no longer permit sizeable appropriations
+for schools on either the State or local level; private segre-
+gated schools would be greatly increased in number and
+the masses of our people, both white and Negro, would
+suffer terribly. . . . [M]any white parents would withdraw
+their children from the public schools and, as a result, the
+program of providing better schools would be abandoned”
+(internal quotation marks omitted)). The true victims of
+desegregation, the school board asserted, would be black
+students, who would be unable to afford private school.
+See id., at 31 (“[W]ith the demise of segregation, education
+in Virginia would receive a serious setback. Those who
+would suffer most would be the Negroes who, by and large,
+would be economically less able to afford the private
+school”); Tr. of Oral Arg. in Davis v. School Bd. of Prince
+                      Cite as: 570 U. S. ____ (2013)                      7
+
+                         THOMAS, J., concurring
+
+Edward Cty., O. T. 1954, No. 3, p. 208 (“What is worst of
+all, in our opinion, you impair the public school system of
+Virginia and the victims will be the children of both races,
+we think the Negro race worse than the white race, be-
+cause the Negro race needs it more by virtue of these
+disadvantages under which they have labored. We are up
+against the proposition: What does the Negro profit if he
+procures an immediate detailed decree from this Court
+now and then impairs or mars or destroys the public
+school system in Prince Edward County”).2
+   Unmoved by this sky-is-falling argument, we held that
+segregation violates the principle of equality enshrined in
+the Fourteenth Amendment. See Brown, supra, at 495
+(“[I]n the field of public education the doctrine of ‘separate
+but equal’ has no place. Separate educational facilities are
+inherently unequal”); see also Allen v. School Bd. of Prince
+Edward Cty., 249 F. 2d 462, 465 (CA4 1957) (per curiam)
+(“The fact that the schools might be closed if the order
+were enforced is no reason for not enforcing it. A person
+——————
+   2 Similar arguments were advanced unsuccessfully in other cases as
+
+well. See, e.g., Brief for Respondents in Sweatt v. Painter, O. T. 1949,
+No. 44, pp. 94–95 (hereinafter Brief for Respondents in Sweatt) (“[I]f
+the power to separate the students were terminated, . . . it would be as
+a bonanza to the private white schools of the State, and it would mean
+the migration out of the schools and the turning away from the public
+schools of the influence and support of a large number of children and
+of the parents of those children . . . who are the largest contributors to
+the cause of public education, and whose financial support is necessary
+for the continued progress of public education. . . . Should the State be
+required to mix the public schools, there is no question but that a very
+large group of students would transfer, or be moved by their parents, to
+private schools with a resultant deterioration of the public schools”
+(internal quotation marks omitted)); Brief for Appellees in Briggs v.
+Elliott, O. T. 1952, No. 101, p. 27 (hereinafter Brief for Appellees in
+Briggs) (“[I]t would be impossible to have sufficient acceptance of the
+idea of mixed groups attending the same schools to have public educa-
+tion on that basis at all . . . . [I]t would eliminate the public schools in
+most, if not all, of the communities in the State”).
+8        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     THOMAS, J., concurring
+
+may not be denied enforcement of rights to which he is
+entitled under the Constitution of the United States be-
+cause of action taken or threatened in defiance of such
+rights”). Within a matter of years, the warning became
+reality: After being ordered to desegregate, Prince Edward
+County closed its public schools from the summer of 1959
+until the fall of 1964. See R. Sarratt, The Ordeal of De-
+segregation 237 (1966). Despite this fact, the Court never
+backed down from its rigid enforcement of the Equal
+Protection Clause’s antidiscrimination principle.
+   In this case, of course, Texas has not alleged that the
+University will close if it is prohibited from discriminating
+based on race. But even if it had, the foregoing cases
+make clear that even that consequence would not justify
+its use of racial discrimination. It follows, a fortiori, that
+the putative educational benefits of student body diversity
+cannot justify racial discrimination: If a State does not
+have a compelling interest in the existence of a university,
+it certainly cannot have a compelling interest in the sup-
+posed benefits that might accrue to that university from
+racial discrimination. See Grutter, 539 U. S., at 361 (opin-
+ion of THOMAS, J.) (“[A] marginal improvement in legal
+education cannot justify racial discrimination where the
+Law School has no compelling interest either in its exis-
+tence or in its current educational and admissions poli-
+cies”). If the Court were actually applying strict scrutiny,
+it would require Texas either to close the University or to
+stop discriminating against applicants based on their race.
+The Court has put other schools to that choice, and there
+is no reason to treat the University differently.
+                            2
+  It is also noteworthy that, in our desegregation cases,
+we rejected arguments that are virtually identical to those
+advanced by the University today. The University asserts,
+for instance, that the diversity obtained through its dis-
+                  Cite as: 570 U. S. ____ (2013)            9
+
+                     THOMAS, J., concurring
+
+criminatory admissions program prepares its students to
+become leaders in a diverse society. See, e.g., Brief for
+Respondents 6 (arguing that student body diversity “pre-
+pares students to become the next generation of leaders in
+an increasingly diverse society”). The segregationists
+likewise defended segregation on the ground that it pro-
+vided more leadership opportunities for blacks. See, e.g.,
+Brief for Respondents in Sweatt 96 (“[A] very large group
+of Northern Negroes [comes] South to attend separate
+colleges, suggesting that the Negro does not secure as
+well-rounded a college life at a mixed college, and that the
+separate college offers him positive advantages; that there
+is a more normal social life for the Negro in a separate
+college; that there is a greater opportunity for full partici-
+pation and for the development of leadership; that the
+Negro is inwardly more ‘secure’ at a college of his own
+people”); Brief for Appellees in Davis 25–26 (“The Negro
+child gets an opportunity to participate in segregated
+schools that I have never seen accorded to him in non-
+segregated schools. He is important, he holds offices, he
+is accepted by his fellows, he is on athletic teams, he has
+a full place there” (internal quotation marks omitted)).
+This argument was unavailing. It is irrelevant under the
+Fourteenth Amendment whether segregated or mixed
+schools produce better leaders. Indeed, no court today
+would accept the suggestion that segregation is permissi-
+ble because historically black colleges produced Booker T.
+Washington, Thurgood Marshall, Martin Luther King, Jr.,
+and other prominent leaders. Likewise, the University’s
+racial discrimination cannot be justified on the ground
+that it will produce better leaders.
+   The University also asserts that student body diversity
+improves interracial relations. See, e.g., Brief for Re-
+spondents 6 (arguing that student body diversity promotes
+“cross-racial understanding” and breaks down racial and
+ethnic stereotypes). In this argument, too, the University
+10       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     THOMAS, J., concurring
+
+repeats arguments once marshaled in support of segrega-
+tion. See, e.g., Brief for Appellees in Davis 17 (“Virginia
+has established segregation in certain fields as a part of
+her public policy to prevent violence and reduce resent-
+ment. The result, in the view of an overwhelming Virginia
+majority, has been to improve the relationship between
+the different races”); id., at 25 (“If segregation be stricken
+down, the general welfare will be definitely harmed
+. . . there would be more friction developed” (internal
+quotation marks omitted)); Brief for Respondents in
+Sweatt 93 (“Texas has had no serious breaches of the
+peace in recent years in connection with its schools. The
+separation of the races has kept the conflicts at a mini-
+mum”); id., at 97–98 (“The legislative acts are based not
+only on the belief that it is the best way to provide educa-
+tion for both races, and the knowledge that separate
+schools are necessary to keep public support for the public
+schools, but upon the necessity to maintain the public
+peace, harmony, and welfare”); Brief for Appellees in
+Briggs 32 (“The southern Negro, by and large, does not
+want an end to segregation in itself any more than does
+the southern white man. The Negro in the South knows
+that discriminations, and worse, can and would multiply
+in such event” (internal quotation marks omitted)). We
+flatly rejected this line of arguments in McLaurin v. Okla­
+homa State Regents for Higher Ed., 339 U. S. 637 (1950),
+where we held that segregation would be unconstitutional
+even if white students never tolerated blacks. Id., at 641
+(“It may be argued that appellant will be in no better
+position when these restrictions are removed, for he may
+still be set apart by his fellow students. This we think
+irrelevant. There is a vast difference—a Constitutional
+difference—between restrictions imposed by the state
+which prohibit the intellectual commingling of students,
+and the refusal of individuals to commingle where the
+state presents no such bar”). It is, thus, entirely irrele-
+                  Cite as: 570 U. S. ____ (2013)           11
+
+                     THOMAS, J., concurring
+
+vant whether the University’s racial discrimination in-
+creases or decreases tolerance.
+   Finally, while the University admits that racial discrim-
+ination in admissions is not ideal, it asserts that it is a
+temporary necessity because of the enduring race con-
+sciousness of our society. See Brief for Respondents 53–54
+(“Certainly all aspire for a colorblind society in which race
+does not matter . . . . But in Texas, as in America, ‘our
+highest aspirations are yet unfulfilled’ ”). Yet again, the
+University echoes the hollow justifications advanced by
+the segregationists. See, e.g., Brief for State of Kansas on
+Reargument in Brown v. Board of Education, O. T. 1953,
+No. 1, p. 56 (“We grant that segregation may not be the
+ethical or political ideal. At the same time we recognize
+that practical considerations may prevent realization of
+the ideal”); Brief for Respondents in Sweatt 94 (“The racial
+consciousness and feeling which exists today in the minds
+of many people may be regrettable and unjustified. Yet
+they are a reality which must be dealt with by the State if
+it is to preserve harmony and peace and at the same time
+furnish equal education to both groups”); id., at 96 (“ ‘[T]he
+mores of racial relationships are such as to rule out, for
+the present at least, any possibility of admitting white
+persons and Negroes to the same institutions’ ”); Brief for
+Appellees in Briggs 26–27 (“[I]t would be unwise in admin-
+istrative practice . . . to mix the two races in the same
+schools at the present time and under present conditions”);
+Brief for Appellees on Reargument in Briggs v. Elliott,
+O. T. 1953, No. 2, p. 79 (“It is not ‘racism’ to be cognizant
+of the fact that mankind has struggled with race problems
+and racial tensions for upwards of sixty centuries”). But
+these arguments too were unavailing. The Fourteenth
+Amendment views racial bigotry as an evil to be stamped
+out, not as an excuse for perpetual racial tinkering by
+the State. See DeFunis v. Odegaard, 416 U. S. 312, 342
+(1974) (Douglas, J., dissenting) (“The Equal Protection
+Clause commands the elimination of racial barriers, not
+12        FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                        THOMAS, J., concurring
+
+their creation in order to satisfy our theory as to how
+society ought to be organized”). The University’s argu-
+ments to this effect are similarly insufficient to justify
+discrimination.3
+                              3
+  The University’s arguments today are no more persua-
+sive than they were 60 years ago. Nevertheless, despite
+rejecting identical arguments in Brown, the Court in
+Grutter deferred to the University’s determination that
+the diversity obtained by racial discrimination would yield
+educational benefits. There is no principled distinction
+between the University’s assertion that diversity yields
+educational benefits and the segregationists’ assertion
+that segregation yielded those same benefits. See Grutter,
+539 U. S., at 365–366 (opinion of THOMAS, J.) (“Con-
+tained within today’s majority opinion is the seed of a new
+constitutional justification for a concept I thought long
+and rightly rejected—racial segregation”). Educational
+benefits are a far cry from the truly compelling state
+interests that we previously required to justify use of racial
+classifications.
+                            B
+  My view of the Constitution is the one advanced by the
+plaintiffs in Brown: “[N]o State has any authority under
+——————
+   3 While the arguments advanced by the University in defense of dis-
+
+crimination are the same as those advanced by the segregationists, one
+obvious difference is that the segregationists argued that it was
+segregation that was necessary to obtain the alleged benefits, whereas
+the University argues that diversity is the key. Today, the segre-
+gationists’ arguments would never be given serious considera-
+tion. But see M. Plocienniczak, Pennsylvania School Experiments with
+‘Segregation,’ CNN (Jan. 27, 2011), http://www.cnn.com/2011/US/01/27
+/pennsylvania.segregation/index.html?_s=PM:US (as visited June 21,
+2013, and available in Clerk of Court’s case file). We should be equally
+hostile to the University’s repackaged version of the same arguments in
+support of its favored form of racial discrimination.
+                 Cite as: 570 U. S. ____ (2013)           13
+
+                    THOMAS, J., concurring
+
+the equal-protection clause of the Fourteenth Amendment
+to use race as a factor in affording educational opportuni-
+ties among its citizens.” Tr. of Oral Arg. in Brown v.
+Board of Education, O. T. 1952, No. 8, p. 7; see also Juris.
+Statement in Davis v. School Bd. of Prince Edward Cty.,
+O. T. 1952, No. 191, p. 8 (“[W]e take the unqualified posi-
+tion that the Fourteenth Amendment has totally stripped
+the state of power to make race and color the basis for
+governmental action”); Brief for Appellants in Brown v.
+Board of Education, O. T. 1952, No. 8, p. 5 (“The Four-
+teenth Amendment precludes a state from imposing dis-
+tinctions or classifications based upon race and color
+alone”); Brief for Appellants in Nos. 1, 2, and 4, and for
+Respondents in No. 10 on Reargument in Brown v. Board
+of Education, O. T. 1953, p. 65 (“That the Constitution is
+color blind is our dedicated belief ”). The Constitution does
+not pander to faddish theories about whether race mixing
+is in the public interest. The Equal Protection Clause
+strips States of all authority to use race as a factor in
+providing education. All applicants must be treated equally
+under the law, and no benefit in the eye of the beholder can
+justify racial discrimination.
+   This principle is neither new nor difficult to understand.
+In 1868, decades before Plessy, the Iowa Supreme Court
+held that schools may not discriminate against applicants
+based on their skin color. In Clark v. Board of Directors,
+24 Iowa 266 (1868), a school denied admission to a student
+because she was black, and “public sentiment [was] op-
+posed to the intermingling of white and colored children in
+the same schools.” Id., at 269. The Iowa Supreme Court
+rejected that flimsy justification, holding that “all the
+youths are equal before the law, and there is no discretion
+vested in the board . . . or elsewhere, to interfere with or
+disturb that equality.” Id., at 277. “For the courts to
+sustain a board of school directors . . . in limiting the
+rights and privileges of persons by reason of their [race],
+14       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     THOMAS, J., concurring
+
+would be to sanction a plain violation of the spirit of our
+laws not only, but would tend to perpetuate the national
+differences of our people and stimulate a constant strife, if
+not a war of races.” Id., at 276. This simple, yet funda-
+mental, truth was lost on the Court in Plessy and Grutter.
+  I would overrule Grutter and hold that the University’s
+admissions program violates the Equal Protection Clause
+because the University has not put forward a compelling
+interest that could possibly justify racial discrimination.
+                              III
+   While I find the theory advanced by the University to
+justify racial discrimination facially inadequate, I also
+believe that its use of race has little to do with the alleged
+educational benefits of diversity. I suspect that the Uni-
+versity’s program is instead based on the benighted notion
+that it is possible to tell when discrimination helps, rather
+than hurts, racial minorities. See post, at 3 (GINSBURG, J.,
+dissenting) (“[G]overnment actors, including state univer-
+sities, need not be blind to the lingering effects of ‘an
+overtly discriminatory past,’ the legacy of ‘centuries of
+law-sanctioned inequality’ ”). But “[h]istory should teach
+greater humility.” Metro Broadcasting, Inc. v. FCC, 497
+U. S. 547, 609 (1990) (O’Connor, J., dissenting). The worst
+forms of racial discrimination in this Nation have always
+been accompanied by straight-faced representations that
+discrimination helped minorities.
+                              A
+  Slaveholders argued that slavery was a “positive good”
+that civilized blacks and elevated them in every dimension
+of life. See, e.g., Calhoun, Speech in the U. S. Senate,
+1837, in P. Finkelman, Defending Slavery 54, 58–59
+(2003) (“Never before has the black race of Central Africa,
+from the dawn of history to the present day, attained a
+condition so civilized and so improved, not only physically,
+                  Cite as: 570 U. S. ____ (2013)           15
+
+                     THOMAS, J., concurring
+
+but morally and intellectually. . . . [T]he relation now
+existing in the slaveholding States between the two [rac-
+es], is, instead of an evil, a good—a positive good”); Har-
+per, Memoir on Slavery, in The Ideology of Slavery 78,
+115–116 (D. Faust ed. 1981) (“Slavery, as it is said in an
+eloquent article published in a Southern periodical work
+. . . ‘has done more to elevate a degraded race in the scale
+of humanity; to tame the savage; to civilize the barbarous;
+to soften the ferocious; to enlighten the ignorant, and to
+spread the blessings of [C]hristianity among the heathen,
+than all the missionaries that philanthropy and religion
+have ever sent forth’ ”); Hammond, The Mudsill Speech,
+1858, in Defending Slavery, supra, at 80, 87 (“They are
+elevated from the condition in which God first created
+them, by being made our slaves”).
+    A century later, segregationists similarly asserted that
+segregation was not only benign, but good for black stu-
+dents. They argued, for example, that separate schools
+protected black children from racist white students and
+teachers. See, e.g., Brief for Appellees in Briggs 33–34 (“ ‘I
+have repeatedly seen wise and loving colored parents take
+infinite pains to force their little children into schools
+where the white children, white teachers, and white par-
+ents despised and resented the dark child, made mock of
+it, neglected or bullied it, and literally rendered its life a
+living hell. Such parents want their child to “fight” this
+thing out,—but, dear God, at what a cost! . . . We shall get
+a finer, better balance of spirit; an infinitely more capable
+and rounded personality by putting children in schools
+where they are wanted, and where they are happy and
+inspired, than in thrusting them into hells where they are
+ridiculed and hated’ ” (quoting DuBois, Does the Negro
+Need Separate Schools? 4 J. of Negro Educ. 328, 330–331
+(1935))); Tr. of Oral Arg. in Bolling v. Sharpe, O. T. 1952,
+No. 413, p. 56 (“There was behind these [a]cts a kindly
+feeling [and] an intention to help these people who had
+16       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                     THOMAS, J., concurring
+
+been in bondage. And there was and there still is an
+intention by the Congress to see that these children shall
+be educated in a healthful atmosphere, in a wholesome
+atmosphere, in a place where they are wanted, in a place
+where they will not be looked upon with hostility, in a
+place where there will be a receptive atmosphere for learn-
+ing for both races without the hostility that undoubtedly
+Congress thought might creep into these situations”). And
+they even appealed to the fact that many blacks agreed
+that separate schools were in the “best interests” of both
+races. See, e.g., Brief for Appellees in Davis 24–25 (“ ‘It
+has been my experience, in working with the people of
+Virginia, including both white and Negro, that the cus-
+toms and the habits and the traditions of Virginia citizens
+are such that they believe for the best interests of both the
+white and the Negro that the separate school is best’ ”).
+  Following in these inauspicious footsteps, the University
+would have us believe that its discrimination is likewise
+benign. I think the lesson of history is clear enough:
+Racial discrimination is never benign. “ ‘[B]enign’ carries
+with it no independent meaning, but reflects only ac-
+ceptance of the current generation’s conclusion that a
+politically acceptable burden, imposed on particular citi-
+zens on the basis of race, is reasonable.” See Metro Broad­
+casting, 497 U. S., at 610 (O’Connor, J., dissenting). It is
+for this reason that the Court has repeatedly held that
+strict scrutiny applies to all racial classifications, regard-
+less of whether the government has benevolent motives.
+See, e.g., Johnson, 543 U. S., at 505 (“We have insisted on
+strict scrutiny in every context, even for so-called ‘benign’
+racial classifications”); Adarand, 515 U. S., at 227 (“[A]ll
+racial classifications, imposed by whatever federal, state,
+or local governmental actor, must be analyzed by a review-
+ing court under strict scrutiny”); J. A. Croson, 488 U. S., at
+500 (“Racial classifications are suspect, and that means
+that simple legislative assurances of good intention cannot
+                    Cite as: 570 U. S. ____ (2013)                  17
+
+                        THOMAS, J., concurring
+
+suffice”). The University’s professed good intentions can-
+not excuse its outright racial discrimination any more
+than such intentions justified the now denounced argu-
+ments of slaveholders and segregationists.
+                             B
+  While it does not, for constitutional purposes, matter
+whether the University’s racial discrimination is benign, I
+note that racial engineering does in fact have insidious
+consequences. There can be no doubt that the University’s
+discrimination injures white and Asian applicants who are
+denied admission because of their race. But I believe the
+injury to those admitted under the University’s discrimi-
+natory admissions program is even more harmful.
+  Blacks and Hispanics admitted to the University as a
+result of racial discrimination are, on average, far less
+prepared than their white and Asian classmates. In the
+University’s entering class of 2009, for example, among
+the students admitted outside the Top Ten Percent plan,
+blacks scored at the 52d percentile of 2009 SAT takers
+nationwide, while Asians scored at the 93d percentile.
+Brief for Richard Sander et al. as Amici Curiae 3–4, and
+n. 4. Blacks had a mean GPA of 2.57 and a mean SAT
+score of 1524; Hispanics had a mean GPA of 2.83 and a
+mean SAT score of 1794; whites had a mean GPA of 3.04
+and a mean SAT score of 1914; and Asians had a mean
+GPA of 3.07 and a mean SAT score of 1991.4 Ibid.
+  Tellingly, neither the University nor any of the 73 amici
+briefs in support of racial discrimination has presented a
+shred of evidence that black and Hispanic students are
+able to close this substantial gap during their time at the
+University. Cf. Thernstrom & Thernstrom, Reflections on
+the Shape of the River, 46 UCLA L. Rev. 1583, 1605–1608
+(1999) (discussing the failure of defenders of racial dis-
+——————
+  4 The lowest possible score on the SAT is 600, and the highest possi-
+
+ble score is 2400.
+18       FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                    THOMAS, J., concurring
+
+crimination in admissions to consider the fact that its
+“beneficiaries” are underperforming in the classroom). “It
+is a fact that in virtually all selective schools . . . where
+racial preferences in admission is practiced, the majority
+of [black] students end up in the lower quarter of their
+class.” S. Cole & E. Barber, Increasing Faculty Diversity:
+The Occupational Choices of High-Achieving Minority
+Students 124 (2003). There is no reason to believe this is
+not the case at the University. The University and its
+dozens of amici are deafeningly silent on this point.
+   Furthermore, the University’s discrimination does
+nothing to increase the number of blacks and Hispanics
+who have access to a college education generally. Instead,
+the University’s discrimination has a pervasive shifting
+effect. See T. Sowell, Affirmative Action Around the
+World 145–146 (2004). The University admits minorities
+who otherwise would have attended less selective colleges
+where they would have been more evenly matched. But,
+as a result of the mismatching, many blacks and Hispan-
+ics who likely would have excelled at less elite schools are
+placed in a position where underperformance is all but
+inevitable because they are less academically prepared
+than the white and Asian students with whom they must
+compete. Setting aside the damage wreaked upon the self-
+confidence of these overmatched students, there is no
+evidence that they learn more at the University than they
+would have learned at other schools for which they were
+better prepared. Indeed, they may learn less.
+   The Court of Appeals believed that the University needed
+to enroll more blacks and Hispanics because they remained
+“clustered in certain programs.” 631 F. 3d 213, 240
+(CA5 2011) (“[N]early a quarter of the undergraduate
+students in [the University’s] College of Social Work are
+Hispanic, and more than 10% are [black]. In the College
+of Education, 22.4% of students are Hispanic and 10.1%
+are [black]”). But racial discrimination may be the cause
+                    Cite as: 570 U. S. ____ (2013)                  19
+
+                        THOMAS, J., concurring
+
+of, not the solution to, this clustering. There is some
+evidence that students admitted as a result of racial dis-
+crimination are more likely to abandon their initial aspi-
+rations to become scientists and engineers than are
+students with similar qualifications who attend less selective
+schools. See, e.g., Elliott, Strenta, Adair, Matier, & Scott,
+The Role of Ethnicity in Choosing and Leaving Science in
+Highly Selective Institutions, 37 Research in Higher Educ.
+681, 699–701 (1996).5 These students may well drift
+towards less competitive majors because the mismatch
+caused by racial discrimination in admissions makes it
+difficult for them to compete in more rigorous majors.
+   Moreover, the University’s discrimination “stamp[s]
+[blacks and Hispanics] with a badge of inferiority.”
+Adarand, 515 U. S., at 241 (opinion of THOMAS, J.). It
+taints the accomplishments of all those who are admitted
+as a result of racial discrimination. Cf. J. McWhorter,
+Losing the Race: Self-Sabotage in Black America 248
+(2000) (“I was never able to be as proud of getting into
+Stanford as my classmates could be. . . . [H]ow much of an
+achievement can I truly say it was to have been a good
+enough black person to be admitted, while my colleagues
+had been considered good enough people to be admitted”).
+And, it taints the accomplishments of all those who are the
+——————
+   5 The success of historically black colleges at producing graduates
+
+who go on to earn graduate degrees in science and engineering is well
+documented. See, e.g., National Science Foundation, J. Burrelli & A.
+Rapoport, InfoBrief, Role of HBCUs as Baccalaureate-Origin Institu-
+tions of Black S&E Doctorate Recipients 6 (2008) (Table 2) (showing
+that, from 1997–2006, Howard University had more black students who
+went on to earn science and engineering doctorates than any other
+undergraduate institution, and that 7 other historically black colleges
+ranked in the top 10); American Association of Medical Colleges,
+Diversity in Medical Education: Facts & Figures 86 (2012) (Table 19)
+(showing that, in 2011, Xavier University had more black students who
+went on to earn medical degrees than any other undergraduate institu-
+tion and that Howard University was second).
+20      FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                    THOMAS, J., concurring
+
+same race as those admitted as a result of racial discrimi-
+nation. In this case, for example, most blacks and Hispanics
+attending the University were admitted without discrimina-
+tion under the Top Ten Percent plan, but no one can
+distinguish those students from the ones whose race
+played a role in their admission. “When blacks [and His-
+panics] take positions in the highest places of government,
+industry, or academia, it is an open question . . . whether
+their skin color played a part in their advancement.” See
+Grutter, 539 U. S., at 373 (opinion of THOMAS, J.). “The
+question itself is the stigma—because either racial dis-
+crimination did play a role, in which case the person may
+be deemed ‘otherwise unqualified,’ or it did not, in which
+case asking the question itself unfairly marks those . . .
+who would succeed without discrimination.” Ibid. Al-
+though cloaked in good intentions, the University’s racial
+tinkering harms the very people it claims to be helping.
+                      *    *    *
+  For the foregoing reasons, I would overrule Grutter.
+However, because the Court correctly concludes that the
+Court of Appeals did not apply strict scrutiny, I join its
+opinion.
+                     Cite as: 570 U. S. ____ (2013)                    1
+
+                        GINSBURG, J., dissenting
+
+SUPREME COURT OF THE UNITED STATES
+                              _________________
+
+                              No. 11–345
+                              _________________
+
+
+ABIGAIL NOEL FISHER, PETITIONER v. UNIVERSITY
+          OF TEXAS AT AUSTIN ET AL.
+ ON WRIT OF CERTIORARI TO THE UNITED STATES COURT OF
+            APPEALS FOR THE FIFTH CIRCUIT
+                            [June 24, 2013]
+
+   JUSTICE GINSBURG, dissenting.
+   The University of Texas at Austin (University) is candid
+about what it is endeavoring to do: It seeks to achieve
+student-body diversity through an admissions policy pat-
+terned after the Harvard plan referenced as exemplary in
+Justice Powell’s opinion in Regents of Univ. of Cal. v.
+Bakke, 438 U. S. 265, 316–317 (1978). The University has
+steered clear of a quota system like the one struck down in
+Bakke, which excluded all nonminority candidates from
+competition for a fixed number of seats. See id., at 272–
+275, 315, 319–320 (opinion of Powell, J.). See also Gratz v.
+Bollinger, 539 U. S. 244, 293 (2003) (Souter, J., dissenting)
+(“Justice Powell’s opinion in [Bakke] rules out a racial
+quota or set-aside, in which race is the sole fact of eligibil-
+ity for certain places in a class.”). And, like so many edu-
+cational institutions across the Nation,1 the University
+has taken care to follow the model approved by the Court
+in Grutter v. Bollinger, 539 U. S. 306 (2003). See 645
+——————
+  1 See Brief for Amherst College et al. as Amici Curiae 33–35; Brief for
+
+Association of American Law Schools as Amicus Curiae 6; Brief for
+Association of American Medical Colleges et al. as Amici Curiae 30–32;
+Brief for Brown University et al. as Amici Curiae 2–3, 13; Brief for
+Robert Post et al. as Amici Curiae 24–27; Brief for Fordham University
+et al. as Amici Curiae 5–6; Brief for University of Delaware et al. as
+Amici Curiae 16–21.
+2           FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                        GINSBURG, J., dissenting
+
+F. Supp. 2d 587, 609 (WD Tex. 2009) (“[T]he parties agree
+[that the University’s] policy was based on the [admis-
+sions] policy [upheld in Grutter].”).
+   Petitioner urges that Texas’ Top Ten Percent Law and
+race-blind holistic review of each application achieve
+significant diversity, so the University must be content
+with those alternatives. I have said before and reiterate
+here that only an ostrich could regard the supposedly
+neutral alternatives as race unconscious. See Gratz, 539
+U. S., at 303–304, n. 10 (dissenting opinion). As Justice
+Souter observed, the vaunted alternatives suffer from “the
+disadvantage of deliberate obfuscation.” Id., at 297–298
+(dissenting opinion).
+   Texas’ percentage plan was adopted with racially segre-
+gated neighborhoods and schools front and center stage.
+See House Research Organization, Bill Analysis, HB 588,
+pp. 4–5 (Apr. 15, 1997) (“Many regions of the state, school
+districts, and high schools in Texas are still predominantly
+composed of people from a single racial or ethnic group.
+Because of the persistence of this segregation, admitting
+the top 10 percent of all high schools would provide a
+diverse population and ensure that a large, well qualified
+pool of minority students was admitted to Texas universi-
+ties.”). It is race consciousness, not blindness to race, that
+drives such plans.2 As for holistic review, if universities
+cannot explicitly include race as a factor, many may “re-
+sort to camouflage” to “maintain their minority enroll-
+ment.” Gratz, 539 U. S., at 304 (GINSBURG, J., dissenting).
+——————
+    2 The
+        notion that Texas’ Top Ten Percent Law is race neutral calls to
+mind Professor Thomas Reed Powell’s famous statement: “If you think
+that you can think about a thing inextricably attached to something
+else without thinking of the thing which it is attached to, then you have
+a legal mind.” T. Arnold, The Symbols of Government 101 (1935)
+(internal quotation marks omitted). Only that kind of legal mind could
+conclude that an admissions plan specifically designed to produce racial
+diversity is not race conscious.
+                     Cite as: 570 U. S. ____ (2013)                    3
+
+                        GINSBURG, J., dissenting
+
+   I have several times explained why government actors,
+including state universities, need not be blind to the lin-
+gering effects of “an overtly discriminatory past,” the
+legacy of “centuries of law-sanctioned inequality.” Id., at
+298 (dissenting opinion). See also Adarand Constructors,
+Inc. v. Peña, 515 U. S. 200, 272–274 (1995) (dissenting
+opinion). Among constitutionally permissible options, I
+remain convinced, “those that candidly disclose their
+consideration of race [are] preferable to those that conceal
+it.” Gratz, 539 U. S., at 305, n. 11 (dissenting opinion).
+   Accordingly, I would not return this case for a second
+look. As the thorough opinions below show, 631 F. 3d 213
+(CA5 2011); 645 F. Supp. 2d 587, the University’s admis-
+sions policy flexibly considers race only as a “factor of a
+factor of a factor of a factor” in the calculus, id., at 608;
+followed a yearlong review through which the University
+reached the reasonable, good-faith judgment that suppos-
+edly race-neutral initiatives were insufficient to achieve,
+in appropriate measure, the educational benefits of student-
+body diversity, see 631 F. 3d, at 225–226; and is sub-
+ject to periodic review to ensure that the consideration of
+race remains necessary and proper to achieve the Uni-
+versity’s educational objectives, see id., at 226.3 Justice
+Powell’s opinion in Bakke and the Court’s decision in
+Grutter require no further determinations. See Grutter,
+——————
+  3 As the Court said in Grutter v. Bollinger, 539 U. S. 306, 339 (2003),
+
+“[n]arrow tailoring . . . require[s] serious, good faith consideration of
+workable race-neutral alternatives that will achieve the diversity the
+university seeks.” But, Grutter also explained, it does not “require a
+university to choose between maintaining a reputation for excellence
+[and] fulfilling a commitment to provide educational opportunities
+to members of all racial groups.” Ibid. I do not read the Court to
+say otherwise. See ante, at 10 (acknowledging that, in determining
+whether a race-conscious admissions policy satisfies Grutter’s narrow-
+tailoring requirement, “a court can take account of a university’s
+experience and expertise in adopting or rejecting certain admissions
+processes”).
+4         FISHER v. UNIVERSITY OF TEXAS AT AUSTIN
+
+                        GINSBURG, J., dissenting
+
+539 U. S., at 333–343; Bakke, 438 U. S., at 315–320.
+   The Court rightly declines to cast off the equal protec-
+tion framework settled in Grutter. See ante, at 5. Yet it
+stops short of reaching the conclusion that framework
+warrants. Instead, the Court vacates the Court of Ap-
+peals’ judgment and remands for the Court of Appeals to
+“assess whether the University has offered sufficient
+evidence [to] prove that its admissions program is narrowly
+tailored to obtain the educational benefits of diversity.”
+Ante, at 13. As I see it, the Court of Appeals has already
+completed that inquiry, and its judgment, trained on this
+Court’s Bakke and Grutter pathmarkers, merits our
+approbation.4
+                      *     *    *
+  For the reasons stated, I would affirm the judgment of
+the Court of Appeals.
+
+
+
+
+——————
+   4 Because the University’s admissions policy, in my view, is constitu-
+
+tional under Grutter, there is no need for the Court in this case “to
+revisit whether all governmental classifications by race, whether
+designed to benefit or to burden a historically disadvantaged group,
+should be subject to the same standard of judicial review.” 539 U. S., at
+346, n. (GINSBURG, J., concurring). See also Gratz v. Bollinger, 539
+U. S. 244, 301 (2003) (GINSBURG, J., dissenting) (“Actions designed to
+burden groups long denied full citizenship stature are not sensibly
+ranked with measures taken to hasten the day when entrenched
+discrimination and its aftereffects have been extirpated.”).

@@ -32,6 +32,7 @@ reporters-db = "^3"
 courts-db = "^0.9.7"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
+diff_match_patch_python = "^1.0.2"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
