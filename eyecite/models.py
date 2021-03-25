@@ -260,7 +260,7 @@ class Token(UserString):
     end: int
 
     @classmethod
-    def from_match(cls, m, extra, offset=0):
+    def from_match(cls, m, extra, offset=0) -> "Token":
         """Return a token object based on a regular expression match.
         This gets called by TokenExtractor. By default, just use the
         entire matched string."""
@@ -296,7 +296,7 @@ class CitationToken(Token):
         )
 
     @classmethod
-    def from_match(cls, m, extra, offset=0):
+    def from_match(cls, m, extra, offset=0) -> Token:
         """Citation regex matches have volume, reporter, and page match groups
         in their regular expressions, and "exact_editions" and
         "variation_editions" in their extra config. Pass all of that through
@@ -325,7 +325,7 @@ class SupraToken(Token):
     """ Word matching "supra" with or without punctuation. """
 
     @classmethod
-    def from_match(cls, m, extra, offset=0):
+    def from_match(cls, m, extra, offset=0) -> Token:
         """Only use the captured part of the match to omit whitespace."""
         start, end = m.span(1)
         return cls(m[1], start + offset, end + offset)
@@ -336,7 +336,7 @@ class IdToken(Token):
     """ Word matching "id" or "ibid". """
 
     @classmethod
-    def from_match(cls, m, extra, offset=0):
+    def from_match(cls, m, extra, offset=0) -> Token:
         """Only use the captured part of the match to omit whitespace."""
         start, end = m.span(1)
         return cls(m[1], start + offset, end + offset)
@@ -362,7 +362,7 @@ class StopWordToken(Token):
     )
 
     @classmethod
-    def from_match(cls, m, extra, offset=0):
+    def from_match(cls, m, extra, offset=0) -> Token:
         """m[1] is the captured part of the match, including punctuation.
         m[2] is just the underlying stopword like 'v', useful for comparison.
         """
@@ -376,7 +376,10 @@ class TokenExtractor:
     and then to return Token objects for all matches."""
 
     regex: str
-    constructor: Callable
+    # constructor should be Callable[[re.Match, dict, int], Token]
+    # but this issue makes it inconvenient to specify the input types:
+    # https://github.com/python/mypy/issues/5485
+    constructor: Callable[..., Token]
     extra: Dict = field(default_factory=dict)
     flags: int = 0
     strings: List = field(default_factory=list)
@@ -385,7 +388,7 @@ class TokenExtractor:
         """Return match objects for all matches in text."""
         return self.compiled_regex.finditer(text)
 
-    def get_token(self, m, offset=0):
+    def get_token(self, m, offset=0) -> Token:
         """For a given match object, return a Token."""
         return self.constructor(m, self.extra, offset)
 
@@ -400,13 +403,3 @@ class TokenExtractor:
         if not hasattr(self, "_compiled_regex"):
             self._compiled_regex = re.compile(self.regex, flags=self.flags)
         return self._compiled_regex
-
-
-@dataclass
-class ExtractorMatch:
-    """Data for a single match found by a TokenExtractor."""
-
-    extractor: TokenExtractor
-    m: Optional[re.Match]
-    start: int
-    end: int

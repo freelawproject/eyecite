@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from eyecite.models import CitationToken, StopWordToken
+from eyecite.models import CitationToken, IdToken, StopWordToken
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
     AhocorasickTokenizer,
@@ -25,6 +25,19 @@ class TokenizerTest(TestCase):
         self.assertEqual(
             list(tokenize("Foo bar eats grue, 232 U.S. (2003)")),
             ["Foo", "bar", "eats", "grue,", "232", "U.S.", "(2003)"],
+        )
+
+    def test_overlapping_regexes(self):
+        # Make sure we find both "see" and "id." tokens even though their
+        # full regexes overlap
+        self.assertEqual(
+            list(default_tokenizer.tokenize("see id. at 577.")),
+            [
+                StopWordToken(data="see", start=0, end=3, stop_word="see"),
+                IdToken(data="id.", start=4, end=7),
+                "at",
+                "577.",
+            ],
         )
 
     def test_extractor_filter(self):
