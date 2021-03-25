@@ -253,6 +253,16 @@ eyecite comes with a robust test suite of different citation strings that it is 
 
     python3 -m unittest discover -s tests -p 'test_*.py'
 
+If you would like to create mock citation objects to assist you in writing your own local tests, import and use the following functions for convenience:
+
+::
+
+    from eyecite.test_factories import (
+        case_citation,
+        id_citation,
+        nonopinion_citation,
+        supra_citation,
+    )
 
 License
 =======

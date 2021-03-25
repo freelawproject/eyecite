@@ -21,6 +21,7 @@ def case_citation(
     short=False,
     **kwargs,
 ):
+    """Convenience function for creating mock CaseCitation objects."""
     kwargs.setdefault("canonical_reporter", reporter)
     kwargs.setdefault("reporter_found", reporter)
     if reporter == "U.S.":
@@ -46,12 +47,15 @@ def case_citation(
 
 
 def id_citation(index, source_text, **kwargs):
+    """Convenience function for creating mock IdCitation objects."""
     return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
 
 
 def nonopinion_citation(index, source_text):
+    """Convenience function for creating mock NonopinionCitation objects."""
     return NonopinionCitation(SectionToken(source_text, 0, 99), index)
 
 
 def supra_citation(index, source_text, **kwargs):
+    """Convenience function for creating mock SupraCitation objects."""
     return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)

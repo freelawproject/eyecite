@@ -4,21 +4,21 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
+
+# by default tests use a cache for speed
+# call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
+from eyecite.test_factories import (
+    case_citation,
+    id_citation,
+    nonopinion_citation,
+    supra_citation,
+)
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
     EXTRACTORS,
     AhocorasickTokenizer,
     HyperscanTokenizer,
     Tokenizer,
-)
-
-# by default tests use a cache for speed
-# call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from tests.factories import (
-    case_citation,
-    id_citation,
-    nonopinion_citation,
-    supra_citation,
 )
 
 cache_dir = os.environ.get("EYECITE_CACHE_DIR", ".test_cache") or None
