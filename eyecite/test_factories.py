@@ -46,16 +46,16 @@ def case_citation(
     )
 
 
-def id_citation(index, source_text, **kwargs):
+def id_citation(index, source_text=None, **kwargs):
     """Convenience function for creating mock IdCitation objects."""
     return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
 
 
-def nonopinion_citation(index, source_text):
+def nonopinion_citation(index, source_text=None):
     """Convenience function for creating mock NonopinionCitation objects."""
     return NonopinionCitation(SectionToken(source_text, 0, 99), index)
 
 
-def supra_citation(index, source_text, **kwargs):
+def supra_citation(index, source_text=None, **kwargs):
     """Convenience function for creating mock SupraCitation objects."""
     return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)
