@@ -1,7 +1,7 @@
 from bisect import bisect_right
 from difflib import SequenceMatcher
 from functools import partial
-from typing import Iterable, Optional, Tuple
+from typing import Any, Callable, Iterable, Optional, Tuple
 
 import diff_match_patch
 
@@ -10,32 +10,37 @@ from eyecite.utils import is_balanced_html, wrap_html_tags
 
 def annotate(
     plain_text: str,
-    annotations: Iterable[Tuple[Tuple[int, int], str, str]],
+    annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
     source_text: Optional[str] = None,
     unbalanced_tags: str = "unchecked",
     use_dmp: bool = True,
+    annotator: Optional[Callable[[Any, str, Any], str]] = None,
 ):
     """Insert annotations into text around each citation.
-        Each annotation is a tuple of an extracted citation, before text, and
-        after text.
+    Each annotation is a tuple of an extracted citation, before text, and
+    after text.
 
-        Example:
-        >>> plain_text = "foo 1 U.S. 1 bar"
-        >>> citations = get_citations(plain_text)
-        >>> annotate("foo 1 U.S. 1 bar",[citations[0].span(), "<a>", "</a>")
-    ])
-        "foo <a>1 U.S. 1</a> bar"
+    Example:
+    >>> plain_text = "foo 1 U.S. 1 bar"
+    >>> citations = get_citations(plain_text)
+    >>> annotate("foo 1 U.S. 1 bar",
+    ...     [(citations[0].span(), "<a>", "</a>")])
+    "foo <a>1 U.S. 1</a> bar"
 
-        If source_text is provided, apply annotations to that text
-        instead using diffing.
+    If source_text is provided, apply annotations to that text
+    instead using diffing.
 
-        If source_text is provided, unbalanced_tags="skip" will skip inserting
-        annotations that result in invalid HTML. unbalanced_tags="wrap" will
-        ensure valid HTML by wrapping annotations around any unbalanced tags.
+    If source_text is provided, unbalanced_tags="skip" will skip inserting
+    annotations that result in invalid HTML. unbalanced_tags="wrap" will
+    ensure valid HTML by wrapping annotations around any unbalanced tags.
 
-        If use_dmp=True (default), use the fast diff_match_patch_python library
-        for diffing. Use False for the slower builtin difflib, which may be
-        useful for debugging.
+    If use_dmp=True (default), use the fast diff_match_patch_python library
+    for diffing. Use False for the slower builtin difflib, which may be
+    useful for debugging.
+
+    If annotator is provided, it should be a function that takes
+    (before, span_text, after) and returns the annotation.
+    By default before + span_text + after will be inserted.
     """
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
@@ -66,22 +71,24 @@ def annotate(
         # handle HTML tags
         if unbalanced_tags == "unchecked":
             pass
-        elif unbalanced_tags == "skip" or unbalanced_tags == "wrap":
+        elif unbalanced_tags in ("skip", "wrap"):
             if not is_balanced_html(span_text):
                 if unbalanced_tags == "skip":
                     continue
-                else:
-                    span_text = wrap_html_tags(span_text, after, before)
+                span_text = wrap_html_tags(span_text, after, before)
         else:
             raise ValueError(f"Unknown option '{unbalanced_tags}")
+
+        if annotator is not None:
+            annotated_span = annotator(before, span_text, after)
+        else:
+            annotated_span = before + span_text + after
 
         # append each span
         out.extend(
             [
                 plain_text[last_end:start],
-                before,
-                span_text,
-                after,
+                annotated_span,
             ]
         )
         last_end = end
