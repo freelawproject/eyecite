@@ -9,6 +9,9 @@ class AnnotateTest(TestCase):
         def straighten_quotes(text):
             return text.replace("’", "'")
 
+        def lower_annotator(before, text, after):
+            return before + text.lower() + after
+
         test_pairs = (
             # single cite
             ("1 U.S. 1", "<0>1 U.S. 1</0>", []),
@@ -61,6 +64,13 @@ class AnnotateTest(TestCase):
                 "1 Abbott’s Pr.Rep. 1",
                 "<0>1 Abbott’s Pr.Rep. 1</0>",
                 [straighten_quotes],
+            ),
+            # custom annotator
+            (
+                "1 U.S. 1",
+                "<0>1 u.s. 1</0>",
+                [],
+                {"annotator": lower_annotator},
             ),
         )
         for source_text, expected, clean_steps, *annotate_kwargs in test_pairs:

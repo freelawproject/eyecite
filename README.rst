@@ -136,6 +136,20 @@ regularly formatted documents such as case text published by courts. It may have
 unpredictable results for deliberately-constructed challenging inputs such as citations containing partial HTML
 comments or :code:`<pre>` tags.
 
+Customizing Annotation
+----------------------
+
+If inserting text before and after isn't sufficient, supply a callable under the :code:`annotator` parameter
+that takes :code:`(before, span_text, after)` and returns the annotated text:
+
+::
+
+    def annotator(before, span_text, after):
+        return before + span_text.lower() + after
+    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], annotator=annotator)
+
+    returns:
+    'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
 
 Tokenizers
 ==========
