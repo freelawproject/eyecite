@@ -34,7 +34,7 @@ setup(
     keywords=["legal", "citations", "cites"],
     long_description=read("README.rst"),
     packages=find_packages(exclude=("tests",)),
-    package_data={"eyecite": ["*.json"]},
+    package_data={"eyecite": ["*.json", "py.typed"]},
     include_package_data=True,
     classifiers=[
         "Development Status :: 1 - Planning",
