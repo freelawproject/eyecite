@@ -21,7 +21,7 @@ maintainers = ["Free Law Project <info@free.law>"]
 name = "eyecite"
 readme = "README.rst"
 repository = "https://github.com/freelawproject/eyecite"
-version = "1.1.0"
+version = "2.0.0"
 
 [tool.poetry.urls]
 "Organisation Homepage" = "https://free.law/"
