@@ -2,7 +2,8 @@
 
 ## Current
 
-2.0.2 - Debugging github action release code
+2.0.2 - Adds missing dependency to toml file, nukes setup.py and 
+requirements.txt. We're now fully in the poetry world.
 
 ## Past
 
