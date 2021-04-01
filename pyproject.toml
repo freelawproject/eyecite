@@ -1,4 +1,5 @@
 [tool.poetry]
+version = "2.0.1"
 authors = ["Free Law Project <info@free.law>"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -15,13 +16,13 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 description = "Tool for extracting legal citations from text strings."
-keywords = ["legal", "courts"]
+keywords = ["legal", "courts", "citations", "extraction", "cites"]
 license = "BSD-2-Clause"
 maintainers = ["Free Law Project <info@free.law>"]
 name = "eyecite"
 readme = "README.rst"
 repository = "https://github.com/freelawproject/eyecite"
-version = "2.0.0"
+include = ["eyecite/py.typed"]
 
 [tool.poetry.urls]
 "Organisation Homepage" = "https://free.law/"
