@@ -213,11 +213,18 @@ Installation
 ============
 Installing eyecite is easy.
 
+
+::
+
+    poetry add eyecite
+
+
+Or via pip:
+
 ::
 
     sh
     pip install eyecite
-
 
 
 Or install the latest dev version from github
@@ -232,30 +239,17 @@ Or install the latest dev version from github
 Deployment
 ==========
 
-1. Update version info in :code:`setup.py` and in :code:`pyproject.toml`.
+1. Update version info in :code:`pyproject.toml`.
 
 For an automated deployment, tag the commit with vx.y.z, and push it to master.
 An automated deploy will be completed for you.
 
-For a manual deployment, follow these steps:
-
-1. Install the requirements using :code:`poetry install`
-
-2. Set up a config file at :code:`~/.pypirc`
-
-3. Generate a universal distribution that works in py2 and py3 (see setup.cfg)
+For a manual deployment, run:
 
 ::
 
     sh
-    python setup.py sdist bdist_wheel
-
-
-5. Upload the distributions
-::
-
-    sh
-    twine upload dist/* -r pypi (or pypitest)
+    poetry publish --build
 
 
 
