@@ -2,11 +2,15 @@
 
 ## Current
 
-2.0.0 - Major rewrite to efficiently build and use hundreds of regular
+2.0.2 - Debugging github action release code
+
+## Past
+
+2.0.1 - Major rewrite to efficiently build and use hundreds of regular
 expressions to parse the text, and to use merging algorithms to annotate it.
 These changes bring better speed, accuracy, and flexibility to the library.
 
-## Past
+2.0.0 - Broken, bad release process.
 
 1.1.0 - Standardize the `__eq__()` and `__hash__()` methods and remove the
 unused fuzzy_hash() method.
