@@ -3,3 +3,4 @@ lxml==4.6.2
 pyahocorasick
 reporters-db>=3
 six==1.15.0
+diff_match_patch_python>=1.0.2
