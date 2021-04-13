@@ -132,13 +132,15 @@ def extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     """
-    # Variables to extact
-    antecedent_guess: str
-
     # Get antecedent
-    antecedent_guess = str(words[index - 1])
-    if antecedent_guess == ",":
-        antecedent_guess = str(words[index - 2]) + ","
+    antecedent_guess = None
+    if index > 0:
+        antecedent_guess = str(words[index - 1])
+        if antecedent_guess == ",":
+            if index > 1:
+                antecedent_guess = str(words[index - 2]) + ","
+            else:
+                antecedent_guess = None
 
     # Get citation
     cite_token = cast(CitationToken, words[index])
@@ -170,26 +172,29 @@ def extract_supra_citation(
     Supra 3: Adarand, supra, somethingelse
     Supra 4: Adrand, supra. somethingelse
     """
-    # Don't check if we are at the beginning of a string
-    if index <= 1:
-        return None
-
     # Get volume
     volume = None
 
     # Get page
-    try:
+    page = None
+    if index + 2 < len(words):
         page = parse_page(str(words[index + 2]))
-    except IndexError:
-        page = None
 
     # Get antecedent
-    antecedent_guess = str(words[index - 1])
-    if antecedent_guess.isdigit():
-        volume = antecedent_guess
-        antecedent_guess = str(words[index - 2])
-    elif antecedent_guess == ",":
-        antecedent_guess = str(words[index - 2]) + ","
+    antecedent_guess = None
+    if index > 0:
+        antecedent_guess = str(words[index - 1])
+        if antecedent_guess.isdigit():
+            volume = antecedent_guess
+            if index > 1:
+                antecedent_guess = str(words[index - 2])
+            else:
+                antecedent_guess = None
+        elif antecedent_guess == ",":
+            if index > 1:
+                antecedent_guess = str(words[index - 2]) + ","
+            else:
+                antecedent_guess = None
 
     # Return SupraCitation
     return SupraCitation(

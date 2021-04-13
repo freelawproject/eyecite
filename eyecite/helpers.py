@@ -85,7 +85,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     for start in range(citation.index + 1, min(fwd_sk, len(words))):
         if words[start].startswith("("):
             # Get the year by looking for a token that ends in a paren.
-            for end in range(start, start + FORWARD_SEEK):
+            for end in range(start, min(start + FORWARD_SEEK, len(words))):
                 if ")" in words[end]:
                     # Sometimes the paren gets split from the preceding content
                     if words[end].startswith(")"):
@@ -120,7 +120,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             # Skip it
             continue
         if isinstance(word, StopWordToken):
-            if word.stop_word == "v":
+            if word.stop_word == "v" and index > 0:
                 citation.plaintiff = str(words[index - 1])
             start_index = index + 1
             break

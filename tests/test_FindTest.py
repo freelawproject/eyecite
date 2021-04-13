@@ -255,9 +255,6 @@ class FindTest(TestCase):
               id_citation(8, 'Id.,', after_tokens=['at', '123.'],
                           has_page=True)],
              {'clean': ['all_whitespace']}),
-            # Test Id. citation at end of text
-            ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
-            ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
@@ -331,6 +328,21 @@ class FindTest(TestCase):
             ('blah blah, 2009 12345 (La.App. 1 Cir. 05/10/10). blah blah',
              [case_citation(2, volume='2009', reporter='La.App. 1 Cir.',
                             page='12345')]),
+            # Token scanning edge case -- incomplete paren at end of input
+            ('1 U.S. 1 (', [case_citation(0)]),
+            # Token scanning edge case -- missing plaintiff name at start of input
+            ('v. Bar, 1 U.S. 1', [case_citation(0, defendant='Bar,')]),
+            # Token scanning edge case -- short form start of input
+            ('1 U.S., at 1', [case_citation(0, short=True)]),
+            (', 1 U.S., at 1', [case_citation(0, short=True)]),
+            # Token scanning edge case -- supra at start of input
+            ('supra.', [supra_citation(0, "supra.")]),
+            (', supra.', [supra_citation(0, "supra.")]),
+            ('123 supra.', [supra_citation(0, "supra.", volume="123")]),
+            # Token scanning edge case -- Id. at end of input
+            ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
+            ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
+            ('Id. foo', [id_citation(0, 'Id.,', after_tokens=['foo'])]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
