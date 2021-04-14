@@ -132,13 +132,16 @@ def extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     """
-    # Variables to extact
-    antecedent_guess: str
-
-    # Get antecedent
-    antecedent_guess = str(words[index - 1])
-    if antecedent_guess == ",":
-        antecedent_guess = str(words[index - 2]) + ","
+    # Get antecedent -- either previous word, or previous two words if
+    # previous word is a comma
+    antecedent_guess = None
+    if index > 0:
+        antecedent_guess = str(words[index - 1])
+        if antecedent_guess == ",":
+            if index > 1:
+                antecedent_guess = str(words[index - 2]) + ","
+            else:
+                antecedent_guess = None
 
     # Get citation
     cite_token = cast(CitationToken, words[index])
@@ -170,26 +173,30 @@ def extract_supra_citation(
     Supra 3: Adarand, supra, somethingelse
     Supra 4: Adrand, supra. somethingelse
     """
-    # Don't check if we are at the beginning of a string
-    if index <= 1:
-        return None
-
-    # Get volume
-    volume = None
-
-    # Get page
-    try:
+    # Get page, with bounds check to ensure we don't scan past end of words.
+    # Use index + 2 to skip "at".
+    page = None
+    if index + 2 < len(words):
         page = parse_page(str(words[index + 2]))
-    except IndexError:
-        page = None
 
-    # Get antecedent
-    antecedent_guess = str(words[index - 1])
-    if antecedent_guess.isdigit():
-        volume = antecedent_guess
-        antecedent_guess = str(words[index - 2])
-    elif antecedent_guess == ",":
-        antecedent_guess = str(words[index - 2]) + ","
+    # Get antecedent -- either previous word, or previous two words if
+    # previous word is a comma. If previous word is a digit, store as
+    # volume and use next previous word as antecedent.
+    antecedent_guess = None
+    volume = None
+    if index > 0:
+        antecedent_guess = str(words[index - 1])
+        if antecedent_guess.isdigit():
+            volume = antecedent_guess
+            if index > 1:
+                antecedent_guess = str(words[index - 2])
+            else:
+                antecedent_guess = None
+        elif antecedent_guess == ",":
+            if index > 1:
+                antecedent_guess = str(words[index - 2]) + ","
+            else:
+                antecedent_guess = None
 
     # Return SupraCitation
     return SupraCitation(
@@ -229,24 +236,23 @@ def extract_id_citation(
             not isinstance(token, Token) and parse_page(token)
         )
 
-    # Check if the post-id token is indeed a page candidate
-    scan_index = index
+    # Check if the post-id token is indeed a page candidate.
+    # If so, set scan_index to capture all page candidates immediately
+    # following Id. cite.
+    scan_index = index + 1
     has_page = False
-    while scan_index + 1 < len(words) and is_page_candidate(
-        words[scan_index + 1]
-    ):
+    while scan_index < len(words) and is_page_candidate(words[scan_index]):
         scan_index += 1
         has_page = True
 
-    # If it is not, simply set a naive anchor for the end of the scan_index
-    if scan_index == index:
-        has_page = False
-        scan_index = index + 3
+    # If it is not, simply set a naive anchor for the end of the scan_index.
+    if not has_page:
+        scan_index = min(index + 4, len(words))
 
     # Only linkify the after tokens if a page is found
     return IdCitation(
         cast(IdToken, words[index]),
         index,
-        after_tokens=words[index + 1 : scan_index + 1],
+        after_tokens=words[index + 1 : scan_index],
         has_page=has_page,
     )
