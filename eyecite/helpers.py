@@ -1,4 +1,5 @@
 import re
+from datetime import date
 from typing import List, Optional, Union
 
 from courts_db import courts
@@ -48,20 +49,20 @@ def get_court_by_paren(
     return court_code
 
 
+# Highest valid year is this year + 1 because courts in December sometimes
+# cite a case to be published in January.
+_highest_valid_year = date.today().year + 1
+
+
 def get_year(token: TokenOrStr) -> Optional[int]:
-    """Given a string token, look for a valid 4-digit number at the start and
-    return its value.
-    """
+    """Given a string token, look for a year within a reasonable range."""
     word = strip_punct(str(token))
-    if not word.isdigit():
-        # Sometimes funny stuff happens?
-        word = re.sub(r"(\d{4}).*", r"\1", word)
-        if not word.isdigit():
-            return None
-    if len(word) != 4:
+    try:
+        year = int(word)
+    except ValueError:
         return None
-    year = int(word)
-    if year < 1754:  # Earliest case in the database
+
+    if year < 1600 or year > _highest_valid_year:
         return None
     return year
 
