@@ -51,6 +51,13 @@ class AnnotateTest(TestCase):
                 ["html", "inline_whitespace"],
                 {"unbalanced_tags": "wrap"},
             ),
+            # tighly-wrapped html -- skip unbalanced tags (issue #54)
+            (
+                "foo <i>Ibid.</i> bar",
+                "foo <i><0>Ibid.</0></i> bar",
+                ["html", "inline_whitespace"],
+                {"unbalanced_tags": "skip"},
+            ),
             # whitespace containing linebreaks
             ("1\nU.S. 1", "<0>1\nU.S. 1</0>", ["all_whitespace"]),
             # multiple Id. tags

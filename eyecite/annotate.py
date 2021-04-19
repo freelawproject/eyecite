@@ -1,4 +1,4 @@
-from bisect import bisect_right
+from bisect import bisect_left, bisect_right
 from difflib import SequenceMatcher
 from functools import partial
 from typing import Any, Callable, Iterable, Optional, Tuple
@@ -55,8 +55,8 @@ def annotate(
     for (start, end), before, after in annotations:
         # if we're applying to source_text, update offsets
         if offset_updater:
-            start = offset_updater.update(start)
-            end = offset_updater.update(end)
+            start = offset_updater.update(start, bisect_right)
+            end = offset_updater.update(end, bisect_left)
 
         # handle overlaps
         if start < last_end:
@@ -196,8 +196,8 @@ class SpanUpdater:
             elif operation == "equal":
                 yield "=", a2 - a1
 
-    def update(self, offset):
+    def update(self, offset, bisect):
         """Shift an offset left or right."""
-        index = bisect_right(self.offsets, offset) - 1
+        index = bisect(self.offsets, offset) - 1
         updater = self.updaters[index]
         return updater(offset)
