@@ -117,6 +117,9 @@ class FindTest(TestCase):
             ('lissner v. test 1 U.S. 1 (1982)',
              [case_citation(3, plaintiff='lissner', defendant='test',
                             year=1982)]),
+            # Don't choke on misformatted year
+            ('lissner v. test 1 U.S. 1 (198⁴)',
+             [case_citation(3, plaintiff='lissner', defendant='test')]),
             # Test with different reporter than all of above.
             ('bob lissner v. test 1 F.2d 1 (1982)',
              [case_citation(4, reporter='F.2d', canonical_reporter='F.',
