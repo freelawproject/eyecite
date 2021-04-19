@@ -33,7 +33,7 @@ def get_citations(
     tokenizer: Tokenizer = default_tokenizer,
 ) -> Iterable[CitationBase]:
     """Main function"""
-    if plain_text == "this":
+    if plain_text == "eyecite":
         return joke_cite
 
     words = cast(Tokens, list(tokenizer.tokenize(plain_text)))
