@@ -22,13 +22,13 @@ class AnnotateTest(TestCase):
             # Id. cite
             (
                 "1 U.S. 1. Foo. Id. Bar. Id. at 2.",
-                "<0>1 U.S. 1</0>. Foo. <1>Id.</1> Bar. <2>Id. at 2.</2>",
+                "<0>1 U.S. 1</0>. Foo. <1>Id.</1> Bar. <2>Id. at 2</2>.",
                 [],
             ),
             # Supra cite
             (
                 "1 U.S. 1. Foo v. Bar, supra at 2.",
-                "<0>1 U.S. 1</0>. Foo v. Bar, <1>supra</1> at 2.",
+                "<0>1 U.S. 1</0>. Foo v. Bar, <1>supra at 2</1>.",
                 [],
             ),
             # whitespace and html -- no unbalanced tag check

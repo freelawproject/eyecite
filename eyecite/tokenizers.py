@@ -5,7 +5,16 @@ from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
-from typing import Any, Generator, Iterable, List, Optional, Sequence, Set
+from typing import (
+    Any,
+    Generator,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Set,
+    Tuple,
+)
 
 import ahocorasick
 from reporters_db import RAW_REGEX_VARIABLES, REPORTERS
@@ -15,6 +24,7 @@ from eyecite.models import (
     CitationToken,
     Edition,
     IdToken,
+    ParagraphToken,
     Reporter,
     SectionToken,
     StopWordToken,
@@ -25,6 +35,7 @@ from eyecite.models import (
 )
 from eyecite.utils import (
     PAGE_NUMBER_REGEX,
+    nonalphanum_boundaries_re,
     space_boundaries_re,
     strip_punctuation_re,
 )
@@ -149,7 +160,7 @@ def _populate_reporter_extractors():
     for regex, cluster in editions_by_regex.items():
         EXTRACTORS.append(
             TokenExtractor(
-                regex,
+                nonalphanum_boundaries_re(regex),
                 CitationToken.from_match,
                 extra={
                     "exact_editions": cluster["editions"],
@@ -169,7 +180,8 @@ def _populate_reporter_extractors():
     stop_word_regex = space_boundaries_re(
         strip_punctuation_re(rf'({"|".join(StopWordToken.stop_tokens)})')
     )
-    symbol_regex = r"\S*§\S*"
+    symbol_regex = r"(\S*§\S*)"
+    paragraph_regex = r"(\n)"
 
     EXTRACTORS.extend(
         [
@@ -186,6 +198,11 @@ def _populate_reporter_extractors():
                 SupraToken.from_match,
                 flags=re.I,
                 strings=["supra"],
+            ),
+            # paragraph
+            TokenExtractor(
+                paragraph_regex,
+                ParagraphToken.from_match,
             ),
             # case name stopwords
             TokenExtractor(
@@ -218,12 +235,15 @@ class Tokenizer:
         default_factory=lambda: list(EXTRACTORS)
     )
 
-    def tokenize(self, text: str) -> Generator[Tokens, None, None]:
-        """Tokenize text and yield tokens."""
+    def tokenize(self, text: str) -> Tuple[Tokens, List[Tuple[int, Token]]]:
+        """Tokenize text and return list of all tokens, followed by list of
+        just non-string tokens along with their positions in the first list."""
         # Sort all matches by start offset ascending, then end offset
         # descending. Remove overlaps by returning only matches
         # where the current start offset is greater than the previously
         # returned end offset. Also return text between matches.
+        citation_tokens = []
+        all_tokens: Tokens = []
         tokens = sorted(
             self.extract_tokens(text), key=lambda m: (m.start, -m.end)
         )
@@ -233,14 +253,16 @@ class Tokenizer:
                 # skip overlaps
                 continue
             if offset < token.start:
-                # yield plain text before each match
-                yield from text[offset : token.start].strip().split()
-            # yield match
-            yield token
+                # capture plain text before each match
+                self.append_text(all_tokens, text[offset : token.start])
+            # capture match
+            citation_tokens.append((len(all_tokens), token))
+            all_tokens.append(token)
             offset = token.end
-        # yield plain text after final match
+        # capture plain text after final match
         if offset < len(text):
-            yield from text[offset:].strip().split()
+            self.append_text(all_tokens, text[offset:])
+        return all_tokens, citation_tokens
 
     def get_extractors(self, text: str):
         """Subclasses can override this to filter extractors based on text."""
@@ -251,6 +273,19 @@ class Tokenizer:
         for extractor in self.get_extractors(text):
             for match in extractor.get_matches(text):
                 yield extractor.get_token(match)
+
+    @staticmethod
+    def append_text(tokens, text):
+        """Split text into words, treating whitespace as a word, and append
+        to tokens. NOTE this is a significant portion of total runtime of
+        get_citations(), so benchmark if changing.
+        """
+        for part in text.split(" "):
+            if part:
+                tokens.extend((part, " "))
+            else:
+                tokens.append(" ")
+        tokens.pop()  # remove final extra space
 
 
 @dataclass

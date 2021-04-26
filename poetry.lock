@@ -77,6 +77,14 @@ optional = false
 python-versions = "*"
 
 [[package]]
+name = "exrex"
+version = "0.10.5"
+description = "Irregular methods for regular expressions"
+category = "dev"
+optional = false
+python-versions = "*"
+
+[[package]]
 name = "flake8"
 version = "3.9.0"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -275,7 +283,7 @@ python-versions = "*"
 
 [[package]]
 name = "reporters-db"
-version = "3.0.0"
+version = "3.0.1"
 description = "Database of Court Reporters"
 category = "main"
 optional = false
@@ -283,6 +291,14 @@ python-versions = "*"
 
 [package.dependencies]
 six = "*"
+
+[[package]]
+name = "roman"
+version = "3.3"
+description = "Integer to Roman numerals converter"
+category = "dev"
+optional = false
+python-versions = ">=2.7,!=3.0.*,!=3.1.*,!=3.2.*,!=3.3.*,!=3.4.*"
 
 [[package]]
 name = "six"
@@ -339,7 +355,7 @@ testing = ["pytest (>=3.5,!=3.7.3)", "pytest-checkdocs (>=1.2.3)", "pytest-flake
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "0d90a18c7769f3102c703efe2a8cd943e85230fa54b1a09bc72244e4475a9754"
+content-hash = "34e80e2a46cc8fcda30d9cd07ba733c2922088fa10f92137450a8f9167a8b2a9"
 
 [metadata.files]
 appdirs = [
@@ -367,6 +383,9 @@ courts-db = [
 ]
 diff-match-patch-python = [
     {file = "diff_match_patch_python-1.0.2.tar.gz", hash = "sha256:5a833417344def272ad7dee7c5d455cf3aaf4fb0ffb58029d73e29512dd3ed48"},
+]
+exrex = [
+    {file = "exrex-0.10.5.tar.gz", hash = "sha256:3fb8b18fd9832eaff8b13dc042a4f63b13c5d684ee069f70a23ddfc6bcb708f3"},
 ]
 flake8 = [
     {file = "flake8-3.9.0-py2.py3-none-any.whl", hash = "sha256:12d05ab02614b6aee8df7c36b97d1a3b2372761222b19b58621355e82acddcff"},
@@ -584,8 +603,12 @@ regex = [
     {file = "regex-2020.11.13.tar.gz", hash = "sha256:83d6b356e116ca119db8e7c6fc2983289d87b27b3fac238cfe5dca529d884562"},
 ]
 reporters-db = [
-    {file = "reporters-db-3.0.0.tar.gz", hash = "sha256:a217611a799f2a8aded48dd63e06108ede0acaabe5c426dc814767a62ace7d4c"},
-    {file = "reporters_db-3.0.0-py2.py3-none-any.whl", hash = "sha256:bf7392857169d4464a4e8ff20b50e84b2b01c6a9aa17c4825d468a210c8eb8ad"},
+    {file = "reporters-db-3.0.1.tar.gz", hash = "sha256:ef90064c9e7782a4b8c5b00ca1d9d0d660d316736a6e9e78f81bdfee678b0b40"},
+    {file = "reporters_db-3.0.1-py2.py3-none-any.whl", hash = "sha256:e5a84e79e168babef457a85018875dc1f3528ba26a0e86078b520427089da076"},
+]
+roman = [
+    {file = "roman-3.3-py2.py3-none-any.whl", hash = "sha256:c2a1f14ab47373aecc141edbcdd66595949c9d0ed932fe76bd547df1b55f7278"},
+    {file = "roman-3.3.tar.gz", hash = "sha256:2c46ac8db827d34e4fa9ccc0577e7f0b0d84f16ffe112351bd4f1ec2eb12d73f"},
 ]
 six = [
     {file = "six-1.15.0-py2.py3-none-any.whl", hash = "sha256:8b74bedcbbbaca38ff6d7491d76f2b06b3592611af620f8426e82dddb04a5ced"},

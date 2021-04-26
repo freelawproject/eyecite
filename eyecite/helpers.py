@@ -1,21 +1,115 @@
 import re
 from datetime import date
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, cast
 
 from courts_db import courts
 
 from eyecite.models import (
     CaseCitation,
     CitationBase,
-    FullCaseCitation,
+    ParagraphToken,
     StopWordToken,
     Token,
     TokenOrStr,
     Tokens,
 )
-from eyecite.utils import PAGE_NUMBER_REGEX, strip_punct
+from eyecite.utils import strip_punct
 
-FORWARD_SEEK = 20
+# *** Metadata regexes: ***
+# Regexes used to scan forward or backward from a citation token. NOTE:
+# * Regexes are written in verbose mode. Intentional spaces must be escaped.
+# * In many regexes order matters: options separated by "|" are
+#   tested left to right, so more specific (typically longer) have to come
+#   before less specific.
+
+# Pin cite regex:
+# A pin cite is the part of a citation used to specify a particular section of
+# the referenced document. These may have prefixes, may include paragraph,
+# page, or line references, and may have multiple ranges specified.
+# For some examples see
+# https://github.com/freelawproject/courtlistener/issues/1344#issuecomment-662994948
+PIN_CITE_TOKEN_REGEX = r"""
+    # optional label -- ¶, §, p., pp., pg., n., note, & n.
+    # (longest to shortest):
+    (?:
+        (?:
+            (?:&\ )?note|
+            (?:&\ )?nn?\.?|
+            ¶{1,2}|
+            §{1,2}|
+            \*{1,4}|
+            pg\.?|
+            pp\.?|
+            p\.?|
+        )\ ?  # optional space after label
+    )?
+    (?:
+        # page:paragraph cite, like 123:24-25 or 123:24-124:25:
+        \d+:\d+(?:-\d+(?::\d+)?)?|
+        # page range, like 12 or 12-13:
+        \d+(?:-\d+)?
+    )
+"""
+PIN_CITE_REGEX = rf"""
+    \ ?(
+        (?:at\ )?
+        {PIN_CITE_TOKEN_REGEX},?
+        (?:\ {PIN_CITE_TOKEN_REGEX},?)*
+    )
+"""
+
+
+# Short cite antecedent regex:
+# What case does a short cite refer to? For now, we just capture the previous
+# word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
+SHORT_CITE_ANTECEDENT_REGEX = r"""
+    ([\w\-.]+),?
+    \   # final space
+"""
+
+
+# Supra cite antecedent regex:
+# What case does a short cite refer to? For now, we just capture the previous
+# word optionally followed by a comma. Example: Adarand, supra.
+# If the previous word is a digit, we capture both that (to store as a volume)
+# and the word before it (to store as antecedent).
+SUPRA_ANTECEDENT_REGEX = r"""
+    (?:
+        ([\w\-.]+),?\ (\d+)|
+        (\d+)|
+        ([\w\-.]+),?
+    )
+    \   # final space
+"""
+
+
+# Post citation regex:
+# Capture metadata after a full cite. For example given the citation "1 U.S. 1"
+# with the following text:
+#   1 U.S. 1, 4-5, 2 S. Ct. 2, 6-7 (4th Cir. 2012) (overruling foo)
+# we want to capture:
+#   pin_cite = 4-5
+#   extra = 2 S. Ct. 2, 6-7
+#   court = 4th Cir.
+#   year = 2012
+#   parenthetical = overruling foo
+POST_CITATION_REGEX = rf"""
+    (?:  # handle a full cite with a valid year paren:
+        (?:  # content before year paren is either ...
+            ,{PIN_CITE_REGEX},\ ([^(]+)|  # pin cite with comma and extra
+            ,{PIN_CITE_REGEX}\ |          # just pin cite
+            ([^(]*)                       # just extra
+        )
+        \((?:  # content within year paren is either ...
+            ([^)]+)\ (\d{{4}})|           # court and year
+            (\d{{4}})                     # just year
+        )\)
+        (?:\ \(([^)]+)\))?  # optional parenthetical comment
+    |  # handle a pin cite with no valid year paren:
+        ,{PIN_CITE_REGEX}(?:,|\.|\ \()
+    )
+"""
+
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
 
@@ -71,41 +165,35 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     """Add to a citation object any additional information found after the base
     citation, including court, year, and possibly page range.
 
-    Examples:
-        Full citation: 123 U.S. 345 (1894)
-        Post-citation info: year=1894
-
-        Full citation: 123 F.2d 345, 347-348 (4th Cir. 1990)
-        Post-citation info: year=1990, court="4th Cir.",
-        extra (page range)="347-348"
+    See POST_CITATION_REGEX for examples.
     """
-    # Start looking 2 tokens after the reporter (1 after page), and go to
-    # either the end of the words list or to FORWARD_SEEK tokens from where you
-    # started.
-    fwd_sk = citation.index + FORWARD_SEEK
-    for start in range(citation.index + 1, min(fwd_sk, len(words))):
-        if words[start].startswith("("):
-            # Get the year by looking for a token that ends in a paren.
-            for end in range(start, min(start + FORWARD_SEEK, len(words))):
-                if ")" in words[end]:
-                    # Sometimes the paren gets split from the preceding content
-                    if words[end].startswith(")"):
-                        citation.year = get_year(words[end - 1])
-                    else:
-                        citation.year = get_year(words[end])
-                    citation.court = get_court_by_paren(
-                        " ".join(str(w) for w in words[start : end + 1]),
-                        citation,
-                    )
-                    break
+    m = match_on_tokens(
+        words, citation.index + 1, POST_CITATION_REGEX, max_chars=150
+    )
+    if not m:
+        return
 
-            if start > citation.index + 1:
-                # Then there's content between page and (), starting with a
-                # comma, which we skip
-                citation.extra = " ".join(
-                    str(w) for w in words[citation.index + 2 : start]
-                )
-            break
+    # handle pin cite and extra text before court-year parens
+    if m[1]:
+        citation.pin_cite = m[1]
+        citation.extra = m[2].strip()
+    elif m[3]:
+        citation.pin_cite = m[3]
+    elif m[4]:
+        citation.extra = m[4].strip() or None
+    elif m[9]:
+        citation.pin_cite = m[9]
+
+    # handle court-year parens
+    if m[5]:
+        citation.court = get_court_by_paren(m[5], citation)
+        citation.year = get_year(m[6])
+    elif m[7]:
+        citation.year = get_year(m[7])
+
+    # handle parenthetical
+    if m[8]:
+        citation.parenthetical = m[8]
 
 
 def add_defendant(citation: CaseCitation, words: Tokens) -> None:
@@ -122,37 +210,95 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             continue
         if isinstance(word, StopWordToken):
             if word.stop_word == "v" and index > 0:
-                citation.plaintiff = str(words[index - 1])
+                citation.plaintiff = "".join(
+                    str(w) for w in words[max(index - 2, 0) : index]
+                ).strip()
             start_index = index + 1
             break
         if word.endswith(";"):
             # String citation
             break
     if start_index:
-        citation.defendant = " ".join(
+        citation.defendant = "".join(
             str(w) for w in words[start_index : citation.index]
-        )
+        ).strip()
 
 
-def parse_page(page: Union[str, int]) -> Optional[str]:
-    """Test whether something is a valid page number."""
-    page = strip_punct(str(page))
+def extract_pin_cite(
+    words: Tokens, index: int, prefix: str = ""
+) -> Tuple[Optional[str], Optional[int]]:
+    """Test whether text following token at index is a valid pin cite.
+    Return pin cite text and number of extra characters matched.
+    If prefix is provided, use that as the start of text to match.
+    """
+    from_token = cast(Token, words[index])
+    m = match_on_tokens(
+        words, index + 1, PIN_CITE_REGEX, prefix=prefix, strings_only=True
+    )
+    if m:
+        pin_cite = m[1].lstrip()
+        extra_chars = m.span(1)[1]
+        return pin_cite, from_token.end + extra_chars - len(prefix)
+    return None, None
 
-    if page.isdigit():
-        # First, check whether the page is a simple digit. Most will be.
-        return page
 
-    # Otherwise, check whether the "page" is really one of the following:
-    # (ordered in descending order of likelihood)
-    # 1) A numerical page range. E.g., "123-124"
-    # 2) A roman numeral. E.g., "250 Neb. xxiv (1996)"
-    # 3) A special Connecticut or Illinois number. E.g., "13301-M"
-    # 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
-    # 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
-    match = re.match(PAGE_NUMBER_REGEX, page)
-    if match:
-        return str(match.group(0))
-    return None
+def match_on_tokens(
+    words,
+    start_index,
+    regex,
+    prefix="",
+    max_chars=100,
+    strings_only=False,
+    forward=True,
+    flags=re.X,
+):
+    """Scan forward or backward starting from the given index, up to max_chars.
+    Return result of matching regex against token text.
+    If prefix is provided, start from that text and then add token text.
+    If strings_only is True, stop matching at any non-string token; otherwise
+    stop matching only at paragraph tokens.
+    """
+    # Build text to match against, starting from prefix
+    text = prefix
+
+    # Get range of token indexes to append to text. Use indexes instead of
+    # slice for performance to avoid copying list.
+    if forward:
+        indexes = range(min(start_index, len(words)), len(words))
+        # If scanning forward, regex must match at start
+        regex = rf"^(?:{regex})"
+    else:
+        indexes = range(max(start_index, -1), -1, -1)
+        # If scanning backward, regex must match at end
+        regex = rf"(?:{regex})$"
+
+    # Append text of each token until we reach max_chars or a stop token:
+    for index in indexes:
+        token = words[index]
+
+        # check for stop token
+        if strings_only and type(token) is not str:
+            break
+        if type(token) is ParagraphToken:
+            break
+
+        # append or prepend text
+        if forward:
+            text += str(token)
+        else:
+            text = str(token) + text
+
+        # check for max length
+        if len(text) >= max_chars:
+            text = text[:max_chars]
+            break
+
+    m = re.search(regex, text, flags=flags)
+    # Useful for debugging regex failures:
+    # print(
+    #     f"Regex: {regex}\nText: {text}\nMatch: {m.groups() if m else None}"
+    # )
+    return m
 
 
 def disambiguate_reporters(
@@ -164,49 +310,6 @@ def disambiguate_reporters(
         for c in citations
         if not isinstance(c, CaseCitation) or c.edition_guess
     ]
-
-
-def remove_address_citations(
-    citations: List[CitationBase],
-) -> List[CitationBase]:
-    """Some addresses look like citations, but they're not. Remove them.
-
-    An example might be 111 S.W. 23st St.
-
-    :param citations: A list of citations. These should generally be
-    disambiguated, but it's not essential.
-    :returns A list of citations with addresses removed.
-    """
-    coordinate_reporters = ("N.E.", "S.E.", "S.W.", "N.W.")
-    good_citations = []
-    for citation in citations:
-        if not isinstance(citation, FullCaseCitation):
-            good_citations.append(citation)
-            continue
-
-        if not isinstance(citation.page, str):
-            good_citations.append(citation)
-            continue
-
-        page = citation.page.lower()
-        is_ordinal_page = (
-            page.endswith("st")
-            or page.endswith("nd")
-            or page.endswith("rd")
-            or page.endswith("th")
-        )
-        is_coordinate_reporter = (
-            # Assuming disambiguation was used, check the canonical_reporter
-            citation.canonical_reporter in coordinate_reporters
-            # If disambiguation wasn't used, check the reporter attr
-            or citation.reporter in coordinate_reporters
-        )
-        if is_ordinal_page and is_coordinate_reporter:
-            # It's an address. Skip it.
-            continue
-
-        good_citations.append(citation)
-    return good_citations
 
 
 joke_cite: List[CaseCitation] = [

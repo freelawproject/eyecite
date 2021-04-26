@@ -29,7 +29,7 @@ include = ["eyecite/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-reporters-db = "^3"
+reporters-db = "^3.0.1"
 courts-db = "^0.9.7"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
@@ -44,6 +44,8 @@ pylint = "^2.7.2"
 wheel = "^0.35.1"
 pylint-json2html = "^0.3.0"
 hyperscan = ">= 0.1.5"
+exrex = "^0.10.5"
+roman = "^3.3"
 
 [tool.black]
 include = '''.*\.pyi?$'''

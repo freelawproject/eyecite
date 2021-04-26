@@ -1,6 +1,9 @@
 from unittest import TestCase
 
-from eyecite.utils import clean_text
+import exrex
+import roman
+
+from eyecite.utils import ROMAN_NUMERAL_REGEX, clean_text
 
 
 class UtilsTest(TestCase):
@@ -30,3 +33,18 @@ class UtilsTest(TestCase):
     def test_clean_text_invalid(self):
         with self.assertRaises(ValueError):
             clean_text("foo", ["invalid"])
+
+    def test_roman_numeral_regex(self):
+        """Make sure ROMAN_NUMERAL_REGEX matches all numbers between 1-199
+        except 5, 50, 100."""
+        expected = (
+            list(range(1, 5))
+            + list(range(6, 50))
+            + list(range(51, 100))
+            + list(range(101, 200))
+        )
+        actual = sorted(
+            roman.fromRoman(n.upper())
+            for n in exrex.generate(ROMAN_NUMERAL_REGEX)
+        )
+        self.assertEqual(actual, expected)

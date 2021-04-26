@@ -19,25 +19,65 @@ class TokenizerTest(TestCase):
         see_token = StopWordToken("See", 0, 3, "see")
         v_token = StopWordToken("v.", 8, 10, "v")
         self.assertEqual(
-            list(tokenize("See Roe v. Wade, 410 U. S. 113 (1973)")),
-            [see_token, "Roe", v_token, "Wade,", us_citation, "(1973)"],
+            tokenize("See Roe v. Wade, 410 U. S. 113 (1973)"),
+            (
+                [
+                    see_token,
+                    " ",
+                    "Roe",
+                    " ",
+                    v_token,
+                    " ",
+                    "Wade,",
+                    " ",
+                    us_citation,
+                    " ",
+                    "(1973)",
+                ],
+                [(0, see_token), (4, v_token), (8, us_citation)],
+            ),
         )
         self.assertEqual(
-            list(tokenize("Foo bar eats grue, 232 U.S. (2003)")),
-            ["Foo", "bar", "eats", "grue,", "232", "U.S.", "(2003)"],
+            tokenize("Foo bar eats grue, 232 U.S. (2003)"),
+            (
+                [
+                    "Foo",
+                    " ",
+                    "bar",
+                    " ",
+                    "eats",
+                    " ",
+                    "grue,",
+                    " ",
+                    "232",
+                    " ",
+                    "U.S.",
+                    " ",
+                    "(2003)",
+                ],
+                [],
+            ),
         )
 
     def test_overlapping_regexes(self):
         # Make sure we find both "see" and "id." tokens even though their
         # full regexes overlap
+        stop_token = StopWordToken(data="see", start=0, end=3, stop_word="see")
+        id_token = IdToken(data="id.", start=4, end=7)
         self.assertEqual(
-            list(default_tokenizer.tokenize("see id. at 577.")),
-            [
-                StopWordToken(data="see", start=0, end=3, stop_word="see"),
-                IdToken(data="id.", start=4, end=7),
-                "at",
-                "577.",
-            ],
+            default_tokenizer.tokenize("see id. at 577."),
+            (
+                [
+                    stop_token,
+                    " ",
+                    id_token,
+                    " ",
+                    "at",
+                    " ",
+                    "577.",
+                ],
+                [(0, stop_token), (2, id_token)],
+            ),
         )
 
     def test_extractor_filter(self):

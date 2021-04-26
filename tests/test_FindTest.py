@@ -36,15 +36,14 @@ class FindTest(TestCase):
         for q, expected_cites, *kwargs in test_pairs:
             kwargs = kwargs[0] if kwargs else {}
             expect_fail = kwargs.pop("expect_fail", False)
+            clean_steps = kwargs.pop("clean", [])
+            clean_q = clean_text(q, clean_steps)
             for tokenizer in tokenizers:
                 with self.subTest(
                     message, tokenizer=type(tokenizer).__name__, q=q
                 ):
-                    clean_steps = kwargs.pop("clean", None)
-                    if clean_steps:
-                        q = clean_text(q, clean_steps)
                     cites_found = get_citations(
-                        q, tokenizer=tokenizer, **kwargs
+                        clean_q, tokenizer=tokenizer, **kwargs
                     )
                     match_attrs = [
                         "token_index",
@@ -59,14 +58,14 @@ class FindTest(TestCase):
                         "page",
                         "reporter",
                         "antecedent_guess",
-                        "has_page",
-                        "after_tokens",
+                        "pin_cite",
+                        "parenthetical",
                     ]
                     try:
                         self.assertEqual(
                             [type(i) for i in cites_found],
                             [type(i) for i in expected_cites],
-                            f"Extracted cite count doesn't match for [{q}]",
+                            f"Extracted cite count doesn't match for {repr(q)}",
                         )
                         for a, b in zip(cites_found, expected_cites):
                             found_attrs = {
@@ -80,7 +79,7 @@ class FindTest(TestCase):
                             self.assertEqual(
                                 found_attrs,
                                 expected_attrs,
-                                f"Extracted cite attrs don't match for [{q}]",
+                                f"Extracted cite attrs don't match for {repr(q)}",
                             )
                     except AssertionError:
                         if not expect_fail:
@@ -129,7 +128,18 @@ class FindTest(TestCase):
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [case_citation(4, page='12', court='ca4',
                             plaintiff='lissner', defendant='test', year=1982,
-                            extra='347-348')]),
+                            pin_cite='347-348')]),
+            # Parallel cite with parenthetical
+            ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
+             [case_citation(4, page='12', court='ca4',
+                            plaintiff='lissner', defendant='test', year=1982,
+                            pin_cite='347-348', extra="1 S. Ct. 2, 358",
+                            parenthetical='overruling foo'),
+              case_citation(4, page='2', court='ca4', reporter='S. Ct.',
+                            plaintiff='lissner', defendant='test 1 U.S. 12, 347-348,',
+                            year=1982, pin_cite='358',
+                            parenthetical='overruling foo'),
+              ]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
              [case_citation(1, page='332', volume='22',
@@ -155,7 +165,7 @@ class FindTest(TestCase):
             # Test finding two citations where one of them has abutting
             # punctuation.
             ('2 U.S. 3, 4-5 (3 Atl. 33)',
-             [case_citation(0, page='3', volume='2', extra='4-5'),
+             [case_citation(0, page='3', volume='2', pin_cite='4-5'),
               case_citation(3, page='33', reporter="A.", volume='3',
                             reporter_found="Atl.")]),
             # Test with the page number as a Roman numeral
@@ -176,8 +186,8 @@ class FindTest(TestCase):
             ('2006-Ohio-2095',
              [case_citation(0, source_text='2006-Ohio-2095', page='2095',
                             reporter='Ohio', volume='2006')]),
-            ('2017 IL App (4th) 160407WC',
-             [case_citation(0, page='160407WC', reporter='IL App (4th)',
+            ('2017 IL App (4th) 160407',
+             [case_citation(0, page='160407', reporter='IL App (4th)',
                             volume='2017')]),
             ('2017 IL App (1st) 143684-B',
              [case_citation(0, page='143684-B', reporter='IL App (1st)',
@@ -190,122 +200,112 @@ class FindTest(TestCase):
             ('before asdf, 1 U. S., at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            antecedent_guess='asdf,')]),
+                            antecedent_guess='asdf')]),
             # Test short form citation with preceding ASCII quotation
             ('before asdf,” 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf,”')]),
+                            short=True)]),
             # Test short form citation when case name looks like a reporter
             ('before Johnson, 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.',
-                            short=True, antecedent_guess='Johnson,')]),
+                            short=True, antecedent_guess='Johnson')]),
             # Test short form citation with no comma after reporter
             ('before asdf, 1 U. S. at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            antecedent_guess='asdf,')]),
+                            antecedent_guess='asdf')]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
             # Test supra citation across line break
             ('before asdf, supra,\nat 2',
-             [supra_citation(2, "supra,", antecedent_guess='asdf,',
-                             page='2')],
+             [supra_citation(2, "supra,", antecedent_guess='asdf',
+                             pin_cite='at 2')],
              {'clean': ['all_whitespace']}),
             # Test short form citation with a page range
             ('before asdf, 1 U. S., at 20-25',
-             [case_citation(2, page='20-25', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf,')]),
+             [case_citation(2, page='20', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf',
+                            pin_cite='20-25')]),
             # Test short form citation with a page range with weird suffix
             ('before asdf, 1 U. S., at 20-25\\& n. 4',
-             [case_citation(2, page='20-25', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf,')]),
+             [case_citation(2, page='20', reporter_found='U. S.',
+                            short=True, antecedent_guess='asdf',
+                            pin_cite='20-25')]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
-             [supra_citation(2, "supra,", antecedent_guess='asdf,',
-                             page='2')]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf',
+                             pin_cite='at 2')]),
             # Test second kind of supra citation (with volume)
             ('before asdf, 123 supra, at 2',
-             [supra_citation(3, "supra,", antecedent_guess='asdf,',
-                             page='2', volume='123')]),
+             [supra_citation(3, "supra,", antecedent_guess='asdf',
+                             pin_cite='at 2', volume='123')]),
             # Test third kind of supra citation (sans page)
             ('before asdf, supra, foo bar',
-             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
             # Test third kind of supra citation (with period)
             ('before asdf, supra. foo bar',
-             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
             # Test supra citation at end of document (issue #1171)
             ('before asdf, supra end',
-             [supra_citation(2, "supra,", antecedent_guess='asdf,')]),
+             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
             # Test Ibid. citation
             ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
              [case_citation(3, page='12', plaintiff='foo',
                             defendant='bar'),
-              id_citation(7, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])]),
+              id_citation(7, 'Ibid.')]),
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
-             [id_citation(2, 'Ibid.', after_tokens=['foo', 'bar', 'lorem'])],
+             [id_citation(2, 'Ibid.')],
              {'clean': ['html', 'inline_whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.,', after_tokens=['at', '123.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.,', pin_cite='at 123')]),
             # Test Id. citation across line break
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.,', after_tokens=['at', '123.'],
-                          has_page=True)],
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.,', pin_cite='at 123')],
              {'clean': ['all_whitespace']}),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
-             [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
-                          has_page=True)],
+             [id_citation(2, 'Id.,', pin_cite='at 123')],
              {'clean': ['html', 'inline_whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
-             [id_citation(2, 'Id.,', after_tokens=['at', '123.'],
-                          has_page=True)],
+             [id_citation(2, 'Id.,', pin_cite='at 123')],
              {'clean': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.', after_tokens=['¶', '34.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.', pin_cite='¶ 34')]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.', after_tokens=['at', '62-63,', '67-68.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.', pin_cite='at 62-63, 67-68')]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.,', after_tokens=['at', '*10.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.,', pin_cite='at *10')]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.',
-                          after_tokens=['at', '7-9,', '¶¶', '38-53.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.', pin_cite='at 7-9, ¶¶ 38-53')]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.', after_tokens=['at', 'pp.', '45,', '64.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.', pin_cite='at pp. 45, 64')]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'id.', after_tokens=['119:12-14.'],
-                          has_page=True)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'id.', pin_cite='119:12-14')]),
             # Test Id. citation without page number
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
              [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
-              id_citation(8, 'Id.', after_tokens=['No', 'page', 'number.'],
-                          has_page=False)]),
+                            defendant='bar', pin_cite='347-348'),
+              id_citation(8, 'Id.')]),
             # Test non-opinion citation
             ('lorem ipsum see §99 of the U.S. code.',
              [nonopinion_citation(3, '§99')]),
@@ -314,12 +314,10 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
-            # Test that the tokenizer handles whitespace well. In the past, the
-            # capital letter P in 5243-P matched the abbreviation for the Pacific
-            # reporter ("P"), and the tokenizing would be wrong.
-            ('Failed to recognize 1993 Ct. Sup. 5243-P',
+            # Test Conn. Super. Ct. regex variation.
+            ('Failed to recognize 1993 Conn. Super. Ct. 5243-P',
              [case_citation(3, volume='1993', reporter='Conn. Super. Ct.',
-                            reporter_found='Ct. Sup.', page='5243-P')]),
+                            page='5243-P')]),
             # Test that the tokenizer handles commas after a reporter. In the
             # past, " U. S. " would match but not " U. S., "
             ('foo 1 U.S., 1 bar',
@@ -343,9 +341,11 @@ class FindTest(TestCase):
             (', supra.', [supra_citation(0, "supra.")]),
             ('123 supra.', [supra_citation(0, "supra.", volume="123")]),
             # Token scanning edge case -- Id. at end of input
-            ('Id.', [id_citation(0, 'Id.,', after_tokens=[])]),
-            ('Id. at 1.', [id_citation(0, 'Id.,', after_tokens=['at', '1.'], has_page=True)]),
-            ('Id. foo', [id_citation(0, 'Id.,', after_tokens=['foo'])]),
+            ('Id.', [id_citation(0, 'Id.,')]),
+            ('Id. at 1.', [id_citation(0, 'Id.,', pin_cite='at 1')]),
+            ('Id. foo', [id_citation(0, 'Id.,')]),
+            # Reject citations that are part of larger words
+            ('foo1 U.S. 1, 1. U.S. 1foo', [],),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")

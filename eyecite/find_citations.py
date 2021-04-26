@@ -1,12 +1,14 @@
-from typing import Iterable, List, Optional, cast
+from typing import Iterable, List, cast
 
 from eyecite.helpers import (
+    SHORT_CITE_ANTECEDENT_REGEX,
+    SUPRA_ANTECEDENT_REGEX,
     add_defendant,
     add_post_citation,
     disambiguate_reporters,
+    extract_pin_cite,
     joke_cite,
-    parse_page,
-    remove_address_citations,
+    match_on_tokens,
 )
 from eyecite.models import (
     CitationBase,
@@ -19,7 +21,6 @@ from eyecite.models import (
     ShortCaseCitation,
     SupraCitation,
     SupraToken,
-    Token,
     Tokens,
 )
 from eyecite.tokenizers import Tokenizer, default_tokenizer
@@ -36,11 +37,11 @@ def get_citations(
     if plain_text == "eyecite":
         return joke_cite
 
-    words = cast(Tokens, list(tokenizer.tokenize(plain_text)))
+    words, citation_tokens = tokenizer.tokenize(plain_text)
     citations: List[CitationBase] = []
 
-    for i, token in enumerate(words):
-        citation: Optional[CitationBase]
+    for i, token in citation_tokens:
+        citation: CitationBase
         token_type = type(token)
 
         # CASE 1: Citation token is a reporter (e.g., "U. S.").
@@ -71,7 +72,7 @@ def get_citations(
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
         elif token_type is SupraToken:
-            citation = extract_supra_citation(cast(SupraToken, words), i)
+            citation = extract_supra_citation(words, i)
 
         # CASE 4: Citation token is a section marker.
         # In this case, it's likely that this is a reference to a non-
@@ -84,15 +85,12 @@ def get_citations(
         else:
             continue
 
-        if citation is not None:
-            citations.append(citation)
+        citations.append(citation)
 
     # Remove citations with multiple reporter candidates where we couldn't
     # guess correct reporter
     if remove_ambiguous:
         citations = disambiguate_reporters(citations)
-
-    citations = remove_address_citations(citations)
 
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
@@ -132,19 +130,22 @@ def extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     """
-    # Get antecedent -- either previous word, or previous two words if
-    # previous word is a comma
+    # get antecedent word
     antecedent_guess = None
-    if index > 0:
-        antecedent_guess = str(words[index - 1])
-        if antecedent_guess == ",":
-            if index > 1:
-                antecedent_guess = str(words[index - 2]) + ","
-            else:
-                antecedent_guess = None
+    m = match_on_tokens(
+        words,
+        index - 1,
+        SHORT_CITE_ANTECEDENT_REGEX,
+        strings_only=True,
+        forward=False,
+    )
+    if m:
+        antecedent_guess = m[1].strip()
 
     # Get citation
     cite_token = cast(CitationToken, words[index])
+
+    pin_cite, span_end = extract_pin_cite(words, index, prefix=cite_token.page)
 
     # Return ShortCaseCitation
     return ShortCaseCitation(
@@ -157,13 +158,15 @@ def extract_shortform_citation(
         reporter_found=cite_token.reporter,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
+        pin_cite=pin_cite,
+        span_end=span_end,
     )
 
 
 def extract_supra_citation(
     words: Tokens,
     index: int,
-) -> Optional[SupraCitation]:
+) -> SupraCitation:
     """Given a list of words and the index of a supra token, look before
     and after to see if this is a supra citation. If found, construct
     and return a SupraCitation object.
@@ -173,37 +176,32 @@ def extract_supra_citation(
     Supra 3: Adarand, supra, somethingelse
     Supra 4: Adrand, supra. somethingelse
     """
-    # Get page, with bounds check to ensure we don't scan past end of words.
-    # Use index + 2 to skip "at".
-    page = None
-    if index + 2 < len(words):
-        page = parse_page(str(words[index + 2]))
-
-    # Get antecedent -- either previous word, or previous two words if
-    # previous word is a comma. If previous word is a digit, store as
-    # volume and use next previous word as antecedent.
+    pin_cite, span_end = extract_pin_cite(words, index)
     antecedent_guess = None
     volume = None
-    if index > 0:
-        antecedent_guess = str(words[index - 1])
-        if antecedent_guess.isdigit():
-            volume = antecedent_guess
-            if index > 1:
-                antecedent_guess = str(words[index - 2])
-            else:
-                antecedent_guess = None
-        elif antecedent_guess == ",":
-            if index > 1:
-                antecedent_guess = str(words[index - 2]) + ","
-            else:
-                antecedent_guess = None
+    m = match_on_tokens(
+        words,
+        index - 1,
+        SUPRA_ANTECEDENT_REGEX,
+        strings_only=True,
+        forward=False,
+    )
+    if m:
+        if m[1]:
+            antecedent_guess = m[1].strip()
+            volume = m[2].strip()
+        elif m[3]:
+            volume = m[3].strip()
+        else:
+            antecedent_guess = m[4].strip()
 
     # Return SupraCitation
     return SupraCitation(
         cast(SupraToken, words[index]),
         index,
-        antecedent_guess,
-        page=page,
+        span_end=span_end,
+        antecedent_guess=antecedent_guess,
+        pin_cite=pin_cite,
         volume=volume,
     )
 
@@ -211,48 +209,15 @@ def extract_supra_citation(
 def extract_id_citation(
     words: Tokens,
     index: int,
-) -> Optional[IdCitation]:
+) -> IdCitation:
     """Given a list of words and the index of an id token, gather the
     immediately succeeding tokens to construct and return an IdCitation
     object.
     """
-    # List of literals that could come after an id token
-    id_reference_token_literals = {
-        "at",
-        "p.",
-        "p",
-        "pp.",
-        "p",
-        "@",
-        "pg",
-        "pg.",
-        "¶",
-        "¶¶",
-    }
-
-    # Helper function to see whether a token qualifies as a page candidate
-    def is_page_candidate(token):
-        return token in id_reference_token_literals or (
-            not isinstance(token, Token) and parse_page(token)
-        )
-
-    # Check if the post-id token is indeed a page candidate.
-    # If so, set scan_index to capture all page candidates immediately
-    # following Id. cite.
-    scan_index = index + 1
-    has_page = False
-    while scan_index < len(words) and is_page_candidate(words[scan_index]):
-        scan_index += 1
-        has_page = True
-
-    # If it is not, simply set a naive anchor for the end of the scan_index.
-    if not has_page:
-        scan_index = min(index + 4, len(words))
-
-    # Only linkify the after tokens if a page is found
+    pin_cite, span_end = extract_pin_cite(words, index)
     return IdCitation(
         cast(IdToken, words[index]),
         index,
-        after_tokens=words[index + 1 : scan_index],
-        has_page=has_page,
+        span_end=span_end,
+        pin_cite=pin_cite,
     )
