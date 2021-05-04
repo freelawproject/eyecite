@@ -2,7 +2,18 @@ import re
 from collections import UserString
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable, ClassVar, Dict, List, Optional, Sequence, Union
+from typing import (
+    Callable,
+    ClassVar,
+    Dict,
+    Hashable,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
+
+ResourceType = Hashable
 
 
 @dataclass(eq=True, frozen=True)
@@ -277,7 +288,7 @@ Tokens = Sequence[TokenOrStr]
 
 @dataclass(eq=True, frozen=True)
 class CitationToken(Token):
-    """ String matching a citation regex. """
+    """String matching a citation regex."""
 
     volume: str
     reporter: str
@@ -317,12 +328,12 @@ class CitationToken(Token):
 
 @dataclass(eq=True, frozen=True)
 class SectionToken(Token):
-    """ Word containing a section symbol. """
+    """Word containing a section symbol."""
 
 
 @dataclass(eq=True, frozen=True)
 class SupraToken(Token):
-    """ Word matching "supra" with or without punctuation. """
+    """Word matching "supra" with or without punctuation."""
 
     @classmethod
     def from_match(cls, m, extra, offset=0) -> Token:
@@ -333,7 +344,7 @@ class SupraToken(Token):
 
 @dataclass(eq=True, frozen=True)
 class IdToken(Token):
-    """ Word matching "id" or "ibid". """
+    """Word matching "id" or "ibid"."""
 
     @classmethod
     def from_match(cls, m, extra, offset=0) -> Token:
@@ -344,7 +355,7 @@ class IdToken(Token):
 
 @dataclass(eq=True, frozen=True)
 class StopWordToken(Token):
-    """ Word matching one of the STOP_TOKENS. """
+    """Word matching one of the STOP_TOKENS."""
 
     stop_word: str
     stop_tokens: ClassVar[Sequence[str]] = (
@@ -403,3 +414,23 @@ class TokenExtractor:
         if not hasattr(self, "_compiled_regex"):
             self._compiled_regex = re.compile(self.regex, flags=self.flags)
         return self._compiled_regex
+
+
+@dataclass(frozen=True)
+class Resource(ResourceType):
+    """Thin resource class representing an object to which a citation can be
+    resolved."""
+
+    citation: FullCaseCitation
+
+    def __hash__(self):
+        """
+        Resources are constructively equal if the core attributes of their
+        citations are equal.
+        """
+        return hash(
+            (self.citation.reporter, self.citation.volume, self.citation.page)
+        )
+
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
