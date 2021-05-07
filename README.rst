@@ -41,13 +41,6 @@ Options
 3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
 4. :code:`tokenizer` ==> Tokenizer; an instance of a Tokenizer object (see "Tokenizers" below)
 
-Some notes
-----------
-Some things to keep in mind are:
-
-1. This project depends on information made available in two other Free Law Project packages, `reporters-db <https://github.com/freelawproject/reporters-db>`_ and `courts-db <https://github.com/freelawproject/courts-db>`_.
-2. This package performs no matching or resolution action. In other words, it is up to the user to decide what to do with the "short form," "supra," "id.," and "ibid." citations that this tool extracts. In theory, these citations are all references to "full" citations also mentioned in the text -- and are therefore in principle resolvable to those citations -- but this task is beyond the scope of this parsing package. See `here <https://github.com/freelawproject/courtlistener/tree/master/cl/citations>`_ for an example of how Courtlistener implements this package and handles this problem.
-
 
 Cleaning Input Text
 ===================
@@ -150,6 +143,56 @@ that takes :code:`(before, span_text, after)` and returns the annotated text:
 
     returns:
     'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
+
+Resolving Citations
+==========
+
+Once you have extracted citations from a document, you may wish to resolve them to their common references.
+To do so, just pass the results of :code:`get_citations()` into :code:`resolve_citations()`. This function will
+do its best to resolve each "full," "short form," "supra," and "id" citation to a common :code:`Resource` object,
+returning a dictionary that maps resources to lists of associated citations:
+
+::
+
+    from eyecite import get_citations, resolve_citations
+
+    text = 'first citation: 1 U.S. 12. second citation: 2 F.3d 2. third citation: Id.'
+    found_citations = get_citations(text)
+    resolved_citations = resolve_citations(found_citations)
+
+    returns (pseudo):
+    {
+        <Resource object>: [FullCaseCitation('1 U.S. 12')],
+        <Resource object>: [FullCaseCitation('2 F.3d 2'), IdCitation('Id.')]
+    }
+
+Importantly, eyecite performs these resolutions using only its immanent knowledge about each citation's
+textual representation. If you want to perform more sophisticated resolution (e.g., by augmenting each
+citation with information from a third-party API), simply pass custom :code:`resolve_id_citation()`,
+:code:`resolve_supra_citation()`, :code:`resolve_shortcase_citation()`, and :code:`resolve_full_citation()`
+functions to :code:`resolve_citations()` as keyword arguments. You can also configure those functions to
+return a more complex resource object (such as a Django model), so long as that object inherits the
+:code:`eyecite.models.ResourceType` type (which simply requires hashability). For example, you might implement
+a custom full citation resolution function as follows, using the default resolution logic as a fallback:
+
+::
+
+    def my_resolve(full_cite):
+        # special handling for resolution of known cases in our database
+        resource = MyOpinion.objects.get(full_cite)
+        if resource:
+            return resource
+        # allow normal clustering of other citations
+        return resolve_full_citation(full_cite)
+
+    resolve_citations(citations, resolve_full_citation=my_resolve)
+
+    returns (pseudo):
+    {
+        <MyOpinion object>: [<full_cite>, <short_cite>, <id_cite>],
+        <Resource object>: [<full cite>, <short cite>],
+    }
+
 
 Tokenizers
 ==========
