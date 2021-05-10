@@ -1,7 +1,7 @@
-import re
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
+import regex as re
 from courts_db import courts
 
 from eyecite.models import (
@@ -10,7 +10,6 @@ from eyecite.models import (
     ParagraphToken,
     StopWordToken,
     Token,
-    TokenOrStr,
     Tokens,
 )
 from eyecite.utils import strip_punct
@@ -29,18 +28,17 @@ from eyecite.utils import strip_punct
 # For some examples see
 # https://github.com/freelawproject/courtlistener/issues/1344#issuecomment-662994948
 PIN_CITE_TOKEN_REGEX = r"""
-    # optional label -- ¶, §, p., pp., pg., n., note, & n.
-    # (longest to shortest):
+    # optional label (longest to shortest):
     (?:
         (?:
-            (?:&\ )?note|
-            (?:&\ )?nn?\.?|
-            ¶{1,2}|
-            §{1,2}|
-            \*{1,4}|
-            pg\.?|
-            pp\.?|
-            p\.?|
+            (?:&\ )?note|       # note, & note
+            (?:&\ )?nn?\.?|     # n., nn., & nn.
+            (?:&\ )?fn?\.?|     # fn., & fn.
+            ¶{1,2}|             # ¶
+            §{1,2}|             # §
+            \*{1,4}|            # *
+            pg\.?|              # pg.
+            pp?\.?              # p., pp.
         )\ ?  # optional space after label
     )?
     (?:
@@ -51,7 +49,7 @@ PIN_CITE_TOKEN_REGEX = r"""
     )
 """
 PIN_CITE_REGEX = rf"""
-    \ ?(
+    \ ?(?P<pin_cite>
         (?:at\ )?
         {PIN_CITE_TOKEN_REGEX},?
         (?:\ {PIN_CITE_TOKEN_REGEX},?)*
@@ -63,7 +61,7 @@ PIN_CITE_REGEX = rf"""
 # What case does a short cite refer to? For now, we just capture the previous
 # word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
 SHORT_CITE_ANTECEDENT_REGEX = r"""
-    ([\w\-.]+),?
+    (?P<antecedent>[\w\-.]+),?
     \   # final space
 """
 
@@ -75,9 +73,9 @@ SHORT_CITE_ANTECEDENT_REGEX = r"""
 # and the word before it (to store as antecedent).
 SUPRA_ANTECEDENT_REGEX = r"""
     (?:
-        ([\w\-.]+),?\ (\d+)|
-        (\d+)|
-        ([\w\-.]+),?
+        (?P<antecedent>[\w\-.]+),?\ (?P<volume>\d+)|
+        (?P<volume>\d+)|
+        (?P<antecedent>[\w\-.]+),?
     )
     \   # final space
 """
@@ -95,16 +93,24 @@ SUPRA_ANTECEDENT_REGEX = r"""
 #   parenthetical = overruling foo
 POST_CITATION_REGEX = rf"""
     (?:  # handle a full cite with a valid year paren:
-        (?:  # content before year paren is either ...
-            ,{PIN_CITE_REGEX},\ ([^(]+)|  # pin cite with comma and extra
-            ,{PIN_CITE_REGEX}\ |          # just pin cite
-            ([^(]*)                       # just extra
+        # content before year paren:
+        (?:
+            # pin cite with comma and extra:
+            ,{PIN_CITE_REGEX},\ (?P<extra>[^(]+)|
+            # just pin cite:
+            ,{PIN_CITE_REGEX}\ |
+            # just extra
+            (?P<extra>[^(]*)
         )
-        \((?:  # content within year paren is either ...
-            ([^)]+)\ (\d{{4}})|           # court and year
-            (\d{{4}})                     # just year
+        # content within year paren:
+        \((?:
+            # court and year:
+            (?P<court>[^)]+)\ (?P<year>\d{{4}})|
+            # just year:
+            (?P<year>\d{{4}})
         )\)
-        (?:\ \(([^)]+)\))?  # optional parenthetical comment
+        # optional parenthetical comment:
+        (?:\ \((?P<parenthetical>[^)]+)\))?
     |  # handle a pin cite with no valid year paren:
         ,{PIN_CITE_REGEX}(?:,|\.|\ \()
     )
@@ -113,25 +119,17 @@ POST_CITATION_REGEX = rf"""
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
 
-def get_court_by_paren(
-    paren_string: str, citation: CaseCitation
-) -> Optional[str]:
+def get_court_by_paren(paren_string: str) -> Optional[str]:
     """Takes the citation string, usually something like "2d Cir", and maps
     that back to the court code.
 
     Does not work on SCOTUS, since that court lacks parentheticals, and
     needs to be handled after disambiguation has been completed.
     """
-    if citation.year is None:
-        court_str = strip_punct(paren_string)
-    else:
-        year_index = paren_string.find(str(citation.year))
-        court_str = strip_punct(paren_string[:year_index])
+    court_str = strip_punct(paren_string)
 
     court_code = None
-    if court_str == "":
-        court_code = None
-    else:
+    if court_str:
         # Map the string to a court, if possible.
         for court in courts:
             # Use startswith because citations are often missing final period,
@@ -148,9 +146,9 @@ def get_court_by_paren(
 _highest_valid_year = date.today().year + 1
 
 
-def get_year(token: TokenOrStr) -> Optional[int]:
-    """Given a string token, look for a year within a reasonable range."""
-    word = strip_punct(str(token))
+def get_year(word: str) -> Optional[int]:
+    """Given a matched year string, look for a year within a reasonable
+    range."""
     try:
         year = int(word)
     except ValueError:
@@ -173,27 +171,13 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     if not m:
         return
 
-    # handle pin cite and extra text before court-year parens
-    if m[1]:
-        citation.pin_cite = m[1]
-        citation.extra = m[2].strip()
-    elif m[3]:
-        citation.pin_cite = m[3]
-    elif m[4]:
-        citation.extra = m[4].strip() or None
-    elif m[9]:
-        citation.pin_cite = m[9]
-
-    # handle court-year parens
-    if m[5]:
-        citation.court = get_court_by_paren(m[5], citation)
-        citation.year = get_year(m[6])
-    elif m[7]:
-        citation.year = get_year(m[7])
-
-    # handle parenthetical
-    if m[8]:
-        citation.parenthetical = m[8]
+    citation.pin_cite = m["pin_cite"]
+    citation.extra = (m["extra"] or "").strip() or None
+    citation.parenthetical = m["parenthetical"]
+    if m["year"]:
+        citation.year = get_year(m["year"])
+    if m["court"]:
+        citation.court = get_court_by_paren(m["court"])
 
 
 def add_defendant(citation: CaseCitation, words: Tokens) -> None:
@@ -236,7 +220,7 @@ def extract_pin_cite(
         words, index + 1, PIN_CITE_REGEX, prefix=prefix, strings_only=True
     )
     if m:
-        pin_cite = m[1].lstrip()
+        pin_cite = m["pin_cite"]
         extra_chars = m.span(1)[1]
         return pin_cite, from_token.end + extra_chars - len(prefix)
     return None, None
@@ -277,9 +261,9 @@ def match_on_tokens(
         token = words[index]
 
         # check for stop token
-        if strings_only and type(token) is not str:
+        if strings_only and not isinstance(token, str):
             break
-        if type(token) is ParagraphToken:
+        if isinstance(token, ParagraphToken):
             break
 
         # append or prepend text

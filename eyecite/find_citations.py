@@ -140,7 +140,7 @@ def extract_shortform_citation(
         forward=False,
     )
     if m:
-        antecedent_guess = m[1].strip()
+        antecedent_guess = m["antecedent"].strip()
 
     # Get citation
     cite_token = cast(CitationToken, words[index])
@@ -187,13 +187,8 @@ def extract_supra_citation(
         forward=False,
     )
     if m:
-        if m[1]:
-            antecedent_guess = m[1].strip()
-            volume = m[2].strip()
-        elif m[3]:
-            volume = m[3].strip()
-        else:
-            antecedent_guess = m[4].strip()
+        antecedent_guess = m["antecedent"]
+        volume = m["volume"]
 
     # Return SupraCitation
     return SupraCitation(
