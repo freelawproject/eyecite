@@ -7,37 +7,27 @@ from eyecite.cleaners import cleaners_lookup
 
 # We need a regex that matches roman numerals but not the empty string,
 # without using lookahead assertions that aren't supported by hyperscan.
-# Since people don't always follow the correct format for these anyway,
-# we can use a simple regex that allows any order:
-ROMAN_NUMERAL_REGEX = r"[IVXLCDM]+\b"
-# Alternatively this regex claims to match roman numerals but not the empty
-# string without lookaheads:
-# https://stackoverflow.com/a/60469651/307769
-# roman_numeral_regex = "|".join(
-#     r"(I[VX]|VI{0,3}|I{1,3})"
-#     r"((X[LC]|LX{0,3}|X{1,3})(I[VX]|V?I{0,3}))"
-#     r"((C[DM]|DC{0,3}|C{1,3})(X[LC]|L?X{0,3})(I[VX]|V?I{0,3}))"
-#     r"(M+(C[DM]|D?C{0,3})(X[LC]|L?X{0,3})(I[VX]|V?I{0,3}))"
-# )
+# We *don't* want to match roman numerals 'v', 'l', or 'c', or numerals over
+# 200, or uppercase, as these are usually false positives
+# (see https://github.com/freelawproject/eyecite/issues/56 ).
+# Match roman numerals 1 to 199 except for 5, 50, 100:
+ROMAN_NUMERAL_REGEX = "|".join(
+    [
+        # 10-199, but not 50-59 or 100-109 or 150-159:
+        r"c?(?:xc|xl|l?x{1,3})(?:ix|iv|v?i{0,3})",
+        # 1-9, 51-59, 101-109, 151-159, but not 5, 55, 105, 155:
+        r"(?:c?l?)(?:ix|iv|v?i{1,3})",
+        # 55, 105, 150, 155:
+        r"(?:lv|cv|cl|clv)",
+    ]
+)
 
 
 # Page number regex to match one of the following:
 # (ordered in descending order of likelihood)
-# 1) A numerical page range. E.g., "123-124"
-# 2) A roman numeral. E.g., "250 Neb. xxiv (1996)"
-# 3) A special Connecticut or Illinois number. E.g., "13301-M"
-# 4) A page with a weird suffix. E.g., "559 N.W.2d 826|N.D."
-# 5) A page with a ¶ symbol, star, and/or colon. E.g., "¶ 119:12-14"
-PAGE_NUMBER_REGEX = r"(?:%s)" % "|".join(
-    [
-        r"\d{1,6}[-]?[a-zA-Z]{1,6}",  # CT/IL page
-        r"\d{1,6}-\d{1,6}",  # page range
-        r"\d+",  # simple digit
-        ROMAN_NUMERAL_REGEX,
-        ROMAN_NUMERAL_REGEX.lower(),
-        r"[*¶]*[\d:\-]+",  # ¶, star, colon
-    ]
-)
+# 1) A plain digit. E.g. "123"
+# 2) A roman numeral.
+PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX})"
 
 
 # Regex to match punctuation around volume numbers and stopwords.
@@ -103,6 +93,11 @@ def space_boundaries_re(regex):
 def strip_punctuation_re(regex):
     """Wrap regex with punctuation pattern."""
     return rf"{PUNCTUATION_REGEX}{regex}{PUNCTUATION_REGEX}"
+
+
+def nonalphanum_boundaries_re(regex):
+    """Wrap regex to require non-alphanumeric characters on left and right."""
+    return rf"(?:^|[^a-zA-Z0-9])({regex})(?:[^a-zA-Z0-9]|$)"
 
 
 def is_balanced_html(text: str) -> bool:

@@ -28,6 +28,8 @@ def case_citation(
         kwargs.setdefault("court", "scotus")
     if not source_text:
         source_text = f"{volume} {reporter} {page}"
+    if short:
+        kwargs.setdefault("pin_cite", page)
     edition = EDITIONS_LOOKUP[reporter][0]
     token = CitationToken(
         source_text,
