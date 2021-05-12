@@ -29,7 +29,7 @@ include = ["eyecite/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-reporters-db = "^3.0.1"
+reporters-db = "^3.1.1"
 courts-db = "^0.9.7"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
@@ -69,6 +69,9 @@ disable = "C0330, C0326, C0114, R0901, W0613, E1121"
 max-line-length = "79"
 # allow "m" as a standard variable name for re Match objects
 good-names = "i,j,k,ex,Run,_,m"
+
+[tool.pylint.similarities]
+ignore-imports="yes"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"

@@ -19,6 +19,18 @@ class AnnotateTest(TestCase):
             ("foo 1 U.S. 1 bar", "foo <0>1 U.S. 1</0> bar", []),
             # cite with punctuation
             ("foo '1 U.S. 1' bar", "foo '<0>1 U.S. 1</0>' bar", []),
+            # law cite
+            (
+                "foo. Mass. Gen. Laws ch. 1, § 2. bar",
+                "foo. <0>Mass. Gen. Laws ch. 1, § 2</0>. bar",
+                [],
+            ),
+            # journal cite
+            (
+                "foo. 1 Minn. L. Rev. 2. bar",
+                "foo. <0>1 Minn. L. Rev. 2</0>. bar",
+                [],
+            ),
             # Id. cite
             (
                 "1 U.S. 1. Foo. Id. Bar. Id. at 2.",

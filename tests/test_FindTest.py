@@ -7,9 +7,12 @@ from eyecite import clean_text, get_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
+from eyecite.models import CitationToken
 from eyecite.test_factories import (
     case_citation,
     id_citation,
+    journal_citation,
+    law_citation,
     nonopinion_citation,
     supra_citation,
 )
@@ -48,6 +51,8 @@ class FindTest(TestCase):
                     match_attrs = [
                         "token_index",
                         "reporter_found",
+                        "day",
+                        "month",
                         "year",
                         "court",
                         "plaintiff",
@@ -81,6 +86,10 @@ class FindTest(TestCase):
                                 expected_attrs,
                                 f"Extracted cite attrs don't match for {repr(q)}",
                             )
+                            if isinstance(a.token, CitationToken):
+                                self.assertEqual(
+                                    a.token.groups, b.token.groups
+                                )
                     except AssertionError:
                         if not expect_fail:
                             raise
@@ -328,7 +337,7 @@ class FindTest(TestCase):
                             reporter_found='Bankr. L. Rep. (CCH)', page='12,345')]),
             ('blah blah, 2009 12345 (La.App. 1 Cir. 05/10/10). blah blah',
              [case_citation(2, volume='2009', reporter='La.App. 1 Cir.',
-                            page='12345')]),
+                            page='12345', groups={'date_filed': '05/10/10'})]),
             # Token scanning edge case -- incomplete paren at end of input
             ('1 U.S. 1 (', [case_citation(0)]),
             # Token scanning edge case -- missing plaintiff name at start of input
@@ -349,6 +358,106 @@ class FindTest(TestCase):
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
+
+    def test_find_law_citations(self):
+        """Can we find citations from laws.json?"""
+        # fmt: off
+        """
+        see Ariz. Rev. Stat. Ann. § 36-3701 et seq. (West 2009)
+        63 Stat. 687 (emphasis added)
+        18 U. S. C. §§4241-4243
+        Fla. Stat. § 120.68 (2007)
+        """
+        test_pairs = (
+            # Basic test
+            ('Mass. Gen. Laws ch. 1, § 2',
+             [law_citation(0, 'Mass. Gen. Laws ch. 1, § 2',
+                           reporter='Mass. Gen. Laws',
+                           groups={'chapter': '1', 'section': '2'})]),
+            ('1 Stat. 2',
+             [law_citation(0, '1 Stat. 2',
+                           reporter='Stat.',
+                           groups={'volume': '1', 'page': '2'})]),
+            # year
+            ('Fla. Stat. § 120.68 (2007)',
+             [law_citation(0, 'Fla. Stat. § 120.68 (2007)',
+                           reporter='Fla. Stat.', year='2007',
+                           groups={'section': '120.68'})]),
+            # et seq, publisher, year
+            ('Ariz. Rev. Stat. Ann. § 36-3701 et seq. (West 2009)',
+             [law_citation(0, 'Ariz. Rev. Stat. Ann. § 36-3701 et seq. (West 2009)',
+                           reporter='Ariz. Rev. Stat. Ann.',
+                           pin_cite='et seq.',
+                           groups={'section': '36-3701'},
+                           publisher='West', year='2009')]),
+            # multiple sections
+            ('Mass. Gen. Laws ch. 1, §§ 2-3',
+             [law_citation(0, 'Mass. Gen. Laws ch. 1, §§ 2-3',
+                           reporter='Mass. Gen. Laws',
+                           groups={'chapter': '1', 'section': '2-3'})]),
+            # parenthetical
+            ('Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
+             [law_citation(0, 'Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
+                           reporter='Kan. Stat. Ann.',
+                           pin_cite='(a)(2)', parenthetical='repealed',
+                           groups={'section': '21-3516'})]),
+            # Supp. publisher
+            ('Ohio Rev. Code Ann. § 5739.02(B)(7) (Lexis Supp. 2010)',
+             [law_citation(0, 'Ohio Rev. Code Ann. § 5739.02(B)(7) (Lexis Supp. 2010)',
+                           reporter='Ohio Rev. Code Ann.',
+                           pin_cite='(B)(7)',
+                           groups={'section': '5739.02'},
+                           publisher='Lexis Supp.', year='2010')]),
+            # Year range
+            ('Wis. Stat. § 655.002(2)(c) (2005-06)',
+             [law_citation(0, 'Wis. Stat. § 655.002(2)(c) (2005-06)',
+                           reporter='Wis. Stat.',
+                           pin_cite='(2)(c)',
+                           groups={'section': '655.002'},
+                           year='2005')]),
+            # 'and' pin cite
+            ('Ark. Code Ann. § 23-3-119(a)(2) and (d) (1987)',
+             [law_citation(0, 'Ark. Code Ann. § 23-3-119(a)(2) and (d) (1987)',
+                           reporter='Ark. Code Ann.',
+                           pin_cite='(a)(2) and (d)',
+                           groups={'section': '23-3-119'},
+                           year='1987')]),
+            # Cite to multiple sections
+            ('Mass. Gen. Laws ch. 1, §§ 2-3',
+             [law_citation(0, 'Mass. Gen. Laws ch. 1, §§ 2-3',
+                           reporter='Mass. Gen. Laws',
+                           groups={'chapter': '1', 'section': '2-3'})]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Law citation extraction")
+
+    def test_find_journal_citations(self):
+        """Can we find citations from journals.json?"""
+        # fmt: off
+        test_pairs = (
+            # Basic test
+            ('1 Minn. L. Rev. 1',
+             [journal_citation(0)]),
+            # Pin cite
+            ('1 Minn. L. Rev. 1, 2-3',
+             [journal_citation(0, pin_cite='2-3')]),
+            # Year
+            ('1 Minn. L. Rev. 1 (2007)',
+             [journal_citation(0, year='2007')]),
+            # Pin cite and year
+            ('1 Minn. L. Rev. 1, 2-3 (2007)',
+             [journal_citation(0, pin_cite='2-3', year='2007')]),
+            # Pin cite and year and parenthetical
+            ('1 Minn. L. Rev. 1, 2-3 (2007) (discussing ...)',
+             [journal_citation(0, pin_cite='2-3', year='2007',
+                               parenthetical='discussing ...')]),
+            # Year range
+            ('77 Marq. L. Rev. 475 (1993-94)',
+             [journal_citation(0, volume='77', reporter='Marq. L. Rev.',
+                               page='475', year='1993')]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Journal citation extraction")
 
     def test_find_tc_citations(self):
         """Can we parse tax court citations properly?"""

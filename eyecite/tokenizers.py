@@ -17,7 +17,7 @@ from typing import (
 )
 
 import ahocorasick
-from reporters_db import RAW_REGEX_VARIABLES, REPORTERS
+from reporters_db import JOURNALS, LAWS, RAW_REGEX_VARIABLES, REPORTERS
 from reporters_db.utils import process_variables, recursive_substitute
 
 from eyecite.models import (
@@ -33,11 +33,15 @@ from eyecite.models import (
     TokenExtractor,
     Tokens,
 )
-from eyecite.utils import (
+from eyecite.regexes import (
+    ID_REGEX,
     PAGE_NUMBER_REGEX,
+    PARAGRAPH_REGEX,
+    SECTION_REGEX,
+    STOP_WORD_REGEX,
+    STOP_WORDS,
+    SUPRA_REGEX,
     nonalphanum_boundaries_re,
-    space_boundaries_re,
-    strip_punctuation_re,
 )
 
 # Prepare extractors
@@ -93,7 +97,7 @@ def _populate_reporter_extractors():
         }
     )
 
-    def _add_reporter_regex(
+    def _add_regex(
         kind: str,
         reporter: str,
         edition: Edition,
@@ -114,47 +118,100 @@ def _populate_reporter_extractors():
             editions_by_regex[regex]["strings"].add(reporter)
             editions_by_regex[regex]["short"] = True
 
-    # Use our helper functions to insert a regex into editions_by_regex
-    # for each reporter string in reporters_db:
-    for reporter_key, reporter_cluster in REPORTERS.items():
-        for reporter in reporter_cluster:
-            reporter_obj = Reporter(
-                short_name=reporter_key,
-                name=reporter["name"],
-                cite_type=reporter["cite_type"],
+    def _add_regexes(regex_templates, edition_name, edition, variations):
+        """Expand regex_templates and add to editions_by_regex."""
+        for regex_template in regex_templates:
+            standard_cite = regex_template == "$full_cite"
+            regex_template = recursive_substitute(
+                regex_template, regex_variables
             )
-            variations = reporter["variations"]
+            regex = _substitute_edition(regex_template, edition_name)
+            _add_regex("editions", edition_name, edition, regex, standard_cite)
+            for variation in variations:
+                regex = _substitute_edition(regex_template, variation)
+                _add_regex(
+                    "variations",
+                    variation,
+                    edition,
+                    regex,
+                    standard_cite,
+                )
 
-            for edition_name, edition_data in reporter["editions"].items():
+    # add reporters.json:
+    for source_key, source_cluster in REPORTERS.items():
+        for source in source_cluster:
+            reporter_obj = Reporter(
+                short_name=source_key,
+                name=source["name"],
+                cite_type=source["cite_type"],
+                source="reporters",
+            )
+            variations = source["variations"]
+            for edition_name, edition_data in source["editions"].items():
                 edition = Edition(
                     short_name=edition_name,
                     reporter=reporter_obj,
                     start=edition_data["start"],
                     end=edition_data["end"],
                 )
-                for regex_template in edition_data.get(
-                    "regexes", ["$full_cite"]
-                ):
-                    standard_cite = regex_template == "$full_cite"
-                    regex_template = recursive_substitute(
-                        regex_template, regex_variables
-                    )
-                    regex = _substitute_edition(regex_template, edition_name)
-                    _add_reporter_regex(
-                        "editions", edition_name, edition, regex, standard_cite
-                    )
-                    for variation, variation_target in variations.items():
-                        if edition_name == variation_target:
-                            regex = _substitute_edition(
-                                regex_template, variation
-                            )
-                            _add_reporter_regex(
-                                "variations",
-                                variation,
-                                edition,
-                                regex,
-                                standard_cite,
-                            )
+                regex_templates = edition_data.get("regexes") or ["$full_cite"]
+                edition_variations = [
+                    k for k, v in variations.items() if v == edition_name
+                ]
+                _add_regexes(
+                    regex_templates, edition_name, edition, edition_variations
+                )
+
+    # add laws.json
+    for source_key, source_cluster in LAWS.items():
+        for source in source_cluster:
+            reporter_obj = Reporter(
+                short_name=source_key,
+                name=source["name"],
+                cite_type=source["cite_type"],
+                source="laws",
+            )
+            edition = Edition(
+                short_name=source_key,
+                reporter=reporter_obj,
+                start=source["start"],
+                end=source["end"],
+            )
+            regex_templates = source.get("regexes") or ["$full_cite"]
+            # handle citation to multiple sections, like
+            # "Mass. Gen. Laws ch. 1, §§ 2-3":
+            regex_templates = [
+                r.replace(r"§ ", r"§§? ?") for r in regex_templates
+            ]
+            _add_regexes(
+                regex_templates,
+                source_key,
+                edition,
+                source.get("variations", []),
+            )
+
+    # add journals.json
+    for source_key, source_cluster in JOURNALS.items():
+        for source in source_cluster:
+            reporter_obj = Reporter(
+                short_name=source_key,
+                name=source["name"],
+                cite_type=source["cite_type"],
+                source="journals",
+            )
+            edition = Edition(
+                short_name=source_key,
+                reporter=reporter_obj,
+                start=source["start"],
+                end=source["end"],
+            )
+            regex_templates = source.get("regexes") or ["$full_cite"]
+            _add_regexes(
+                regex_templates,
+                source_key,
+                edition,
+                source.get("variations", []),
+            )
 
     # Add each regex to EXTRACTORS:
     for regex, cluster in editions_by_regex.items():
@@ -175,45 +232,37 @@ def _populate_reporter_extractors():
     # Add a few one-off extractors to handle special token types
     # other than citations:
 
-    id_regex = space_boundaries_re(r"id\.,?|ibid\.")
-    supra_regex = space_boundaries_re(strip_punctuation_re("supra"))
-    stop_word_regex = space_boundaries_re(
-        strip_punctuation_re(rf'({"|".join(StopWordToken.stop_tokens)})')
-    )
-    symbol_regex = r"(\S*§\S*)"
-    paragraph_regex = r"(\n)"
-
     EXTRACTORS.extend(
         [
             # Id.
             TokenExtractor(
-                id_regex,
+                ID_REGEX,
                 IdToken.from_match,
                 flags=re.I,
                 strings=["id.", "ibid."],
             ),
             # supra
             TokenExtractor(
-                supra_regex,
+                SUPRA_REGEX,
                 SupraToken.from_match,
                 flags=re.I,
                 strings=["supra"],
             ),
             # paragraph
             TokenExtractor(
-                paragraph_regex,
+                PARAGRAPH_REGEX,
                 ParagraphToken.from_match,
             ),
             # case name stopwords
             TokenExtractor(
-                stop_word_regex,
+                STOP_WORD_REGEX,
                 StopWordToken.from_match,
                 flags=re.I,
-                strings=StopWordToken.stop_tokens,
+                strings=STOP_WORDS,
             ),
             # tokens containing section symbols
             TokenExtractor(
-                symbol_regex, SectionToken.from_match, strings=["§"]
+                SECTION_REGEX, SectionToken.from_match, strings=["§"]
             ),
         ]
     )
@@ -424,7 +473,21 @@ class HyperscanTokenizer(Tokenizer):
                         hyperscan_flags |= hyperscan_flag
                 return hyperscan_flags
 
-            expressions = [e.regex.encode("utf8") for e in self.extractors]
+            def convert_regex(regex):
+                # hyperscan doesn't understand repetition flags like {,3},
+                # so replace with {0,3}:
+                regex = re.sub(r"\{,(\d+)\}", r"{0,\1}", regex)
+                # Characters like "§" convert to more than one byte in utf8,
+                # so "§?" won't work as expected. Convert "§?" to "(?:§)?":
+                long_chars = [c for c in regex if len(c.encode("utf8")) > 1]
+                if long_chars:
+                    regex = re.sub(
+                        rf'([{"".join(set(long_chars))}])\?', r"(?:\1)?", regex
+                    )
+                # encode as bytes:
+                return regex.encode("utf8")
+
+            expressions = [convert_regex(e.regex) for e in self.extractors]
             # HS_FLAG_SOM_LEFTMOST so hyperscan includes the start offset
             flags = [
                 convert_flags(e.flags) | hyperscan.HS_FLAG_SOM_LEFTMOST

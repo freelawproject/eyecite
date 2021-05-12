@@ -1,9 +1,9 @@
-from typing import Iterable, List, cast
+from typing import List, Union, cast
 
 from eyecite.helpers import (
-    SHORT_CITE_ANTECEDENT_REGEX,
-    SUPRA_ANTECEDENT_REGEX,
     add_defendant,
+    add_journal_metadata,
+    add_law_metadata,
     add_post_citation,
     disambiguate_reporters,
     extract_pin_cite,
@@ -14,6 +14,9 @@ from eyecite.models import (
     CitationBase,
     CitationToken,
     FullCaseCitation,
+    FullCitation,
+    FullJournalCitation,
+    FullLawCitation,
     IdCitation,
     IdToken,
     NonopinionCitation,
@@ -23,22 +26,21 @@ from eyecite.models import (
     SupraToken,
     Tokens,
 )
+from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 
 
 def get_citations(
     plain_text: str,
-    do_post_citation: bool = True,
-    do_defendant: bool = True,
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
-) -> Iterable[CitationBase]:
+) -> List[CitationBase]:
     """Main function"""
     if plain_text == "eyecite":
         return joke_cite
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
-    citations: List[CitationBase] = []
+    citations = []
 
     for i, token in citation_tokens:
         citation: CitationBase
@@ -53,12 +55,6 @@ def get_citations(
                 citation = extract_shortform_citation(words, i)
             else:
                 citation = extract_full_citation(words, i)
-                if do_post_citation:
-                    add_post_citation(citation, words)
-                if do_defendant:
-                    add_defendant(citation, words)
-            citation.guess_edition()
-            citation.guess_court()
 
         # CASE 2: Citation token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
@@ -102,22 +98,65 @@ def get_citations(
 def extract_full_citation(
     words: Tokens,
     index: int,
-) -> FullCaseCitation:
+) -> FullCitation:
     """Given a list of words and the index of a citation, return
-    a FullCaseCitation object."""
-    cite_token = cast(CitationToken, words[index])
+    a FullCitation object."""
+    token = cast(CitationToken, words[index])
+    citation: Union[FullCaseCitation, FullLawCitation, FullJournalCitation]
 
-    # Return FullCaseCitation
-    return FullCaseCitation(
-        cite_token,
-        index,
-        reporter=cite_token.reporter,
-        page=cite_token.page,
-        volume=cite_token.volume,
-        reporter_found=cite_token.reporter,
-        exact_editions=cite_token.exact_editions,
-        variation_editions=cite_token.variation_editions,
+    # Our cite was matched by one or more regexes, which could have come from
+    # one or more of the sources in reporters_db (e.g. reporters, laws,
+    # journals). Get the set of all sources that matched, preferring exact
+    # matches to variations:
+    cite_sources = set(
+        e.reporter.source
+        for e in (token.exact_editions or token.variation_editions)
     )
+
+    if "reporters" in cite_sources:
+        # make a FullCaseCitation
+        citation = FullCaseCitation(
+            token,
+            index,
+            reporter=token.groups["reporter"],
+            page=token.groups.get("page", ""),
+            volume=token.groups.get("volume", ""),
+            reporter_found=token.groups["reporter"],
+            exact_editions=token.exact_editions,
+            variation_editions=token.variation_editions,
+        )
+        add_post_citation(citation, words)
+        add_defendant(citation, words)
+        citation.guess_court()
+
+    elif "laws" in cite_sources:
+        # make a FullLawCitation
+        citation = FullLawCitation(
+            token,
+            index,
+            reporter_found=token.groups["reporter"],
+            exact_editions=token.exact_editions,
+            variation_editions=token.variation_editions,
+        )
+        add_law_metadata(citation, words)
+
+    else:  # 'journals'
+        # make a FullJournalCitation
+        citation = FullJournalCitation(
+            token,
+            index,
+            reporter=token.groups["reporter"],
+            page=token.groups.get("page", ""),
+            volume=token.groups.get("volume", ""),
+            reporter_found=token.groups["reporter"],
+            exact_editions=token.exact_editions,
+            variation_editions=token.variation_editions,
+        )
+        add_journal_metadata(citation, words)
+
+    citation.guess_edition()
+
+    return citation
 
 
 def extract_shortform_citation(
@@ -142,25 +181,31 @@ def extract_shortform_citation(
     if m:
         antecedent_guess = m["antecedent"].strip()
 
-    # Get citation
+    # Get pin_cite
     cite_token = cast(CitationToken, words[index])
+    pin_cite, span_end = extract_pin_cite(
+        words, index, prefix=cite_token.groups["page"]
+    )
 
-    pin_cite, span_end = extract_pin_cite(words, index, prefix=cite_token.page)
-
-    # Return ShortCaseCitation
-    return ShortCaseCitation(
+    # make ShortCaseCitation
+    citation = ShortCaseCitation(
         cite_token,
         index,
-        reporter=cite_token.reporter,
-        page=cite_token.page,
-        volume=cite_token.volume,
+        reporter=cite_token.groups["reporter"],
+        page=cite_token.groups["page"],
+        volume=cite_token.groups.get("volume", ""),
         antecedent_guess=antecedent_guess,
-        reporter_found=cite_token.reporter,
+        reporter_found=cite_token.groups["reporter"],
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         pin_cite=pin_cite,
         span_end=span_end,
     )
+
+    # add metadata
+    citation.guess_edition()
+    citation.guess_court()
+    return citation
 
 
 def extract_supra_citation(

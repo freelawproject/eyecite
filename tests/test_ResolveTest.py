@@ -2,38 +2,66 @@ from pathlib import Path
 from unittest import TestCase
 
 from eyecite import get_citations
-from eyecite.models import Resource
+from eyecite.models import CitationBase, Resource
 from eyecite.resolve import resolve_citations
 from eyecite.test_factories import (
     case_citation,
     id_citation,
+    journal_citation,
+    law_citation,
     nonopinion_citation,
     supra_citation,
 )
 
-full1 = case_citation(0)
-full2 = case_citation(1)
-full3 = case_citation(4, reporter="F.2d", plaintiff="Foo", defendant="Bar")
-full4 = case_citation(0, defendant="Bar")
-full5 = case_citation(0, plaintiff="Ipsum")
-full6 = case_citation(0, reporter="F.2d", plaintiff="Ipsum")
-full7 = case_citation(0, volume="1", reporter="U.S.")
-full8 = case_citation(4, reporter="F.2d", volume="2", defendant="Ipsum")
-full9 = case_citation(4, reporter="F.2d", page="99", defendant="Ipsum")
-full10 = case_citation(4, reporter="F.2d", plaintiff="Foo")
+full1 = case_citation(1)
+full2 = case_citation(2)
+full3 = case_citation(3, reporter="F.2d", plaintiff="Foo", defendant="Bar")
+full4 = case_citation(4, defendant="Bar")
+full5 = case_citation(5, plaintiff="Ipsum")
+full6 = case_citation(6, reporter="F.2d", plaintiff="Ipsum")
+full7 = case_citation(7, volume="1", reporter="U.S.")
+full8 = case_citation(8, reporter="F.2d", volume="2", defendant="Ipsum")
+full9 = case_citation(9, reporter="F.2d", page="99", defendant="Ipsum")
+full10 = case_citation(10, reporter="F.2d", plaintiff="Foo")
 
-short1 = case_citation(0, volume="1", reporter="U.S.", short=True)
-short2 = case_citation(0, antecedent_guess="Bar", short=True)
-short3 = case_citation(4, reporter="F.2d", plaintiff="Foo", short=True)
+short1 = case_citation(1, volume="1", reporter="U.S.", short=True)
+short2 = case_citation(2, antecedent_guess="Bar", short=True)
+short3 = case_citation(3, reporter="F.2d", plaintiff="Foo", short=True)
 short4 = case_citation(4, reporter="F.2d", defendant="wrong", short=True)
-short5 = case_citation(4, reporter="F.2d", defendant="Ipsum", short=True)
+short5 = case_citation(5, reporter="F.2d", defendant="Ipsum", short=True)
 
-supra1 = supra_citation(0, antecedent_guess="Bar")
-supra2 = supra_citation(0, antecedent_guess="Ipsum")
+supra1 = supra_citation(1, antecedent_guess="Bar")
+supra2 = supra_citation(2, antecedent_guess="Ipsum")
 
-id1 = id_citation(0)
+id1 = id_citation(1)
 
-non1 = nonopinion_citation(index=1, source_text="§99")
+non1 = nonopinion_citation(1, source_text="§99")
+
+law1 = law_citation(
+    1, "Mass. Gen. Laws ch. 1, § 2", reporter="Mass. Gen. Laws"
+)
+
+journal1 = journal_citation(1)
+
+# lookup table to help with printing more readable error messages:
+cite_to_name = {
+    v: k for k, v in globals().items() if isinstance(v, CitationBase)
+}
+
+
+def format_resolution(resolution):
+    """For debugging, use the cite_to_name lookup table to convert a
+    resolution dict returned by resolve_citations to a dict of strings like
+        {'Resource(full1)': ['full1', 'short1'].
+    """
+    out = {}
+    for resource, citations in resolution.items():
+        resource_name = cite_to_name.get(resource.citation)
+        if resource_name:
+            resource = f"Resource({resource_name})"
+        citations = [cite_to_name.get(c, c) for c in citations]
+        out[resource] = citations
+    return out
 
 
 class ResolveTest(TestCase):
@@ -48,8 +76,8 @@ class ResolveTest(TestCase):
     def _assertResolution(self, citations, expected_resolution_dict):
         actual_resolution_dict = resolve_citations(citations)
         self.assertEqual(
-            actual_resolution_dict,
-            expected_resolution_dict,
+            format_resolution(actual_resolution_dict),
+            format_resolution(expected_resolution_dict),
         )
 
     def test_full_resolution(self):
@@ -93,7 +121,7 @@ class ResolveTest(TestCase):
             (
                 [full4, supra1],
                 {
-                    Resource(full1): [full4, supra1],
+                    Resource(full4): [full4, supra1],
                 },
             ),
             # Test resolving a supra citation when its antecedent guess matches
@@ -215,6 +243,16 @@ class ResolveTest(TestCase):
                 resolution_dict=resolution_dict,
             ):
                 self._assertResolution(citations, resolution_dict)
+
+    def test_non_case_resolution(self):
+        """Test law and journal resolution."""
+        citations = [full4, id1, law1, id1, supra1, journal1, id1, short1]
+        resolution_dict = {
+            Resource(full4): [full4, id1, supra1, short1],
+            Resource(law1): [law1, id1],
+            Resource(journal1): [journal1, id1],
+        }
+        self._assertResolution(citations, resolution_dict)
 
     def test_complex_resolution(self):
         """

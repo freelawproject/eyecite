@@ -5,35 +5,6 @@ from lxml import etree
 
 from eyecite.cleaners import cleaners_lookup
 
-# We need a regex that matches roman numerals but not the empty string,
-# without using lookahead assertions that aren't supported by hyperscan.
-# We *don't* want to match roman numerals 'v', 'l', or 'c', or numerals over
-# 200, or uppercase, as these are usually false positives
-# (see https://github.com/freelawproject/eyecite/issues/56 ).
-# Match roman numerals 1 to 199 except for 5, 50, 100:
-ROMAN_NUMERAL_REGEX = "|".join(
-    [
-        # 10-199, but not 50-59 or 100-109 or 150-159:
-        r"c?(?:xc|xl|l?x{1,3})(?:ix|iv|v?i{0,3})",
-        # 1-9, 51-59, 101-109, 151-159, but not 5, 55, 105, 155:
-        r"(?:c?l?)(?:ix|iv|v?i{1,3})",
-        # 55, 105, 150, 155:
-        r"(?:lv|cv|cl|clv)",
-    ]
-)
-
-
-# Page number regex to match one of the following:
-# (ordered in descending order of likelihood)
-# 1) A plain digit. E.g. "123"
-# 2) A roman numeral.
-PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX})"
-
-
-# Regex to match punctuation around volume numbers and stopwords.
-# This could potentially be more precise.
-PUNCTUATION_REGEX = r"[^\sa-zA-Z0-9]*"
-
 
 def strip_punct(text: str) -> str:
     """Strips punctuation from a given string
@@ -85,21 +56,6 @@ def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
     return text  # type: ignore
 
 
-def space_boundaries_re(regex):
-    """Wrap regex with space or end of string."""
-    return rf"(?:^|\s)({regex})(?:\s|$)"
-
-
-def strip_punctuation_re(regex):
-    """Wrap regex with punctuation pattern."""
-    return rf"{PUNCTUATION_REGEX}{regex}{PUNCTUATION_REGEX}"
-
-
-def nonalphanum_boundaries_re(regex):
-    """Wrap regex to require non-alphanumeric characters on left and right."""
-    return rf"(?:^|[^a-zA-Z0-9])({regex})(?:[^a-zA-Z0-9]|$)"
-
-
 def is_balanced_html(text: str) -> bool:
     """Return False if text contains un-balanced HTML, otherwise True."""
     # fast check for strings without angle brackets
@@ -117,3 +73,22 @@ def is_balanced_html(text: str) -> bool:
 def wrap_html_tags(text: str, before: str, after: str):
     """Wrap any html tags in text with before and after strings."""
     return re.sub(r"(<[^>]+>)", rf"{before}\1{after}", text)
+
+
+def hyperscan_match(regexes, text):
+    """Run regexes on text using hyperscan, for debugging."""
+    # import here so the dependency is optional
+    import hyperscan  # pylint: disable=import-outside-toplevel
+
+    flags = [hyperscan.HS_FLAG_SOM_LEFTMOST] * len(regexes)
+    regexes = [regex.encode("utf8") for regex in regexes]
+    hyperscan_db = hyperscan.Database()
+    hyperscan_db.compile(expressions=regexes, flags=flags)
+    matches = []
+
+    def on_match(index, start, end, flags, context):
+        matches.append((index, start, end, flags, context))
+
+    hyperscan_db.scan(text.encode("utf8"), on_match)
+
+    return matches

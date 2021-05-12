@@ -7,116 +7,27 @@ from courts_db import courts
 from eyecite.models import (
     CaseCitation,
     CitationBase,
+    FullJournalCitation,
+    FullLawCitation,
     ParagraphToken,
     StopWordToken,
     Token,
     Tokens,
 )
+from eyecite.regexes import (
+    PIN_CITE_REGEX,
+    POST_CITATION_REGEX,
+    POST_JOURNAL_CITATION_REGEX,
+    POST_LAW_CITATION_REGEX,
+)
 from eyecite.utils import strip_punct
 
-# *** Metadata regexes: ***
-# Regexes used to scan forward or backward from a citation token. NOTE:
-# * Regexes are written in verbose mode. Intentional spaces must be escaped.
-# * In many regexes order matters: options separated by "|" are
-#   tested left to right, so more specific (typically longer) have to come
-#   before less specific.
-
-# Pin cite regex:
-# A pin cite is the part of a citation used to specify a particular section of
-# the referenced document. These may have prefixes, may include paragraph,
-# page, or line references, and may have multiple ranges specified.
-# For some examples see
-# https://github.com/freelawproject/courtlistener/issues/1344#issuecomment-662994948
-PIN_CITE_TOKEN_REGEX = r"""
-    # optional label (longest to shortest):
-    (?:
-        (?:
-            (?:&\ )?note|       # note, & note
-            (?:&\ )?nn?\.?|     # n., nn., & nn.
-            (?:&\ )?fn?\.?|     # fn., & fn.
-            ¶{1,2}|             # ¶
-            §{1,2}|             # §
-            \*{1,4}|            # *
-            pg\.?|              # pg.
-            pp?\.?              # p., pp.
-        )\ ?  # optional space after label
-    )?
-    (?:
-        # page:paragraph cite, like 123:24-25 or 123:24-124:25:
-        \d+:\d+(?:-\d+(?::\d+)?)?|
-        # page range, like 12 or 12-13:
-        \d+(?:-\d+)?
-    )
-"""
-PIN_CITE_REGEX = rf"""
-    \ ?(?P<pin_cite>
-        (?:at\ )?
-        {PIN_CITE_TOKEN_REGEX},?
-        (?:\ {PIN_CITE_TOKEN_REGEX},?)*
-    )
-"""
-
-
-# Short cite antecedent regex:
-# What case does a short cite refer to? For now, we just capture the previous
-# word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
-SHORT_CITE_ANTECEDENT_REGEX = r"""
-    (?P<antecedent>[\w\-.]+),?
-    \   # final space
-"""
-
-
-# Supra cite antecedent regex:
-# What case does a short cite refer to? For now, we just capture the previous
-# word optionally followed by a comma. Example: Adarand, supra.
-# If the previous word is a digit, we capture both that (to store as a volume)
-# and the word before it (to store as antecedent).
-SUPRA_ANTECEDENT_REGEX = r"""
-    (?:
-        (?P<antecedent>[\w\-.]+),?\ (?P<volume>\d+)|
-        (?P<volume>\d+)|
-        (?P<antecedent>[\w\-.]+),?
-    )
-    \   # final space
-"""
-
-
-# Post citation regex:
-# Capture metadata after a full cite. For example given the citation "1 U.S. 1"
-# with the following text:
-#   1 U.S. 1, 4-5, 2 S. Ct. 2, 6-7 (4th Cir. 2012) (overruling foo)
-# we want to capture:
-#   pin_cite = 4-5
-#   extra = 2 S. Ct. 2, 6-7
-#   court = 4th Cir.
-#   year = 2012
-#   parenthetical = overruling foo
-POST_CITATION_REGEX = rf"""
-    (?:  # handle a full cite with a valid year paren:
-        # content before year paren:
-        (?:
-            # pin cite with comma and extra:
-            ,{PIN_CITE_REGEX},\ (?P<extra>[^(]+)|
-            # just pin cite:
-            ,{PIN_CITE_REGEX}\ |
-            # just extra
-            (?P<extra>[^(]*)
-        )
-        # content within year paren:
-        \((?:
-            # court and year:
-            (?P<court>[^)]+)\ (?P<year>\d{{4}})|
-            # just year:
-            (?P<year>\d{{4}})
-        )\)
-        # optional parenthetical comment:
-        (?:\ \((?P<parenthetical>[^)]+)\))?
-    |  # handle a pin cite with no valid year paren:
-        ,{PIN_CITE_REGEX}(?:,|\.|\ \()
-    )
-"""
-
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
+
+# Maximum characters to scan using match_on_tokens.
+# If this is higher we have to do a little more work for each match_on_tokens
+# call to prepare the text to be matched.
+MAX_MATCH_CHARS = 300
 
 
 def get_court_by_paren(paren_string: str) -> Optional[str]:
@@ -166,12 +77,14 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     See POST_CITATION_REGEX for examples.
     """
     m = match_on_tokens(
-        words, citation.index + 1, POST_CITATION_REGEX, max_chars=150
+        words,
+        citation.index + 1,
+        POST_CITATION_REGEX,
     )
     if not m:
         return
 
-    citation.pin_cite = m["pin_cite"]
+    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.extra = (m["extra"] or "").strip() or None
     citation.parenthetical = m["parenthetical"]
     if m["year"]:
@@ -193,7 +106,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             # Skip it
             continue
         if isinstance(word, StopWordToken):
-            if word.stop_word == "v" and index > 0:
+            if word.groups["stop_word"] == "v" and index > 0:
                 citation.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip()
@@ -208,6 +121,45 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         ).strip()
 
 
+def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
+    """Annotate FullLawCitation with pin_cite, publisher, etc."""
+    m = match_on_tokens(
+        words, citation.index + 1, POST_LAW_CITATION_REGEX, strings_only=True
+    )
+    if not m:
+        return
+
+    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.publisher = m["publisher"]
+    citation.day = m["day"]
+    citation.month = m["month"]
+    citation.year = m["year"]
+    citation.parenthetical = m["parenthetical"]
+
+
+def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
+    """Annotate FullJournalCitation with pin_cite, year, etc."""
+    m = match_on_tokens(
+        words,
+        citation.index + 1,
+        POST_JOURNAL_CITATION_REGEX,
+        strings_only=True,
+    )
+    if not m:
+        return
+
+    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.year = m["year"]
+    citation.parenthetical = m["parenthetical"]
+
+
+def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
+    """Strip spaces and commas from pin_cite, if it is not None."""
+    if pin_cite is None:
+        return pin_cite
+    return pin_cite.strip(", ")
+
+
 def extract_pin_cite(
     words: Tokens, index: int, prefix: str = ""
 ) -> Tuple[Optional[str], Optional[int]]:
@@ -220,7 +172,7 @@ def extract_pin_cite(
         words, index + 1, PIN_CITE_REGEX, prefix=prefix, strings_only=True
     )
     if m:
-        pin_cite = m["pin_cite"]
+        pin_cite = clean_pin_cite(m["pin_cite"]) or None
         extra_chars = m.span(1)[1]
         return pin_cite, from_token.end + extra_chars - len(prefix)
     return None, None
@@ -231,7 +183,6 @@ def match_on_tokens(
     start_index,
     regex,
     prefix="",
-    max_chars=100,
     strings_only=False,
     forward=True,
     flags=re.X,
@@ -273,15 +224,15 @@ def match_on_tokens(
             text = str(token) + text
 
         # check for max length
-        if len(text) >= max_chars:
-            text = text[:max_chars]
+        if len(text) >= MAX_MATCH_CHARS:
+            text = text[:MAX_MATCH_CHARS]
             break
 
     m = re.search(regex, text, flags=flags)
     # Useful for debugging regex failures:
-    # print(
-    #     f"Regex: {regex}\nText: {text}\nMatch: {m.groups() if m else None}"
-    # )
+    # print(f"Regex: {regex}")
+    # print(f"Text: {repr(text)}")
+    # print(f"Match: {m.groupdict() if m else None}")
     return m
 
 
@@ -296,7 +247,7 @@ def disambiguate_reporters(
     ]
 
 
-joke_cite: List[CaseCitation] = [
+joke_cite: List[CitationBase] = [
     CaseCitation(
         Token("1 FLP 1", 0, 7),
         0,

@@ -1,6 +1,8 @@
 from eyecite.models import (
     CitationToken,
     FullCaseCitation,
+    FullJournalCitation,
+    FullLawCitation,
     IdCitation,
     IdToken,
     NonopinionCitation,
@@ -31,19 +33,82 @@ def case_citation(
     if short:
         kwargs.setdefault("pin_cite", page)
     edition = EDITIONS_LOOKUP[reporter][0]
+    groups = kwargs.pop("groups", {})
+    if volume:
+        groups.setdefault("volume", volume)
+    groups.setdefault("reporter", kwargs["reporter_found"])
+    groups.setdefault("page", page)
+    # Avoid https://github.com/PyCQA/pylint/issues/3201
+    # pylint: disable=unexpected-keyword-arg
     token = CitationToken(
         source_text,
         0,  # fake start offset
         99,  # fake end offset
-        volume,
-        reporter,
-        page,
+        groups=groups,
         exact_editions=[edition],
         variation_editions=[],
         short=short,
     )
     cls = ShortCaseCitation if short else FullCaseCitation
     return cls(
+        token, index, volume=volume, reporter=reporter, page=page, **kwargs
+    )
+
+
+def law_citation(
+    index,
+    source_text,
+    reporter,
+    **kwargs,
+):
+    """Convenience function for creating mock CaseCitation objects."""
+    kwargs.setdefault("canonical_reporter", reporter)
+    kwargs.setdefault("reporter_found", reporter)
+    edition = EDITIONS_LOOKUP[reporter][0]
+    groups = kwargs.pop("groups", {})
+    groups.setdefault("reporter", kwargs["reporter_found"])
+    # Avoid https://github.com/PyCQA/pylint/issues/3201
+    # pylint: disable=unexpected-keyword-arg
+    token = CitationToken(
+        source_text,
+        0,  # fake start offset
+        99,  # fake end offset
+        exact_editions=[edition],
+        variation_editions=[],
+        groups=groups,
+    )
+    return FullLawCitation(token, index, reporter=reporter, **kwargs)
+
+
+def journal_citation(
+    index,
+    source_text=None,
+    page="1",
+    reporter="Minn. L. Rev.",
+    volume="1",
+    **kwargs,
+):
+    """Convenience function for creating mock CaseCitation objects."""
+    kwargs.setdefault("canonical_reporter", reporter)
+    kwargs.setdefault("reporter_found", reporter)
+    if not source_text:
+        source_text = f"{volume} {reporter} {page}"
+    edition = EDITIONS_LOOKUP[reporter][0]
+    groups = kwargs.pop("groups", {})
+    groups.setdefault("volume", volume)
+    groups.setdefault("reporter", kwargs["reporter_found"])
+    groups.setdefault("page", page)
+    # Avoid https://github.com/PyCQA/pylint/issues/3201
+    # pylint: disable=unexpected-keyword-arg
+    token = CitationToken(
+        source_text,
+        0,  # fake start offset
+        99,  # fake end offset
+        groups=groups,
+        exact_editions=[edition],
+        variation_editions=[],
+    )
+    return FullJournalCitation(
         token, index, volume=volume, reporter=reporter, page=page, **kwargs
     )
 

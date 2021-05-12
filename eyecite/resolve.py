@@ -1,11 +1,11 @@
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, Iterable, List, Optional, Tuple
 
 from eyecite.models import (
     CitationBase,
     FullCaseCitation,
+    FullCitation,
     IdCitation,
-    NonopinionCitation,
     Resource,
     ResourceType,
     ShortCaseCitation,
@@ -14,7 +14,7 @@ from eyecite.models import (
 from eyecite.utils import strip_punct
 
 
-def resolve_full_citation(full_citation: FullCaseCitation) -> Resource:
+def resolve_full_citation(full_citation: FullCitation) -> Resource:
     """
     Resolve fullcase citations to resources directly.
     """
@@ -22,12 +22,14 @@ def resolve_full_citation(full_citation: FullCaseCitation) -> Resource:
 
 
 def _filter_by_matching_antecedent(
-    resolved_full_cites: List[Tuple[FullCaseCitation, ResourceType]],
+    resolved_full_cites: Iterable[Tuple[FullCitation, ResourceType]],
     antecedent_guess: str,
 ) -> Optional[ResourceType]:
     matches: List[ResourceType] = []
     ag: str = strip_punct(antecedent_guess)
     for full_citation, resource in resolved_full_cites:
+        if not isinstance(full_citation, FullCaseCitation):
+            continue
         if full_citation.defendant and ag in full_citation.defendant:
             matches.append(resource)
         elif full_citation.plaintiff and ag in full_citation.plaintiff:
@@ -40,7 +42,7 @@ def _filter_by_matching_antecedent(
 
 def _resolve_shortcase_citation(
     short_citation: ShortCaseCitation,
-    resolved_full_cites: Dict[FullCaseCitation, ResourceType],
+    resolved_full_cites: Dict[FullCitation, ResourceType],
 ) -> Optional[ResourceType]:
     """
     Try to match shortcase citations by checking whether their reporter and
@@ -52,17 +54,15 @@ def _resolve_shortcase_citation(
     candidates: List[Tuple[FullCaseCitation, ResourceType]] = []
     for full_citation, resource in resolved_full_cites.items():
         if (
-            short_citation.reporter == full_citation.reporter
+            isinstance(full_citation, FullCaseCitation)
+            and short_citation.reporter == full_citation.reporter
             and short_citation.volume == full_citation.volume
         ):
             # Append both keys and values for further refinement below
             candidates.append((full_citation, resource))
 
     # Remove duplicates and only accept if one candidate remains
-    if (
-        len(list(set([resource for full_citation, resource in candidates])))
-        == 1
-    ):
+    if len(set(resource for full_citation, resource in candidates)) == 1:
         return candidates[0][1]
 
     # Otherwise, if there is an antecedent guess, try to refine further
@@ -78,7 +78,7 @@ def _resolve_shortcase_citation(
 
 def _resolve_supra_citation(
     supra_citation: SupraCitation,
-    resolved_full_cites: Dict[FullCaseCitation, ResourceType],
+    resolved_full_cites: Dict[FullCitation, ResourceType],
 ) -> Optional[ResourceType]:
     """
     Try to resolve supra citations by checking whether their antecedent_guess
@@ -89,7 +89,7 @@ def _resolve_supra_citation(
         return None
 
     return _filter_by_matching_antecedent(
-        list(resolved_full_cites.items()), supra_citation.antecedent_guess
+        resolved_full_cites.items(), supra_citation.antecedent_guess
     )
 
 
@@ -107,14 +107,14 @@ def _resolve_id_citation(
 def resolve_citations(
     citations: List[CitationBase],
     resolve_fullcase_citation: Callable[
-        [FullCaseCitation], ResourceType
+        [FullCitation], ResourceType
     ] = resolve_full_citation,
     resolve_shortcase_citation: Callable[
-        [ShortCaseCitation, Dict[FullCaseCitation, ResourceType]],
+        [ShortCaseCitation, Dict[FullCitation, ResourceType]],
         Optional[ResourceType],
     ] = _resolve_shortcase_citation,
     resolve_supra_citation: Callable[
-        [SupraCitation, Dict[FullCaseCitation, ResourceType]],
+        [SupraCitation, Dict[FullCitation, ResourceType]],
         Optional[ResourceType],
     ] = _resolve_supra_citation,
     resolve_id_citation: Callable[
@@ -141,7 +141,7 @@ def resolve_citations(
     resolutions: Dict[ResourceType, List[CitationBase]] = defaultdict(list)
 
     # Dict mapping full citations to their resolved resources
-    resolved_full_cites: Dict[FullCaseCitation, ResourceType] = {}
+    resolved_full_cites: Dict[FullCitation, ResourceType] = {}
 
     # The resource of the most recently resolved citation, if any
     last_resolution: Optional[ResourceType] = None
@@ -149,12 +149,8 @@ def resolve_citations(
     # Iterate over each citation and attempt to resolve it to a resource
     for citation in citations:
 
-        # If the citation is to a non-opinion document, ignore for now
-        if isinstance(citation, NonopinionCitation):
-            resolution = None
-
-        # If the citation is a full case citation, try to resolve it
-        elif isinstance(citation, FullCaseCitation):
+        # If the citation is a full citation, try to resolve it
+        if isinstance(citation, FullCitation):
             resolution = resolve_fullcase_citation(citation)
             resolved_full_cites[citation] = resolution
 
@@ -172,13 +168,13 @@ def resolve_citations(
         elif isinstance(citation, IdCitation):
             resolution = resolve_id_citation(citation, last_resolution)
 
-        if resolution:
-            # Update the most recently resolved resource
-            last_resolution = resolution
+        # If the citation is to a non-opinion document, ignore for now
+        else:
+            resolution = None
 
+        last_resolution = resolution
+        if resolution:
             # Record the citation in the appropriate list
             resolutions[resolution].append(citation)
-        else:
-            last_resolution = None
 
     return resolutions
