@@ -72,4 +72,5 @@ good-names = "i,j,k,ex,Run,_,m"
 
 [build-system]
 build-backend = "poetry.core.masonry.api"
-requires = ["poetry-core>=1.0.0"]
+# including "setuptools" allows for "pip install -e /path/to/eyecite"
+requires = ["poetry-core>=1.0.0", "setuptools"]
