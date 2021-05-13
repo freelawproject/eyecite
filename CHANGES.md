@@ -1,12 +1,18 @@
 # Change Log
 
+## Upcoming
+
+The following changes are not yet released, but are code complete:
+
+...
+
 ## Current
 
-2.1.0 - 2021-05-13
+**2.1.0 - 2021-05-13**
 
 Features:
  - Adds support for resolving id, supra, and short form citations into
-   their targets see readme for details on "Resolving Citations."
+   their targets. See readme for details on "Resolving Citations."
  - Pin cites are now matched across more citation types.
  - Summarizing parentheticals are now included in the match.
 
@@ -28,18 +34,18 @@ Fixes:
    
 ## Past
 
-2.0.2 - Adds missing dependency to toml file, nukes setup.py and
+**2.0.2** - Adds missing dependency to toml file, nukes setup.py and
 requirements.txt. We're now fully in the poetry world.
 
-2.0.1 - Major rewrite to efficiently build and use hundreds of regular
+**2.0.1** - Major rewrite to efficiently build and use hundreds of regular
 expressions to parse the text, and to use merging algorithms to annotate it.
 These changes bring better speed, accuracy, and flexibility to the library.
 
-2.0.0 - Broken, bad release process.
+**2.0.0** - Broken, bad release process.
 
-1.1.0 - Standardize the `__eq__()` and `__hash__()` methods and remove the
+**1.1.0** - Standardize the `__eq__()` and `__hash__()` methods and remove the
 unused fuzzy_hash() method.
 
-0.0.1 - Initial release with CL-compatible API.
+**0.0.1** - Initial release with CL-compatible API.
 
-0.0.1 to 0.0.5 - Continuous deployment debugging
+**0.0.1 to 0.0.5** - Continuous deployment debugging
