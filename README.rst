@@ -145,7 +145,7 @@ that takes :code:`(before, span_text, after)` and returns the annotated text:
     'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
 
 Resolving Citations
-==========
+===================
 
 Once you have extracted citations from a document, you may wish to resolve them to their common references.
 To do so, just pass the results of :code:`get_citations()` into :code:`resolve_citations()`. This function will
