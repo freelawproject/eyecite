@@ -3,8 +3,8 @@ from collections import UserString
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import (
+    Any,
     Callable,
-    ClassVar,
     Dict,
     Hashable,
     List,
@@ -12,6 +12,8 @@ from typing import (
     Sequence,
     Union,
 )
+
+from eyecite.utils import HashableDict
 
 ResourceType = Hashable
 
@@ -23,6 +25,7 @@ class Reporter:
     short_name: str
     name: str
     cite_type: str
+    source: str  # one of "reporters", "laws", "journals"
     is_scotus: bool = False
 
     def __post_init__(self):
@@ -64,13 +67,50 @@ class CitationBase:
     # span() overrides
     span_start: Optional[int] = None
     span_end: Optional[int] = None
+    groups: dict = field(default_factory=dict)
+    metadata: Any = None
+
+    def __post_init__(self):
+        """Set up groups and metadata."""
+        # Allow groups to be used in comparisons:
+        self.groups = HashableDict(self.token.groups)
+        # Make metadata a self.Metadata object:
+        self.metadata = (
+            self.Metadata(**self.metadata)
+            if isinstance(self.metadata, dict)
+            else self.Metadata()
+        )
+
+    def __repr__(self):
+        """Simplified repr() to be more readable than full dataclass repr().
+        Just shows 'FullCaseCitation("matched text", groups=...)'."""
+        return (
+            f"{self.__class__.__name__}("
+            + f"{repr(self.matched_text())}"
+            + (f", groups={repr(self.groups)}" if self.groups else "")
+            + f", metadata={repr(self.metadata)}"
+            + ")"
+        )
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata. Base class doesn't have any."""
+
+    def corrected_citation(self):
+        """Return citation with any variations normalized."""
+        return self.matched_text()
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
+        return self.matched_text()
 
     def matched_text(self):
         """Text that identified this citation, such as '1 U.S. 1' or 'Id.'"""
         return str(self.token)
 
     def span(self):
-        """Start and stop offsets in source text for matched_text.()"""
+        """Start and stop offsets in source text for matched_text()."""
         return (
             self.span_start
             if self.span_start is not None
@@ -79,44 +119,20 @@ class CitationBase:
         )
 
 
-@dataclass(eq=True, unsafe_hash=True)
-class CaseCitation(CitationBase):
-    """Convenience class which represents a single citation found in a
-    document.
-    """
-
-    # Core data.
-    reporter: Optional[str] = None
-    page: Optional[str] = None
-    volume: Optional[str] = None
-
-    # Set during disambiguation.
-    # For a citation to F.2d, the canonical reporter is F.
-    canonical_reporter: Optional[str] = None
-
-    # Supplementary data, if possible:
-    #  <plaintiff> v. <defendant>,
-    #  <matched_text> <pin_cite> <extra>
-    #  (<court> <year>)
-    #  (<parenthetical).
-    plaintiff: Optional[str] = None
-    defendant: Optional[str] = None
-    pin_cite: Optional[str] = None
-    extra: Optional[str] = None
-    court: Optional[str] = None
-    year: Optional[int] = None
-    parenthetical: Optional[str] = None
-
-    # The reporter found in the text is often different from the reporter
-    # once it's normalized. We need to keep the original value so we can
-    # linkify it with a regex.
-    reporter_found: Optional[str] = None
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class ResourceCitation(CitationBase):
+    """Base class for a case, law, or journal citation. Could be short or
+    long."""
 
     # Editions that might match this reporter string
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     all_editions: Sequence[Edition] = field(default_factory=tuple)
     edition_guess: Optional[Edition] = None
+
+    # year extracted from metadata["year"] and converted to int,
+    # if in a valid range
+    year: Optional[int] = None
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
@@ -125,32 +141,38 @@ class CaseCitation(CitationBase):
         self.all_editions = tuple(self.exact_editions) + tuple(
             self.variation_editions
         )
+        super().__post_init__()
 
-    def base_citation(self):
-        """Return a simple version of the citation."""
-        return "%s %s %s" % (self.volume, self.reporter, self.page)
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
 
-    def __repr__(self):
-        print_string = self.base_citation()
-        if self.defendant:
-            print_string = " ".join([self.defendant, print_string])
-            if self.plaintiff:
-                print_string = " ".join([self.plaintiff, "v.", print_string])
-        if self.extra:
-            print_string = " ".join([print_string, self.extra])
-        if self.court and self.year:
-            paren = "(%s %d)" % (self.court, self.year)
-        elif self.year:
-            paren = "(%d)" % self.year
-        elif self.court:
-            paren = "(%s)" % self.court
-        else:
-            paren = ""
-        print_string = " ".join([print_string, paren])
-        return print_string
+        parenthetical: Optional[str] = None
+        pin_cite: Optional[str] = None
+        year: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        self.guess_edition()
+
+    def corrected_reporter(self):
+        """Get official reporter string from edition_guess, if possible."""
+        return (
+            self.edition_guess.short_name
+            if self.edition_guess
+            else self.groups["reporter"]
+        )
+
+    def corrected_citation(self):
+        """Return citation with corrected reporter."""
+        if self.edition_guess:
+            return self.matched_text().replace(
+                self.groups["reporter"], self.edition_guess.short_name
+            )
+        return self.matched_text()
 
     def guess_edition(self):
-        """Set canonical_reporter, edition_guess, and reporter."""
+        """Set edition_guess."""
         # Use exact matches if possible, otherwise try variations
         editions = self.exact_editions or self.variation_editions
         if not editions:
@@ -162,27 +184,146 @@ class CaseCitation(CitationBase):
 
         if len(editions) == 1:
             self.edition_guess = editions[0]
-            self.canonical_reporter = editions[0].reporter.short_name
-            self.reporter = editions[0].short_name
+
+
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class FullCitation(ResourceCitation):
+    """Abstract base class indicating cite fully identifies a resource."""
+
+
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class FullLawCitation(FullCitation):
+    """Citation to a source from laws.json."""
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(FullCitation.Metadata):
+        """Define fields on self.metadata."""
+
+        publisher: Optional[str] = None
+        day: Optional[str] = None
+        month: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_law_metadata
+
+        add_law_metadata(self, words)
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
+        parts = [self.corrected_citation()]
+        m = self.metadata
+        if m.pin_cite:
+            parts.append(f"{m.pin_cite}")
+        publisher_date = " ".join(
+            i for i in (m.publisher, m.month, m.day, m.year) if i
+        )
+        if publisher_date:
+            parts.append(f" ({publisher_date}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
+
+
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class FullJournalCitation(FullCitation):
+    """Citation to a source from journals.json."""
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_journal_metadata
+
+        add_journal_metadata(self, words)
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
+        parts = [self.corrected_citation()]
+        m = self.metadata
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
+        if m.year:
+            parts.append(f" ({m.year}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
+
+
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class CaseCitation(ResourceCitation):
+    """Convenience class which represents a single citation found in a
+    document.
+    """
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(FullCitation.Metadata):
+        """Define fields on self.metadata."""
+
+        # court is included for ShortCaseCitation as well. It won't appear in
+        # the cite itself but can also be guessed from the reporter
+        court: Optional[str] = None
 
     def guess_court(self):
         """Set court based on reporter."""
-        if not self.court and any(
+        if not self.metadata.court and any(
             e.reporter.is_scotus for e in self.all_editions
         ):
-            self.court = "scotus"
+            self.metadata.court = "scotus"
 
 
-@dataclass(eq=True, unsafe_hash=True)
-class FullCaseCitation(CaseCitation):
+@dataclass(eq=True, unsafe_hash=True, repr=False)
+class FullCaseCitation(CaseCitation, FullCitation):
     """Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
 
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
 
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CaseCitation.Metadata):
+        """Define fields on self.metadata."""
 
-@dataclass(eq=True, unsafe_hash=True)
+        plaintiff: Optional[str] = None
+        defendant: Optional[str] = None
+        extra: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_defendant, add_post_citation
+
+        add_post_citation(self, words)
+        add_defendant(self, words)
+        self.guess_court()
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return formatted version of extracted cite."""
+        parts = []
+        m = self.metadata
+        if m.plaintiff:
+            parts.append(f"{m.plaintiff} v. ")
+        if m.defendant:
+            parts.append(f"{m.defendant}, ")
+        parts.append(self.corrected_citation())
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
+        if m.extra:
+            parts.append(m.extra)
+        publisher_date = " ".join(m[i] for i in (m.court, m.year) if i)
+        if publisher_date:
+            parts.append(f" ({publisher_date}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
+
+
+@dataclass(eq=True, unsafe_hash=True, repr=False)
 class ShortCaseCitation(CaseCitation):
     """Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
@@ -194,21 +335,22 @@ class ShortCaseCitation(CaseCitation):
     Example 3: 515 U.S., at 241
     """
 
-    # Like a Citation object, but we have to guess who the antecedent is
-    # and the page number is non-canonical
-    antecedent_guess: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CaseCitation.Metadata):
+        """Define fields on self.metadata."""
 
-    def __repr__(self):
-        print_string = "%s, %s %s, at %s" % (
-            self.antecedent_guess,
-            self.volume,
-            self.reporter,
-            self.page,
-        )
-        return print_string
+        antecedent_guess: Optional[str] = None
+
+    def corrected_citation_full(self):
+        """Return formatted version of extracted cite."""
+        parts = []
+        if self.metadata.antecedent_guess:
+            parts.append(f"{self.metadata.antecedent_guess}, ")
+        parts.append(self.corrected_citation())
+        return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(eq=True, unsafe_hash=True, repr=False)
 class SupraCitation(CitationBase):
     """Convenience class which represents a 'supra' citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
@@ -221,17 +363,29 @@ class SupraCitation(CitationBase):
     Example 4: Adarand, supra. somethingelse
     """
 
-    # Like a Citation object, but without knowledge of the reporter or the
-    # volume. Only has a guess at what the antecedent is.
-    antecedent_guess: Optional[str] = None
-    pin_cite: Optional[str] = None
-    volume: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
 
-    def __repr__(self):
-        return "%s supra, %s" % (self.antecedent_guess, self.pin_cite)
+        antecedent_guess: Optional[str] = None
+        pin_cite: Optional[str] = None
+        volume: Optional[str] = None
+
+    def formatted(self):
+        """Return formatted version of extracted cite."""
+        parts = []
+        m = self.metadata
+        if m.antecedent_guess:
+            parts.append(f"{m.antecedent_guess}, ")
+        if m.volume:
+            parts.append(f"{m.volume} ")
+        parts.append("supra")
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
+        return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(eq=True, unsafe_hash=True, repr=False)
 class IdCitation(CitationBase):
     """Convenience class which represents an 'id' or 'ibid' citation, i.e., a
     citation to the document referenced immediately prior. An 'id' citation is
@@ -242,13 +396,21 @@ class IdCitation(CitationBase):
     Example: "... foo bar," id., at 240
     """
 
-    pin_cite: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
 
-    def __repr__(self):
-        return "%s %s" % (self.token, self.pin_cite)
+        pin_cite: Optional[str] = None
+
+    def formatted(self):
+        """Return formatted version of extracted cite."""
+        parts = ["id."]
+        if self.metadata.pin_cite:
+            parts.append(f", {self.metadata.pin_cite}")
+        return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(eq=True, unsafe_hash=True, repr=False)
 class NonopinionCitation(CitationBase):
     """Convenience class which represents a citation to something that we know
     is not an opinion. This could be a citation to a statute, to the U.S. code,
@@ -267,6 +429,7 @@ class Token(UserString):
     data: str
     start: int
     end: int
+    groups: dict = field(default_factory=dict, compare=False)
 
     @classmethod
     def from_match(cls, m, extra, offset=0) -> "Token":
@@ -274,7 +437,11 @@ class Token(UserString):
         This gets called by TokenExtractor. By default, just use the
         entire matched string."""
         start, end = m.span(1)
-        return cls(m[1], start + offset, end + offset)
+        # ignore "too many arguments" type error -- this is called
+        # by subclasses with additional attributes
+        return cls(  # type: ignore[call-arg]
+            m[1], start + offset, end + offset, groups=m.groupdict(), **extra
+        )
 
 
 # For performance, lists of tokens can include either Token subclasses
@@ -286,15 +453,11 @@ Tokens = List[TokenOrStr]
 
 @dataclass(eq=True, frozen=True)
 class CitationToken(Token):
-    """String matching a citation regex."""
+    """String matching a citation regex from reporters.json."""
 
-    volume: str
-    reporter: str
-    page: str
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     short: bool = False
-    extra_match_groups: dict = field(default_factory=dict, compare=False)
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
@@ -302,25 +465,6 @@ class CitationToken(Token):
         object.__setattr__(self, "exact_editions", tuple(self.exact_editions))
         object.__setattr__(
             self, "variation_editions", tuple(self.variation_editions)
-        )
-
-    @classmethod
-    def from_match(cls, m, extra, offset=0) -> Token:
-        """Citation regex matches have volume, reporter, and page match groups
-        in their regular expressions, and "exact_editions" and
-        "variation_editions" in their extra config. Pass all of that through
-        to the constructor."""
-        start, end = m.span(1)
-        match_groups = m.groupdict()
-        return cls(
-            m[1],
-            start + offset,
-            end + offset,
-            volume=match_groups.pop("volume", ""),
-            reporter=match_groups.pop("reporter", ""),
-            page=match_groups.pop("page", ""),
-            extra_match_groups=match_groups,
-            **extra,
         )
 
 
@@ -347,29 +491,6 @@ class ParagraphToken(Token):
 @dataclass(eq=True, frozen=True)
 class StopWordToken(Token):
     """Word matching one of the STOP_TOKENS."""
-
-    stop_word: str
-    stop_tokens: ClassVar[Sequence[str]] = (
-        "v",
-        "re",
-        "parte",
-        "denied",
-        "citing",
-        "aff'd",
-        "affirmed",
-        "remanded",
-        "see",
-        "granted",
-        "dismissed",
-    )
-
-    @classmethod
-    def from_match(cls, m, extra, offset=0) -> Token:
-        """m[1] is the captured part of the match, including punctuation.
-        m[2] is just the underlying stopword like 'v', useful for comparison.
-        """
-        start, end = m.span(1)
-        return cls(m[1], start + offset, end + offset, m[2].lower())
 
 
 @dataclass
@@ -412,16 +533,14 @@ class Resource(ResourceType):
     """Thin resource class representing an object to which a citation can be
     resolved."""
 
-    citation: FullCaseCitation
+    citation: FullCitation
 
     def __hash__(self):
         """
-        Resources are constructively equal if the core attributes of their
-        citations are equal.
+        Full citations are constructively equal if the groups matched by their
+        regexes are equal.
         """
-        return hash(
-            (self.citation.reporter, self.citation.volume, self.citation.page)
-        )
+        return hash((type(self.citation), tuple(self.citation.groups.items())))
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()

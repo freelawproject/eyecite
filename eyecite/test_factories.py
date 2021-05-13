@@ -1,6 +1,9 @@
+from eyecite.helpers import get_year
 from eyecite.models import (
     CitationToken,
     FullCaseCitation,
+    FullJournalCitation,
+    FullLawCitation,
     IdCitation,
     IdToken,
     NonopinionCitation,
@@ -10,6 +13,34 @@ from eyecite.models import (
     SupraToken,
 )
 from eyecite.tokenizers import EDITIONS_LOOKUP
+
+
+def resource_citation(
+    cls, index, source_text, reporter, short=False, year=None, **kwargs
+):
+    """Create a mock ResourceCitation."""
+    metadata = kwargs.pop("metadata", {})
+    groups = kwargs.pop("groups", {})
+    groups.setdefault("reporter", kwargs.pop("reporter_found", reporter))
+    edition = EDITIONS_LOOKUP[reporter][0]
+    kwargs.setdefault("exact_editions", [edition])
+    kwargs.setdefault("edition_guess", edition)
+    if year:
+        metadata["year"] = str(year)
+    elif "year" in metadata:
+        year = get_year(metadata.year)
+    # Avoid https://github.com/PyCQA/pylint/issues/3201
+    # pylint: disable=unexpected-keyword-arg
+    token = CitationToken(
+        source_text,
+        0,  # fake start offset
+        99,  # fake end offset
+        groups=groups,
+        exact_editions=[edition],
+        variation_editions=[],
+        short=short,
+    )
+    return cls(token, index, metadata=metadata, year=year, **kwargs)
 
 
 def case_citation(
@@ -22,29 +53,51 @@ def case_citation(
     **kwargs,
 ):
     """Convenience function for creating mock CaseCitation objects."""
-    kwargs.setdefault("canonical_reporter", reporter)
-    kwargs.setdefault("reporter_found", reporter)
-    if reporter == "U.S.":
-        kwargs.setdefault("court", "scotus")
+    metadata = kwargs.setdefault("metadata", {})
+    groups = kwargs.setdefault("groups", {})
+    if reporter == "U.S." and not short:
+        metadata.setdefault("court", "scotus")
     if not source_text:
         source_text = f"{volume} {reporter} {page}"
     if short:
-        kwargs.setdefault("pin_cite", page)
-    edition = EDITIONS_LOOKUP[reporter][0]
-    token = CitationToken(
-        source_text,
-        0,  # fake start offset
-        99,  # fake end offset
-        volume,
-        reporter,
-        page,
-        exact_editions=[edition],
-        variation_editions=[],
-        short=short,
-    )
+        metadata.setdefault("pin_cite", page)
+    if volume:
+        groups.setdefault("volume", volume)
+    groups.setdefault("page", page)
     cls = ShortCaseCitation if short else FullCaseCitation
-    return cls(
-        token, index, volume=volume, reporter=reporter, page=page, **kwargs
+    return resource_citation(
+        cls, index, source_text, reporter, short, **kwargs
+    )
+
+
+def law_citation(
+    index,
+    source_text,
+    reporter,
+    **kwargs,
+):
+    """Convenience function for creating mock FullLawCitation objects."""
+    return resource_citation(
+        FullLawCitation, index, source_text, reporter, **kwargs
+    )
+
+
+def journal_citation(
+    index,
+    source_text=None,
+    page="1",
+    reporter="Minn. L. Rev.",
+    volume="1",
+    **kwargs,
+):
+    """Convenience function for creating mock CaseCitation objects."""
+    groups = kwargs.setdefault("groups", {})
+    if not source_text:
+        source_text = f"{volume} {reporter} {page}"
+    groups.setdefault("volume", volume)
+    groups.setdefault("page", page)
+    return resource_citation(
+        FullJournalCitation, index, source_text, reporter, **kwargs
     )
 
 

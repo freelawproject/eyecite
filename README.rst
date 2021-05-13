@@ -207,11 +207,11 @@ of tokens:
     In [2]: list(default_tokenizer.tokenize("Foo v. Bar, 123 U.S. 456 (2016). Id. at 457."))
     Out[2]:
     ['Foo',
-     StopWordToken(data='v.', stop_word='v'),
+     StopWordToken(data='v.', ...),
      'Bar,',
-     CitationToken(data='123 U.S. 456', volume='123', reporter='U.S.', page='456' ...),
+     CitationToken(data='123 U.S. 456', volume='123', reporter='U.S.', page='456', ...),
      '(2016).',
-     IdToken(data='Id.'),
+     IdToken(data='Id.', ...),
      'at',
      '457.']
 
