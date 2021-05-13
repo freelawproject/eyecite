@@ -15,23 +15,35 @@ from eyecite.test_factories import (
 
 full1 = case_citation(1)
 full2 = case_citation(2)
-full3 = case_citation(3, reporter="F.2d", plaintiff="Foo", defendant="Bar")
-full4 = case_citation(4, defendant="Bar")
-full5 = case_citation(5, plaintiff="Ipsum")
-full6 = case_citation(6, reporter="F.2d", plaintiff="Ipsum")
+full3 = case_citation(
+    3, reporter="F.2d", metadata={"plaintiff": "Foo", "defendant": "Bar"}
+)
+full4 = case_citation(4, metadata={"defendant": "Bar"})
+full5 = case_citation(5, metadata={"plaintiff": "Ipsum"})
+full6 = case_citation(6, reporter="F.2d", metadata={"plaintiff": "Ipsum"})
 full7 = case_citation(7, volume="1", reporter="U.S.")
-full8 = case_citation(8, reporter="F.2d", volume="2", defendant="Ipsum")
-full9 = case_citation(9, reporter="F.2d", page="99", defendant="Ipsum")
-full10 = case_citation(10, reporter="F.2d", plaintiff="Foo")
+full8 = case_citation(
+    8, reporter="F.2d", volume="2", metadata={"defendant": "Ipsum"}
+)
+full9 = case_citation(
+    9, reporter="F.2d", page="99", metadata={"defendant": "Ipsum"}
+)
+full10 = case_citation(10, reporter="F.2d", metadata={"plaintiff": "Foo"})
 
 short1 = case_citation(1, volume="1", reporter="U.S.", short=True)
-short2 = case_citation(2, antecedent_guess="Bar", short=True)
-short3 = case_citation(3, reporter="F.2d", plaintiff="Foo", short=True)
-short4 = case_citation(4, reporter="F.2d", defendant="wrong", short=True)
-short5 = case_citation(5, reporter="F.2d", defendant="Ipsum", short=True)
+short2 = case_citation(2, metadata={"antecedent_guess": "Bar"}, short=True)
+short3 = case_citation(
+    3, reporter="F.2d", metadata={"antecedent_guess": "Foo"}, short=True
+)
+short4 = case_citation(
+    4, reporter="F.2d", metadata={"antecedent_guess": "wrong"}, short=True
+)
+short5 = case_citation(
+    5, reporter="F.2d", metadata={"antecedent_guess": "Ipsum"}, short=True
+)
 
-supra1 = supra_citation(1, antecedent_guess="Bar")
-supra2 = supra_citation(2, antecedent_guess="Ipsum")
+supra1 = supra_citation(1, metadata={"antecedent_guess": "Bar"})
+supra2 = supra_citation(2, metadata={"antecedent_guess": "Ipsum"})
 
 id1 = id_citation(1)
 

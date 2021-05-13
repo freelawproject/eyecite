@@ -7,7 +7,7 @@ from eyecite import clean_text, get_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import CitationToken
+from eyecite.models import ResourceCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -33,7 +33,19 @@ tested_tokenizers = [
 
 
 class FindTest(TestCase):
+    maxDiff = None
+
     def run_test_pairs(self, test_pairs, message, tokenizers=None):
+        def get_comparison_attrs(cite):
+            out = {
+                "index": cite.index,
+                "groups": cite.groups,
+                "metadata": cite.metadata,
+            }
+            if isinstance(cite, ResourceCitation):
+                out["year"] = cite.year
+                out["corrected_reporter"] = cite.corrected_reporter()
+
         if tokenizers is None:
             tokenizers = tested_tokenizers
         for q, expected_cites, *kwargs in test_pairs:
@@ -48,24 +60,6 @@ class FindTest(TestCase):
                     cites_found = get_citations(
                         clean_q, tokenizer=tokenizer, **kwargs
                     )
-                    match_attrs = [
-                        "token_index",
-                        "reporter_found",
-                        "day",
-                        "month",
-                        "year",
-                        "court",
-                        "plaintiff",
-                        "defendant",
-                        "extra",
-                        "canonical_reporter",
-                        "volume",
-                        "page",
-                        "reporter",
-                        "antecedent_guess",
-                        "pin_cite",
-                        "parenthetical",
-                    ]
                     try:
                         self.assertEqual(
                             [type(i) for i in cites_found],
@@ -73,23 +67,13 @@ class FindTest(TestCase):
                             f"Extracted cite count doesn't match for {repr(q)}",
                         )
                         for a, b in zip(cites_found, expected_cites):
-                            found_attrs = {
-                                attr: getattr(a, attr, None)
-                                for attr in match_attrs
-                            }
-                            expected_attrs = {
-                                attr: getattr(b, attr, None)
-                                for attr in match_attrs
-                            }
+                            found_attrs = get_comparison_attrs(a)
+                            expected_attrs = get_comparison_attrs(b)
                             self.assertEqual(
                                 found_attrs,
                                 expected_attrs,
                                 f"Extracted cite attrs don't match for {repr(q)}",
                             )
-                            if isinstance(a.token, CitationToken):
-                                self.assertEqual(
-                                    a.token.groups, b.token.groups
-                                )
                     except AssertionError:
                         if not expect_fail:
                             raise
@@ -120,34 +104,44 @@ class FindTest(TestCase):
              [case_citation(2)]),
             # Test with plaintiff and defendant
             ('lissner v. test 1 U.S. 1',
-             [case_citation(3, plaintiff='lissner', defendant='test')]),
+             [case_citation(3, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test'})]),
             # Test with plaintiff, defendant and year
             ('lissner v. test 1 U.S. 1 (1982)',
-             [case_citation(3, plaintiff='lissner', defendant='test',
+             [case_citation(3, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test'},
                             year=1982)]),
             # Don't choke on misformatted year
             ('lissner v. test 1 U.S. 1 (198⁴)',
-             [case_citation(3, plaintiff='lissner', defendant='test')]),
+             [case_citation(3, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test'})]),
             # Test with different reporter than all of above.
             ('bob lissner v. test 1 F.2d 1 (1982)',
-             [case_citation(4, reporter='F.2d', canonical_reporter='F.',
-                            plaintiff='lissner', defendant='test',
-                            year=1982)]),
+             [case_citation(4, reporter='F.2d', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test'})]),
             # Test with court and extra information
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
-             [case_citation(4, page='12', court='ca4',
-                            plaintiff='lissner', defendant='test', year=1982,
-                            pin_cite='347-348')]),
+             [case_citation(4, page='12', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test',
+                                      'court': 'ca4',
+                                      'pin_cite': '347-348'})]),
             # Parallel cite with parenthetical
             ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
-             [case_citation(4, page='12', court='ca4',
-                            plaintiff='lissner', defendant='test', year=1982,
-                            pin_cite='347-348', extra="1 S. Ct. 2, 358",
-                            parenthetical='overruling foo'),
-              case_citation(4, page='2', court='ca4', reporter='S. Ct.',
-                            plaintiff='lissner', defendant='test 1 U.S. 12, 347-348,',
-                            year=1982, pin_cite='358',
-                            parenthetical='overruling foo'),
+             [case_citation(4, page='12', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test',
+                                      'court': 'ca4',
+                                      'pin_cite': '347-348',
+                                      'extra': "1 S. Ct. 2, 358",
+                                      'parenthetical': 'overruling foo'}),
+              case_citation(4, page='2', reporter='S. Ct.', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test 1 U.S. 12, 347-348,',
+                                      'court': 'ca4',
+                                      'pin_cite': '358',
+                                      'parenthetical': 'overruling foo'}),
               ]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
@@ -155,37 +149,32 @@ class FindTest(TestCase):
                             reporter_found='U. S.', year=1975)]),
             # Test with finding reporter when it's a second edition
             ('asdf 22 A.2d 332 asdf',
-             [case_citation(1, page='332', reporter='A.2d',
-                            canonical_reporter='A.', volume='22')]),
+             [case_citation(1, page='332', reporter='A.2d', volume='22')]),
             # Test if reporter in string will find proper citation string
             ('A.2d 332 11 A.2d 333',
-             [case_citation(2, page='333', reporter='A.2d',
-                            canonical_reporter='A.', volume='11')]),
+             [case_citation(2, page='333', reporter='A.2d', volume='11')]),
             # Test finding a variant second edition reporter
             ('asdf 22 A. 2d 332 asdf',
-             [case_citation(1, page='332', reporter='A.2d',
-                            canonical_reporter='A.', volume='22',
+             [case_citation(1, page='332', reporter='A.2d', volume='22',
                             reporter_found='A. 2d')]),
             # Test finding a variant of an edition resolvable by variant alone.
             ('171 Wn.2d 1016',
-             [case_citation(0, page='1016', reporter='Wash. 2d',
-                            canonical_reporter='Wash.', volume='171',
+             [case_citation(0, page='1016', reporter='Wash. 2d', volume='171',
                             reporter_found='Wn.2d')]),
             # Test finding two citations where one of them has abutting
             # punctuation.
             ('2 U.S. 3, 4-5 (3 Atl. 33)',
-             [case_citation(0, page='3', volume='2', pin_cite='4-5'),
+             [case_citation(0, page='3', volume='2', metadata={'pin_cite': '4-5'}),
               case_citation(3, page='33', reporter="A.", volume='3',
                             reporter_found="Atl.")]),
             # Test with the page number as a Roman numeral
             ('12 Neb. App. lxiv (2004)',
              [case_citation(0, page='lxiv', reporter='Neb. Ct. App.',
-                            canonical_reporter='Neb. Ct. App.', volume='12',
+                            volume='12',
                             reporter_found='Neb. App.', year=2004)]),
             # Test with page range with a weird suffix
             ('559 N.W.2d 826|N.D.',
-             [case_citation(0, page='826', reporter='N.W.2d',
-                            canonical_reporter='N.W.', volume='559')]),
+             [case_citation(0, page='826', reporter='N.W.2d', volume='559')]),
             # Test with malformed/missing page number
             ('1 U.S. f24601', []),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
@@ -203,64 +192,72 @@ class FindTest(TestCase):
                             volume='2017')]),
             # Test first kind of short form citation (meaningless antecedent)
             ('before asdf 1 U. S., at 2',
-             [case_citation(2, page='2', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf')]),
+             [case_citation(2, page='2', reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test second kind of short form citation (meaningful antecedent)
             ('before asdf, 1 U. S., at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            antecedent_guess='asdf')]),
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test short form citation with preceding ASCII quotation
             ('before asdf,” 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.',
                             short=True)]),
             # Test short form citation when case name looks like a reporter
             ('before Johnson, 1 U. S., at 2',
-             [case_citation(2, page='2', reporter_found='U. S.',
-                            short=True, antecedent_guess='Johnson')]),
+             [case_citation(2, page='2', reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'Johnson'})]),
             # Test short form citation with no comma after reporter
             ('before asdf, 1 U. S. at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            antecedent_guess='asdf')]),
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
             # Test supra citation across line break
             ('before asdf, supra,\nat 2',
-             [supra_citation(2, "supra,", antecedent_guess='asdf',
-                             pin_cite='at 2')],
+             [supra_citation(2, "supra,",
+                             metadata={'pin_cite': 'at 2',
+                                       'antecedent_guess': 'asdf'})],
              {'clean': ['all_whitespace']}),
             # Test short form citation with a page range
             ('before asdf, 1 U. S., at 20-25',
-             [case_citation(2, page='20', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf',
-                            pin_cite='20-25')]),
+             [case_citation(2, page='20', reporter_found='U. S.', short=True,
+                            metadata={'pin_cite': '20-25',
+                                      'antecedent_guess': 'asdf'})]),
             # Test short form citation with a page range with weird suffix
             ('before asdf, 1 U. S., at 20-25\\& n. 4',
-             [case_citation(2, page='20', reporter_found='U. S.',
-                            short=True, antecedent_guess='asdf',
-                            pin_cite='20-25')]),
+             [case_citation(2, page='20', reporter_found='U. S.', short=True,
+                            metadata={'pin_cite': '20-25',
+                                      'antecedent_guess': 'asdf'})]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
-             [supra_citation(2, "supra,", antecedent_guess='asdf',
-                             pin_cite='at 2')]),
+             [supra_citation(2, "supra,",
+                             metadata={'pin_cite': 'at 2',
+                                       'antecedent_guess': 'asdf'})]),
             # Test second kind of supra citation (with volume)
             ('before asdf, 123 supra, at 2',
-             [supra_citation(3, "supra,", antecedent_guess='asdf',
-                             pin_cite='at 2', volume='123')]),
+             [supra_citation(3, "supra,",
+                             metadata={'pin_cite': 'at 2',
+                                       'volume': '123',
+                                       'antecedent_guess': 'asdf'})]),
             # Test third kind of supra citation (sans page)
             ('before asdf, supra, foo bar',
-             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
+             [supra_citation(2, "supra,",
+                             metadata={'antecedent_guess': 'asdf'})]),
             # Test third kind of supra citation (with period)
             ('before asdf, supra. foo bar',
-             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
+             [supra_citation(2, "supra,",
+                             metadata={'antecedent_guess': 'asdf'})]),
             # Test supra citation at end of document (issue #1171)
             ('before asdf, supra end',
-             [supra_citation(2, "supra,", antecedent_guess='asdf')]),
+             [supra_citation(2, "supra,",
+                             metadata={'antecedent_guess': 'asdf'})]),
             # Test Ibid. citation
             ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar'),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar'}),
               id_citation(7, 'Ibid.')]),
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
@@ -268,52 +265,71 @@ class FindTest(TestCase):
              {'clean': ['html', 'inline_whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.,', pin_cite='at 123')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.,',
+                          metadata={'pin_cite': 'at 123'})]),
             # Test Id. citation across line break
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.,', pin_cite='at 123')],
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean': ['all_whitespace']}),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
-             [id_citation(2, 'Id.,', pin_cite='at 123')],
+             [id_citation(2, 'Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean': ['html', 'inline_whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
-             [id_citation(2, 'Id.,', pin_cite='at 123')],
+             [id_citation(2, 'Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.', pin_cite='¶ 34')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.', metadata={'pin_cite': '¶ 34'})]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.', pin_cite='at 62-63, 67-68')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.', metadata={'pin_cite': 'at 62-63, 67-68'})]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.,', pin_cite='at *10')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.,', metadata={'pin_cite': 'at *10'})]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.', pin_cite='at 7-9, ¶¶ 38-53')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.', metadata={'pin_cite': 'at 7-9, ¶¶ 38-53'})]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'Id.', pin_cite='at pp. 45, 64')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'Id.', metadata={'pin_cite': 'at pp. 45, 64'})]),
             ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
-              id_citation(8, 'id.', pin_cite='119:12-14')]),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
+              id_citation(8, 'id.', metadata={'pin_cite': '119:12-14'})]),
             # Test Id. citation without page number
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
-             [case_citation(3, page='12', plaintiff='foo',
-                            defendant='bar', pin_cite='347-348'),
+             [case_citation(3, page='12',
+                            metadata={'plaintiff': 'foo',
+                                      'defendant': 'bar',
+                                      'pin_cite': '347-348'}),
               id_citation(8, 'Id.')]),
             # Test non-opinion citation
             ('lorem ipsum see §99 of the U.S. code.',
@@ -341,17 +357,17 @@ class FindTest(TestCase):
             # Token scanning edge case -- incomplete paren at end of input
             ('1 U.S. 1 (', [case_citation(0)]),
             # Token scanning edge case -- missing plaintiff name at start of input
-            ('v. Bar, 1 U.S. 1', [case_citation(0, defendant='Bar,')]),
+            ('v. Bar, 1 U.S. 1', [case_citation(0, metadata={'defendant': 'Bar,'})]),
             # Token scanning edge case -- short form start of input
             ('1 U.S., at 1', [case_citation(0, short=True)]),
             (', 1 U.S., at 1', [case_citation(0, short=True)]),
             # Token scanning edge case -- supra at start of input
             ('supra.', [supra_citation(0, "supra.")]),
             (', supra.', [supra_citation(0, "supra.")]),
-            ('123 supra.', [supra_citation(0, "supra.", volume="123")]),
+            ('123 supra.', [supra_citation(0, "supra.", metadata={'volume': "123"})]),
             # Token scanning edge case -- Id. at end of input
             ('Id.', [id_citation(0, 'Id.,')]),
-            ('Id. at 1.', [id_citation(0, 'Id.,', pin_cite='at 1')]),
+            ('Id. at 1.', [id_citation(0, 'Id.,', metadata={'pin_cite': 'at 1'})]),
             ('Id. foo', [id_citation(0, 'Id.,')]),
             # Reject citations that are part of larger words
             ('foo1 U.S. 1, 1. U.S. 1foo', [],),
@@ -381,15 +397,15 @@ class FindTest(TestCase):
             # year
             ('Fla. Stat. § 120.68 (2007)',
              [law_citation(0, 'Fla. Stat. § 120.68 (2007)',
-                           reporter='Fla. Stat.', year='2007',
+                           reporter='Fla. Stat.', year=2007,
                            groups={'section': '120.68'})]),
             # et seq, publisher, year
             ('Ariz. Rev. Stat. Ann. § 36-3701 et seq. (West 2009)',
              [law_citation(0, 'Ariz. Rev. Stat. Ann. § 36-3701 et seq. (West 2009)',
                            reporter='Ariz. Rev. Stat. Ann.',
-                           pin_cite='et seq.',
+                           metadata={'pin_cite': 'et seq.', 'publisher': 'West'},
                            groups={'section': '36-3701'},
-                           publisher='West', year='2009')]),
+                           year=2009)]),
             # multiple sections
             ('Mass. Gen. Laws ch. 1, §§ 2-3',
              [law_citation(0, 'Mass. Gen. Laws ch. 1, §§ 2-3',
@@ -399,29 +415,29 @@ class FindTest(TestCase):
             ('Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
              [law_citation(0, 'Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
                            reporter='Kan. Stat. Ann.',
-                           pin_cite='(a)(2)', parenthetical='repealed',
+                           metadata={'pin_cite': '(a)(2)', 'parenthetical': 'repealed'},
                            groups={'section': '21-3516'})]),
             # Supp. publisher
             ('Ohio Rev. Code Ann. § 5739.02(B)(7) (Lexis Supp. 2010)',
              [law_citation(0, 'Ohio Rev. Code Ann. § 5739.02(B)(7) (Lexis Supp. 2010)',
                            reporter='Ohio Rev. Code Ann.',
-                           pin_cite='(B)(7)',
+                           metadata={'pin_cite': '(B)(7)', 'publisher': 'Lexis Supp.'},
                            groups={'section': '5739.02'},
-                           publisher='Lexis Supp.', year='2010')]),
+                           year=2010)]),
             # Year range
             ('Wis. Stat. § 655.002(2)(c) (2005-06)',
              [law_citation(0, 'Wis. Stat. § 655.002(2)(c) (2005-06)',
                            reporter='Wis. Stat.',
-                           pin_cite='(2)(c)',
+                           metadata={'pin_cite': '(2)(c)'},
                            groups={'section': '655.002'},
-                           year='2005')]),
+                           year=2005)]),
             # 'and' pin cite
             ('Ark. Code Ann. § 23-3-119(a)(2) and (d) (1987)',
              [law_citation(0, 'Ark. Code Ann. § 23-3-119(a)(2) and (d) (1987)',
                            reporter='Ark. Code Ann.',
-                           pin_cite='(a)(2) and (d)',
+                           metadata={'pin_cite': '(a)(2) and (d)'},
                            groups={'section': '23-3-119'},
-                           year='1987')]),
+                           year=1987)]),
             # Cite to multiple sections
             ('Mass. Gen. Laws ch. 1, §§ 2-3',
              [law_citation(0, 'Mass. Gen. Laws ch. 1, §§ 2-3',
@@ -440,21 +456,21 @@ class FindTest(TestCase):
              [journal_citation(0)]),
             # Pin cite
             ('1 Minn. L. Rev. 1, 2-3',
-             [journal_citation(0, pin_cite='2-3')]),
+             [journal_citation(0, metadata={'pin_cite': '2-3'})]),
             # Year
             ('1 Minn. L. Rev. 1 (2007)',
-             [journal_citation(0, year='2007')]),
+             [journal_citation(0, year=2007)]),
             # Pin cite and year
             ('1 Minn. L. Rev. 1, 2-3 (2007)',
-             [journal_citation(0, pin_cite='2-3', year='2007')]),
+             [journal_citation(0, metadata={'pin_cite': '2-3'}, year=2007)]),
             # Pin cite and year and parenthetical
             ('1 Minn. L. Rev. 1, 2-3 (2007) (discussing ...)',
-             [journal_citation(0, pin_cite='2-3', year='2007',
-                               parenthetical='discussing ...')]),
+             [journal_citation(0, year=2007,
+                               metadata={'pin_cite': '2-3', 'parenthetical': 'discussing ...'})]),
             # Year range
             ('77 Marq. L. Rev. 475 (1993-94)',
              [journal_citation(0, volume='77', reporter='Marq. L. Rev.',
-                               page='475', year='1993')]),
+                               page='475', year=1993)]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Journal citation extraction")
@@ -533,12 +549,10 @@ class FindTest(TestCase):
             # 3. A.2d --> Not a variant, but needs to be looked up in the
             #    EDITIONS variable.
             ('1 A.2d 1',
-             [case_citation(0, reporter='A.2d',
-                            canonical_reporter='A.')]),
+             [case_citation(0, reporter='A.2d')]),
             # 4. A. 2d --> An unambiguous variant of an edition
             ('1 A. 2d 1',
-             [case_citation(0, reporter='A.2d',
-                            canonical_reporter='A.', reporter_found='A. 2d')]),
+             [case_citation(0, reporter='A.2d', reporter_found='A. 2d')]),
             # 5. P.R. --> A variant of 'Pen. & W.', 'P.R.R.', or 'P.' that's
             #    resolvable by year
             ('1 P.R. 1 (1831)',
@@ -549,7 +563,7 @@ class FindTest(TestCase):
             #      'Wis. 2d' or 'Wash. 2d' and is resolvable by year.
             ('1 W.2d 1 (1854)',
              # Of the two, only Wis. 2d was being published this year.
-             [case_citation(0, reporter='Wis. 2d', canonical_reporter='Wis.',
+             [case_citation(0, reporter='Wis. 2d',
                             year=1854, reporter_found='W.2d')]),
             # 5.2: Wash. --> A non-variant that has more than one reporter for
             #      the key, but is resolvable by year
@@ -559,7 +573,7 @@ class FindTest(TestCase):
             #    paired with this variation.
             ('1 Cra. 1',
              [case_citation(0, reporter='Cranch', reporter_found='Cra.',
-                            court='scotus')]),
+                            metadata={'court': 'scotus'})]),
             # 7. Cranch. --> Not a variant, but could refer to either Cranch's
             #    Supreme Court cases or his DC ones. In this case, we cannot
             #    disambiguate. Years are not known, and we have no further
@@ -575,10 +589,8 @@ class FindTest(TestCase):
             #                8.2: Robinson's Louisiana Reports (1841-1846) or
             #                8.3: Robinson's Virgina Reports (1842-1865)
             # ('1 Rob. 1 1 La. 1',
-            # [case_citation(volume='1', reporter='Rob.', page='1',
-            #                          canonical_reporter='Rob.',),
-            #  case_citation(volume='1', reporter='La.', page='1',
-            #                          canonical_reporter='La.',)]),
+            # [case_citation(volume='1', reporter='Rob.', page='1'),
+            #  case_citation(volume='1', reporter='La.', page='1')]),
             # 9. Johnson #1 should pass and identify the citation
             ('1 Johnson 1 (1890)',
              [case_citation(0, reporter='N.M. (J.)', reporter_found='Johnson',

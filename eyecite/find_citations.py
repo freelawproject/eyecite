@@ -1,10 +1,6 @@
-from typing import List, Union, cast
+from typing import List, Type, cast
 
 from eyecite.helpers import (
-    add_defendant,
-    add_journal_metadata,
-    add_law_metadata,
-    add_post_citation,
     disambiguate_reporters,
     extract_pin_cite,
     joke_cite,
@@ -20,6 +16,7 @@ from eyecite.models import (
     IdCitation,
     IdToken,
     NonopinionCitation,
+    ResourceCitation,
     SectionToken,
     ShortCaseCitation,
     SupraCitation,
@@ -101,60 +98,36 @@ def extract_full_citation(
 ) -> FullCitation:
     """Given a list of words and the index of a citation, return
     a FullCitation object."""
-    token = cast(CitationToken, words[index])
-    citation: Union[FullCaseCitation, FullLawCitation, FullJournalCitation]
 
     # Our cite was matched by one or more regexes, which could have come from
     # one or more of the sources in reporters_db (e.g. reporters, laws,
     # journals). Get the set of all sources that matched, preferring exact
     # matches to variations:
+    token = cast(CitationToken, words[index])
     cite_sources = set(
         e.reporter.source
         for e in (token.exact_editions or token.variation_editions)
     )
 
+    # get citation_class based on cite_sources
+    citation_class: Type[ResourceCitation]
     if "reporters" in cite_sources:
-        # make a FullCaseCitation
-        citation = FullCaseCitation(
-            token,
-            index,
-            reporter=token.groups["reporter"],
-            page=token.groups.get("page", ""),
-            volume=token.groups.get("volume", ""),
-            reporter_found=token.groups["reporter"],
-            exact_editions=token.exact_editions,
-            variation_editions=token.variation_editions,
-        )
-        add_post_citation(citation, words)
-        add_defendant(citation, words)
-        citation.guess_court()
-
+        citation_class = FullCaseCitation
     elif "laws" in cite_sources:
-        # make a FullLawCitation
-        citation = FullLawCitation(
-            token,
-            index,
-            reporter_found=token.groups["reporter"],
-            exact_editions=token.exact_editions,
-            variation_editions=token.variation_editions,
-        )
-        add_law_metadata(citation, words)
+        citation_class = FullLawCitation
+    elif "journals" in cite_sources:
+        citation_class = FullJournalCitation
+    else:
+        raise ValueError(f"Unknown cite_sources value {cite_sources}")
 
-    else:  # 'journals'
-        # make a FullJournalCitation
-        citation = FullJournalCitation(
-            token,
-            index,
-            reporter=token.groups["reporter"],
-            page=token.groups.get("page", ""),
-            volume=token.groups.get("volume", ""),
-            reporter_found=token.groups["reporter"],
-            exact_editions=token.exact_editions,
-            variation_editions=token.variation_editions,
-        )
-        add_journal_metadata(citation, words)
-
-    citation.guess_edition()
+    # make citation
+    citation = citation_class(
+        token,
+        index,
+        exact_editions=token.exact_editions,
+        variation_editions=token.variation_editions,
+    )
+    citation.add_metadata(words)
 
     return citation
 
@@ -191,15 +164,13 @@ def extract_shortform_citation(
     citation = ShortCaseCitation(
         cite_token,
         index,
-        reporter=cite_token.groups["reporter"],
-        page=cite_token.groups["page"],
-        volume=cite_token.groups.get("volume", ""),
-        antecedent_guess=antecedent_guess,
-        reporter_found=cite_token.groups["reporter"],
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
-        pin_cite=pin_cite,
         span_end=span_end,
+        metadata={
+            "antecedent_guess": antecedent_guess,
+            "pin_cite": pin_cite,
+        },
     )
 
     # add metadata
@@ -240,9 +211,11 @@ def extract_supra_citation(
         cast(SupraToken, words[index]),
         index,
         span_end=span_end,
-        antecedent_guess=antecedent_guess,
-        pin_cite=pin_cite,
-        volume=volume,
+        metadata={
+            "antecedent_guess": antecedent_guess,
+            "pin_cite": pin_cite,
+            "volume": volume,
+        },
     )
 
 
@@ -259,5 +232,7 @@ def extract_id_citation(
         cast(IdToken, words[index]),
         index,
         span_end=span_end,
-        pin_cite=pin_cite,
+        metadata={
+            "pin_cite": pin_cite,
+        },
     )

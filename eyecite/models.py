@@ -2,7 +2,18 @@ import re
 from collections import UserString
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Callable, Dict, Hashable, List, Optional, Sequence, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Hashable,
+    List,
+    Optional,
+    Sequence,
+    Union,
+)
+
+from eyecite.utils import HashableDict
 
 ResourceType = Hashable
 
@@ -56,11 +67,19 @@ class CitationBase:
     # span() overrides
     span_start: Optional[int] = None
     span_end: Optional[int] = None
-    groups: dict = field(default_factory=dict, compare=False)
+    groups: dict = field(default_factory=dict)
+    metadata: Any = None
 
     def __post_init__(self):
-        """Set groups."""
-        self.groups = self.token.groups
+        """Set up groups and metadata."""
+        # Allow groups to be used in comparisons:
+        self.groups = HashableDict(self.token.groups)
+        # Make metadata a self.Metadata object:
+        self.metadata = (
+            self.Metadata(**self.metadata)
+            if isinstance(self.metadata, dict)
+            else self.Metadata()
+        )
 
     def __repr__(self):
         """Simplified repr() to be more readable than full dataclass repr().
@@ -69,11 +88,21 @@ class CitationBase:
             f"{self.__class__.__name__}("
             + f"{repr(self.matched_text())}"
             + (f", groups={repr(self.groups)}" if self.groups else "")
+            + f", metadata={repr(self.metadata)}"
             + ")"
         )
 
-    def formatted(self):
-        """Return formatted version of extracted cite."""
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata. Base class doesn't have any."""
+
+    def corrected_citation(self):
+        """Return citation with any variations normalized."""
+        return self.matched_text()
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
         return self.matched_text()
 
     def matched_text(self):
@@ -95,22 +124,14 @@ class ResourceCitation(CitationBase):
     """Base class for a case, law, or journal citation. Could be short or
     long."""
 
-    # Value of the 'reporter' match group, for normalizing variations
-    reporter_found: Optional[str] = None
-    reporter: Optional[str] = None
-
-    # Set during disambiguation.
-    # For a citation to F.2d, the canonical reporter is F.
-    canonical_reporter: Optional[str] = None
-
     # Editions that might match this reporter string
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     all_editions: Sequence[Edition] = field(default_factory=tuple)
     edition_guess: Optional[Edition] = None
 
-    parenthetical: Optional[str] = None
-    pin_cite: Optional[str] = None
+    # year extracted from metadata["year"] and converted to int,
+    # if in a valid range
     year: Optional[int] = None
 
     def __post_init__(self):
@@ -122,17 +143,36 @@ class ResourceCitation(CitationBase):
         )
         super().__post_init__()
 
-    def base_citation(self):
-        """Return a simple version of the citation."""
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
+
+        parenthetical: Optional[str] = None
+        pin_cite: Optional[str] = None
+        year: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        self.guess_edition()
+
+    def corrected_reporter(self):
+        """Get official reporter string from edition_guess, if possible."""
+        return (
+            self.edition_guess.short_name
+            if self.edition_guess
+            else self.groups["reporter"]
+        )
+
+    def corrected_citation(self):
+        """Return citation with corrected reporter."""
         if self.edition_guess:
-            # normalize reporter
             return self.matched_text().replace(
-                self.reporter_found, self.edition_guess.short_name
+                self.groups["reporter"], self.edition_guess.short_name
             )
         return self.matched_text()
 
     def guess_edition(self):
-        """Set canonical_reporter, edition_guess, and reporter."""
+        """Set edition_guess."""
         # Use exact matches if possible, otherwise try variations
         editions = self.exact_editions or self.variation_editions
         if not editions:
@@ -144,8 +184,6 @@ class ResourceCitation(CitationBase):
 
         if len(editions) == 1:
             self.edition_guess = editions[0]
-            self.canonical_reporter = editions[0].reporter.short_name
-            self.reporter = editions[0].short_name
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
@@ -157,18 +195,63 @@ class FullCitation(ResourceCitation):
 class FullLawCitation(FullCitation):
     """Citation to a source from laws.json."""
 
-    publisher: Optional[str] = None
-    day: Optional[str] = None
-    month: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(FullCitation.Metadata):
+        """Define fields on self.metadata."""
+
+        publisher: Optional[str] = None
+        day: Optional[str] = None
+        month: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_law_metadata
+
+        add_law_metadata(self, words)
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
+        parts = [self.corrected_citation()]
+        m = self.metadata
+        if m.pin_cite:
+            parts.append(f"{m.pin_cite}")
+        publisher_date = " ".join(
+            i for i in (m.publisher, m.month, m.day, m.year) if i
+        )
+        if publisher_date:
+            parts.append(f" ({publisher_date}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
 class FullJournalCitation(FullCitation):
     """Citation to a source from journals.json."""
 
-    # Core data.
-    page: Optional[str] = None
-    volume: Optional[str] = None
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_journal_metadata
+
+        add_journal_metadata(self, words)
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return citation with any variations normalized, including extracted
+        metadata if any."""
+        parts = [self.corrected_citation()]
+        m = self.metadata
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
+        if m.year:
+            parts.append(f" ({m.year}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
@@ -177,46 +260,20 @@ class CaseCitation(ResourceCitation):
     document.
     """
 
-    # Core data.
-    page: Optional[str] = None
-    volume: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(FullCitation.Metadata):
+        """Define fields on self.metadata."""
 
-    # Supplementary data, if possible:
-    #  <plaintiff> v. <defendant>,
-    #  <matched_text> <pin_cite> <extra>
-    #  (<court> <year>)
-    #  (<parenthetical).
-    plaintiff: Optional[str] = None
-    defendant: Optional[str] = None
-    extra: Optional[str] = None
-    court: Optional[str] = None
-
-    def formatted(self):
-        """Return formatted version of extracted cite."""
-        parts = []
-        if self.plaintiff:
-            parts.append(f"{self.plaintiff} v. ")
-        if self.defendant:
-            parts.append(f"{self.defendant}, ")
-        parts.append(self.base_citation())
-        if self.pin_cite:
-            parts.append(f", {self.pin_cite}")
-        if self.extra:
-            parts.append(self.extra)
-        if self.court or self.year:
-            parts.append(" (")
-            parts.append(" ".join(i for i in (self.court, self.year) if i))
-            parts.append(")")
-        if self.parenthetical:
-            parts.append(f" ({self.parenthetical})")
-        return "".join(parts)
+        # court is included for ShortCaseCitation as well. It won't appear in
+        # the cite itself but can also be guessed from the reporter
+        court: Optional[str] = None
 
     def guess_court(self):
         """Set court based on reporter."""
-        if not self.court and any(
+        if not self.metadata.court and any(
             e.reporter.is_scotus for e in self.all_editions
         ):
-            self.court = "scotus"
+            self.metadata.court = "scotus"
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
@@ -226,6 +283,44 @@ class FullCaseCitation(CaseCitation, FullCitation):
 
     Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
     """
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CaseCitation.Metadata):
+        """Define fields on self.metadata."""
+
+        plaintiff: Optional[str] = None
+        defendant: Optional[str] = None
+        extra: Optional[str] = None
+
+    def add_metadata(self, words: "Tokens"):
+        """Extract metadata from text before and after citation."""
+        # pylint: disable=import-outside-toplevel
+        from eyecite.helpers import add_defendant, add_post_citation
+
+        add_post_citation(self, words)
+        add_defendant(self, words)
+        self.guess_court()
+        super().add_metadata(words)
+
+    def corrected_citation_full(self):
+        """Return formatted version of extracted cite."""
+        parts = []
+        m = self.metadata
+        if m.plaintiff:
+            parts.append(f"{m.plaintiff} v. ")
+        if m.defendant:
+            parts.append(f"{m.defendant}, ")
+        parts.append(self.corrected_citation())
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
+        if m.extra:
+            parts.append(m.extra)
+        publisher_date = " ".join(m[i] for i in (m.court, m.year) if i)
+        if publisher_date:
+            parts.append(f" ({publisher_date}")
+        if m.parenthetical:
+            parts.append(f" ({m.parenthetical})")
+        return "".join(parts)
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
@@ -240,16 +335,18 @@ class ShortCaseCitation(CaseCitation):
     Example 3: 515 U.S., at 241
     """
 
-    # Like a Citation object, but we have to guess who the antecedent is
-    # and the page number is non-canonical
-    antecedent_guess: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CaseCitation.Metadata):
+        """Define fields on self.metadata."""
 
-    def formatted(self):
+        antecedent_guess: Optional[str] = None
+
+    def corrected_citation_full(self):
         """Return formatted version of extracted cite."""
         parts = []
-        if self.antecedent_guess:
-            parts.append(f"{self.antecedent_guess}, ")
-        parts.append(self.base_citation())
+        if self.metadata.antecedent_guess:
+            parts.append(f"{self.metadata.antecedent_guess}, ")
+        parts.append(self.corrected_citation())
         return "".join(parts)
 
 
@@ -266,22 +363,25 @@ class SupraCitation(CitationBase):
     Example 4: Adarand, supra. somethingelse
     """
 
-    # Like a Citation object, but without knowledge of the reporter or the
-    # volume. Only has a guess at what the antecedent is.
-    antecedent_guess: Optional[str] = None
-    pin_cite: Optional[str] = None
-    volume: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
+
+        antecedent_guess: Optional[str] = None
+        pin_cite: Optional[str] = None
+        volume: Optional[str] = None
 
     def formatted(self):
         """Return formatted version of extracted cite."""
         parts = []
-        if self.antecedent_guess:
-            parts.append(f"{self.antecedent_guess}, ")
-        if self.volume:
-            parts.append(f"{self.volume} ")
+        m = self.metadata
+        if m.antecedent_guess:
+            parts.append(f"{m.antecedent_guess}, ")
+        if m.volume:
+            parts.append(f"{m.volume} ")
         parts.append("supra")
-        if self.pin_cite:
-            parts.append(f", {self.pin_cite}")
+        if m.pin_cite:
+            parts.append(f", {m.pin_cite}")
         return "".join(parts)
 
 
@@ -296,13 +396,17 @@ class IdCitation(CitationBase):
     Example: "... foo bar," id., at 240
     """
 
-    pin_cite: Optional[str] = None
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata:
+        """Define fields on self.metadata."""
+
+        pin_cite: Optional[str] = None
 
     def formatted(self):
         """Return formatted version of extracted cite."""
         parts = ["id."]
-        if self.pin_cite:
-            parts.append(f", {self.pin_cite}")
+        if self.metadata.pin_cite:
+            parts.append(f", {self.metadata.pin_cite}")
         return "".join(parts)
 
 

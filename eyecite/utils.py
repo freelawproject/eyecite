@@ -92,3 +92,10 @@ def hyperscan_match(regexes, text):
     hyperscan_db.scan(text.encode("utf8"), on_match)
 
     return matches
+
+
+class HashableDict(dict):
+    """Dict that works as an attribute of a hashable dataclass."""
+
+    def __hash__(self):
+        return hash(frozenset(self.items()))

@@ -7,6 +7,7 @@ from courts_db import courts
 from eyecite.models import (
     CaseCitation,
     CitationBase,
+    FullCaseCitation,
     FullJournalCitation,
     FullLawCitation,
     ParagraphToken,
@@ -84,13 +85,14 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     if not m:
         return
 
-    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
-    citation.extra = (m["extra"] or "").strip() or None
-    citation.parenthetical = m["parenthetical"]
+    citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.metadata.extra = (m["extra"] or "").strip() or None
+    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
     if m["court"]:
-        citation.court = get_court_by_paren(m["court"])
+        citation.metadata.court = get_court_by_paren(m["court"])
 
 
 def add_defendant(citation: CaseCitation, words: Tokens) -> None:
@@ -107,7 +109,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             continue
         if isinstance(word, StopWordToken):
             if word.groups["stop_word"] == "v" and index > 0:
-                citation.plaintiff = "".join(
+                citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip()
             start_index = index + 1
@@ -116,7 +118,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             # String citation
             break
     if start_index:
-        citation.defendant = "".join(
+        citation.metadata.defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip()
 
@@ -129,12 +131,14 @@ def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
     if not m:
         return
 
-    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
-    citation.publisher = m["publisher"]
-    citation.day = m["day"]
-    citation.month = m["month"]
-    citation.year = m["year"]
-    citation.parenthetical = m["parenthetical"]
+    citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.metadata.publisher = m["publisher"]
+    citation.metadata.day = m["day"]
+    citation.metadata.month = m["month"]
+    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.year = m["year"]
+    if m["year"]:
+        citation.year = get_year(m["year"])
 
 
 def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
@@ -148,9 +152,11 @@ def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
     if not m:
         return
 
-    citation.pin_cite = clean_pin_cite(m["pin_cite"]) or None
-    citation.year = m["year"]
-    citation.parenthetical = m["parenthetical"]
+    citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.year = m["year"]
+    if m["year"]:
+        citation.year = get_year(m["year"])
 
 
 def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
@@ -248,13 +254,17 @@ def disambiguate_reporters(
 
 
 joke_cite: List[CitationBase] = [
-    CaseCitation(
+    FullCaseCitation(
         Token("1 FLP 1", 0, 7),
         0,
-        volume="1",
-        reporter="FLP",
-        page="1",
+        groups={
+            "volume": "1",
+            "reporter": "FLP",
+            "page": "1",
+        },
         year=2021,
-        extra="Eyecite is a collaborative community effort.",
+        metadata={
+            "extra": "Eyecite is a collaborative community effort.",
+        },
     )
 ]

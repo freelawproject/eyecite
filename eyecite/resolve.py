@@ -30,9 +30,15 @@ def _filter_by_matching_antecedent(
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
             continue
-        if full_citation.defendant and ag in full_citation.defendant:
+        if (
+            full_citation.metadata.defendant
+            and ag in full_citation.metadata.defendant
+        ):
             matches.append(resource)
-        elif full_citation.plaintiff and ag in full_citation.plaintiff:
+        elif (
+            full_citation.metadata.plaintiff
+            and ag in full_citation.metadata.plaintiff
+        ):
             matches.append(resource)
 
     # Remove duplicates and only accept if one candidate remains
@@ -55,8 +61,10 @@ def _resolve_shortcase_citation(
     for full_citation, resource in resolved_full_cites.items():
         if (
             isinstance(full_citation, FullCaseCitation)
-            and short_citation.reporter == full_citation.reporter
-            and short_citation.volume == full_citation.volume
+            and short_citation.corrected_reporter()
+            == full_citation.corrected_reporter()
+            and short_citation.groups.get("volume")
+            == full_citation.groups.get("volume")
         ):
             # Append both keys and values for further refinement below
             candidates.append((full_citation, resource))
@@ -66,9 +74,9 @@ def _resolve_shortcase_citation(
         return candidates[0][1]
 
     # Otherwise, if there is an antecedent guess, try to refine further
-    elif short_citation.antecedent_guess:
+    elif short_citation.metadata.antecedent_guess:
         return _filter_by_matching_antecedent(
-            candidates, short_citation.antecedent_guess
+            candidates, short_citation.metadata.antecedent_guess
         )
 
     # Otherwise, nothing left to try
@@ -85,11 +93,13 @@ def _resolve_supra_citation(
     appears in either the defendant or plaintiff field of any of the
     previously resolved full citations.
     """
-    if not supra_citation.antecedent_guess:  # If no guess, can't do anything
+    if (
+        not supra_citation.metadata.antecedent_guess
+    ):  # If no guess, can't do anything
         return None
 
     return _filter_by_matching_antecedent(
-        resolved_full_cites.items(), supra_citation.antecedent_guess
+        resolved_full_cites.items(), supra_citation.metadata.antecedent_guess
     )
 
 
