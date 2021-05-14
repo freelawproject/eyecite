@@ -77,7 +77,7 @@ links to documents in a database.
     class MyCaseModel:
         frontend_url = '/us/1/2/'
         @classmethod
-        def get(cls, citation):
+        def get_by_citation(cls, citation):
             return cls()
 
 First our imports::
@@ -128,11 +128,20 @@ Now we want to resolve all of the extracted cites into clusters indexed by
 the resource they refer to, such as a case or statute. We'll use a custom
 function to resolve a given full cite to its resource, so we can return our
 own MyCaseModel for citations we recognize. We'll fall back on returning
-:code:`resolve_full_citation()` for citations we don't recognize::
+:code:`resolve_full_citation()` for citations we don't recognize.
+
+For this simplified example, we'll assume we have a database model :code:`MyCaseModel`
+so that :code:`MyCaseModel.get_by_citation()` will return the case referred to by that
+citation string. In real life this might be a Django model or Elasticsearch lookup.
+We'll also assume that the same case has the parallel citations
+"1 U.S. 2" and "1 S. Ct. 2", so :code:`MyCaseModel.get_by_citation("1 U.S. 2")` returns
+the same case as :code:`MyCaseModel.get_by_citation("1 S. Ct. 2")`.
+
+::
 
     def resolve_cite(cite):
         if isinstance(cite, FullCaseCitation):
-            resource = MyCaseModel.get(citation=cite.corrected_citation())
+            resource = MyCaseModel.get_by_citation(cite.corrected_citation())
             if resource:
                 return resource
         return resolve_full_citation(cite)
@@ -144,6 +153,10 @@ own MyCaseModel for citations we recognize. We'll fall back on returning
     #   MyCaseModel('1 U.S. 2'): [FullCaseCitation('1 U.S. 2'), FullCaseCitation('1 S.Ct. 2'), IdCitation()],
     #   eyecite.models.Resource(...): [FullLawCitation('Mass. Gen. Laws ch. 1, § 2')],
     # }
+
+(Note the use of :code:`cite.corrected_citation()`, which returns "1 S. Ct. 2" for the matched citation "1 S.Ct. 2".
+reporters_db includes many variations for reporter names, so it's useful to match cases by their corrected
+reporters rather than the exact string found in the text.)
 
 Finally we can prepare annotations for each citation in our clusters. An annotation is
 text to insert back into cleaned_text, like :code:`((<start offset>, <end offset>), <before text>, <after text>)`::
@@ -159,8 +172,9 @@ text to insert back into cleaned_text, like :code:`((<start offset>, <end offset
         for cite in cites:
             annotations.append((cite.span(), f"<a href='{url}'>", f"</a>"))
 
-Insert our annotations, but rather than adding them to cleaned_text, add them back into
-the original text using the diff-match-patch library::
+Now we have annotations ready to add to :code:`clean_text`, but we actually want to insert them into our original
+:code:`text` variable with HTML formatting. We can pass :code:`source_text=text` into :code:`annotate()` to have the
+annotation positions adjusted and inserted into :code:`text` using the diff-match-patch library::
 
     annotated_text = annotate(cleaned_text, annotations, source_text=text)
 
@@ -174,7 +188,8 @@ the original text using the diff-match-patch library::
 Ta da!
 
 Getting Citations
-=======
+=================
+
 :code:`get_citations()`, the main executable function, takes several parameters.
 
 1. :code:`remove_ambiguous` ==> bool, default :code:`False`: whether to remove citations
