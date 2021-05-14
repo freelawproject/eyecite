@@ -4,7 +4,8 @@
 
 The following changes are not yet released, but are code complete:
 
-...
+Features:
+ - Adds `dump_citations()` to inspect extracted citations.
 
 ## Current
 

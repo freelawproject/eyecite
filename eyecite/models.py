@@ -105,6 +105,17 @@ class CitationBase:
         metadata if any."""
         return self.matched_text()
 
+    def dump(self) -> dict:
+        """Return citation data for printing by dump_citations."""
+        return {
+            "groups": self.groups,
+            "metadata": {
+                k: v
+                for k, v in self.metadata.__dict__.items()
+                if v is not None
+            },
+        }
+
     def matched_text(self):
         """Text that identified this citation, such as '1 U.S. 1' or 'Id.'"""
         return str(self.token)
@@ -154,6 +165,13 @@ class ResourceCitation(CitationBase):
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
         self.guess_edition()
+
+    def dump(self) -> dict:
+        """Return citation data for printing by dump_citations."""
+        return {
+            **super().dump(),
+            "year": self.year,
+        }
 
     def corrected_reporter(self):
         """Get official reporter string from edition_guess, if possible."""

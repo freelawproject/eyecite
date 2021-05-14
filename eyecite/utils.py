@@ -99,3 +99,43 @@ class HashableDict(dict):
 
     def __hash__(self):
         return hash(frozenset(self.items()))
+
+
+def dump_citations(citations, text, context_chars=30):
+    """Dump citations extracted from text, for debugging. Example:
+    >>> text = "blah. Foo v. Bar, 1 U.S. 1, 2 (1999). blah"
+    >>> dump_citations(get_citations(text), text)
+    blah. Foo v. Bar, 1 U.S. 1, 2 (1999). blah
+      * FullCaseCitation
+      * reporter_found='U.S.'
+      * pin_cite='2'
+      * groups={'volume': '1', 'reporter': 'U.S.', 'page': '1'}
+      * ...
+    """
+    out = []
+    green_fmt = "\x1B[32m"
+    blue_fmt = "\x1B[94m"
+    bold_fmt = "\x1B[1m"
+    end_fmt = "\x1B[0m"
+    for citation in citations:
+        start, end = citation.span()
+        context_before = text[max(0, start - context_chars) : start]
+        context_before = context_before.split("\n")[-1].lstrip()
+        matched_text = text[start:end]
+        context_after = text[end : end + context_chars]
+        context_after = context_after.split("\n")[0].rstrip()
+        out.append(
+            f"{green_fmt}{citation.__class__.__name__}:{end_fmt} "
+            f"{context_before}"
+            f"{blue_fmt}{bold_fmt}{matched_text}{end_fmt}"
+            f"{context_after}"
+        )
+        for key, value in citation.dump().items():
+            if value:
+                if isinstance(value, dict):
+                    out.append(f"  * {key}")
+                    for sub_key, sub_value in value.items():
+                        out.append(f"    * {sub_key}={repr(sub_value)}")
+                else:
+                    out.append(f"  * {key}={repr(value)}")
+    return "\n".join(out)
