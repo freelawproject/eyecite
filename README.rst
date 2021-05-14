@@ -137,7 +137,7 @@ own MyCaseModel for citations we recognize. We'll fall back on returning
                 return resource
         return resolve_full_citation(cite)
 
-    resolutions = resolve_citations(citations, resolve_fullcase_citation=resolve_cite)
+    resolutions = resolve_citations(citations, resolve_full_citation=resolve_cite)
 
     # resolutions:
     # {
@@ -177,10 +177,9 @@ Getting Citations
 =======
 :code:`get_citations()`, the main executable function, takes several parameters.
 
-1. :code:`do_post_citation` ==> bool; whether additional, post-citation information should be extracted (e.g., the court, year, and/or date range of the citation)
-2. :code:`do_defendant` ==> bool; whether the pre-citation defendant (and possibily plaintiff) reference should be extracted
-3. :code:`disambiguate` ==> bool; whether each citation's (possibly ambiguous) reporter should be resolved to its (unambiguous) form
-4. :code:`tokenizer` ==> Tokenizer; an instance of a Tokenizer object (see "Tokenizers" below)
+1. :code:`remove_ambiguous` ==> bool, default :code:`False`: whether to remove citations
+   that might refer to more than one reporter and can't be narrowed down by date.
+2. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: an instance of a Tokenizer object (see "Tokenizers" below)
 
 
 Cleaning Input Text
