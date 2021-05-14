@@ -1,38 +1,179 @@
 eyecite
 ==========
 
-eyecite is an open source tool for extracting legal citations from text strings. Originally built for use with `Courtlistener.com <https://www.courtlistener.com/>`_, it is now a freestanding package.
+eyecite is an open source tool for extracting legal citations from text. It is used, among other things, to annotate millions of legal documents in the collections of `CourtListener <https://www.courtlistener.com/>`_ and the `Caselaw Access Project <https://case.law/>`_.
 
-Its main purpose is to facilitate the conversion of raw text into structured citation entities. It includes mechanisms to recognize and extract "full" citation references (e.g., :code:`Bush v. Gore, 531 U.S. 98`), "short form" references (e.g., :code:`531 U.S., at 99`), "supra" references (e.g., :code:`Bush, supra, at 100`), "id." references (e.g., :code:`Id., at 101`), and "ibid." references (e.g., :code:`Ibid.`).
+eyecite recognizes a wide variety of citations commonly appearing in American legal decisions, including:
 
-Further development is intended and all contributors, corrections, and additions are welcome.
+* full case: ``Bush v. Gore, 531 U.S. 98, 99-100 (2000)``
+* short case: ``531 U.S., at 99``
+* statutory: ``Mass. Gen. Laws ch. 1, § 2``
+* law journal: ``1 Minn. L. Rev. 1``
+* supra: ``Bush, supra, at 100``
+* id.: ``Id., at 101``
+
+You can see all of the citation patterns eyecite looks for over in `reporters_db <https://github.com/freelawproject/reporters-db>`_.
+
+All contributors, corrections, and additions are welcome!
 
 Background
 ==========
-This project is the culmination of `years <https://free.law/2012/05/11/building-a-citator-on-courtlistener/>`_ `of <https://free.law/2015/11/30/our-new-citation-finder/>`_ `work <https://free.law/2020/03/05/citation-data-gets-richer/>`_ to build a citator within Courtlistener.com. This project represents the next step in that development: Decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
+This project is the culmination of `years <https://free.law/2012/05/11/building-a-citator-on-courtlistener/>`_ `of <https://free.law/2015/11/30/our-new-citation-finder/>`_ `work <https://free.law/2020/03/05/citation-data-gets-richer/>`_ to build a citator within CourtListener. This project represents the next step in that development: decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
+
+Since eyecite was factored out from the CourtListener codebase into a standalone package, it has been developed in collaboration with the Caselaw Access Project.
 
 Quickstart
 ==========
 
-Simply feed in a raw string of text (or HTML), and receive a list of structured citation objects, ordered in the sequence that they appear in the text.
+Install eyecite::
+
+    pip install eyecite
 
 
-::
+Here's a short example of extracting citations and their metadata from text::
 
     from eyecite import get_citations
 
-    text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
-    found_citations = get_citations(text)
+    text = """
+        Mass. Gen. Laws ch. 1, § 2 (West 1999) (barring ...).
+        Foo v. Bar, 1 U.S. 2, 3-4 (1999) (overruling ...).
+        Id. at 3.
+        Foo, supra, at 5.
+    """
 
-    returns:
-    [FullCaseCitation(plaintiff='lissner', defendant='test', volume=1,
-               reporter='U.S.', page='12', year=1982,
-               extra='347-348', court='ca4',
-               canonical_reporter='U.S.', lookup_index=0,
-               token_index=5, reporter_found='U.S.')]
+    get_citations(text)
 
+    # returns:
+    [
+        FullLawCitation(
+            'Mass. Gen. Laws ch. 1, § 2',
+            groups={'reporter': 'Mass. Gen. Laws', 'chapter': '1', 'section': '2'},
+            metadata=Metadata(parenthetical='barring ...', pin_cite=None, year='1999', publisher='West', ...)
+        ),
+        FullCaseCitation(
+            '1 U.S. 2',
+            groups={'volume': '1', 'reporter': 'U.S.', 'page': '2'},
+            metadata=Metadata(parenthetical='overruling ...', pin_cite='3-4', year='1999', court='scotus', plaintiff='Foo', defendant='Bar,', ...)
+        ),
+        IdCitation(
+            'Id.',
+            metadata=Metadata(pin_cite='at 3')
+        ),
+        SupraCitation(
+            'supra,',
+            metadata=Metadata(antecedent_guess='Foo', pin_cite='at 5', ...)
+        )
+    ]
 
-Options
+Tutorial
+==========
+
+Here's a full-featured example of efficiently extracting citations from an HTML document and annotating them with
+links to documents in a database.
+
+.. comment
+
+    # mock database model to make the rest of the tutorial executable, in theory:
+    class MyCaseModel:
+        frontend_url = '/us/1/2/'
+        @classmethod
+        def get(cls, citation):
+            return cls()
+
+First our imports::
+
+    # imports
+    from eyecite import get_citations, clean_text, resolve_citations, annotate
+    from eyecite.models import FullCaseCitation
+    from eyecite.resolve import resolve_full_citation
+    from eyecite.tokenizers import HyperscanTokenizer
+
+We want to insert links into a piece of HTML like this::
+
+    text = """
+        <p>1 <i>U.S.</i> 2, 1 S.Ct. 2.<p>
+        <p>Id.</p>
+        <p>Mass. Gen.    Laws ch. 1, § 2.</p>
+    """
+
+Note that tags may overlap with
+citations and whitespace may be uneven. We want "1 U.S. 2", "1 S.Ct. 2" and "Id." to all
+link to the same URL fetched from our database, since they all refer to the same case.
+Any cites we don't have in our database will link to "/unknown_cite"
+
+First we'll get the text ready for cite extraction::
+
+    cleaned_text = clean_text(text, ['html', 'all_whitespace'])
+
+    # cleaned_text:
+    # "1 U.S. 2, 1 S.Ct. 2. Id. Mass. Gen. Laws ch. 1, § 2."
+
+Next we'll extract citations using a custom tokenizer. Unlike the default
+tokenizer this uses hyperscan for much faster extraction, with a precompiled
+regular expression database stored in ``.test_cache/``.
+This depends on "pip install hyperscan"::
+
+    tokenizer = HyperscanTokenizer(cache_dir=".test_cache")
+    citations = get_citations(cleaned_text, tokenizer=tokenizer)
+
+    # citations:
+    # [
+    #   FullCaseCitation('1 U.S. 2'),
+    #   FullCaseCitation('1 S.Ct. 2'),
+    #   IdCitation(),
+    #   FullLawCitation('Mass. Gen. Laws ch. 1, § 2'),
+    # ]
+
+Now we want to resolve all of the extracted cites into clusters indexed by
+the resource they refer to, such as a case or statute. We'll use a custom
+function to resolve a given full cite to its resource, so we can return our
+own MyCaseModel for citations we recognize. We'll fall back on returning
+:code:`resolve_full_citation()` for citations we don't recognize::
+
+    def resolve_cite(cite):
+        if isinstance(cite, FullCaseCitation):
+            resource = MyCaseModel.get(citation=cite.corrected_citation())
+            if resource:
+                return resource
+        return resolve_full_citation(cite)
+
+    resolutions = resolve_citations(citations, resolve_fullcase_citation=resolve_cite)
+
+    # resolutions:
+    # {
+    #   MyCaseModel('1 U.S. 2'): [FullCaseCitation('1 U.S. 2'), FullCaseCitation('1 S.Ct. 2'), IdCitation()],
+    #   eyecite.models.Resource(...): [FullLawCitation('Mass. Gen. Laws ch. 1, § 2')],
+    # }
+
+Finally we can prepare annotations for each citation in our clusters. An annotation is
+text to insert back into cleaned_text, like :code:`((<start offset>, <end offset>), <before text>, <after text>)`::
+
+    annotations = []
+    for resource, cites in resolutions.items():
+        if isinstance(resource, MyCaseModel):
+            # add link to case we were able to resolve:
+            url = resource.frontend_url
+        else:
+            # add link to case we weren't able to resolve:
+            url = f"/unknown_cite?cite={resource.citation.matched_text()}"
+        for cite in cites:
+            annotations.append((cite.span(), f"<a href='{url}'>", f"</a>"))
+
+Insert our annotations, but rather than adding them to cleaned_text, add them back into
+the original text using the diff-match-patch library::
+
+    annotated_text = annotate(cleaned_text, annotations, source_text=text)
+
+    # annotated_text:
+    # """
+    #     <p><a href='/us/1/2/'>1 <i>U.S.</i> 2</a>, <a href='/us/1/2/'>1 S.Ct. 2</a>.<p>
+    #     <p><a href='/us/1/2/'>Id.</a></p>
+    #     <p><a href='/unknown_cite?cite=Mass. Gen. Laws ch. 1, § 2'>Mass. Gen.    Laws ch. 1, § 2</a>.</p>
+    # """
+
+Ta da!
+
+Getting Citations
 =======
 :code:`get_citations()`, the main executable function, takes several parameters.
 
