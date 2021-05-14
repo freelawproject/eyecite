@@ -116,7 +116,7 @@ def _resolve_id_citation(
 
 def resolve_citations(
     citations: List[CitationBase],
-    resolve_fullcase_citation: Callable[
+    resolve_full_citation: Callable[
         [FullCitation], ResourceType
     ] = resolve_full_citation,
     resolve_shortcase_citation: Callable[
@@ -161,7 +161,7 @@ def resolve_citations(
 
         # If the citation is a full citation, try to resolve it
         if isinstance(citation, FullCitation):
-            resolution = resolve_fullcase_citation(citation)
+            resolution = resolve_full_citation(citation)
             resolved_full_cites[citation] = resolution
 
         # If the citation is a short case citation, try to resolve it

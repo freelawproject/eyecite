@@ -11,6 +11,7 @@ from eyecite.models import (
     FullJournalCitation,
     FullLawCitation,
     ParagraphToken,
+    ResourceCitation,
     StopWordToken,
     Token,
     Tokens,
@@ -249,7 +250,7 @@ def disambiguate_reporters(
     return [
         c
         for c in citations
-        if not isinstance(c, CaseCitation) or c.edition_guess
+        if not isinstance(c, ResourceCitation) or c.edition_guess
     ]
 
 
