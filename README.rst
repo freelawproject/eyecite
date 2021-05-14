@@ -193,6 +193,46 @@ a custom full citation resolution function as follows, using the default resolut
         <Resource object>: [<full cite>, <short cite>],
     }
 
+Dumping Citations
+=================
+
+If you want to see what metadata eyecite is able to extract for each citation, you can use :code:`dump_citations`.
+This is primarily useful for developing eyecite, but may also be useful for exploring what data is available to you::
+
+    In [1]: from eyecite import dump_citations, get_citations
+
+    In [2]: text="Mass. Gen. Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1999). Id. at 3. Foo, supra, at 5."
+
+    In [3]: cites=get_citations(text)
+
+    In [4]: print(dump_citations(get_citations(text), text))
+    FullLawCitation: Mass. Gen. Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1
+      * groups
+        * reporter='Mass. Gen. Laws'
+        * chapter='1'
+        * section='2'
+    FullCaseCitation: Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1999). Id. at 3. Foo, s
+      * groups
+        * volume='1'
+        * reporter='U.S.'
+        * page='2'
+      * metadata
+        * pin_cite='3-4'
+        * year='1999'
+        * court='scotus'
+        * plaintiff='Foo'
+        * defendant='Bar,'
+      * year=1999
+    IdCitation: v. Bar, 1 U.S. 2, 3-4 (1999). Id. at 3. Foo, supra, at 5.
+      * metadata
+        * pin_cite='at 3'
+    SupraCitation: 2, 3-4 (1999). Id. at 3. Foo, supra, at 5.
+      * metadata
+        * antecedent_guess='Foo'
+        * pin_cite='at 5'
+
+In the real terminal, the :code:`span()` of each extracted citation will be highlighted.
+You can use the :code:`context_chars=30` parameter to control how much text is shown before and after.
 
 Tokenizers
 ==========
