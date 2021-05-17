@@ -51,7 +51,7 @@ class UtilsTest(TestCase):
             * year='1999'
             * court='scotus'
             * plaintiff='Foo'
-            * defendant='Bar,'
+            * defendant='Bar'
           * year=1999
         """
         )

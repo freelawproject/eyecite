@@ -121,7 +121,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     if start_index:
         citation.metadata.defendant = "".join(
             str(w) for w in words[start_index : citation.index]
-        ).strip()
+        ).strip(", ")
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:

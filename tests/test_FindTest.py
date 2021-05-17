@@ -123,6 +123,11 @@ class FindTest(TestCase):
              [case_citation(4, reporter='F.2d', year=1982,
                             metadata={'plaintiff': 'lissner',
                                       'defendant': 'test'})]),
+            # Test with comma after defendant's name
+            ('lissner v. test, 1 U.S. 1 (1982)',
+             [case_citation(3, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test'},
+                            year=1982)]),
             # Test with court and extra information
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [case_citation(4, page='12', year=1982,
@@ -141,7 +146,7 @@ class FindTest(TestCase):
                                       'parenthetical': 'overruling foo'}),
               case_citation(4, page='2', reporter='S. Ct.', year=1982,
                             metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test 1 U.S. 12, 347-348,',
+                                      'defendant': 'test 1 U.S. 12, 347-348',
                                       'court': 'ca4',
                                       'pin_cite': '358',
                                       'parenthetical': 'overruling foo'}),
@@ -360,7 +365,7 @@ class FindTest(TestCase):
             # Token scanning edge case -- incomplete paren at end of input
             ('1 U.S. 1 (', [case_citation(0)]),
             # Token scanning edge case -- missing plaintiff name at start of input
-            ('v. Bar, 1 U.S. 1', [case_citation(0, metadata={'defendant': 'Bar,'})]),
+            ('v. Bar, 1 U.S. 1', [case_citation(0, metadata={'defendant': 'Bar'})]),
             # Token scanning edge case -- short form start of input
             ('1 U.S., at 1', [case_citation(0, short=True)]),
             (', 1 U.S., at 1', [case_citation(0, short=True)]),
