@@ -156,7 +156,7 @@ def extract_shortform_citation(
 
     # Get pin_cite
     cite_token = cast(CitationToken, words[index])
-    pin_cite, span_end = extract_pin_cite(
+    pin_cite, span_end, parenthetical = extract_pin_cite(
         words, index, prefix=cite_token.groups["page"]
     )
 
@@ -170,6 +170,7 @@ def extract_shortform_citation(
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
+            "parenthetical": parenthetical,
         },
     )
 
@@ -192,7 +193,7 @@ def extract_supra_citation(
     Supra 3: Adarand, supra, somethingelse
     Supra 4: Adrand, supra. somethingelse
     """
-    pin_cite, span_end = extract_pin_cite(words, index)
+    pin_cite, span_end, parenthetical = extract_pin_cite(words, index)
     antecedent_guess = None
     volume = None
     m = match_on_tokens(
@@ -227,7 +228,7 @@ def extract_id_citation(
     immediately succeeding tokens to construct and return an IdCitation
     object.
     """
-    pin_cite, span_end = extract_pin_cite(words, index)
+    pin_cite, span_end, parenthetical = extract_pin_cite(words, index)
     return IdCitation(
         cast(IdToken, words[index]),
         index,

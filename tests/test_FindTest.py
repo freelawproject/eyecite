@@ -151,6 +151,18 @@ class FindTest(TestCase):
                                       'pin_cite': '358',
                                       'parenthetical': 'overruling foo'}),
               ]),
+            # Test full citation with nested parenthetical
+            ('lissner v. test 1 U.S. 1 (1982) (discussing abc (Holmes, J., concurring))',
+             [case_citation(6, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test',
+                                         'parenthetical': 'discussing abc (Holmes, J., concurring)'},
+                            year=1982)]),
+            # Test full citation with parenthetical and subsequent unrelated parenthetical
+            ('lissner v. test 1 U.S. 1 (1982) (discussing abc); blah (something).',
+             [case_citation(6, metadata={'plaintiff': 'lissner',
+                                         'defendant': 'test',
+                                         'parenthetical': 'discussing abc'},
+                            year=1982)]),
             # Test with text before and after and a variant reporter
             ('asfd 22 U. S. 332 (1975) asdf',
              [case_citation(1, page='332', volume='22',
@@ -245,6 +257,88 @@ class FindTest(TestCase):
                             metadata={'pin_cite': '20-25',
                                       'antecedent_guess': 'asdf',
                                       'court': 'scotus'})]),
+            # Test short form citation with a parenthetical
+            ('before asdf, 1 U. S., at 2 (overruling xyz)',
+             [case_citation(4, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'parenthetical': 'overruling xyz',
+                                      'court': 'scotus'}
+                            )]),
+            # Test short form citation with no space before parenthetical
+            ('before asdf, 1 U. S., at 2 (overruling xyz)',
+             [case_citation(4, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'parenthetical': 'overruling xyz',
+                                      'court': 'scotus'}
+                            )]),
+            # Test short form citation with nested parentheticals
+            ('before asdf, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
+             [case_citation(4, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'parenthetical': 'discussing xyz (Holmes, J., concurring)',
+                                      'court': 'scotus'}
+                            )]),
+            # Test that short form citation doesn't treat year as parenthetical
+            ('before asdf, 1 U. S., at 2 (2016)',
+             [case_citation(4, page='2', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'court': 'scotus'}
+                            )]),
+            # Test short form citation with page range and parenthetical
+            ('before asdf, 1 U. S., at 20-25 (overruling xyz)',
+             [case_citation(4, page='20', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'pin_cite': '20-25',
+                                      'parenthetical': 'overruling xyz',
+                                      'court': 'scotus'}
+                            )]),
+            # Test short form citation with subsequent unrelated parenthetical
+            ('asdf, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
+             [case_citation(2, page='4', reporter='U.S.',
+                            reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'asdf',
+                                      'court': 'scotus',
+                                      'parenthetical': 'discussing abc'}
+                            )]
+             ),
+            # Test parenthetical matching with multiple citations
+            ('1 U. S., at 2. foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+             [case_citation(0, page='2', reporter='U.S.',
+                            reporter_found='U. S.',
+                            short=True, volume='1',
+                            metadata={'pin_cite': '2',
+                                      'court': 'scotus'}
+                            ),
+              case_citation(9, page='4', reporter='U.S.',
+                            reporter_found='U. S.', short=False,
+                            year=2010, volume='3',
+                            metadata={'parenthetical': 'overruling xyz',
+                                      'plaintiff': 'foo', 'defendant': 'bar',
+                                      'court': 'scotus'}
+                            )
+              ]),
+            # Test with multiple citations and parentheticals
+            ('1 U. S., at 2 (criticizing xyz). foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+             [case_citation(0, page='2', reporter='U.S.',
+                            reporter_found='U. S.',
+                            short=True, volume='1',
+                            metadata={'pin_cite': '2',
+                                      'court': 'scotus',
+                                      'parenthetical': 'criticizing xyz'}
+                            ),
+              case_citation(12, page='4', reporter='U.S.',
+                            reporter_found='U. S.', short=False,
+                            year=2010, volume='3',
+                            metadata={'parenthetical': 'overruling xyz',
+                                      'plaintiff': 'foo', 'defendant': 'bar',
+                                      'court': 'scotus'}
+                            )
+              ]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
              [supra_citation(2, "supra,",

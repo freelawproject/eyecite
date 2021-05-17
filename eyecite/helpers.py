@@ -17,10 +17,11 @@ from eyecite.models import (
     Tokens,
 )
 from eyecite.regexes import (
-    PIN_CITE_REGEX,
-    POST_CITATION_REGEX,
+    POST_FULL_CITATION_REGEX,
     POST_JOURNAL_CITATION_REGEX,
     POST_LAW_CITATION_REGEX,
+    POST_SHORT_CITATION_REGEX,
+    YEAR_REGEX,
 )
 from eyecite.utils import strip_punct
 
@@ -81,14 +82,16 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     m = match_on_tokens(
         words,
         citation.index + 1,
-        POST_CITATION_REGEX,
+        POST_FULL_CITATION_REGEX,
     )
     if not m:
         return
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
-    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.parenthetical = (
+        process_parenthetical(m["parenthetical"]) or None
+    )
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -167,22 +170,55 @@ def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
     return pin_cite.strip(", ")
 
 
+def process_parenthetical(
+    matched_parenthetical: Optional[str],
+) -> Optional[str]:
+    """Exclude any additional parentheticals matched as well as year parentheticals
+
+    For example: 'something) (something else)' will be trimmed down
+    to 'something' but 'something (clarifying something) or other' will be
+    kept in full.
+    """
+    if matched_parenthetical is None:
+        return matched_parenthetical
+    paren_balance = 0
+    for i, char in enumerate(matched_parenthetical):
+        if char == "(":  # Nested parenthetical
+            paren_balance += 1
+        elif char == ")":
+            paren_balance -= 1
+        if paren_balance < 0:  # End parenthetical reached
+            return matched_parenthetical[:i]
+    if re.match(YEAR_REGEX, matched_parenthetical, flags=re.X):
+        return None
+    return matched_parenthetical
+
+
 def extract_pin_cite(
     words: Tokens, index: int, prefix: str = ""
-) -> Tuple[Optional[str], Optional[int]]:
+) -> Tuple[Optional[str], Optional[int], Optional[str]]:
     """Test whether text following token at index is a valid pin cite.
     Return pin cite text and number of extra characters matched.
     If prefix is provided, use that as the start of text to match.
     """
     from_token = cast(Token, words[index])
     m = match_on_tokens(
-        words, index + 1, PIN_CITE_REGEX, prefix=prefix, strings_only=True
+        words,
+        index + 1,
+        POST_SHORT_CITATION_REGEX,
+        prefix=prefix,
+        strings_only=True,
     )
     if m:
         pin_cite = clean_pin_cite(m["pin_cite"]) or None
+        parenthetical = process_parenthetical(m["parenthetical"]) or None
         extra_chars = m.span(1)[1]
-        return pin_cite, from_token.end + extra_chars - len(prefix)
-    return None, None
+        return (
+            pin_cite,
+            from_token.end + extra_chars - len(prefix),
+            parenthetical,
+        )
+    return None, None, None
 
 
 def match_on_tokens(
