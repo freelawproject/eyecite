@@ -90,8 +90,9 @@ PARENTHETICAL_REGEX = r"""
     (?:
         # optional space, opening paren
         \ ?\(
-        # capture non-closing-paren characters
-        (?P<parenthetical>[^)]+)
+            # capture until last end paren, we'll trim off extra afterwards
+            (?P<parenthetical>.*)
+           \)
     )?
 """
 
@@ -146,7 +147,7 @@ PIN_CITE_REGEX = rf"""
         # start of next citation
         (?=
             [,.;)\]\\]|  # ending punctuation
-            \ [(\[]|   # space and start of parens
+            \ ?[(\[]|   # space and start of parens
             $          # end of text
         )
     )
@@ -201,7 +202,7 @@ SUPRA_ANTECEDENT_REGEX = r"""
 """
 
 
-# Post citation regex:
+# Post full citation regex:
 # Capture metadata after a full cite. For example given the citation "1 U.S. 1"
 # with the following text:
 #   1 U.S. 1, 4-5, 2 S. Ct. 2, 6-7 (4th Cir. 2012) (overruling foo)
@@ -211,7 +212,7 @@ SUPRA_ANTECEDENT_REGEX = r"""
 #   court = 4th Cir.
 #   year = 2012
 #   parenthetical = overruling foo
-POST_CITATION_REGEX = rf"""
+POST_FULL_CITATION_REGEX = rf"""
     (?:  # handle a full cite with a valid year paren:
         # content before year paren:
         (?:
@@ -233,6 +234,22 @@ POST_CITATION_REGEX = rf"""
         {PIN_CITE_REGEX}
     )
 """
+
+
+# Post short-form citation regex:
+# Capture pin cite and parenthetical after a short, id, or supra citation.
+# For example, given the citation 'asdf, 1 U.S., at 3 (overruling xyz)',
+# this will capture:
+#   pin_cite = 3
+#   parenthetical = overruling xyz
+POST_SHORT_CITATION_REGEX = rf"""
+    # optional pin cite
+    {PIN_CITE_REGEX}
+    \ ?
+    # optional parenthetical comment:
+    {PARENTHETICAL_REGEX}
+"""
+
 
 # Post law citation regex:
 # statutory and regulatory cites may have publishers and dates after them, like
