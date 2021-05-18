@@ -266,7 +266,7 @@ class FindTest(TestCase):
                                       'court': 'scotus'}
                             )]),
             # Test short form citation with no space before parenthetical
-            ('before asdf, 1 U. S., at 2 (overruling xyz)',
+            ('before asdf, 1 U. S., at 2(overruling xyz)',
              [case_citation(4, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',

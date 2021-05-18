@@ -147,7 +147,7 @@ PIN_CITE_REGEX = rf"""
         # start of next citation
         (?=
             [,.;)\]\\]|  # ending punctuation
-            \ [(\[]|   # space and start of parens
+            \ ?[(\[]|   # space and start of parens
             $          # end of text
         )
     )
