@@ -55,7 +55,7 @@ def case_citation(
     """Convenience function for creating mock CaseCitation objects."""
     metadata = kwargs.setdefault("metadata", {})
     groups = kwargs.setdefault("groups", {})
-    if reporter == "U.S." and not short:
+    if reporter == "U.S.":
         metadata.setdefault("court", "scotus")
     if not source_text:
         source_text = f"{volume} {reporter} {page}"

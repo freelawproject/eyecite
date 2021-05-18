@@ -213,30 +213,25 @@ class FindTest(TestCase):
             # Test first kind of short form citation (meaningless antecedent)
             ('before asdf 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
-                                      'court': 'scotus'})]),
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test second kind of short form citation (meaningful antecedent)
             ('before asdf, 1 U. S., at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
-                                      'court': 'scotus'})]),
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test short form citation with preceding ASCII quotation
             ('before asdf,” 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.',
-                            short=True,
-                            metadata={'court': 'scotus'})]),
+                            short=True)]),
             # Test short form citation when case name looks like a reporter
             ('before Johnson, 1 U. S., at 2',
              [case_citation(2, page='2', reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'Johnson',
-                                      'court': 'scotus'})]),
+                            metadata={'antecedent_guess': 'Johnson'})]),
             # Test short form citation with no comma after reporter
             ('before asdf, 1 U. S. at 2',
              [case_citation(2, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
-                                      'court': 'scotus'})]),
+                            metadata={'antecedent_guess': 'asdf'})]),
             # Test short form citation at end of document (issue #1171)
             ('before asdf, 1 U. S. end', []),
             # Test supra citation across line break
@@ -249,44 +244,38 @@ class FindTest(TestCase):
             ('before asdf, 1 U. S., at 20-25',
              [case_citation(2, page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf',
-                                      'court': 'scotus'})]),
+                                      'antecedent_guess': 'asdf'})]),
             # Test short form citation with a page range with weird suffix
             ('before asdf, 1 U. S., at 20-25\\& n. 4',
              [case_citation(2, page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf',
-                                      'court': 'scotus'})]),
+                                      'antecedent_guess': 'asdf'})]),
             # Test short form citation with a parenthetical
             ('before asdf, 1 U. S., at 2 (overruling xyz)',
              [case_citation(4, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',
-                                      'parenthetical': 'overruling xyz',
-                                      'court': 'scotus'}
+                                      'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with no space before parenthetical
             ('before asdf, 1 U. S., at 2(overruling xyz)',
              [case_citation(4, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',
-                                      'parenthetical': 'overruling xyz',
-                                      'court': 'scotus'}
+                                      'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with nested parentheticals
             ('before asdf, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
              [case_citation(4, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',
-                                      'parenthetical': 'discussing xyz (Holmes, J., concurring)',
-                                      'court': 'scotus'}
+                                      'parenthetical': 'discussing xyz (Holmes, J., concurring)'}
                             )]),
             # Test that short form citation doesn't treat year as parenthetical
             ('before asdf, 1 U. S., at 2 (2016)',
              [case_citation(4, page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
-                                      'court': 'scotus'}
+                            metadata={'antecedent_guess': 'asdf'}
                             )]),
             # Test short form citation with page range and parenthetical
             ('before asdf, 1 U. S., at 20-25 (overruling xyz)',
@@ -294,15 +283,13 @@ class FindTest(TestCase):
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',
                                       'pin_cite': '20-25',
-                                      'parenthetical': 'overruling xyz',
-                                      'court': 'scotus'}
+                                      'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with subsequent unrelated parenthetical
             ('asdf, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
              [case_citation(2, page='4', reporter='U.S.',
                             reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'asdf',
-                                      'court': 'scotus',
                                       'parenthetical': 'discussing abc'}
                             )]
              ),
@@ -311,16 +298,12 @@ class FindTest(TestCase):
              [case_citation(0, page='2', reporter='U.S.',
                             reporter_found='U. S.',
                             short=True, volume='1',
-                            metadata={'pin_cite': '2',
-                                      'court': 'scotus'}
-                            ),
+                            metadata={'pin_cite': '2'}),
               case_citation(9, page='4', reporter='U.S.',
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar',
-                                      'court': 'scotus'}
-                            )
+                                      'plaintiff': 'foo', 'defendant': 'bar'})
               ]),
             # Test with multiple citations and parentheticals
             ('1 U. S., at 2 (criticizing xyz). foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
@@ -328,16 +311,12 @@ class FindTest(TestCase):
                             reporter_found='U. S.',
                             short=True, volume='1',
                             metadata={'pin_cite': '2',
-                                      'court': 'scotus',
-                                      'parenthetical': 'criticizing xyz'}
-                            ),
+                                      'parenthetical': 'criticizing xyz'}),
               case_citation(12, page='4', reporter='U.S.',
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar',
-                                      'court': 'scotus'}
-                            )
+                                      'plaintiff': 'foo', 'defendant': 'bar'})
               ]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
@@ -468,10 +447,8 @@ class FindTest(TestCase):
             # Token scanning edge case -- missing plaintiff name at start of input
             ('v. Bar, 1 U.S. 1', [case_citation(0, metadata={'defendant': 'Bar'})]),
             # Token scanning edge case -- short form start of input
-            ('1 U.S., at 1', [case_citation(0, short=True,
-                                            metadata={'court': 'scotus'})]),
-            (', 1 U.S., at 1', [case_citation(0, short=True,
-                                              metadata={'court': 'scotus'})]),
+            ('1 U.S., at 1', [case_citation(0, short=True)]),
+            (', 1 U.S., at 1', [case_citation(0, short=True)]),
             # Token scanning edge case -- supra at start of input
             ('supra.', [supra_citation(0, "supra.")]),
             (', supra.', [supra_citation(0, "supra.")]),
