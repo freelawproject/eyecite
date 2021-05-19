@@ -94,7 +94,9 @@ class CitationBase:
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata:
-        """Define fields on self.metadata. Base class doesn't have any."""
+        """Define fields on self.metadata."""
+
+        parenthetical: Optional[str] = None
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -155,10 +157,9 @@ class ResourceCitation(CitationBase):
         super().__post_init__()
 
     @dataclass(eq=True, unsafe_hash=True)
-    class Metadata:
+    class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        parenthetical: Optional[str] = None
         pin_cite: Optional[str] = None
         year: Optional[str] = None
 
@@ -382,7 +383,7 @@ class SupraCitation(CitationBase):
     """
 
     @dataclass(eq=True, unsafe_hash=True)
-    class Metadata:
+    class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
         antecedent_guess: Optional[str] = None
@@ -415,7 +416,7 @@ class IdCitation(CitationBase):
     """
 
     @dataclass(eq=True, unsafe_hash=True)
-    class Metadata:
+    class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
         pin_cite: Optional[str] = None

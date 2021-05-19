@@ -215,6 +215,7 @@ def extract_supra_citation(
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
+            "parenthetical": parenthetical,
             "volume": volume,
         },
     )
@@ -235,5 +236,6 @@ def extract_id_citation(
         span_end=span_end,
         metadata={
             "pin_cite": pin_cite,
+            "parenthetical": parenthetical,
         },
     )

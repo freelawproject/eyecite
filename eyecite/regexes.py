@@ -244,7 +244,7 @@ POST_FULL_CITATION_REGEX = rf"""
 #   parenthetical = overruling xyz
 POST_SHORT_CITATION_REGEX = rf"""
     # optional pin cite
-    {PIN_CITE_REGEX}
+    {PIN_CITE_REGEX}?
     \ ?
     # optional parenthetical comment:
     {PARENTHETICAL_REGEX}
