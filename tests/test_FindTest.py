@@ -338,6 +338,16 @@ class FindTest(TestCase):
             ('before asdf, supra end',
              [supra_citation("supra,",
                              metadata={'antecedent_guess': 'asdf'})]),
+            # Supra with parenthetical
+            ('Foo, supra (overruling ...)',
+             [supra_citation("supra",
+                             metadata={'antecedent_guess': 'Foo',
+                                       'parenthetical': 'overruling ...'})]),
+            ('Foo, supra, at 2 (overruling ...)',
+             [supra_citation("supra",
+                             metadata={'antecedent_guess': 'Foo',
+                                       'pin_cite': 'at 2',
+                                       'parenthetical': 'overruling ...'})]),
             # Test Ibid. citation
             ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
              [case_citation(page='12',
@@ -416,6 +426,13 @@ class FindTest(TestCase):
                                       'defendant': 'bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.')]),
+            # Id. with parenthetical
+            ('Id. (overruling ...)',
+             [id_citation("Id.", metadata={'parenthetical': 'overruling ...'})]),
+            ('Id. at 2 (overruling ...)',
+             [id_citation("Id.",
+                          metadata={'pin_cite': 'at 2',
+                                    'parenthetical': 'overruling ...'})]),
             # Test non-opinion citation
             ('lorem ipsum see §99 of the U.S. code.',
              [nonopinion_citation('§99')]),

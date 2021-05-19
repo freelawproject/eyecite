@@ -210,9 +210,13 @@ def extract_pin_cite(
         strings_only=True,
     )
     if m:
-        pin_cite = clean_pin_cite(m["pin_cite"]) or None
+        if m["pin_cite"]:
+            pin_cite = clean_pin_cite(m["pin_cite"])
+            extra_chars = len(m["pin_cite"].rstrip(", "))
+        else:
+            pin_cite = None
+            extra_chars = 0
         parenthetical = process_parenthetical(m["parenthetical"]) or None
-        extra_chars = m.span(1)[1]
         return (
             pin_cite,
             from_token.end + extra_chars - len(prefix),
