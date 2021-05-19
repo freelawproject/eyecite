@@ -13,47 +13,45 @@ from eyecite.test_factories import (
     supra_citation,
 )
 
-full1 = case_citation(1)
-full2 = case_citation(2)
+full1 = case_citation()
+full2 = case_citation()
 full3 = case_citation(
-    3, reporter="F.2d", metadata={"plaintiff": "Foo", "defendant": "Bar"}
+    reporter="F.2d", metadata={"plaintiff": "Foo", "defendant": "Bar"}
 )
-full4 = case_citation(4, metadata={"defendant": "Bar"})
-full5 = case_citation(5, metadata={"plaintiff": "Ipsum"})
-full6 = case_citation(6, reporter="F.2d", metadata={"plaintiff": "Ipsum"})
-full7 = case_citation(7, volume="1", reporter="U.S.")
+full4 = case_citation(metadata={"defendant": "Bar"})
+full5 = case_citation(metadata={"plaintiff": "Ipsum"})
+full6 = case_citation(reporter="F.2d", metadata={"plaintiff": "Ipsum"})
+full7 = case_citation(volume="1", reporter="U.S.")
 full8 = case_citation(
-    8, reporter="F.2d", volume="2", metadata={"defendant": "Ipsum"}
+    reporter="F.2d", volume="2", metadata={"defendant": "Ipsum"}
 )
 full9 = case_citation(
-    9, reporter="F.2d", page="99", metadata={"defendant": "Ipsum"}
+    reporter="F.2d", page="99", metadata={"defendant": "Ipsum"}
 )
-full10 = case_citation(10, reporter="F.2d", metadata={"plaintiff": "Foo"})
+full10 = case_citation(reporter="F.2d", metadata={"plaintiff": "Foo"})
 
-short1 = case_citation(1, volume="1", reporter="U.S.", short=True)
-short2 = case_citation(2, metadata={"antecedent_guess": "Bar"}, short=True)
+short1 = case_citation(volume="1", reporter="U.S.", short=True)
+short2 = case_citation(metadata={"antecedent_guess": "Bar"}, short=True)
 short3 = case_citation(
-    3, reporter="F.2d", metadata={"antecedent_guess": "Foo"}, short=True
+    reporter="F.2d", metadata={"antecedent_guess": "Foo"}, short=True
 )
 short4 = case_citation(
-    4, reporter="F.2d", metadata={"antecedent_guess": "wrong"}, short=True
+    reporter="F.2d", metadata={"antecedent_guess": "wrong"}, short=True
 )
 short5 = case_citation(
-    5, reporter="F.2d", metadata={"antecedent_guess": "Ipsum"}, short=True
+    reporter="F.2d", metadata={"antecedent_guess": "Ipsum"}, short=True
 )
 
-supra1 = supra_citation(1, metadata={"antecedent_guess": "Bar"})
-supra2 = supra_citation(2, metadata={"antecedent_guess": "Ipsum"})
+supra1 = supra_citation(metadata={"antecedent_guess": "Bar"})
+supra2 = supra_citation(metadata={"antecedent_guess": "Ipsum"})
 
-id1 = id_citation(1)
+id1 = id_citation()
 
-non1 = nonopinion_citation(1, source_text="§99")
+non1 = nonopinion_citation(source_text="§99")
 
-law1 = law_citation(
-    1, "Mass. Gen. Laws ch. 1, § 2", reporter="Mass. Gen. Laws"
-)
+law1 = law_citation("Mass. Gen. Laws ch. 1, § 2", reporter="Mass. Gen. Laws")
 
-journal1 = journal_citation(1)
+journal1 = journal_citation()
 
 # lookup table to help with printing more readable error messages:
 cite_to_name = {

@@ -16,7 +16,7 @@ from eyecite.tokenizers import EDITIONS_LOOKUP
 
 
 def resource_citation(
-    cls, index, source_text, reporter, short=False, year=None, **kwargs
+    cls, source_text, reporter, short=False, year=None, index=0, **kwargs
 ):
     """Create a mock ResourceCitation."""
     metadata = kwargs.pop("metadata", {})
@@ -44,7 +44,6 @@ def resource_citation(
 
 
 def case_citation(
-    index,
     source_text=None,
     page="1",
     reporter="U.S.",
@@ -55,7 +54,7 @@ def case_citation(
     """Convenience function for creating mock CaseCitation objects."""
     metadata = kwargs.setdefault("metadata", {})
     groups = kwargs.setdefault("groups", {})
-    if reporter == "U.S." and not short:
+    if reporter == "U.S.":
         metadata.setdefault("court", "scotus")
     if not source_text:
         source_text = f"{volume} {reporter} {page}"
@@ -65,25 +64,19 @@ def case_citation(
         groups.setdefault("volume", volume)
     groups.setdefault("page", page)
     cls = ShortCaseCitation if short else FullCaseCitation
-    return resource_citation(
-        cls, index, source_text, reporter, short, **kwargs
-    )
+    return resource_citation(cls, source_text, reporter, short, **kwargs)
 
 
 def law_citation(
-    index,
     source_text,
     reporter,
     **kwargs,
 ):
     """Convenience function for creating mock FullLawCitation objects."""
-    return resource_citation(
-        FullLawCitation, index, source_text, reporter, **kwargs
-    )
+    return resource_citation(FullLawCitation, source_text, reporter, **kwargs)
 
 
 def journal_citation(
-    index,
     source_text=None,
     page="1",
     reporter="Minn. L. Rev.",
@@ -97,20 +90,22 @@ def journal_citation(
     groups.setdefault("volume", volume)
     groups.setdefault("page", page)
     return resource_citation(
-        FullJournalCitation, index, source_text, reporter, **kwargs
+        FullJournalCitation, source_text, reporter, **kwargs
     )
 
 
-def id_citation(index, source_text=None, **kwargs):
+def id_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock IdCitation objects."""
     return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
 
 
-def nonopinion_citation(index, source_text=None):
+def nonopinion_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock NonopinionCitation objects."""
-    return NonopinionCitation(SectionToken(source_text, 0, 99), index)
+    return NonopinionCitation(
+        SectionToken(source_text, 0, 99), index, **kwargs
+    )
 
 
-def supra_citation(index, source_text=None, **kwargs):
+def supra_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock SupraCitation objects."""
     return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)
