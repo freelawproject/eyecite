@@ -50,7 +50,6 @@ class FindTest(TestCase):
             tokenizers = tested_tokenizers
         for q, expected_cites, *kwargs in test_pairs:
             kwargs = kwargs[0] if kwargs else {}
-            expect_fail = kwargs.pop("expect_fail", False)
             clean_steps = kwargs.pop("clean", [])
             clean_q = clean_text(q, clean_steps)
             for tokenizer in tokenizers:
@@ -60,29 +59,19 @@ class FindTest(TestCase):
                     cites_found = get_citations(
                         clean_q, tokenizer=tokenizer, **kwargs
                     )
-                    try:
+                    self.assertEqual(
+                        [type(i) for i in cites_found],
+                        [type(i) for i in expected_cites],
+                        f"Extracted cite count doesn't match for {repr(q)}",
+                    )
+                    for a, b in zip(cites_found, expected_cites):
+                        found_attrs = get_comparison_attrs(a)
+                        expected_attrs = get_comparison_attrs(b)
                         self.assertEqual(
-                            [type(i) for i in cites_found],
-                            [type(i) for i in expected_cites],
-                            f"Extracted cite count doesn't match for {repr(q)}",
+                            found_attrs,
+                            expected_attrs,
+                            f"Extracted cite attrs don't match for {repr(q)}",
                         )
-                        for a, b in zip(cites_found, expected_cites):
-                            found_attrs = get_comparison_attrs(a)
-                            expected_attrs = get_comparison_attrs(b)
-                            self.assertEqual(
-                                found_attrs,
-                                expected_attrs,
-                                f"Extracted cite attrs don't match for {repr(q)}",
-                            )
-                    except AssertionError:
-                        if not expect_fail:
-                            raise
-                        print(f"Test failed as expected: {expect_fail}")
-                    else:
-                        if expect_fail:
-                            self.fail(
-                                "Test was expected to fail, but succeeded."
-                            )
 
     def test_find_citations(self):
         """Can we find and make citation objects from strings?"""
@@ -596,22 +585,6 @@ class FindTest(TestCase):
              [case_citation('T.C. Summary Opinion 2018-133',
                             page='133', reporter='T.C. Summary Opinion',
                             volume='2018')]),
-            ('1     UNITED STATES TAX COURT REPORT   (2018)',
-             [case_citation('1 UNITED STATES TAX COURT REPORT (2018)',
-                            volume='1', reporter='T.C.', page='2018',
-                            reporter_found='UNITED STATES TAX COURT REPORT')],
-             {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
-            ('U.S. of A. 1     UNITED STATES TAX COURT REPORT   (2018)',
-             [case_citation('1 UNITED STATES TAX COURT REPORT (2018)',
-                            volume='1', reporter='T.C.', page='2018',
-                            reporter_found='UNITED STATES TAX COURT REPORT')],
-             {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
-            # Added this after failing in production
-            ('     202                 140 UNITED STATES TAX COURT REPORTS                                   (200)',
-             [case_citation('140 UNITED STATES TAX COURT REPORTS (200)',
-                            volume='140', reporter='T.C.', page='200',
-                            reporter_found='UNITED STATES TAX COURT REPORTS')],
-             {'expect_fail': 'reporters.json needs UNITED STATES TAX COURT REPORT pattern with parens'}),
             ('U.S. 1234 1 U.S. 1',
              [case_citation(volume='1', reporter='U.S.', page='1')]),
         )
