@@ -339,7 +339,7 @@ class FindTest(TestCase):
              [supra_citation("supra,",
                              metadata={'antecedent_guess': 'asdf'})]),
             # Supra with parenthetical
-            ('Foo, supra (overruling ...)',
+            ('Foo, supra (overruling ...) (ignore this)',
              [supra_citation("supra",
                              metadata={'antecedent_guess': 'Foo',
                                        'parenthetical': 'overruling ...'})]),
@@ -427,7 +427,7 @@ class FindTest(TestCase):
                                       'pin_cite': '347-348'}),
               id_citation('Id.')]),
             # Id. with parenthetical
-            ('Id. (overruling ...)',
+            ('Id. (overruling ...) (ignore this)',
              [id_citation("Id.", metadata={'parenthetical': 'overruling ...'})]),
             ('Id. at 2 (overruling ...)',
              [id_citation("Id.",
@@ -514,7 +514,7 @@ class FindTest(TestCase):
                            reporter='Mass. Gen. Laws',
                            groups={'chapter': '1', 'section': '2-3'})]),
             # parenthetical
-            ('Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
+            ('Kan. Stat. Ann. § 21-3516(a)(2) (repealed) (ignore this)',
              [law_citation('Kan. Stat. Ann. § 21-3516(a)(2) (repealed)',
                            reporter='Kan. Stat. Ann.',
                            metadata={'pin_cite': '(a)(2)', 'parenthetical': 'repealed'},
@@ -566,7 +566,7 @@ class FindTest(TestCase):
             ('1 Minn. L. Rev. 1, 2-3 (2007)',
              [journal_citation(metadata={'pin_cite': '2-3'}, year=2007)]),
             # Pin cite and year and parenthetical
-            ('1 Minn. L. Rev. 1, 2-3 (2007) (discussing ...)',
+            ('1 Minn. L. Rev. 1, 2-3 (2007) (discussing ...) (ignore this)',
              [journal_citation(year=2007,
                                metadata={'pin_cite': '2-3', 'parenthetical': 'discussing ...'})]),
             # Year range
