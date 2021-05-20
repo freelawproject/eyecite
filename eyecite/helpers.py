@@ -89,9 +89,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
-    citation.metadata.parenthetical = (
-        process_parenthetical(m["parenthetical"]) or None
-    )
+    citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -139,7 +137,7 @@ def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
     citation.metadata.publisher = m["publisher"]
     citation.metadata.day = m["day"]
     citation.metadata.month = m["month"]
-    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -157,7 +155,7 @@ def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
         return
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
-    citation.metadata.parenthetical = m["parenthetical"]
+    citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -188,10 +186,10 @@ def process_parenthetical(
         elif char == ")":
             paren_balance -= 1
         if paren_balance < 0:  # End parenthetical reached
-            return matched_parenthetical[:i]
+            return matched_parenthetical[:i] or None
     if re.match(YEAR_REGEX, matched_parenthetical, flags=re.X):
         return None
-    return matched_parenthetical
+    return matched_parenthetical or None
 
 
 def extract_pin_cite(
@@ -216,7 +214,7 @@ def extract_pin_cite(
         else:
             pin_cite = None
             extra_chars = 0
-        parenthetical = process_parenthetical(m["parenthetical"]) or None
+        parenthetical = process_parenthetical(m["parenthetical"])
         return (
             pin_cite,
             from_token.end + extra_chars - len(prefix),
