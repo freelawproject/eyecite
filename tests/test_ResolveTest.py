@@ -1,295 +1,262 @@
-from pathlib import Path
+from collections import defaultdict
+from typing import List, Optional, Tuple
 from unittest import TestCase
 
 from eyecite import get_citations
-from eyecite.models import CitationBase, Resource
+from eyecite.models import FullCitation, Resource
 from eyecite.resolve import resolve_citations
-from eyecite.test_factories import (
-    case_citation,
-    id_citation,
-    journal_citation,
-    law_citation,
-    nonopinion_citation,
-    supra_citation,
-)
-
-full1 = case_citation()
-full2 = case_citation()
-full3 = case_citation(
-    reporter="F.2d", metadata={"plaintiff": "Foo", "defendant": "Bar"}
-)
-full4 = case_citation(metadata={"defendant": "Bar"})
-full5 = case_citation(metadata={"plaintiff": "Ipsum"})
-full6 = case_citation(reporter="F.2d", metadata={"plaintiff": "Ipsum"})
-full7 = case_citation(volume="1", reporter="U.S.")
-full8 = case_citation(
-    reporter="F.2d", volume="2", metadata={"defendant": "Ipsum"}
-)
-full9 = case_citation(
-    reporter="F.2d", page="99", metadata={"defendant": "Ipsum"}
-)
-full10 = case_citation(reporter="F.2d", metadata={"plaintiff": "Foo"})
-
-short1 = case_citation(volume="1", reporter="U.S.", short=True)
-short2 = case_citation(metadata={"antecedent_guess": "Bar"}, short=True)
-short3 = case_citation(
-    reporter="F.2d", metadata={"antecedent_guess": "Foo"}, short=True
-)
-short4 = case_citation(
-    reporter="F.2d", metadata={"antecedent_guess": "wrong"}, short=True
-)
-short5 = case_citation(
-    reporter="F.2d", metadata={"antecedent_guess": "Ipsum"}, short=True
-)
-
-supra1 = supra_citation(metadata={"antecedent_guess": "Bar"})
-supra2 = supra_citation(metadata={"antecedent_guess": "Ipsum"})
-
-id1 = id_citation()
-
-non1 = nonopinion_citation(source_text="§99")
-
-law1 = law_citation("Mass. Gen. Laws ch. 1, § 2", reporter="Mass. Gen. Laws")
-
-journal1 = journal_citation()
-
-# lookup table to help with printing more readable error messages:
-cite_to_name = {
-    v: k for k, v in globals().items() if isinstance(v, CitationBase)
-}
 
 
 def format_resolution(resolution):
-    """For debugging, use the cite_to_name lookup table to convert a
-    resolution dict returned by resolve_citations to a dict of strings like
-        {'Resource(full1)': ['full1', 'short1'].
+    """For debugging, convert resolution dict from resolve_citations() to
+    just the matched_text() of each cite, like
+        {'1 U.S. 1': ['1 U.S. 1', '1 U.S., at 2']}.
     """
-    out = {}
-    for resource, citations in resolution.items():
-        resource_name = cite_to_name.get(resource.citation)
-        if resource_name:
-            resource = f"Resource({resource_name})"
-        citations = [cite_to_name.get(c, c) for c in citations]
-        out[resource] = citations
-    return out
+    return {
+        k.citation.matched_text(): [i.matched_text() for i in v]
+        for k, v in resolution.items()
+    }
 
 
 class ResolveTest(TestCase):
-    """
-    Tests whether different types of citations (i.e., full, short form,
-        supra, id) are resolved properly.
-    The first item in each test pair is a list of citations to resolve.
-    The second item in each test pair is a dictionary of <Resource,
-        List[CitationBase]> pairs.
-    """
+    """Tests whether different types of citations (i.e., full, short form,
+    supra, id) are resolved properly."""
 
-    def _assertResolution(self, citations, expected_resolution_dict):
+    maxDiff = None
+
+    def assertResolution(self, citations, expected_resolution_dict):
         actual_resolution_dict = resolve_citations(citations)
         self.assertEqual(
             format_resolution(actual_resolution_dict),
             format_resolution(expected_resolution_dict),
         )
 
-    def test_full_resolution(self):
-        test_pairs = [
-            # Test resolving a single, full citation
-            (
-                [full1],
-                {Resource(full1): [full1]},
-            ),
-            # Test resolving two full citations to the same document
-            (
-                [full1, full2],
-                {
-                    Resource(full1): [
-                        full1,
-                        full2,
-                    ]
-                },
-            ),
-            # Test resolving multiple full citations to different documents
-            (
-                [full1, full3],
-                {
-                    Resource(full1): [full1],
-                    Resource(full3): [full3],
-                },
-            ),
-        ]
+    def checkResolution(
+        self, *expected_resolutions: Tuple[Optional[int], str]
+    ):
+        """Helper function to check how a list of citation strings is
+        resolved by resolve_citations().
 
-        for citations, resolution_dict in test_pairs:
-            with self.subTest(
-                "Testing citation resolution for %s..." % citations,
-                citations=citations,
-                resolution_dict=resolution_dict,
-            ):
-                self._assertResolution(citations, resolution_dict)
+        For example, suppose we want to check
+        resolutions for "1 U.S. 1. 1 U.S., at 2. 1 F.2d 1. 2 U.S., at 2.".
+
+        We can call this:
+            >>> self.checkResolution(
+            ...     (0, "1 U.S. 1."),
+            ...     (0, "1 U.S., at 2."),
+            ...     (1, "1 F.2d 1."),
+            ...     (None, "2 U.S., at 2."),
+            ... )
+        Meaning "1 U.S. 1." and "1 U.S., at 2." should resolve into the first
+        Resource, "1 F.2d 1." should resolve into the second Resource, and
+        "2 U.S., at 2." shouldn't be included in any Resource.
+
+        checkResolutionList converts the above input to expected_resolution_dict:
+            {
+                Resource(citation=<1 U.S. 1>): [<1 U.S. 1>, <1 U.S., at 2>],
+                Resource(citation=<1 F.2d 1>): [<1 F.2d 1>],
+            }
+
+        And then calls:
+            self.assertResolution(
+                [<1 U.S. 1>, <1 U.S., at 2>, <1 F.2d 1>, <2 U.S., at 2>],
+                expected_resolution_dict
+            )
+        """
+        # input we're building for self.assertResolution
+        expected_resolution_dict = defaultdict(list)
+        citations = []
+
+        # resources we've found so far
+        resources: List[Resource] = []
+
+        for i, cite_text in expected_resolutions:
+            # extract cite and make sure there's only one:
+            cites = get_citations(cite_text)
+            self.assertEqual(
+                len(cites),
+                1,
+                f"Failed to find exactly one cite in {repr(cite_text)}",
+            )
+            cite = cites[0]
+            citations.append(cite)
+
+            # skip clustering for cites marked "None":
+            if i is None:
+                continue
+
+            # make sure resources are numbered consecutively
+            if i > len(resources):
+                self.fail(
+                    f"Invalid row {repr((i, cite_text))}: target index {i} is too high."
+                )
+
+            # add each resource when first encountered
+            if i == len(resources):
+                if not isinstance(cite, FullCitation):
+                    self.fail(
+                        f"Invalid row {repr((i, cite_text))}: first instance of {i} must be a full cite."
+                    )
+                resources.append(Resource(citation=cite))
+
+            # add current cite to resource
+            expected_resolution_dict[resources[i]].append(cites[0])
+
+        self.assertResolution(citations, expected_resolution_dict)
+
+    def test_full_resolution(self):
+        # Test resolving a single, full citation
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+        )
+        # Test resolving two full citations to the same document
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Foo v. Bar, 1 U.S. 1."),
+        )
+        # Test resolving multiple full citations to different documents
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "Smith v. Jones, 1 F.2d 1."),
+        )
+        # Supra and short cites should resolve if there are redundant full
+        # cites -- redundant cites don't create ambiguity
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Foo, 1 U.S., at 2."),
+            (0, "Foo, supra at 2."),
+        )
 
     def test_supra_resolution(self):
-        test_pairs = [
-            # Test resolving a supra citation
-            (
-                [full4, supra1],
-                {
-                    Resource(full4): [full4, supra1],
-                },
-            ),
-            # Test resolving a supra citation when its antecedent guess matches
-            # two possible candidates. We expect the supra citation to not
-            # be resolved.
-            (
-                [full5, full6, supra2],
-                {
-                    Resource(full5): [full5],
-                    Resource(full6): [full6],
-                },
-            ),
-        ]
-
-        for citations, resolution_dict in test_pairs:
-            with self.subTest(
-                "Testing citation resolution for %s..." % citations,
-                citations=citations,
-                resolution_dict=resolution_dict,
-            ):
-                self._assertResolution(citations, resolution_dict)
+        # Test resolving a supra citation
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Foo, supra, at 2."),
+        )
+        # Test resolving a supra citation when its antecedent guess matches
+        # two possible candidates. We expect the supra citation to not
+        # be resolved.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "Foo v. Bar, 1 U.S. 2."),
+            (None, "Foo, supra, at 2."),
+        )
 
     def test_short_resolution(self):
-        test_pairs = [
-            # Test resolving a short form citation
-            (
-                [full7, short1],
-                {
-                    Resource(full7): [full7, short1],
-                },
-            ),
-            # Test resolving a short form citation with an antecedent
-            (
-                [full4, short2],
-                {
-                    Resource(full4): [full4, short2],
-                },
-            ),
-            # Test resolving a short form citation when its reporter and
-            # volume match two possible candidates. We expect its antecedent
-            # guess to provide the correct tiebreaker.
-            (
-                [full3, full8, short3],
-                {
-                    Resource(full3): [full3, short3],
-                    Resource(full8): [full8],
-                },
-            ),
-            # Test resolving a short form citation when its reporter and
-            # volume match two possible candidates, and when it lacks a
-            # meaningful antecedent. We expect the short form citation to not
-            # be resolved.
-            (
-                [full3, full9, short4],
-                {
-                    Resource(full3): [full3],
-                    Resource(full9): [full9],
-                },
-            ),
-            # Test resolving a short form citation when its reporter and
-            # volume match two possible candidates, and when its antecedent
-            # guess also matches multiple possibilities. We expect the short
-            # form citation to not be resolved.
-            (
-                [full6, full9, short5],
-                {
-                    Resource(full6): [full6],
-                    Resource(full9): [full9],
-                },
-            ),
-            # Test resolving a short form citation when its reporter and
-            # volume are erroneous. We expect the short form citation to not
-            # be resolved.
-            (
-                [full4, short4],
-                {Resource(full4): [full4]},
-            ),
-        ]
+        # Test resolving a short form citation
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "1 U.S., at 2."),
+        )
+        # Test resolving a short form citation with an antecedent
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Foo, 1 U.S., at 2."),
+        )
+        # Test resolving a short form citation when its reporter and
+        # volume match two possible candidates. We expect its antecedent
+        # guess to provide the correct tiebreaker.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "Wrong v. Wrong, 1 U.S. 2."),
+            (0, "Foo, 1 U.S., at 2."),
+        )
+        # Test resolving a short form citation when its reporter and
+        # volume match two possible candidates, and when it lacks a
+        # meaningful antecedent. We expect the short form citation to not
+        # be resolved.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "Boo v. Far, 1 U.S. 2."),
+            (None, "1 U.S., at 2."),
+        )
+        # Test resolving a short form citation when its reporter and
+        # volume match two possible candidates, and when its antecedent
+        # guess also matches multiple possibilities. We expect the short
+        # form citation to not be resolved.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "Foo v. Bar, 1 U.S. 2."),
+            (None, "Foo, 1 U.S., at 2."),
+        )
+        # Test resolving a short form citation when its reporter and
+        # volume are erroneous. We expect the short form citation to not
+        # be resolved.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (None, "2 F.2d, at 2."),
+        )
 
-        for citations, resolution_dict in test_pairs:
-            with self.subTest(
-                "Testing citation resolution for %s..." % citations,
-                citations=citations,
-                resolution_dict=resolution_dict,
-            ):
-                self._assertResolution(citations, resolution_dict)
+    def test_ambigous_short_cite(self):
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (1, "See Foo, 1 U.S. 2."),
+            (None, "Foo, 1 U.S., at 2."),
+        )
 
     def test_id_resolution(self):
-        test_pairs = [
-            # Test resolving an Id. citation
-            (
-                [full4, id1],
-                {Resource(full4): [full4, id1]},
-            ),
-            # Test resolving an Id. citation when the previous citation
-            # resolution failed. We expect the Id. citation to also not be
-            # resolved.
-            (
-                [full4, short4, id1],
-                {Resource(full4): [full4]},
-            ),
-            # Test resolving an Id. citation when the previous citation is to a
-            # non-opinion document. Since we can't resolve those documents,
-            # we expect the Id. citation to also not be matched.
-            (
-                [full4, non1, id1],
-                {Resource(full4): [full4]},
-            ),
-            # Test resolving an Id. citation when it is the first citation
-            # found. Since there is nothing before it, we expect no matches to
-            # be returned.
-            ([id1], {}),
-        ]
-
-        for citations, resolution_dict in test_pairs:
-            with self.subTest(
-                "Testing citation resolution for %s..." % citations,
-                citations=citations,
-                resolution_dict=resolution_dict,
-            ):
-                self._assertResolution(citations, resolution_dict)
+        # Test resolving an Id. citation
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Id. at 2."),
+        )
+        # Test resolving an Id. citation when the previous citation
+        # resolution failed. We expect the Id. citation to also not be
+        # resolved.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (None, "2 F.2d, at 2."),
+            (None, "Id. at 2."),
+        )
+        # Test resolving an Id. citation when the previous citation is to a
+        # non-opinion document. Since we can't resolve those documents,
+        # we expect the Id. citation to also not be matched.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (None, "Blah § 2."),
+            (None, "Id. at 2."),
+        )
+        # Test resolving an Id. citation when it is the first citation
+        # found. Since there is nothing before it, we expect no matches to
+        # be returned.
+        self.checkResolution(
+            (None, "Id. at 2."),
+        )
 
     def test_non_case_resolution(self):
         """Test law and journal resolution."""
-        citations = [full4, id1, law1, id1, supra1, journal1, id1, short1]
-        resolution_dict = {
-            Resource(full4): [full4, id1, supra1, short1],
-            Resource(law1): [law1, id1],
-            Resource(journal1): [journal1, id1],
-        }
-        self._assertResolution(citations, resolution_dict)
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Id. at 2."),
+            (1, "Mass. Gen. Laws ch. 1, § 2"),
+            (1, "Id."),
+            (0, "Foo, supra, at 2."),
+            (2, "1 Minn. L. Rev. 1."),
+            (2, "Id. at 2."),
+            (0, "Foo, 1 U.S., at 2."),
+        )
 
     def test_complex_resolution(self):
         """
         Tests whether resolution works with a more complex string.
         Inspired by: https://github.com/freelawproject/courtlistener/blob/d65d4c1e11328fd9f24dabd2aa9a792b4e725832/cl/citations/tests.py#L546
         """
-        citation_string = (
-            Path(__file__).parent / "assets" / "citation_string.txt"
-        ).read_text()
-        citations = get_citations(citation_string)
-
-        self._assertResolution(
-            citations,
-            {
-                Resource(citation=citations[0]): [
-                    citations[0],
-                    citations[2],
-                    citations[4],
-                ],
-                Resource(citation=citations[1]): [
-                    citations[1],
-                    citations[3],
-                    citations[6],
-                    citations[8],
-                    citations[9],
-                    citations[10],
-                ],
-                Resource(citation=citations[5]): [citations[5], citations[12]],
-            },
+        self.checkResolution(
+            (0, "Blah blah Foo v. Bar 1 U.S. 1, 77 blah blah."),
+            (1, "Asdf asdf Qwerty v. Uiop 2 F.3d 500, 555."),
+            (0, "Also check out Foo, 1 U.S. at 99."),
+            (1, "Then let's cite Qwerty, supra, at 567."),
+            (0, "See also Foo, supra, at 101 as well."),
+            (2, "Another full citation is Lorem v. Ipsum 1 U. S. 50."),
+            (1, "Quoting Qwerty, “something something”, 2 F.3d 500, at 559."),
+            (None, "This case is similar to Fake, supra,"),
+            (1, "and Qwerty supra, as well."),
+            (1, "This should resolve to the foregoing. Ibid."),
+            (1, "This should also convert appropriately, see Id. at 567."),
+            (
+                None,
+                "This should fail to resolve because the reporter and citation is ambiguous, 1 U. S., at 51.",
+            ),
+            (2, "However, this should succeed, Lorem, 1 U.S., at 52."),
         )
