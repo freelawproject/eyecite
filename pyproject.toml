@@ -29,7 +29,7 @@ include = ["eyecite/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-reporters-db = "^3.1.1"
+reporters-db = "^3.2"
 courts-db = "^0.9.7"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"

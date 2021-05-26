@@ -60,8 +60,7 @@ def case_citation(
         source_text = f"{volume} {reporter} {page}"
     if short:
         metadata.setdefault("pin_cite", page)
-    if volume:
-        groups.setdefault("volume", volume)
+    groups.setdefault("volume", volume)
     groups.setdefault("page", page)
     cls = ShortCaseCitation if short else FullCaseCitation
     return resource_citation(cls, source_text, reporter, short, **kwargs)
