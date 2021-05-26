@@ -223,6 +223,23 @@ class ResolveTest(TestCase):
         self.checkResolution(
             (None, "Id. at 2."),
         )
+        # Id. cites will not match if their pin cite is
+        # invalid relative to the target full cite.
+        self.checkResolution(
+            # too high:
+            (0, "Foo v. Bar, 1 U.S. 100."),
+            (None, "Id. at 500."),
+            # too low:
+            (0, "Foo v. Bar, 1 U.S. 100."),  # reset
+            (None, "Id. at 50."),
+            # edge case -- pin cites with non-digits at beginning are
+            # assumed not to match cites with a "page" value:
+            (0, "Foo v. Bar, 1 U.S. 100."),  # reset
+            (None, "Id. at ¶ 100."),
+            # edge case -- cites without a "page" group are assumed to match:
+            (1, "Ala. Code § 92"),
+            (1, "Id. at 2000"),
+        )
 
     def test_non_case_resolution(self):
         """Test law and journal resolution."""
@@ -254,6 +271,10 @@ class ResolveTest(TestCase):
             (1, "and Qwerty supra, as well."),
             (1, "This should resolve to the foregoing. Ibid."),
             (1, "This should also convert appropriately, see Id. at 567."),
+            (
+                None,
+                "But this fails because the pin cite is too low, see Id. at 400.",
+            ),
             (
                 None,
                 "This should fail to resolve because the reporter and citation is ambiguous, 1 U. S., at 51.",

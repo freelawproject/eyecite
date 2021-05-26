@@ -1,5 +1,6 @@
+import re
 from collections import defaultdict
-from typing import Callable, Dict, Iterable, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple, cast
 
 from eyecite.models import (
     CitationBase,
@@ -13,6 +14,16 @@ from eyecite.models import (
 )
 from eyecite.utils import strip_punct
 
+# type shorthand
+ResolvedFullCite = Tuple[FullCitation, ResourceType]
+ResolvedFullCites = List[ResolvedFullCite]
+Resolutions = Dict[ResourceType, List[CitationBase]]
+
+
+# Skip id. citations that imply a page length longer than this,
+# such as "1 U.S. 1. Id. at 200.":
+MAX_OPINION_PAGE_COUNT = 150
+
 
 def resolve_full_citation(full_citation: FullCitation) -> Resource:
     """
@@ -22,7 +33,7 @@ def resolve_full_citation(full_citation: FullCitation) -> Resource:
 
 
 def _filter_by_matching_antecedent(
-    resolved_full_cites: Iterable[Tuple[FullCitation, ResourceType]],
+    resolved_full_cites: ResolvedFullCites,
     antecedent_guess: str,
 ) -> Optional[ResourceType]:
     matches: List[ResourceType] = []
@@ -46,9 +57,41 @@ def _filter_by_matching_antecedent(
     return matches[0] if len(matches) == 1 else None
 
 
+def _invalid_pin_cite(full_cite: FullCitation, id_cite: IdCitation):
+    """Return True if short_cite has a pin cite that can't be correct for the
+    given full_cite."""
+    # if no pin cite, we're fine
+    if not id_cite.metadata.pin_cite:
+        return False
+
+    # if full cite has no page (such as a statute), we don't know what to
+    # check, so assume we're fine
+    if not full_cite.groups.get("page", "").isdigit():
+        return False
+
+    # parse full cite page
+    page = int(full_cite.groups["page"])
+
+    # parse short cite pin
+    m = re.match(r"(?:at )?(\d+)", id_cite.metadata.pin_cite)
+    if not m:
+        # If pin cite doesn't start with a digit, assume it is invalid.
+        # This is hopefully a conservative rule -- it will err for valid pin
+        # cites like "Id. at *10", but successfully filter invalid pin cites
+        # like "1 U.S. 1. ... Id. at ¶ 10".
+        return True
+    pin_cite = int(m[1])
+
+    # check page range
+    if pin_cite < page or pin_cite > page + MAX_OPINION_PAGE_COUNT:
+        return True
+
+    return False
+
+
 def _resolve_shortcase_citation(
     short_citation: ShortCaseCitation,
-    resolved_full_cites: Dict[FullCitation, ResourceType],
+    resolved_full_cites: ResolvedFullCites,
 ) -> Optional[ResourceType]:
     """
     Try to match shortcase citations by checking whether their reporter and
@@ -57,8 +100,8 @@ def _resolve_shortcase_citation(
     checking whether their antecedent_guess appears in either the defendant
     or plaintiff field of any of the previously resolved full citations.
     """
-    candidates: List[Tuple[FullCaseCitation, ResourceType]] = []
-    for full_citation, resource in resolved_full_cites.items():
+    candidates: ResolvedFullCites = []
+    for full_citation, resource in resolved_full_cites:
         if (
             isinstance(full_citation, FullCaseCitation)
             and short_citation.corrected_reporter()
@@ -86,31 +129,40 @@ def _resolve_shortcase_citation(
 
 def _resolve_supra_citation(
     supra_citation: SupraCitation,
-    resolved_full_cites: Dict[FullCitation, ResourceType],
+    resolved_full_cites: ResolvedFullCites,
 ) -> Optional[ResourceType]:
     """
     Try to resolve supra citations by checking whether their antecedent_guess
     appears in either the defendant or plaintiff field of any of the
     previously resolved full citations.
     """
-    if (
-        not supra_citation.metadata.antecedent_guess
-    ):  # If no guess, can't do anything
+    # If no guess, can't do anything
+    if not supra_citation.metadata.antecedent_guess:
         return None
 
     return _filter_by_matching_antecedent(
-        resolved_full_cites.items(), supra_citation.metadata.antecedent_guess
+        resolved_full_cites, supra_citation.metadata.antecedent_guess
     )
 
 
 def _resolve_id_citation(
     id_citation: IdCitation,
     last_resolution: ResourceType,
+    resolutions: Resolutions,
 ) -> Optional[ResourceType]:
     """
     Resolve id citations to the resource of the previously resolved
     citation.
     """
+    # if last resolution failed, id. cite should also fail
+    if not last_resolution:
+        return None
+
+    # filter out citations based on pin cite
+    full_cite = cast(FullCitation, resolutions[last_resolution][0])
+    if _invalid_pin_cite(full_cite, id_citation):
+        return None
+
     return last_resolution
 
 
@@ -120,17 +172,17 @@ def resolve_citations(
         [FullCitation], ResourceType
     ] = resolve_full_citation,
     resolve_shortcase_citation: Callable[
-        [ShortCaseCitation, Dict[FullCitation, ResourceType]],
+        [ShortCaseCitation, ResolvedFullCites],
         Optional[ResourceType],
     ] = _resolve_shortcase_citation,
     resolve_supra_citation: Callable[
-        [SupraCitation, Dict[FullCitation, ResourceType]],
+        [SupraCitation, ResolvedFullCites],
         Optional[ResourceType],
     ] = _resolve_supra_citation,
     resolve_id_citation: Callable[
-        [IdCitation, ResourceType], Optional[ResourceType]
+        [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
     ] = _resolve_id_citation,
-) -> Dict[ResourceType, List[CitationBase]]:
+) -> Resolutions:
     """Resolves a list of citations to their associated resources by matching
     each type of Citation object (FullCaseCitation, ShortCaseCitation,
     SupraCitation, and IdCitation) to a "resource" object. Assumes that the
@@ -148,10 +200,10 @@ def resolve_citations(
     resolved.
     """
     # Dict of all citation resolutions
-    resolutions: Dict[ResourceType, List[CitationBase]] = defaultdict(list)
+    resolutions: Resolutions = defaultdict(list)
 
     # Dict mapping full citations to their resolved resources
-    resolved_full_cites: Dict[FullCitation, ResourceType] = {}
+    resolved_full_cites: ResolvedFullCites = []
 
     # The resource of the most recently resolved citation, if any
     last_resolution: Optional[ResourceType] = None
@@ -162,7 +214,7 @@ def resolve_citations(
         # If the citation is a full citation, try to resolve it
         if isinstance(citation, FullCitation):
             resolution = resolve_full_citation(citation)
-            resolved_full_cites[citation] = resolution
+            resolved_full_cites.append((citation, resolution))
 
         # If the citation is a short case citation, try to resolve it
         elif isinstance(citation, ShortCaseCitation):
@@ -176,7 +228,9 @@ def resolve_citations(
 
         # If the citation is an id citation, try to resolve it
         elif isinstance(citation, IdCitation):
-            resolution = resolve_id_citation(citation, last_resolution)
+            resolution = resolve_id_citation(
+                citation, last_resolution, resolutions
+            )
 
         # If the citation is to a non-opinion document, ignore for now
         else:
