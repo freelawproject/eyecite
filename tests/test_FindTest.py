@@ -440,7 +440,7 @@ class FindTest(TestCase):
              [case_citation()]),
             # Test reporter with custom regex
             ('blah blah Bankr. L. Rep. (CCH) P12,345. blah blah',
-             [case_citation(volume='', reporter='Bankr. L. Rep.',
+             [case_citation(volume=None, reporter='Bankr. L. Rep.',
                             reporter_found='Bankr. L. Rep. (CCH)', page='12,345')]),
             ('blah blah, 2009 12345 (La.App. 1 Cir. 05/10/10). blah blah',
              [case_citation(volume='2009', reporter='La.App. 1 Cir.',
