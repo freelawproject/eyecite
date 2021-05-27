@@ -57,8 +57,10 @@ def _filter_by_matching_antecedent(
     return matches[0] if len(matches) == 1 else None
 
 
-def _invalid_pin_cite(full_cite: FullCitation, id_cite: IdCitation):
-    """Return True if short_cite has a pin cite that can't be correct for the
+def _has_invalid_pin_cite(
+    full_cite: FullCitation, id_cite: IdCitation
+) -> bool:
+    """Return True if id_cite has a pin cite that can't be correct for the
     given full_cite."""
     # if no pin cite, we're fine
     if not id_cite.metadata.pin_cite:
@@ -160,7 +162,7 @@ def _resolve_id_citation(
 
     # filter out citations based on pin cite
     full_cite = cast(FullCitation, resolutions[last_resolution][0])
-    if _invalid_pin_cite(full_cite, id_citation):
+    if _has_invalid_pin_cite(full_cite, id_citation):
         return None
 
     return last_resolution

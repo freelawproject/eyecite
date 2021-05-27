@@ -199,6 +199,7 @@ class ResolveTest(TestCase):
         # Test resolving an Id. citation
         self.checkResolution(
             (0, "Foo v. Bar, 1 U.S. 1."),
+            (0, "Id."),
             (0, "Id. at 2."),
         )
         # Test resolving an Id. citation when the previous citation
