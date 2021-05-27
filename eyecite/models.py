@@ -98,6 +98,11 @@ class CitationBase:
 
         parenthetical: Optional[str] = None
 
+    def comparison_hash(self) -> int:
+        """Return hash that will be the same if two cites are semantically
+        equivalent."""
+        return hash((type(self), tuple(self.groups.items())))
+
     def corrected_citation(self):
         """Return citation with any variations normalized."""
         return self.matched_text()
@@ -162,6 +167,11 @@ class ResourceCitation(CitationBase):
 
         pin_cite: Optional[str] = None
         year: Optional[str] = None
+
+    def comparison_hash(self) -> int:
+        """Return hash that will be the same if two cites are semantically
+        equivalent."""
+        return hash((super().comparison_hash(), self.all_editions))
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
@@ -555,11 +565,9 @@ class Resource(ResourceType):
     citation: FullCitation
 
     def __hash__(self):
-        """
-        Full citations are constructively equal if the groups matched by their
-        regexes are equal.
-        """
-        return hash((type(self.citation), tuple(self.citation.groups.items())))
+        """Resources are the same if their citations are semantically
+        equivalent."""
+        return self.citation.comparison_hash()
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
