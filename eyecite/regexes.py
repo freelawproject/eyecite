@@ -127,12 +127,14 @@ MONTH_REGEX = r"""
 """
 
 YEAR_REGEX = r"""
-    (?P<year>
-        \d{4}
+    (?:
+        (?P<year>
+            \d{4}
+        )
+        # Year is occasionally a range, like "1993-94" or "2005-06".
+        # For now we ignore the end of the range:
+        (?:-\d{2})?
     )
-    # Year is occasionally a range, like "1993-94" or "2005-06".
-    # For now we ignore the end of the range:
-    (?:-\d{2})?
 """
 
 # Pin cite regex:
@@ -164,14 +166,18 @@ PIN_CITE_TOKEN_REGEX = r"""
 """
 PIN_CITE_REGEX = rf"""
     (?P<pin_cite>
-        (?:,?\ ?at)?
-        (?:,?\ ?{PIN_CITE_TOKEN_REGEX})+
+        # optional comma, space, "at" before pin cite
+        ,?\ ?(?:at\ )?
+        # first mandatory page number
+        {PIN_CITE_TOKEN_REGEX}
+        # optional additional page numbers
+        (?:,\ ?{PIN_CITE_TOKEN_REGEX})*
         # pin cite must be followed by one of these so it doesn't capture
         # start of next citation
         (?=
             [,.;)\]\\]|  # ending punctuation
-            \ ?[(\[]|   # space and start of parens
-            $          # end of text
+            \ ?[(\[]|    # space and start of parens
+            $            # end of text
         )
     )
 """
