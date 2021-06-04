@@ -296,8 +296,16 @@ class Tokenizer:
         tokens = sorted(
             self.extract_tokens(text), key=lambda m: (m.start, -m.end)
         )
+        last_token = None
         offset = 0
         for token in tokens:
+            if last_token:
+                # Sometimes the exact same cite is matched by two different
+                # regexes. Attempt to merge rather than discarding one or the
+                # other:
+                merged = last_token.merge(token)
+                if merged:
+                    continue
             if offset > token.start:
                 # skip overlaps
                 continue
@@ -308,6 +316,7 @@ class Tokenizer:
             citation_tokens.append((len(all_tokens), token))
             all_tokens.append(token)
             offset = token.end
+            last_token = token
         # capture plain text after final match
         if offset < len(text):
             self.append_text(all_tokens, text[offset:])
