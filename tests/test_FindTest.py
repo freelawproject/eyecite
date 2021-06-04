@@ -279,6 +279,9 @@ class FindTest(TestCase):
                                       'parenthetical': 'discussing abc'}
                             )]
              ),
+            # Test short form citation generated from non-standard regex for full cite
+            ('1 Mich. at 1',
+             [case_citation(reporter='Mich.', short=True)]),
             # Test parenthetical matching with multiple citations
             ('1 U. S., at 2. foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
              [case_citation(page='2', reporter='U.S.',

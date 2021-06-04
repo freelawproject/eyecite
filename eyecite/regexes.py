@@ -1,4 +1,5 @@
 # *** Helpers for building regexes: ***
+import regex as re
 
 
 def space_boundaries_re(regex):
@@ -14,6 +15,28 @@ def strip_punctuation_re(regex):
 def nonalphanum_boundaries_re(regex):
     """Wrap regex to require non-alphanumeric characters on left and right."""
     return rf"(?:^|[^a-zA-Z0-9])({regex})(?:[^a-zA-Z0-9]|$)"
+
+
+def short_cite_re(regex):
+    """Convert a full citation regex into a short citation regex.
+    Currently this just means we turn '(?P<reporter>...),? (?P<page>...'
+    to '(?P<reporter>...),? at (?P<page>...'"""
+    return re.sub(
+        r"""
+            # reporter group:
+            (
+                \(\?P<reporter>[^)]+\)
+            )
+            (?:,\?)?\  # comma and space
+            # page group:
+            (
+                \(\?P<page>
+            )
+        """,
+        r"\1,? at \2",
+        regex,
+        flags=re.VERBOSE,
+    )
 
 
 # *** Tokenizer regexes: ***
