@@ -283,7 +283,7 @@ python-versions = "*"
 
 [[package]]
 name = "reporters-db"
-version = "3.2.0"
+version = "3.2.1"
 description = "Database of Court Reporters"
 category = "main"
 optional = false
@@ -634,8 +634,8 @@ regex = [
     {file = "regex-2021.4.4.tar.gz", hash = "sha256:52ba3d3f9b942c49d7e4bc105bb28551c44065f139a65062ab7912bef10c9afb"},
 ]
 reporters-db = [
-    {file = "reporters-db-3.2.0.tar.gz", hash = "sha256:0ebd9c0233154b511e57723a992243ea0f430d36c89fa53fa5c03905e7a3a999"},
-    {file = "reporters_db-3.2.0-py2.py3-none-any.whl", hash = "sha256:b79b50a3e9f4a3ac82b86053cbf02de38002cb3330e2e35964638035ef10008e"},
+    {file = "reporters-db-3.2.1.tar.gz", hash = "sha256:cc8f0d0a6333190ff7f93d2d3a0c7cd47349eca842aed693a79c7562645b312f"},
+    {file = "reporters_db-3.2.1-py2.py3-none-any.whl", hash = "sha256:5b095da3489a17d71a7328d22df3b1f0b8f176a2bc7b20b7a5254a7a809f10a7"},
 ]
 roman = [
     {file = "roman-3.3-py2.py3-none-any.whl", hash = "sha256:c2a1f14ab47373aecc141edbcdd66595949c9d0ed932fe76bd547df1b55f7278"},
