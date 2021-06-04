@@ -5,9 +5,58 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - Adds `dump_citations()` to inspect extracted citations.
+ - None yet
+
+Changes:
+ - None yet
+
+Fixes:
+ - None yet
 
 ## Current
+
+**2.2.0 - 2021-06-04**
+
+Features:
+ - Adds support for parsing statutes and journals and includes new json files with associated regular expressions and data. This introduces `FullLawCitation` and `FullJournalCitation`.
+ - Id and Supra citations now have a `metadata.parenethical` attribute, to mirror `FullCaseCitation` objects and make them more useful. [PR #71][71]
+ - A new tool, `dump_citations()` is added to inspect extracted citations.
+ - The readme is updated with a new tutorial.
+ - We now use page-based heuristics while looking up the citation that a pin cite refers to. For example, if an opinion says:
+
+    > 1 U.S. 200. blah blah. 2 We Missed This 20. blah blah. Id. at 22.
+   
+    We might miss the second citation for whatever reason. The pin cite refers to the second citation, not the first, and you can be sure of that because the first citation begins on page 200 and the pin cite references page 22. When resolving the pin cite, we will no longer link it up to the first citation.
+   
+    Similarly, an analysis of the Caselaw Access Project's dataset indicates that all but the longest ~300 cases are shorter than 150 pages, so we also now ignore pin cites that don't make sense according to that heuristic. For example, this (made up) pin cite is also likely wrong because it's overwhelmingly unlikely that `1 U.S. 200` is 632 pages long:
+
+    > 1 U.S. 200 blah blah 1 U.S. 832
+ 
+    The longest case in the Caselaw Access Project collection is [United States v. Philip Morris USA, Inc](https://cite.case.law/f-supp-2d/449/1/), at 986 pages, in case you were wondering. Figures. 
+   
+    [Issue #74][74], [PR #79][79].
+
+Changes:
+ - To harmonize the API while adding laws and journals, a large API reorganization was completed. See [PR 64][64] for discussion. Here are the details:
+    - All of the metdata that we capture before and after each citation is now organized into a `metadata` object. Thus, if they make sense for the citation type, all of the following attributes are now in `some_citation.metadata`: `publisher`, `day`, `month`, `antecedent_guess`, `court`, `extra`, `defendant`, `plaintiff`, `parenthetical`, `pin_cite`.
+    - The `canonical_reporter` attribute is removed from citation objects. It wasn't used much and was duplicated in `edition_guess.reporter.short_name`. Where applicable, use that instead going forward.
+     - The `reporter_found` attribute is removed from citation objects in favor of `groups['reporter']`.
+     - Similarly, the `volume` and `page` attributes are removed from citation objects in favor of `groups["volume"]`and `groups["page"]`.
+     - The `reporter` attribute has been removed from citations and replaced with the `corrected_reporter()` method.
+     - Similarly, the `base_citation()` method has been renamed as `corrected_citation()`, and the `formatted()` method has been renamed as `corrected_citation_full()`.
+     - The `do_defendant` and `do_post_citation` arguments to `get_citations` have been removed. They're fast enough to just always do. No need to think about these further.\
+
+Fixes:
+ - Support for reporter citations with `volume=None` is added. Some reporters don't use volumes, for example, "Bankr. L. Rep. (CCH) P12,345".
+ - Upgrades courts-db subdependency to latest that provides lazy-loading. This should speed up imports of eyecite.
+
+[64]: https://github.com/freelawproject/eyecite/pull/64
+[71]: https://github.com/freelawproject/eyecite/pull/71
+[74]: https://github.com/freelawproject/eyecite/issues/74
+[79]: https://github.com/freelawproject/eyecite/pull/79
+
+
+## Past
 
 **2.1.0 - 2021-05-13**
 
@@ -33,8 +82,6 @@ Fixes:
    matched if they have extremely common Roman numerals. See #56 for a full 
    discussion.
    
-## Past
-
 **2.0.2** - Adds missing dependency to toml file, nukes setup.py and
 requirements.txt. We're now fully in the poetry world.
 
