@@ -11,6 +11,7 @@ from typing import (
     Optional,
     Sequence,
     Union,
+    cast,
 )
 
 from eyecite.utils import HashableDict
@@ -450,7 +451,7 @@ class NonopinionCitation(CitationBase):
     """
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class Token(UserString):
     """Base class for special tokens. For performance, this isn't used
     for generic words."""
@@ -472,6 +473,18 @@ class Token(UserString):
             m[1], start + offset, end + offset, groups=m.groupdict(), **extra
         )
 
+    def merge(self, other: "Token") -> Optional["Token"]:
+        """Merge two tokens, by returning self if other is identical to
+        self."""
+        if (
+            self.start == other.start
+            and self.end == other.end
+            and type(self) is type(other)
+            and self.groups == other.groups
+        ):
+            return self
+        return None
+
 
 # For performance, lists of tokens can include either Token subclasses
 # or bare strings (the typical case of words that aren't
@@ -480,7 +493,7 @@ TokenOrStr = Union[Token, str]
 Tokens = List[TokenOrStr]
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class CitationToken(Token):
     """String matching a citation regex from reporters.json."""
 
@@ -490,34 +503,47 @@ class CitationToken(Token):
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
-        # use setattr because this class is frozen
-        object.__setattr__(self, "exact_editions", tuple(self.exact_editions))
-        object.__setattr__(
-            self, "variation_editions", tuple(self.variation_editions)
-        )
+        self.exact_editions = tuple(self.exact_editions)
+        self.variation_editions = tuple(self.variation_editions)
+
+    def merge(self, other: "Token") -> Optional["Token"]:
+        """To merge citation tokens, also make sure `short` matches,
+        and combine their editions."""
+        merged = super().merge(other)
+        if merged:
+            other = cast(CitationToken, other)
+            if self.short == other.short:
+                self.exact_editions = cast(tuple, self.exact_editions) + cast(
+                    tuple, other.exact_editions
+                )
+                self.variation_editions = cast(
+                    tuple, self.variation_editions
+                ) + cast(tuple, other.variation_editions)
+                return self
+        return None
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class SectionToken(Token):
     """Word containing a section symbol."""
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class SupraToken(Token):
     """Word matching "supra" with or without punctuation."""
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class IdToken(Token):
     """Word matching "id" or "ibid"."""
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class ParagraphToken(Token):
     """Word matching a break between paragraphs."""
 
 
-@dataclass(eq=True, frozen=True)
+@dataclass(eq=True, unsafe_hash=True)
 class StopWordToken(Token):
     """Word matching one of the STOP_TOKENS."""
 

@@ -42,6 +42,7 @@ from eyecite.regexes import (
     STOP_WORDS,
     SUPRA_REGEX,
     nonalphanum_boundaries_re,
+    short_cite_re,
 )
 
 # Prepare extractors
@@ -63,15 +64,11 @@ def _populate_reporter_extractors():
     raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
     raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
     regex_variables = process_variables(raw_regex_variables)
-    short_cite_template = recursive_substitute(
-        "$volume $reporter,? at $page", regex_variables
-    )
 
-    def _substitute_edition(template, edition_name):
-        """Helper to replace $edition in template with edition_name."""
-        return Template(template).safe_substitute(
-            edition=re.escape(edition_name)
-        )
+    def _substitute_edition(template, *edition_names):
+        """Helper to replace $edition in template with edition_names."""
+        edition = "|".join(re.escape(e) for e in edition_names)
+        return Template(template).safe_substitute(edition=edition)
 
     # Extractors step one: add an extractor for each reporter string
 
@@ -99,42 +96,51 @@ def _populate_reporter_extractors():
 
     def _add_regex(
         kind: str,
-        reporter: str,
+        reporters: List[str],
         edition: Edition,
         regex: str,
-        standard_cite: bool,
     ):
         """Helper to generate citations for a reporter
         and insert into editions_by_regex."""
-        EDITIONS_LOOKUP[reporter].append(edition)
+        for reporter in reporters:
+            EDITIONS_LOOKUP[reporter].append(edition)
         editions_by_regex[regex][kind].append(edition)
 
-        if standard_cite:
-            editions_by_regex[regex]["strings"].add(reporter)
+        # add strings
+        have_strings = re.escape(reporters[0]) in regex
+        if have_strings:
+            editions_by_regex[regex]["strings"].update(reporters)
 
-            # add short cite
-            regex = _substitute_edition(short_cite_template, reporter)
-            editions_by_regex[regex][kind].append(edition)
-            editions_by_regex[regex]["strings"].add(reporter)
-            editions_by_regex[regex]["short"] = True
+        # add short cite
+        short_cite_regex = short_cite_re(regex)
+        if short_cite_regex != regex:
+            editions_by_regex[short_cite_regex][kind].append(edition)
+            editions_by_regex[short_cite_regex]["short"] = True
+            if have_strings:
+                editions_by_regex[short_cite_regex]["strings"].update(
+                    reporters
+                )
 
-    def _add_regexes(regex_templates, edition_name, edition, variations):
+    def _add_regexes(
+        regex_templates: List[str],
+        edition_name: str,
+        edition: Edition,
+        variations: List[str],
+    ):
         """Expand regex_templates and add to editions_by_regex."""
         for regex_template in regex_templates:
-            standard_cite = regex_template == "$full_cite"
             regex_template = recursive_substitute(
                 regex_template, regex_variables
             )
             regex = _substitute_edition(regex_template, edition_name)
-            _add_regex("editions", edition_name, edition, regex, standard_cite)
-            for variation in variations:
-                regex = _substitute_edition(regex_template, variation)
+            _add_regex("editions", [edition_name], edition, regex)
+            if variations:
+                regex = _substitute_edition(regex_template, *variations)
                 _add_regex(
                     "variations",
-                    variation,
+                    variations,
                     edition,
                     regex,
-                    standard_cite,
                 )
 
     # add reporters.json:
@@ -296,8 +302,16 @@ class Tokenizer:
         tokens = sorted(
             self.extract_tokens(text), key=lambda m: (m.start, -m.end)
         )
+        last_token = None
         offset = 0
         for token in tokens:
+            if last_token:
+                # Sometimes the exact same cite is matched by two different
+                # regexes. Attempt to merge rather than discarding one or the
+                # other:
+                merged = last_token.merge(token)
+                if merged:
+                    continue
             if offset > token.start:
                 # skip overlaps
                 continue
@@ -308,6 +322,7 @@ class Tokenizer:
             citation_tokens.append((len(all_tokens), token))
             all_tokens.append(token)
             offset = token.end
+            last_token = token
         # capture plain text after final match
         if offset < len(text):
             self.append_text(all_tokens, text[offset:])

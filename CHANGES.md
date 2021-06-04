@@ -11,7 +11,7 @@ Changes:
  - None yet
 
 Fixes:
- - None yet
+ - Initial support for finding short cites with non-standard regexes, including fixing short cite extraction for `Mich.`, `N.Y.2d` and `Pa.`. 
 
 ## Current
 
