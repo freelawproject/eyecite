@@ -465,6 +465,9 @@ class FindTest(TestCase):
             ('Id. foo', [id_citation('Id.,')]),
             # Reject citations that are part of larger words
             ('foo1 U.S. 1, 1. U.S. 1foo', [],),
+            # Long pin cite -- make sure no catastrophic backtracking in regex
+            ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
+             [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
