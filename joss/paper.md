@@ -46,12 +46,16 @@ research, but few open-source tools exist for extracting them from legal
 texts. Because of this, researchers have historically relied on proprietary
 citation data provided by vendors like LexisNexis and Westlaw [e.g., @Black2013;
 @Fowler2007; @SpriggsII2000] or have used their own personal scripts to parse
-such data from texts ad hoc [e.g., @Clark2012; @Fowler2008]. By providing an
-open-source, standardized alternative to these approaches, `eyecite` promises
-to increase scholarly transparency and consistency. It also promises to give
-researchers the extendability and flexibility to develop new methods of
-citation analysis that are currently not possible under the prevailing
-approaches.
+such data from texts ad hoc [e.g., @Clark2012; @Fowler2008]. While this is
+sometimes acceptable, human authors have used a wide variety of citation
+formats and shorthands over centuries of caselaw -- and continue to add new
+ones -- so accurate citation extraction requires maintenance of a long
+[list](https://github.com/freelawproject/reporters-db) of rules and exceptions.
+By providing an open-source, standardized alternative to individualized and
+closed-source approaches, `eyecite` promises to increase scholarly transparency
+and consistency. It also promises to give researchers the extendability and
+flexibility to develop new methods of citation analysis that are currently not
+possible under the prevailing approaches.
 
 For example, one burgeoning research agenda seeks to apply machine learning
 techniques to citation analysis, either to recommend relevant authorities to
@@ -73,31 +77,36 @@ text.
 
 ![In step (1), `eyecite` consumes raw, cleaned text. In step (2), it parses the text into discrete tokens using Hyperscan and its regular expression database. In step (3), it extracts meaningful metadata from those tokens, returning a unified object for each parsed citation. \label{fig:fig1}](figure1.png)
 
-Recognizing that researchers often want to parse many documents and citations
-at once, `eyecite` is designed with an eye toward performance: it makes use of
-the Hyperscan library [@Wang2019] to tokenize and parse its input text in a
-highly efficient fashion.^[We estimate that `eyecite` can parse typical legal
-text on the order of approximately 10MB/second, though this depends on the
-density of citations within the text.] It performs this parsing process using a
-[database](https://github.com/freelawproject/reporters-db) of thousands of
-regular expressions that have been built from nearly every citation format
-found in the collections of the [Caselaw Access Project](https://case.law/) and
+Because researchers often want to parse many documents and citations
+at once, `eyecite` is designed with performance in mind: it makes use of the
+Hyperscan library [@Wang2019] to tokenize and parse its input text in a highly
+efficient fashion. Hyperscan was originally designed to scan network traffic
+against large regular expression blacklists, and it allows `eyecite` to apply
+thousands of tuned regular expressions to match the idiosyncratic ways that
+courts have cited each other over centuries of caselaw, without a loss of
+performance.^[We estimate that `eyecite` can parse typical legal text on the
+order of approximately 10MB/second, though this depends on the density of
+citations within the text.] `eyecite`'s
+[regular expression database](https://github.com/freelawproject/reporters-db)
+has been built from nearly every citation format found in the collections of
+the [Caselaw Access Project](https://case.law/) and
 [CourtListener](https://www.courtlistener.com/), the
 [Cardiff Index to Legal Abbreviations](http://www.legalabbrevs.cardiff.ac.uk/),
-and the LexisNexis and Westlaw databases. Additionally, because researchers are
-often working with imperfect text (perhaps obtained via optical character
-recognition), `eyecite` provides tools for pre-processing and cleaning its
-input text. \autoref{fig:fig1} depicts `eyecite`'s extraction process of a full
-case citation at a high level.
+the [Indigo Book tables](https://law.resource.org/pub/us/code/blue/IndigoBook.html#sTables),
+and the LexisNexis and Westlaw databases. \autoref{fig:fig1} depicts
+`eyecite`'s extraction process of a full case citation at a high level.
 
-`eyecite` offers other tools as well. It can heuristically resolve short case,
-supra, and id citations to their appropriate full case antecedents, and it
-integrates well with custom resolution logic. For practical applications, it can
-also "annotate" found citations with custom markup (like HTML links) and
-re-insert that markup into the appropriate place in the original text. This
-works even if the original text was pre-processed, as `eyecite` uses the
-diff-match-patch library [@DMP] to intelligently reconcile differences between
-the original text and the cleaned text.
+`eyecite` offers other tools as well. Because researchers are often working
+with imperfect input text (perhaps obtained via optical character recognition),
+`eyecite` provides tools for pre-processing and cleaning it. Additionally, it
+can heuristically resolve short case, supra, and id citations to their
+appropriate full case antecedents, and it integrates well with custom
+resolution logic. Finally, for practical applications, it can also "annotate"
+found citations with custom markup (like HTML links) and re-insert that markup
+into the appropriate place in the original text. This works even if the
+original text was pre-processed, as `eyecite` uses the diff-match-patch library
+[@DMP] to intelligently reconcile differences between the original text and the
+cleaned text.
 
 # State of the field
 
@@ -114,5 +123,19 @@ unexpected errors, its codebase enjoys static type checking for all of its
 functions. At least one study has already used an earlier version of the data
 generated by `eyecite`'s underlying code [@Carmichael2017].
 
+# Limitations and future work
+`eyecite` currently only recognizes American legal citations, as it was
+developed to extract data from cases published by courts within the United
+States. It is unclear how much of its design would apply to other bodies of
+law, though we hope that its conceptual abstractions would be extendable to other
+legal contexts as well. `eyecite` does not offer worst-case performance
+guarantees, and both the citation extraction and annotation tools use libraries
+that may take exponentially long on worst-case inputs. It is therefore
+recommended to externally impose time limits if running `eyecite` on
+potentially malicious inputs. Finally, we have not explored other parser-based
+or machine-learning-based alternatives to `eyecite`'s
+collection-of-regular-expression-based approach to citation extraction.
+However, `eyecite` would be a strong baseline for performance and accuracy when
+developing such approaches.
 
 # References
