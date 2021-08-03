@@ -88,8 +88,8 @@ performance.^[We estimate that `eyecite` can parse typical legal text on the
 order of approximately 10MB/second, though this depends on the density of
 citations within the text.] `eyecite`'s
 [regular expression database](https://github.com/freelawproject/reporters-db)
-has been built from nearly every citation format found in the collections of
-the [Caselaw Access Project](https://case.law/) and
+has been built from over 55 million citation formats culled from the collections
+of the [Caselaw Access Project](https://case.law/) and
 [CourtListener](https://www.courtlistener.com/), the
 [Cardiff Index to Legal Abbreviations](http://www.legalabbrevs.cardiff.ac.uk/),
 the [Indigo Book tables](https://law.resource.org/pub/us/code/blue/IndigoBook.html#sTables),
