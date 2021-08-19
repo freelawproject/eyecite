@@ -111,7 +111,7 @@ First we'll get the text ready for cite extraction::
 Next we'll extract citations using a custom tokenizer. Unlike the default
 tokenizer this uses hyperscan for much faster extraction, with a precompiled
 regular expression database stored in ``.test_cache/``.
-This depends on "pip install hyperscan"::
+(This step depends on installation of hyperscan dependencies, as described in the "Installation" section)::
 
     tokenizer = HyperscanTokenizer(cache_dir=".test_cache")
     citations = get_citations(cleaned_text, tokenizer=tokenizer)
@@ -437,7 +437,8 @@ HyperscanTokenizer
 The alternate HyperscanTokenizer compiles all extraction regexes into a hyperscan database
 so they can be extracted in a single pass. This is far faster than the default tokenizer
 (exactly how much faster depends on how many citation formats are included in the target text),
-but requires the optional :code:`hyperscan` dependency that is limited to the x86 platform.
+but requires the optional :code:`hyperscan` dependency that has limited platform support.
+See the "Installation" section for hyperscan installation instructions and limitations.
 
 Compiling the hyperscan database takes several seconds, so short-running scripts may want to
 provide a cache directory where the database can be stored. The directory should be writeable
@@ -451,27 +452,48 @@ Installation
 ============
 Installing eyecite is easy.
 
-
 ::
 
     poetry add eyecite
 
 
-Or via pip:
+Or via pip::
 
-::
-
-    sh
     pip install eyecite
 
 
-Or install the latest dev version from github
+Or install the latest dev version from github::
+
+    pip install https://github.com/freelawproject/eyecite/archive/main.zip#egg=eyecite
+
+Hyperscan installation
+----------------------
+
+To use :code:`HyperscanTokenizer` you must additionally install the python `hyperscan <https://pypi.org/project/hyperscan/>`_
+library and its dependencies. **python-hyperscan officially supports only x86 linux,** though other configurations may be
+possible.
+
+Hyperscan installation example on x86 Ubuntu 20.04:
 
 ::
 
-    sh
-    pip install git+https://github.com/freelawproject/eyecite.git@master
+    apt install libhyperscan-dev
+    pip install hyperscan
 
+Hyperscan installation example on x86 Debian Buster:
+
+::
+
+    echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
+    apt install -t buster-backports libhyperscan-dev
+    pip install hyperscan
+
+Hyperscan installation example with homebrew on x86 MacOS:
+
+::
+
+    brew install hyperscan
+    pip install hyperscan
 
 
 Deployment
@@ -486,7 +508,6 @@ For a manual deployment, run:
 
 ::
 
-    sh
     poetry publish --build
 
 
