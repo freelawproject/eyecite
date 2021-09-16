@@ -22,6 +22,14 @@ This project is the culmination of `years <https://free.law/2012/05/11/building-
 
 Since eyecite was factored out from the CourtListener codebase into a standalone package, it has been developed in collaboration with the Caselaw Access Project.
 
+Contributions & Support
+=======================
+
+Please see the issues list on Github for things we need, or start a conversation if you have questions or need support. 
+
+If you are fixing bugs or adding features, before you make your first contribution, we'll need a signed contributor license agreement. See the template in the root of the repo for how to get that taken care of.
+
+
 Quickstart
 ==========
 
