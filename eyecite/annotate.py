@@ -8,7 +8,7 @@ import diff_match_patch
 from eyecite.utils import is_balanced_html, wrap_html_tags
 
 
-def annotate(
+def annotate_citations(
     plain_text: str,
     annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
     source_text: Optional[str] = None,
@@ -23,7 +23,7 @@ def annotate(
     Example:
     >>> plain_text = "foo 1 U.S. 1 bar"
     >>> citations = get_citations(plain_text)
-    >>> annotate("foo 1 U.S. 1 bar",
+    >>> annotate_citations("foo 1 U.S. 1 bar",
     ...     [(citations[0].span(), "<a>", "</a>")])
     "foo <a>1 U.S. 1</a> bar"
 

@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest import TestCase
 
-from eyecite import annotate, clean_text, get_citations
+from eyecite import annotate_citations, clean_text, get_citations
 
 
 class AnnotateTest(TestCase):
@@ -105,7 +105,7 @@ class AnnotateTest(TestCase):
                     (c.span(), f"<{i}>", f"</{i}>")
                     for i, c in enumerate(cites)
                 ]
-                annotated = annotate(
+                annotated = annotate_citations(
                     plain_text,
                     annotations,
                     source_text=source_text,
@@ -119,7 +119,7 @@ class AnnotateTest(TestCase):
             Path(__file__).parent / "assets" / "opinion.txt"
         ).read_text()
         cleaned_text = clean_text(opinion_text, ["all_whitespace"])
-        annotated_text = annotate(
+        annotated_text = annotate_citations(
             cleaned_text, [((902, 915), "~FOO~", "~BAR~")], opinion_text
         )
         self.assertIn("~FOO~539\n  U. S. 306~BAR~", annotated_text)
