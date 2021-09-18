@@ -21,7 +21,7 @@ ResourceType = Hashable
 
 @dataclass(eq=True, frozen=True)
 class Reporter:
-    """Class for top-level reporters in reporters_db, like "S.W." """
+    """Class for top-level reporters in `reporters_db`, like "S.W." """
 
     short_name: str
     name: str
@@ -39,7 +39,7 @@ class Reporter:
 
 @dataclass(eq=True, frozen=True)
 class Edition:
-    """Class for individual editions in reporters_db,
+    """Class for individual editions in `reporters_db`,
     like "S.W." and "S.W.2d"."""
 
     reporter: Reporter
@@ -61,7 +61,9 @@ class Edition:
 
 @dataclass(eq=True, unsafe_hash=True)
 class CitationBase:
-    """Base class for objects returned by get_citations()."""
+    """Base class for objects returned by `eyecite.find.get_citations`. We
+    define several subclasses of this class below, representing the various
+    types of citations that might exist."""
 
     token: "Token"  # token this citation came from
     index: int  # index of _token in the token list
@@ -218,12 +220,13 @@ class ResourceCitation(CitationBase):
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
 class FullCitation(ResourceCitation):
-    """Abstract base class indicating cite fully identifies a resource."""
+    """Abstract base class indicating that a citation fully identifies a
+    resource."""
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
 class FullLawCitation(FullCitation):
-    """Citation to a source from laws.json."""
+    """Citation to a source from `reporters_db/laws.json`."""
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(FullCitation.Metadata):
@@ -260,7 +263,7 @@ class FullLawCitation(FullCitation):
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
 class FullJournalCitation(FullCitation):
-    """Citation to a source from journals.json."""
+    """Citation to a source from `reporters_db/journals.json`."""
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
@@ -311,7 +314,10 @@ class FullCaseCitation(CaseCitation, FullCitation):
     """Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
 
-    Example: Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    Example:
+    ```
+    Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    ```
     """
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -360,9 +366,12 @@ class ShortCaseCitation(CaseCitation):
     citation lacks a full case name and usually has a different page number
     than the canonical citation.
 
-    Example 1: Adarand, 515 U.S., at 241
-    Example 2: Adarand, 515 U.S. at 241
-    Example 3: 515 U.S., at 241
+    Examples:
+    ```
+    Adarand, 515 U.S., at 241
+    Adarand, 515 U.S. at 241
+    515 U.S., at 241
+    ```
     """
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -387,10 +396,14 @@ class SupraCitation(CitationBase):
     this kind of citation lacks a full case name and usually has a different
     page number than the canonical citation.
 
-    Example 1: Adarand, supra, at 240
-    Example 2: Adarand, 515 supra, at 240
-    Example 3: Adarand, supra, somethingelse
-    Example 4: Adarand, supra. somethingelse
+
+    Examples:
+    ```
+    Adarand, supra, at 240
+    Adarand, 515 supra, at 240
+    Adarand, supra, somethingelse
+    Adarand, supra. somethingelse
+    ```
     """
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -446,8 +459,11 @@ class NonopinionCitation(CitationBase):
     is not an opinion. This could be a citation to a statute, to the U.S. code,
     the U.S. Constitution, etc.
 
-    Example 1: 18 U.S.C. §922(g)(1)
-    Example 2: U. S. Const., Art. I, §8
+    Examples:
+    ```
+    18 U.S.C. §922(g)(1)
+    U. S. Const., Art. I, §8
+    ```
     """
 
 
@@ -495,7 +511,7 @@ Tokens = List[TokenOrStr]
 
 @dataclass(eq=True, unsafe_hash=True)
 class CitationToken(Token):
-    """String matching a citation regex from reporters.json."""
+    """String matching a citation regex from `reporters_db/reporters.json`."""
 
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
@@ -550,8 +566,8 @@ class StopWordToken(Token):
 
 @dataclass
 class TokenExtractor:
-    """Object to extract all matches from a given string for the given regex,
-    and then to return Token objects for all matches."""
+    """Class for extracting all matches from a given string for the given
+    regex, and then for returning Token objects for all matches."""
 
     regex: str
     # constructor should be Callable[[re.Match, dict, int], Token]
@@ -586,7 +602,7 @@ class TokenExtractor:
 @dataclass(frozen=True)
 class Resource(ResourceType):
     """Thin resource class representing an object to which a citation can be
-    resolved."""
+    resolved. See `eyecite.resolve` for more details."""
 
     citation: FullCitation
 

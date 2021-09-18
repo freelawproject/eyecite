@@ -26,8 +26,34 @@ MAX_OPINION_PAGE_COUNT = 150
 
 
 def resolve_full_citation(full_citation: FullCitation) -> Resource:
-    """
-    Resolve fullcase citations to resources directly.
+    """By default, resolve `eyecite.models.FullCaseCitation` objects to a
+    generic (but reference-unique) `eyecite.models.Resource` object. This
+    method is publicly documented because even if you override this method
+    yourself with more sophisticated resolution logic, you may wish to still
+    use this one as a fallback. For example, this could be one sensible
+    pattern:
+
+    >>> def my_resolve(full_cite):
+    ...     # special handling for resolution of known cases in a database
+    ...     resource = MyOpinion.objects.get(full_cite)
+    ...     if resource:
+    ...         return resource
+    ...     # allow normal clustering of other citations
+    ...     return resolve_full_citation(full_cite)
+    >>>
+    >>> resolve_citations(citations, resolve_full_citation=my_resolve)
+    >>>
+    >>> returns (pseudo):
+    >>> {
+    ...     <MyOpinion object>: [<full_cite>, <short_cite>, <id_cite>],
+    ...     <Resource object>: [<full cite>, <short cite>],
+    >>> }
+
+    Args:
+        full_citation: A `eyecite.models.FullCitation` to resolve.
+
+    Returns:
+        The `eyecite.models.Resource` that the citation references.
     """
     return Resource(full_citation)
 
@@ -185,14 +211,24 @@ def resolve_citations(
         [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
     ] = _resolve_id_citation,
 ) -> Resolutions:
-    """Resolves a list of citations to their associated resources by matching
+    """Resolve a list of citations to their associated resources by matching
     each type of Citation object (FullCaseCitation, ShortCaseCitation,
-    SupraCitation, and IdCitation) to a "resource" object. Assumes that the
-    list of citations is ordered in the order that they were extracted from
-    the text (i.e., assumes that supra citations and id citations can only
-    refer to previous references). Returns a dict in the following format:
+    SupraCitation, and IdCitation) to a "resource" object. A "resource" could
+    be a document, a URL, a database entry, etc. -- anything that conforms to
+    the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
+    type. By default, eyecite uses an extremely thin "resource" object that
+    simply serves as a conceptual way to group citations with the same
+    references together.
+
+    This function assumes that the given list of citations is ordered in the
+    order that they were extracted from the text (i.e., assumes that supra
+    citations and id citations can only refer to previous references).
+
+    It returns a dict in the following format:
+    ```
         keys = resources
         values = lists of citations
+    ```
 
     The individual resolution steps can be supplanted with more complex logic
     by passing custom functions (e.g., if you have a thicker resource
@@ -200,6 +236,22 @@ def resolve_citations(
     heuristics to narrow down the set of possible resolutions. If a citation
     cannot be definitively resolved to a resource, it is dropped and not
     resolved.
+
+    Args:
+        citations: A list of `eyecite.models.CitationBase` objects, returned
+            from calling `eyecite.find.get_citations`.
+        resolve_full_citation: A function that resolves
+            `eyecite.models.FullCitation` objects to resources.
+        resolve_shortcase_citation: A function that resolves
+            `eyecite.models.ShortCaseCitation` objects to resources.
+        resolve_supra_citation: A function that resolves
+            `eyecite.models.SupraCitation` objects to resources.
+        resolve_id_citation: A function that resolves
+            `eyecite.models.IdCitation` objects to resources.
+
+    Returns:
+        A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
+            to lists of `eyecite.models.CitationBase` objects (the values).
     """
     # Dict of all citation resolutions
     resolutions: Resolutions = defaultdict(list)

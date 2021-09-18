@@ -1,0 +1,589 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>eyecite.resolve API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>eyecite.resolve</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import re
+from collections import defaultdict
+from typing import Callable, Dict, List, Optional, Tuple, cast
+
+from eyecite.models import (
+    CitationBase,
+    FullCaseCitation,
+    FullCitation,
+    IdCitation,
+    Resource,
+    ResourceType,
+    ShortCaseCitation,
+    SupraCitation,
+)
+from eyecite.utils import strip_punct
+
+# type shorthand
+ResolvedFullCite = Tuple[FullCitation, ResourceType]
+ResolvedFullCites = List[ResolvedFullCite]
+Resolutions = Dict[ResourceType, List[CitationBase]]
+
+
+# Skip id. citations that imply a page length longer than this,
+# such as &#34;1 U.S. 1. Id. at 200.&#34;:
+MAX_OPINION_PAGE_COUNT = 150
+
+
+def resolve_full_citation(full_citation: FullCitation) -&gt; Resource:
+    &#34;&#34;&#34; By default, resolve `eyecite.models.FullCaseCitation` objects to a
+    generic (but reference-unique) `eyecite.models.Resource` object. This
+    method is publicly documented because even if you override this method
+    yourself with more sophisticated resolution logic, you may wish to still
+    use this one as a fallback. For example, this could be one sensible
+    pattern:
+
+    &gt;&gt;&gt; def my_resolve(full_cite):
+    ...     # special handling for resolution of known cases in a custom database
+    ...     resource = MyOpinion.objects.get(full_cite)
+    ...     if resource:
+    ...         return resource
+    ...     # allow normal clustering of other citations
+    ...     return resolve_full_citation(full_cite)
+    &gt;&gt;&gt;
+    &gt;&gt;&gt; resolve_citations(citations, resolve_full_citation=my_resolve)
+    &gt;&gt;&gt;
+    &gt;&gt;&gt; returns (pseudo):
+    &gt;&gt;&gt; {
+    ...     &lt;MyOpinion object&gt;: [&lt;full_cite&gt;, &lt;short_cite&gt;, &lt;id_cite&gt;],
+    ...     &lt;Resource object&gt;: [&lt;full cite&gt;, &lt;short cite&gt;],
+    &gt;&gt;&gt; }
+
+    Args:
+        full_citation: A `eyecite.models.FullCitation` to resolve.
+
+    Returns:
+        The `eyecite.models.Resource` that the citation references.
+    &#34;&#34;&#34;
+    return Resource(full_citation)
+
+
+def _filter_by_matching_antecedent(
+    resolved_full_cites: ResolvedFullCites,
+    antecedent_guess: str,
+) -&gt; Optional[ResourceType]:
+    matches: List[ResourceType] = []
+    ag: str = strip_punct(antecedent_guess)
+    for full_citation, resource in resolved_full_cites:
+        if not isinstance(full_citation, FullCaseCitation):
+            continue
+        if (
+            full_citation.metadata.defendant
+            and ag in full_citation.metadata.defendant
+        ):
+            matches.append(resource)
+        elif (
+            full_citation.metadata.plaintiff
+            and ag in full_citation.metadata.plaintiff
+        ):
+            matches.append(resource)
+
+    # Remove duplicates and only accept if one candidate remains
+    matches = list(set(matches))
+    return matches[0] if len(matches) == 1 else None
+
+
+def _has_invalid_pin_cite(
+    full_cite: FullCitation, id_cite: IdCitation
+) -&gt; bool:
+    &#34;&#34;&#34;Return True if id_cite has a pin cite that can&#39;t be correct for the
+    given full_cite.&#34;&#34;&#34;
+    # if no pin cite, we&#39;re fine
+    if not id_cite.metadata.pin_cite:
+        return False
+
+    # if full cite has no page (such as a statute), we don&#39;t know what to
+    # check, so assume we&#39;re fine
+    if not full_cite.groups.get(&#34;page&#34;, &#34;&#34;).isdigit():
+        return False
+
+    # parse full cite page
+    page = int(full_cite.groups[&#34;page&#34;])
+
+    # parse short cite pin
+    m = re.match(r&#34;(?:at )?(\d+)&#34;, id_cite.metadata.pin_cite)
+    if not m:
+        # If pin cite doesn&#39;t start with a digit, assume it is invalid.
+        # This is hopefully a conservative rule -- it will err for valid pin
+        # cites like &#34;Id. at *10&#34;, but successfully filter invalid pin cites
+        # like &#34;1 U.S. 1. ... Id. at ¶ 10&#34;.
+        return True
+    pin_cite = int(m[1])
+
+    # check page range
+    if pin_cite &lt; page or pin_cite &gt; page + MAX_OPINION_PAGE_COUNT:
+        return True
+
+    return False
+
+
+def _resolve_shortcase_citation(
+    short_citation: ShortCaseCitation,
+    resolved_full_cites: ResolvedFullCites,
+) -&gt; Optional[ResourceType]:
+    &#34;&#34;&#34;
+    Try to match shortcase citations by checking whether their reporter and
+    volume number matches those of any of the previously resolved full
+    citations. If there are multiple possible matches, try to refine by also
+    checking whether their antecedent_guess appears in either the defendant
+    or plaintiff field of any of the previously resolved full citations.
+    &#34;&#34;&#34;
+    candidates: ResolvedFullCites = []
+    for full_citation, resource in resolved_full_cites:
+        if (
+            isinstance(full_citation, FullCaseCitation)
+            and short_citation.corrected_reporter()
+            == full_citation.corrected_reporter()
+            and short_citation.groups.get(&#34;volume&#34;)
+            == full_citation.groups.get(&#34;volume&#34;)
+        ):
+            # Append both keys and values for further refinement below
+            candidates.append((full_citation, resource))
+
+    # Remove duplicates and only accept if one candidate remains
+    if len(set(resource for full_citation, resource in candidates)) == 1:
+        return candidates[0][1]
+
+    # Otherwise, if there is an antecedent guess, try to refine further
+    elif short_citation.metadata.antecedent_guess:
+        return _filter_by_matching_antecedent(
+            candidates, short_citation.metadata.antecedent_guess
+        )
+
+    # Otherwise, nothing left to try
+    else:
+        return None
+
+
+def _resolve_supra_citation(
+    supra_citation: SupraCitation,
+    resolved_full_cites: ResolvedFullCites,
+) -&gt; Optional[ResourceType]:
+    &#34;&#34;&#34;
+    Try to resolve supra citations by checking whether their antecedent_guess
+    appears in either the defendant or plaintiff field of any of the
+    previously resolved full citations.
+    &#34;&#34;&#34;
+    # If no guess, can&#39;t do anything
+    if not supra_citation.metadata.antecedent_guess:
+        return None
+
+    return _filter_by_matching_antecedent(
+        resolved_full_cites, supra_citation.metadata.antecedent_guess
+    )
+
+
+def _resolve_id_citation(
+    id_citation: IdCitation,
+    last_resolution: ResourceType,
+    resolutions: Resolutions,
+) -&gt; Optional[ResourceType]:
+    &#34;&#34;&#34;
+    Resolve id citations to the resource of the previously resolved
+    citation.
+    &#34;&#34;&#34;
+    # if last resolution failed, id. cite should also fail
+    if not last_resolution:
+        return None
+
+    # filter out citations based on pin cite
+    full_cite = cast(FullCitation, resolutions[last_resolution][0])
+    if _has_invalid_pin_cite(full_cite, id_citation):
+        return None
+
+    return last_resolution
+
+
+def resolve_citations(
+    citations: List[CitationBase],
+    resolve_full_citation: Callable[
+        [FullCitation], ResourceType
+    ] = resolve_full_citation,
+    resolve_shortcase_citation: Callable[
+        [ShortCaseCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_shortcase_citation,
+    resolve_supra_citation: Callable[
+        [SupraCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_supra_citation,
+    resolve_id_citation: Callable[
+        [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
+    ] = _resolve_id_citation,
+) -&gt; Resolutions:
+    &#34;&#34;&#34;Resolve a list of citations to their associated resources by matching
+    each type of Citation object (FullCaseCitation, ShortCaseCitation,
+    SupraCitation, and IdCitation) to a &#34;resource&#34; object. A &#34;resource&#34; could
+    be a document, a URL, a database entry, etc. -- anything that conforms to
+    the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
+    type. By default, eyecite uses an extremely thin &#34;resource&#34; object that
+    simply serves as a conceptual way to group citations with the same
+    references together.
+
+    This function assumes that the given list of citations is ordered in the
+    order that they were extracted from the text (i.e., assumes that supra
+    citations and id citations can only refer to previous references).
+
+    It returns a dict in the following format:
+    ```
+        keys = resources
+        values = lists of citations
+    ```
+
+    The individual resolution steps can be supplanted with more complex logic
+    by passing custom functions (e.g., if you have a thicker resource
+    abstraction that you want to use); the default approach is to use simple
+    heuristics to narrow down the set of possible resolutions. If a citation
+    cannot be definitively resolved to a resource, it is dropped and not
+    resolved.
+
+    Args:
+        citations: A list of `eyecite.models.CitationBase` objects, returned
+            from calling `eyecite.find.get_citations`.
+        resolve_full_citation: A function that resolves
+            `eyecite.models.FullCitation` objects to resources.
+        resolve_shortcase_citation: A function that resolves
+            `eyecite.models.ShortCaseCitation` objects to resources.
+        resolve_supra_citation: A function that resolves
+            `eyecite.models.SupraCitation` objects to resources.
+        resolve_id_citation: A function that resolves
+            `eyecite.models.IdCitation` objects to resources.
+
+    Returns:
+        A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
+            to lists of `eyecite.models.CitationBase` objects (the values).
+    &#34;&#34;&#34;
+    # Dict of all citation resolutions
+    resolutions: Resolutions = defaultdict(list)
+
+    # Dict mapping full citations to their resolved resources
+    resolved_full_cites: ResolvedFullCites = []
+
+    # The resource of the most recently resolved citation, if any
+    last_resolution: Optional[ResourceType] = None
+
+    # Iterate over each citation and attempt to resolve it to a resource
+    for citation in citations:
+
+        # If the citation is a full citation, try to resolve it
+        if isinstance(citation, FullCitation):
+            resolution = resolve_full_citation(citation)
+            resolved_full_cites.append((citation, resolution))
+
+        # If the citation is a short case citation, try to resolve it
+        elif isinstance(citation, ShortCaseCitation):
+            resolution = resolve_shortcase_citation(
+                citation, resolved_full_cites
+            )
+
+        # If the citation is a supra citation, try to resolve it
+        elif isinstance(citation, SupraCitation):
+            resolution = resolve_supra_citation(citation, resolved_full_cites)
+
+        # If the citation is an id citation, try to resolve it
+        elif isinstance(citation, IdCitation):
+            resolution = resolve_id_citation(
+                citation, last_resolution, resolutions
+            )
+
+        # If the citation is to a non-opinion document, ignore for now
+        else:
+            resolution = None
+
+        last_resolution = resolution
+        if resolution:
+            # Record the citation in the appropriate list
+            resolutions[resolution].append(citation)
+
+    return resolutions</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="eyecite.resolve.resolve_citations"><code class="name flex">
+<span>def <span class="ident">resolve_citations</span></span>(<span>citations: List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], Hashable[]] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable[]]]], Optional[Hashable[]]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable[]]]], Optional[Hashable[]]] = &lt;function _resolve_supra_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, Hashable[], Dict[Hashable[], List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[Hashable[]]] = &lt;function _resolve_id_citation&gt;) ‑> Dict[Hashable[], List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Resolve a list of citations to their associated resources by matching
+each type of Citation object (FullCaseCitation, ShortCaseCitation,
+SupraCitation, and IdCitation) to a "resource" object. A "resource" could
+be a document, a URL, a database entry, etc. &ndash; anything that conforms to
+the (non-prescriptive) requirements of the <code>eyecite.models.ResourceType</code>
+type. By default, eyecite uses an extremely thin "resource" object that
+simply serves as a conceptual way to group citations with the same
+references together.</p>
+<p>This function assumes that the given list of citations is ordered in the
+order that they were extracted from the text (i.e., assumes that supra
+citations and id citations can only refer to previous references).</p>
+<p>It returns a dict in the following format:</p>
+<pre><code>    keys = resources
+    values = lists of citations
+</code></pre>
+<p>The individual resolution steps can be supplanted with more complex logic
+by passing custom functions (e.g., if you have a thicker resource
+abstraction that you want to use); the default approach is to use simple
+heuristics to narrow down the set of possible resolutions. If a citation
+cannot be definitively resolved to a resource, it is dropped and not
+resolved.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>citations</code></strong></dt>
+<dd>A list of <code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects, returned
+from calling <code><a title="eyecite.find.get_citations" href="find.html#eyecite.find.get_citations">get_citations()</a></code>.</dd>
+<dt><strong><code>resolve_full_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_shortcase_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_supra_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_id_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a></code> objects to resources.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A dictionary mapping <code>eyecite.models.ResourceType</code> objects (the keys)
+to lists of <code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects (the values).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def resolve_citations(
+    citations: List[CitationBase],
+    resolve_full_citation: Callable[
+        [FullCitation], ResourceType
+    ] = resolve_full_citation,
+    resolve_shortcase_citation: Callable[
+        [ShortCaseCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_shortcase_citation,
+    resolve_supra_citation: Callable[
+        [SupraCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_supra_citation,
+    resolve_id_citation: Callable[
+        [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
+    ] = _resolve_id_citation,
+) -&gt; Resolutions:
+    &#34;&#34;&#34;Resolve a list of citations to their associated resources by matching
+    each type of Citation object (FullCaseCitation, ShortCaseCitation,
+    SupraCitation, and IdCitation) to a &#34;resource&#34; object. A &#34;resource&#34; could
+    be a document, a URL, a database entry, etc. -- anything that conforms to
+    the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
+    type. By default, eyecite uses an extremely thin &#34;resource&#34; object that
+    simply serves as a conceptual way to group citations with the same
+    references together.
+
+    This function assumes that the given list of citations is ordered in the
+    order that they were extracted from the text (i.e., assumes that supra
+    citations and id citations can only refer to previous references).
+
+    It returns a dict in the following format:
+    ```
+        keys = resources
+        values = lists of citations
+    ```
+
+    The individual resolution steps can be supplanted with more complex logic
+    by passing custom functions (e.g., if you have a thicker resource
+    abstraction that you want to use); the default approach is to use simple
+    heuristics to narrow down the set of possible resolutions. If a citation
+    cannot be definitively resolved to a resource, it is dropped and not
+    resolved.
+
+    Args:
+        citations: A list of `eyecite.models.CitationBase` objects, returned
+            from calling `eyecite.find.get_citations`.
+        resolve_full_citation: A function that resolves
+            `eyecite.models.FullCitation` objects to resources.
+        resolve_shortcase_citation: A function that resolves
+            `eyecite.models.ShortCaseCitation` objects to resources.
+        resolve_supra_citation: A function that resolves
+            `eyecite.models.SupraCitation` objects to resources.
+        resolve_id_citation: A function that resolves
+            `eyecite.models.IdCitation` objects to resources.
+
+    Returns:
+        A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
+            to lists of `eyecite.models.CitationBase` objects (the values).
+    &#34;&#34;&#34;
+    # Dict of all citation resolutions
+    resolutions: Resolutions = defaultdict(list)
+
+    # Dict mapping full citations to their resolved resources
+    resolved_full_cites: ResolvedFullCites = []
+
+    # The resource of the most recently resolved citation, if any
+    last_resolution: Optional[ResourceType] = None
+
+    # Iterate over each citation and attempt to resolve it to a resource
+    for citation in citations:
+
+        # If the citation is a full citation, try to resolve it
+        if isinstance(citation, FullCitation):
+            resolution = resolve_full_citation(citation)
+            resolved_full_cites.append((citation, resolution))
+
+        # If the citation is a short case citation, try to resolve it
+        elif isinstance(citation, ShortCaseCitation):
+            resolution = resolve_shortcase_citation(
+                citation, resolved_full_cites
+            )
+
+        # If the citation is a supra citation, try to resolve it
+        elif isinstance(citation, SupraCitation):
+            resolution = resolve_supra_citation(citation, resolved_full_cites)
+
+        # If the citation is an id citation, try to resolve it
+        elif isinstance(citation, IdCitation):
+            resolution = resolve_id_citation(
+                citation, last_resolution, resolutions
+            )
+
+        # If the citation is to a non-opinion document, ignore for now
+        else:
+            resolution = None
+
+        last_resolution = resolution
+        if resolution:
+            # Record the citation in the appropriate list
+            resolutions[resolution].append(citation)
+
+    return resolutions</code></pre>
+</details>
+</dd>
+<dt id="eyecite.resolve.resolve_full_citation"><code class="name flex">
+<span>def <span class="ident">resolve_full_citation</span></span>(<span>full_citation: <a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>) ‑> <a title="eyecite.models.Resource" href="models.html#eyecite.models.Resource">Resource</a></span>
+</code></dt>
+<dd>
+<div class="desc"><p>By default, resolve <code><a title="eyecite.models.FullCaseCitation" href="models.html#eyecite.models.FullCaseCitation">FullCaseCitation</a></code> objects to a
+generic (but reference-unique) <code><a title="eyecite.models.Resource" href="models.html#eyecite.models.Resource">Resource</a></code> object. This
+method is publicly documented because even if you override this method
+yourself with more sophisticated resolution logic, you may wish to still
+use this one as a fallback. For example, this could be one sensible
+pattern:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; def my_resolve(full_cite):
+...     # special handling for resolution of known cases in a custom database
+...     resource = MyOpinion.objects.get(full_cite)
+...     if resource:
+...         return resource
+...     # allow normal clustering of other citations
+...     return resolve_full_citation(full_cite)
+&gt;&gt;&gt;
+&gt;&gt;&gt; resolve_citations(citations, resolve_full_citation=my_resolve)
+&gt;&gt;&gt;
+&gt;&gt;&gt; returns (pseudo):
+&gt;&gt;&gt; {
+...     &lt;MyOpinion object&gt;: [&lt;full_cite&gt;, &lt;short_cite&gt;, &lt;id_cite&gt;],
+...     &lt;Resource object&gt;: [&lt;full cite&gt;, &lt;short cite&gt;],
+&gt;&gt;&gt; }
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>full_citation</code></strong></dt>
+<dd>A <code><a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a></code> to resolve.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The <code><a title="eyecite.models.Resource" href="models.html#eyecite.models.Resource">Resource</a></code> that the citation references.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def resolve_full_citation(full_citation: FullCitation) -&gt; Resource:
+    &#34;&#34;&#34; By default, resolve `eyecite.models.FullCaseCitation` objects to a
+    generic (but reference-unique) `eyecite.models.Resource` object. This
+    method is publicly documented because even if you override this method
+    yourself with more sophisticated resolution logic, you may wish to still
+    use this one as a fallback. For example, this could be one sensible
+    pattern:
+
+    &gt;&gt;&gt; def my_resolve(full_cite):
+    ...     # special handling for resolution of known cases in a custom database
+    ...     resource = MyOpinion.objects.get(full_cite)
+    ...     if resource:
+    ...         return resource
+    ...     # allow normal clustering of other citations
+    ...     return resolve_full_citation(full_cite)
+    &gt;&gt;&gt;
+    &gt;&gt;&gt; resolve_citations(citations, resolve_full_citation=my_resolve)
+    &gt;&gt;&gt;
+    &gt;&gt;&gt; returns (pseudo):
+    &gt;&gt;&gt; {
+    ...     &lt;MyOpinion object&gt;: [&lt;full_cite&gt;, &lt;short_cite&gt;, &lt;id_cite&gt;],
+    ...     &lt;Resource object&gt;: [&lt;full cite&gt;, &lt;short cite&gt;],
+    &gt;&gt;&gt; }
+
+    Args:
+        full_citation: A `eyecite.models.FullCitation` to resolve.
+
+    Returns:
+        The `eyecite.models.Resource` that the citation references.
+    &#34;&#34;&#34;
+    return Resource(full_citation)</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="eyecite" href="index.html">eyecite</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="eyecite.resolve.resolve_citations" href="#eyecite.resolve.resolve_citations">resolve_citations</a></code></li>
+<li><code><a title="eyecite.resolve.resolve_full_citation" href="#eyecite.resolve.resolve_full_citation">resolve_full_citation</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

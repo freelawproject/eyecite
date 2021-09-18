@@ -1,0 +1,602 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>eyecite API documentation</title>
+<meta name="description" content="" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Package <code>eyecite</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">from .annotate import annotate_citations
+from .clean import clean_text
+from .find import get_citations
+from .resolve import resolve_citations
+
+__all__ = [
+    &#34;annotate_citations&#34;,
+    &#34;get_citations&#34;,
+    &#34;clean_text&#34;,
+    &#34;resolve_citations&#34;
+]
+
+# No need to create API documentation for these internal helper functions
+__pdoc__ = {
+    &#39;annotate.SpanUpdater&#39;: False,
+    &#39;helpers&#39;: False,
+    &#39;regexes&#39;: False,
+    &#39;test_factories&#39;: False,
+    &#39;utils&#39;: False
+}</code></pre>
+</details>
+</section>
+<section>
+<h2 class="section-title" id="header-submodules">Sub-modules</h2>
+<dl>
+<dt><code class="name"><a title="eyecite.annotate" href="annotate.html">eyecite.annotate</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="eyecite.clean" href="clean.html">eyecite.clean</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="eyecite.find" href="find.html">eyecite.find</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="eyecite.models" href="models.html">eyecite.models</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="eyecite.resolve" href="resolve.html">eyecite.resolve</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt><code class="name"><a title="eyecite.tokenizers" href="tokenizers.html">eyecite.tokenizers</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="eyecite.annotate_citations"><code class="name flex">
+<span>def <span class="ident">annotate_citations</span></span>(<span>plain_text: str, annotations: Iterable[Tuple[Tuple[int, int], Any, Any]], source_text: Optional[str] = None, unbalanced_tags: str = 'unchecked', use_dmp: bool = True, annotator: Optional[Callable[[Any, str, Any], str]] = None) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given a list of citations and the text from which they were parsed,
+insert annotations into the text surrounding each citation. This could be
+useful for linking the citations to a URL, or otherwise indicating that
+they were successfully parsed or resolved.</p>
+<p>If you pre-processed your text before extracting the citations, this
+function will intelligently reconcile the differences between the original
+source text and the cleaned text using a diffing algorithm, ensuring that
+each annotation is inserted in the correct location.</p>
+<p>Example:</p>
+<pre><code class="language-python-repl">&gt;&gt;&gt; plain_text = &quot;foo 1 U.S. 1 bar&quot;
+&gt;&gt;&gt; citations = get_citations(plain_text)
+&gt;&gt;&gt; annotate_citations(&quot;foo 1 U.S. 1 bar&quot;,
+...     [(citations[0].span(), &quot;&lt;a&gt;&quot;, &quot;&lt;/a&gt;&quot;)])
+&gt;&gt;&gt;
+&gt;&gt;&gt; returns: &quot;foo &lt;a&gt;1 U.S. 1&lt;/a&gt; bar&quot;
+</code></pre>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>plain_text</code></strong></dt>
+<dd>The text containing the citations. If this text was
+cleaned, you should also pass the <code>source_text</code> below.</dd>
+<dt><strong><code>annotations</code></strong></dt>
+<dd>A <code>Tuple</code> of (1) the start and end positions of the
+citation in the text, (2) the text to insert before the citation,
+and (3) the text to insert after the citation.</dd>
+<dt><strong><code>source_text</code></strong></dt>
+<dd>If provided, apply annotations to this text instead using
+a diffing algorithm.</dd>
+<dt><strong><code>unbalanced_tags</code></strong></dt>
+<dd>If provided, unbalanced_tags="skip" will skip
+inserting annotations that result in invalid HTML.
+unbalanced_tags="wrap" will ensure valid HTML by wrapping
+annotations around any unbalanced tags.</dd>
+<dt><strong><code>use_dmp</code></strong></dt>
+<dd>If <code>True</code> (default), use the fast diff_match_patch_python
+library for diffing. If <code>False</code>, use the slower built-in difflib,
+which may be useful for debugging.</dd>
+<dt><strong><code>annotator</code></strong></dt>
+<dd>If provided, should be a function that takes three
+arguments (the text to insert before, the text of the citation,
+and the text to insert after) and returns the annotation. This is
+useful for customizing the annotation action: If you don't pass
+this function, eyecite will simply concatenate the before_text,
+citation_text, and after_text together for each annotation.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The annotated text.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def annotate_citations(
+    plain_text: str,
+    annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
+    source_text: Optional[str] = None,
+    unbalanced_tags: str = &#34;unchecked&#34;,
+    use_dmp: bool = True,
+    annotator: Optional[Callable[[Any, str, Any], str]] = None,
+) -&gt; str:
+    &#34;&#34;&#34;Given a list of citations and the text from which they were parsed,
+    insert annotations into the text surrounding each citation. This could be
+    useful for linking the citations to a URL, or otherwise indicating that
+    they were successfully parsed or resolved.
+
+    If you pre-processed your text before extracting the citations, this
+    function will intelligently reconcile the differences between the original
+    source text and the cleaned text using a diffing algorithm, ensuring that
+    each annotation is inserted in the correct location.
+
+    Example:
+    &gt;&gt;&gt; plain_text = &#34;foo 1 U.S. 1 bar&#34;
+    &gt;&gt;&gt; citations = get_citations(plain_text)
+    &gt;&gt;&gt; annotate_citations(&#34;foo 1 U.S. 1 bar&#34;,
+    ...     [(citations[0].span(), &#34;&lt;a&gt;&#34;, &#34;&lt;/a&gt;&#34;)])
+    &gt;&gt;&gt;
+    &gt;&gt;&gt; returns: &#34;foo &lt;a&gt;1 U.S. 1&lt;/a&gt; bar&#34;
+
+    Args:
+        plain_text: The text containing the citations. If this text was
+            cleaned, you should also pass the `source_text` below.
+        annotations: A `Tuple` of (1) the start and end positions of the
+            citation in the text, (2) the text to insert before the citation,
+            and (3) the text to insert after the citation.
+        source_text: If provided, apply annotations to this text instead using
+            a diffing algorithm.
+        unbalanced_tags: If provided, unbalanced_tags=&#34;skip&#34; will skip
+            inserting annotations that result in invalid HTML.
+            unbalanced_tags=&#34;wrap&#34; will ensure valid HTML by wrapping
+            annotations around any unbalanced tags.
+        use_dmp: If `True` (default), use the fast diff_match_patch_python
+            library for diffing. If `False`, use the slower built-in difflib,
+            which may be useful for debugging.
+        annotator: If provided, should be a function that takes three
+            arguments (the text to insert before, the text of the citation,
+            and the text to insert after) and returns the annotation. This is
+            useful for customizing the annotation action: If you don&#39;t pass
+            this function, eyecite will simply concatenate the before_text,
+            citation_text, and after_text together for each annotation.
+
+    Returns:
+        The annotated text.
+    &#34;&#34;&#34;
+    # set up offset_updater if we have to move annotations to source_text
+    offset_updater = None
+    if source_text and source_text != plain_text:
+        offset_updater = SpanUpdater(plain_text, source_text, use_dmp=use_dmp)
+        plain_text = source_text
+
+    # append text for each annotation to out
+    annotations = sorted(annotations)
+    out = []
+    last_end = 0
+    for (start, end), before, after in annotations:
+        # if we&#39;re applying to source_text, update offsets
+        if offset_updater:
+            start = offset_updater.update(start, bisect_right)
+            end = offset_updater.update(end, bisect_left)
+
+        # handle overlaps
+        if start &lt; last_end:
+            # include partial annotation if possible
+            start = last_end
+            if start &gt;= end:
+                # if annotation is entirely covered, skip
+                continue
+
+        span_text = plain_text[start:end]
+
+        # handle HTML tags
+        if unbalanced_tags == &#34;unchecked&#34;:
+            pass
+        elif unbalanced_tags in (&#34;skip&#34;, &#34;wrap&#34;):
+            if not is_balanced_html(span_text):
+                if unbalanced_tags == &#34;skip&#34;:
+                    continue
+                span_text = wrap_html_tags(span_text, after, before)
+        else:
+            raise ValueError(f&#34;Unknown option &#39;{unbalanced_tags}&#34;)
+
+        if annotator is not None:
+            annotated_span = annotator(before, span_text, after)
+        else:
+            annotated_span = before + span_text + after
+
+        # append each span
+        out.extend(
+            [
+                plain_text[last_end:start],
+                annotated_span,
+            ]
+        )
+        last_end = end
+
+    # append text after final citation
+    if last_end &lt; len(plain_text):
+        out.append(plain_text[last_end:])
+
+    return &#34;&#34;.join(out)</code></pre>
+</details>
+</dd>
+<dt id="eyecite.clean_text"><code class="name flex">
+<span>def <span class="ident">clean_text</span></span>(<span>text, steps: Iterable[Union[str, Callable[[str], str]]]) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given a list of "cleaning" functions, apply each in sequence to a
+given text string and return the result. Steps may be the names of
+functions in <code><a title="eyecite.clean" href="clean.html">eyecite.clean</a></code>, or other custom callables. You may wish to
+use this tool to pre-process your text before feeding it into
+<code><a title="eyecite.find.get_citations" href="find.html#eyecite.find.get_citations">get_citations()</a></code>, especially if the text was
+OCR'd from a PDF.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>text</code></strong></dt>
+<dd>The text to clean.</dd>
+<dt><strong><code>steps</code></strong></dt>
+<dd>Any <code>Iterable</code> (e.g., a list) of cleaning functions to apply.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>The cleaned text.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -&gt; str:
+    &#34;&#34;&#34;Given a list of &#34;cleaning&#34; functions, apply each in sequence to a
+    given text string and return the result. Steps may be the names of
+    functions in `eyecite.clean`, or other custom callables. You may wish to
+    use this tool to pre-process your text before feeding it into
+    `eyecite.find.get_citations`, especially if the text was
+    OCR&#39;d from a PDF.
+
+    Args:
+        text: The text to clean.
+        steps: Any `Iterable` (e.g., a list) of cleaning functions to apply.
+
+    Returns:
+        The cleaned text.
+    &#34;&#34;&#34;
+    for step in steps:
+        if step in cleaners_lookup:
+            step_func = cleaners_lookup[step]  # type: ignore
+        elif callable(step):
+            step_func = step
+        else:
+            raise ValueError(
+                &#34;clean_text steps must be callable &#34;
+                f&#34;or one of {list(cleaners_lookup.keys())}&#34;
+            )
+        text = step_func(text)
+
+    return text  # type: ignore</code></pre>
+</details>
+</dd>
+<dt id="eyecite.get_citations"><code class="name flex">
+<span>def <span class="ident">get_citations</span></span>(<span>plain_text: str, remove_ambiguous: bool = False, tokenizer: <a title="eyecite.tokenizers.Tokenizer" href="tokenizers.html#eyecite.tokenizers.Tokenizer">Tokenizer</a> = AhocorasickTokenizer() ‑> List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This is eyecite's main workhorse function. Given a string of text
+(e.g., a judicial opinion or other legal document), return a list of
+<code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects representing the citations found
+in the document.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>plain_text</code></strong></dt>
+<dd>The text to parse. You may wish to use the
+<code><a title="eyecite.clean.clean_text" href="clean.html#eyecite.clean.clean_text">clean_text()</a></code> function to pre-process your text
+before passing it here.</dd>
+<dt><strong><code>remove_ambiguous</code></strong></dt>
+<dd>Whether to remove citations that might refer to more
+than one reporter and can't be narrowed down by date.</dd>
+<dt><strong><code>tokenizer</code></strong></dt>
+<dd>An instance of a Tokenizer object. See <code><a title="eyecite.tokenizers" href="tokenizers.html">eyecite.tokenizers</a></code>
+for information about available tokenizers. Uses the
+<code><a title="eyecite.tokenizers.AhocorasickTokenizer" href="tokenizers.html#eyecite.tokenizers.AhocorasickTokenizer">AhocorasickTokenizer</a></code> by default.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A list of <code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_citations(
+    plain_text: str,
+    remove_ambiguous: bool = False,
+    tokenizer: Tokenizer = default_tokenizer,
+) -&gt; List[CitationBase]:
+    &#34;&#34;&#34;This is eyecite&#39;s main workhorse function. Given a string of text
+    (e.g., a judicial opinion or other legal document), return a list of
+    `eyecite.models.CitationBase` objects representing the citations found
+    in the document.
+
+    Args:
+        plain_text: The text to parse. You may wish to use the
+            `eyecite.clean.clean_text` function to pre-process your text
+            before passing it here.
+        remove_ambiguous: Whether to remove citations that might refer to more
+            than one reporter and can&#39;t be narrowed down by date.
+        tokenizer: An instance of a Tokenizer object. See `eyecite.tokenizers`
+            for information about available tokenizers. Uses the
+            `eyecite.tokenizers.AhocorasickTokenizer` by default.
+
+    Returns:
+        A list of `eyecite.models.CitationBase` objects
+    &#34;&#34;&#34;
+    if plain_text == &#34;eyecite&#34;:
+        return joke_cite
+
+    words, citation_tokens = tokenizer.tokenize(plain_text)
+    citations = []
+
+    for i, token in citation_tokens:
+        citation: CitationBase
+        token_type = type(token)
+
+        # CASE 1: Citation token is a reporter (e.g., &#34;U. S.&#34;).
+        # In this case, first try extracting it as a standard, full citation,
+        # and if that fails try extracting it as a short form citation.
+        if token_type is CitationToken:
+            citation_token = cast(CitationToken, token)
+            if citation_token.short:
+                citation = _extract_shortform_citation(words, i)
+            else:
+                citation = _extract_full_citation(words, i)
+
+        # CASE 2: Citation token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
+        # In this case, the citation should simply be to the item cited
+        # immediately prior, but for safety we will leave that resolution up
+        # to the user.
+        elif token_type is IdToken:
+            citation = _extract_id_citation(words, i)
+
+        # CASE 3: Citation token is a &#34;supra&#34; reference.
+        # In this case, we&#39;re not sure yet what the citation&#39;s antecedent is.
+        # It could be any of the previous citations above. Thus, like an Id.
+        # citation, for safety we won&#39;t resolve this reference yet.
+        elif token_type is SupraToken:
+            citation = _extract_supra_citation(words, i)
+
+        # CASE 4: Citation token is a section marker.
+        # In this case, it&#39;s likely that this is a reference to a non-
+        # opinion document. So we record this marker in order to keep
+        # an accurate list of the possible antecedents for id citations.
+        elif token_type is SectionToken:
+            citation = NonopinionCitation(cast(SectionToken, token), i)
+
+        # CASE 5: The token is not a citation.
+        else:
+            continue
+
+        citations.append(citation)
+
+    # Remove citations with multiple reporter candidates where we couldn&#39;t
+    # guess correct reporter
+    if remove_ambiguous:
+        citations = disambiguate_reporters(citations)
+
+    # Returns a list of citations ordered in the sequence that they appear in
+    # the document. The ordering of this list is important for reconstructing
+    # the references of the ShortCaseCitation, SupraCitation, and
+    # IdCitation objects.
+    return citations</code></pre>
+</details>
+</dd>
+<dt id="eyecite.resolve_citations"><code class="name flex">
+<span>def <span class="ident">resolve_citations</span></span>(<span>citations: List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], Hashable[]] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable[]]]], Optional[Hashable[]]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable[]]]], Optional[Hashable[]]] = &lt;function _resolve_supra_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, Hashable[], Dict[Hashable[], List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[Hashable[]]] = &lt;function _resolve_id_citation&gt;) ‑> Dict[Hashable[], List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Resolve a list of citations to their associated resources by matching
+each type of Citation object (FullCaseCitation, ShortCaseCitation,
+SupraCitation, and IdCitation) to a "resource" object. A "resource" could
+be a document, a URL, a database entry, etc. &ndash; anything that conforms to
+the (non-prescriptive) requirements of the <code>eyecite.models.ResourceType</code>
+type. By default, eyecite uses an extremely thin "resource" object that
+simply serves as a conceptual way to group citations with the same
+references together.</p>
+<p>This function assumes that the given list of citations is ordered in the
+order that they were extracted from the text (i.e., assumes that supra
+citations and id citations can only refer to previous references).</p>
+<p>It returns a dict in the following format:</p>
+<pre><code>    keys = resources
+    values = lists of citations
+</code></pre>
+<p>The individual resolution steps can be supplanted with more complex logic
+by passing custom functions (e.g., if you have a thicker resource
+abstraction that you want to use); the default approach is to use simple
+heuristics to narrow down the set of possible resolutions. If a citation
+cannot be definitively resolved to a resource, it is dropped and not
+resolved.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>citations</code></strong></dt>
+<dd>A list of <code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects, returned
+from calling <code><a title="eyecite.find.get_citations" href="find.html#eyecite.find.get_citations">get_citations()</a></code>.</dd>
+<dt><strong><code>resolve_full_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_shortcase_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_supra_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a></code> objects to resources.</dd>
+<dt><strong><code>resolve_id_citation</code></strong></dt>
+<dd>A function that resolves
+<code><a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a></code> objects to resources.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A dictionary mapping <code>eyecite.models.ResourceType</code> objects (the keys)
+to lists of <code><a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a></code> objects (the values).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def resolve_citations(
+    citations: List[CitationBase],
+    resolve_full_citation: Callable[
+        [FullCitation], ResourceType
+    ] = resolve_full_citation,
+    resolve_shortcase_citation: Callable[
+        [ShortCaseCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_shortcase_citation,
+    resolve_supra_citation: Callable[
+        [SupraCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_supra_citation,
+    resolve_id_citation: Callable[
+        [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
+    ] = _resolve_id_citation,
+) -&gt; Resolutions:
+    &#34;&#34;&#34;Resolve a list of citations to their associated resources by matching
+    each type of Citation object (FullCaseCitation, ShortCaseCitation,
+    SupraCitation, and IdCitation) to a &#34;resource&#34; object. A &#34;resource&#34; could
+    be a document, a URL, a database entry, etc. -- anything that conforms to
+    the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
+    type. By default, eyecite uses an extremely thin &#34;resource&#34; object that
+    simply serves as a conceptual way to group citations with the same
+    references together.
+
+    This function assumes that the given list of citations is ordered in the
+    order that they were extracted from the text (i.e., assumes that supra
+    citations and id citations can only refer to previous references).
+
+    It returns a dict in the following format:
+    ```
+        keys = resources
+        values = lists of citations
+    ```
+
+    The individual resolution steps can be supplanted with more complex logic
+    by passing custom functions (e.g., if you have a thicker resource
+    abstraction that you want to use); the default approach is to use simple
+    heuristics to narrow down the set of possible resolutions. If a citation
+    cannot be definitively resolved to a resource, it is dropped and not
+    resolved.
+
+    Args:
+        citations: A list of `eyecite.models.CitationBase` objects, returned
+            from calling `eyecite.find.get_citations`.
+        resolve_full_citation: A function that resolves
+            `eyecite.models.FullCitation` objects to resources.
+        resolve_shortcase_citation: A function that resolves
+            `eyecite.models.ShortCaseCitation` objects to resources.
+        resolve_supra_citation: A function that resolves
+            `eyecite.models.SupraCitation` objects to resources.
+        resolve_id_citation: A function that resolves
+            `eyecite.models.IdCitation` objects to resources.
+
+    Returns:
+        A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
+            to lists of `eyecite.models.CitationBase` objects (the values).
+    &#34;&#34;&#34;
+    # Dict of all citation resolutions
+    resolutions: Resolutions = defaultdict(list)
+
+    # Dict mapping full citations to their resolved resources
+    resolved_full_cites: ResolvedFullCites = []
+
+    # The resource of the most recently resolved citation, if any
+    last_resolution: Optional[ResourceType] = None
+
+    # Iterate over each citation and attempt to resolve it to a resource
+    for citation in citations:
+
+        # If the citation is a full citation, try to resolve it
+        if isinstance(citation, FullCitation):
+            resolution = resolve_full_citation(citation)
+            resolved_full_cites.append((citation, resolution))
+
+        # If the citation is a short case citation, try to resolve it
+        elif isinstance(citation, ShortCaseCitation):
+            resolution = resolve_shortcase_citation(
+                citation, resolved_full_cites
+            )
+
+        # If the citation is a supra citation, try to resolve it
+        elif isinstance(citation, SupraCitation):
+            resolution = resolve_supra_citation(citation, resolved_full_cites)
+
+        # If the citation is an id citation, try to resolve it
+        elif isinstance(citation, IdCitation):
+            resolution = resolve_id_citation(
+                citation, last_resolution, resolutions
+            )
+
+        # If the citation is to a non-opinion document, ignore for now
+        else:
+            resolution = None
+
+        last_resolution = resolution
+        if resolution:
+            # Record the citation in the appropriate list
+            resolutions[resolution].append(citation)
+
+    return resolutions</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3><a href="#header-submodules">Sub-modules</a></h3>
+<ul>
+<li><code><a title="eyecite.annotate" href="annotate.html">eyecite.annotate</a></code></li>
+<li><code><a title="eyecite.clean" href="clean.html">eyecite.clean</a></code></li>
+<li><code><a title="eyecite.find" href="find.html">eyecite.find</a></code></li>
+<li><code><a title="eyecite.models" href="models.html">eyecite.models</a></code></li>
+<li><code><a title="eyecite.resolve" href="resolve.html">eyecite.resolve</a></code></li>
+<li><code><a title="eyecite.tokenizers" href="tokenizers.html">eyecite.tokenizers</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="eyecite.annotate_citations" href="#eyecite.annotate_citations">annotate_citations</a></code></li>
+<li><code><a title="eyecite.clean_text" href="#eyecite.clean_text">clean_text</a></code></li>
+<li><code><a title="eyecite.get_citations" href="#eyecite.get_citations">get_citations</a></code></li>
+<li><code><a title="eyecite.resolve_citations" href="#eyecite.resolve_citations">resolve_citations</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

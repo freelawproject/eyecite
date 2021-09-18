@@ -32,7 +32,24 @@ def get_citations(
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
 ) -> List[CitationBase]:
-    """Main function"""
+    """This is eyecite's main workhorse function. Given a string of text
+    (e.g., a judicial opinion or other legal document), return a list of
+    `eyecite.models.CitationBase` objects representing the citations found
+    in the document.
+
+    Args:
+        plain_text: The text to parse. You may wish to use the
+            `eyecite.clean.clean_text` function to pre-process your text
+            before passing it here.
+        remove_ambiguous: Whether to remove citations that might refer to more
+            than one reporter and can't be narrowed down by date.
+        tokenizer: An instance of a Tokenizer object. See `eyecite.tokenizers`
+            for information about available tokenizers. Uses the
+            `eyecite.tokenizers.AhocorasickTokenizer` by default.
+
+    Returns:
+        A list of `eyecite.models.CitationBase` objects
+    """
     if plain_text == "eyecite":
         return joke_cite
 
@@ -49,23 +66,23 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = extract_shortform_citation(words, i)
+                citation = _extract_shortform_citation(words, i)
             else:
-                citation = extract_full_citation(words, i)
+                citation = _extract_full_citation(words, i)
 
         # CASE 2: Citation token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
         # immediately prior, but for safety we will leave that resolution up
         # to the user.
         elif token_type is IdToken:
-            citation = extract_id_citation(words, i)
+            citation = _extract_id_citation(words, i)
 
         # CASE 3: Citation token is a "supra" reference.
         # In this case, we're not sure yet what the citation's antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
         elif token_type is SupraToken:
-            citation = extract_supra_citation(words, i)
+            citation = _extract_supra_citation(words, i)
 
         # CASE 4: Citation token is a section marker.
         # In this case, it's likely that this is a reference to a non-
@@ -92,7 +109,7 @@ def get_citations(
     return citations
 
 
-def extract_full_citation(
+def _extract_full_citation(
     words: Tokens,
     index: int,
 ) -> FullCitation:
@@ -132,7 +149,7 @@ def extract_full_citation(
     return citation
 
 
-def extract_shortform_citation(
+def _extract_shortform_citation(
     words: Tokens,
     index: int,
 ) -> ShortCaseCitation:
@@ -180,7 +197,7 @@ def extract_shortform_citation(
     return citation
 
 
-def extract_supra_citation(
+def _extract_supra_citation(
     words: Tokens,
     index: int,
 ) -> SupraCitation:
@@ -221,7 +238,7 @@ def extract_supra_citation(
     )
 
 
-def extract_id_citation(
+def _extract_id_citation(
     words: Tokens,
     index: int,
 ) -> IdCitation:

@@ -15,32 +15,49 @@ def annotate_citations(
     unbalanced_tags: str = "unchecked",
     use_dmp: bool = True,
     annotator: Optional[Callable[[Any, str, Any], str]] = None,
-):
-    """Insert annotations into text around each citation.
-    Each annotation is a tuple of an extracted citation, before text, and
-    after text.
+) -> str:
+    """Given a list of citations and the text from which they were parsed,
+    insert annotations into the text surrounding each citation. This could be
+    useful for linking the citations to a URL, or otherwise indicating that
+    they were successfully parsed or resolved.
+
+    If you pre-processed your text before extracting the citations, this
+    function will intelligently reconcile the differences between the original
+    source text and the cleaned text using a diffing algorithm, ensuring that
+    each annotation is inserted in the correct location.
 
     Example:
     >>> plain_text = "foo 1 U.S. 1 bar"
     >>> citations = get_citations(plain_text)
     >>> annotate_citations("foo 1 U.S. 1 bar",
     ...     [(citations[0].span(), "<a>", "</a>")])
-    "foo <a>1 U.S. 1</a> bar"
+    >>>
+    >>> returns: "foo <a>1 U.S. 1</a> bar"
 
-    If source_text is provided, apply annotations to that text
-    instead using diffing.
+    Args:
+        plain_text: The text containing the citations. If this text was
+            cleaned, you should also pass the `source_text` below.
+        annotations: A `Tuple` of (1) the start and end positions of the
+            citation in the text, (2) the text to insert before the citation,
+            and (3) the text to insert after the citation.
+        source_text: If provided, apply annotations to this text instead using
+            a diffing algorithm.
+        unbalanced_tags: If provided, unbalanced_tags="skip" will skip
+            inserting annotations that result in invalid HTML.
+            unbalanced_tags="wrap" will ensure valid HTML by wrapping
+            annotations around any unbalanced tags.
+        use_dmp: If `True` (default), use the fast diff_match_patch_python
+            library for diffing. If `False`, use the slower built-in difflib,
+            which may be useful for debugging.
+        annotator: If provided, should be a function that takes three
+            arguments (the text to insert before, the text of the citation,
+            and the text to insert after) and returns the annotation. This is
+            useful for customizing the annotation action: If you don't pass
+            this function, eyecite will simply concatenate the before_text,
+            citation_text, and after_text together for each annotation.
 
-    If source_text is provided, unbalanced_tags="skip" will skip inserting
-    annotations that result in invalid HTML. unbalanced_tags="wrap" will
-    ensure valid HTML by wrapping annotations around any unbalanced tags.
-
-    If use_dmp=True (default), use the fast diff_match_patch_python library
-    for diffing. Use False for the slower builtin difflib, which may be
-    useful for debugging.
-
-    If annotator is provided, it should be a function that takes
-    (before, span_text, after) and returns the annotation.
-    By default before + span_text + after will be inserted.
+    Returns:
+        The annotated text.
     """
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
