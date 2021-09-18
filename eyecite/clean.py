@@ -1,7 +1,26 @@
 import re
-from typing import Callable, Dict
+from typing import Callable, Dict, Iterable, Union
 
 import lxml.html
+
+
+def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
+    """Applies each step in order to text, returning the result.
+    Steps may be the names of functions in eyecite.cleaners, or callables.
+    """
+    for step in steps:
+        if step in cleaners_lookup:
+            step_func = cleaners_lookup[step]  # type: ignore
+        elif callable(step):
+            step_func = step
+        else:
+            raise ValueError(
+                "clean_text steps must be callable "
+                f"or one of {list(cleaners_lookup.keys())}"
+            )
+        text = step_func(text)
+
+    return text  # type: ignore
 
 
 def html(html_content: str) -> str:
