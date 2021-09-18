@@ -2,7 +2,8 @@ import re
 from textwrap import dedent
 from unittest import TestCase
 
-from eyecite import clean_text, dump_citations, get_citations
+from eyecite import clean_text, get_citations
+from eyecite.utils import dump_citations
 
 
 class UtilsTest(TestCase):
