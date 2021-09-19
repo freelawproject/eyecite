@@ -1,7 +1,7 @@
 eyecite
 ==========
 
-eyecite is an open source tool for extracting legal citations from text. It is used, among other things, to annotate millions of legal documents in the collections of `CourtListener <https://www.courtlistener.com/>`_ and the `Caselaw Access Project <https://case.law/>`_.
+eyecite is an open source tool for extracting legal citations from text. It is used, among other things, to process millions of legal documents in the collections of `CourtListener <https://www.courtlistener.com/>`_ and the `Caselaw Access Project <https://case.law/>`_.
 
 eyecite recognizes a wide variety of citations commonly appearing in American legal decisions, including:
 
@@ -12,20 +12,24 @@ eyecite recognizes a wide variety of citations commonly appearing in American le
 * supra: ``Bush, supra, at 100``
 * id.: ``Id., at 101``
 
-You can see all of the citation patterns eyecite looks for over in `reporters_db <https://github.com/freelawproject/reporters-db>`_.
-
 All contributors, corrections, and additions are welcome!
 
-Background
-==========
-This project is the culmination of `years <https://free.law/2012/05/11/building-a-citator-on-courtlistener/>`_ `of <https://free.law/2015/11/30/our-new-citation-finder/>`_ `work <https://free.law/2020/03/05/citation-data-gets-richer/>`_ to build a citator within CourtListener. This project represents the next step in that development: decoupling the parsing logic and exposing it for third-party use as a standalone Python package.
+Functionality
+=============
 
-Since eyecite was factored out from the CourtListener codebase into a standalone package, it has been developed in collaboration with the Caselaw Access Project.
+eyecite offers four core functions:
+
+* `Extraction <https://freelawproject.github.io/eyecite/find.html>`_: Recognize and extract citations from text, using a database that has been trained on over 55 million existing citations (see all of the citation patterns eyecite looks for over in `reporters_db <https://github.com/freelawproject/reporters-db>`_).
+* `Aggregation <https://freelawproject.github.io/eyecite/resolve.html>`_: Aggregate citations with common references (e.g., `supra` and `id.` citations) based on their logical antecedents.
+* `Annotation <https://freelawproject.github.io/eyecite/annotate.html>`_: Annotate citation-laden text with custom markup surrounding each citation, using a fast diffing algorithm.
+* `Cleaning <https://freelawproject.github.io/eyecite/clean.html>`_: Clean and pre-process text for easy use with eyecite.
+
+Read on below for how to get started quickly or for a short tutorial in using eyecite.
 
 Contributions & Support
 =======================
 
-Please see the issues list on Github for things we need, or start a conversation if you have questions or need support.
+Please see the issues list on GitHub for things we need, or start a conversation if you have questions or need support.
 
 If you are fixing bugs or adding features, before you make your first contribution, we'll need a signed contributor license agreement. See the template in the root of the repo for how to get that taken care of.
 
@@ -46,7 +50,7 @@ Install eyecite::
     pip install eyecite
 
 
-Here's a short example of extracting citations and their metadata from text::
+Here's a short example of extracting citations and their metadata from text using eyecite's main :code:`get_citations()` function::
 
     from eyecite import get_citations
 
@@ -84,137 +88,171 @@ Here's a short example of extracting citations and their metadata from text::
 Tutorial
 ==========
 
-Here's a full-featured example of efficiently extracting citations from an HTML document and annotating them with
-links to documents in a database.
+Here's a more full-featured walkthrough of how to use all of eyecite's functionality.
+We'll begin by extracting citations from an HTML document, which we'll then aggregate
+into groups based on their referents. Finally, we'll annotate the original text with
+hypothetical URLs linking to each citation's referent.
 
-.. comment
-
-    # mock database model to make the rest of the tutorial executable, in theory:
-    class MyCaseModel:
-        frontend_url = '/us/1/2/'
-        @classmethod
-        def get_by_citation(cls, citation):
-            return cls()
-
-First our imports::
+First, import the functions and models we'll need::
 
     # imports
-    from eyecite import get_citations, clean_text, resolve_citations, annotate
+    from eyecite import get_citations, clean_text, resolve_citations, annotate_citations
     from eyecite.models import FullCaseCitation
     from eyecite.resolve import resolve_full_citation
     from eyecite.tokenizers import HyperscanTokenizer
 
-We want to insert links into a piece of HTML like this::
+For this tutorial, let's assume our source text is a piece of HTML like this::
 
     text = """
-        <p>1 <i>U.S.</i> 2, 1 S.Ct. 2.<p>
+        <p>5 <i>U. S.</i> 137, 1 Cranch 137.<p>
         <p>Id.</p>
         <p>Mass. Gen.    Laws ch. 1, § 2.</p>
     """
 
-Note that tags may overlap with
-citations and whitespace may be uneven. We want "1 U.S. 2", "1 S.Ct. 2" and "Id." to all
-link to the same URL fetched from our database, since they all refer to the same case.
-Any cites we don't have in our database will link to "/unknown_cite"
-
-First we'll get the text ready for cite extraction::
+Note that some of these HTML tags overlap/intersect with the citations, and the whitespace is uneven.
+To deal with this, we first have to clean the text to get it ready for citation extraction::
 
     cleaned_text = clean_text(text, ['html', 'all_whitespace'])
 
     # cleaned_text:
-    # "1 U.S. 2, 1 S.Ct. 2. Id. Mass. Gen. Laws ch. 1, § 2."
+    # "5 U. S. 137, 1 Cranch 137. Id. Mass. Gen. Laws ch. 1, § 2."
 
-Next we'll extract citations using a custom tokenizer. Unlike the default
-tokenizer this uses hyperscan for much faster extraction, with a precompiled
+Next, we'll extract the citations using a custom tokenizer. Unlike the default
+tokenizer, here we'll use hyperscan for much faster extraction, with a precompiled
 regular expression database stored in ``.test_cache/``.
-(This step depends on installation of hyperscan dependencies, as described in the "Installation" section)::
+(This step depends on installation of the hyperscan dependencies, as described in the `Installation <#installation>`_ section below)::
 
     tokenizer = HyperscanTokenizer(cache_dir=".test_cache")
     citations = get_citations(cleaned_text, tokenizer=tokenizer)
 
     # citations:
     # [
-    #   FullCaseCitation('1 U.S. 2'),
-    #   FullCaseCitation('1 S.Ct. 2'),
+    #   FullCaseCitation('5 U.S. 137'),
+    #   FullCaseCitation('1 Cranch 137'),
     #   IdCitation(),
     #   FullLawCitation('Mass. Gen. Laws ch. 1, § 2'),
     # ]
 
-Now we want to resolve all of the extracted cites into clusters indexed by
-the resource they refer to, such as a case or statute. We'll use a custom
-function to resolve a given full cite to its resource, so we can return our
-own MyCaseModel for citations we recognize. We'll fall back on returning
-:code:`resolve_full_citation()` for citations we don't recognize.
-
-For this simplified example, we'll assume we have a database model :code:`MyCaseModel`
-so that :code:`MyCaseModel.get_by_citation()` will return the case referred to by that
-citation string. In real life this might be a Django model or Elasticsearch lookup.
-We'll also assume that the same case has the parallel citations
-"1 U.S. 2" and "1 S. Ct. 2", so :code:`MyCaseModel.get_by_citation("1 U.S. 2")` returns
-the same case as :code:`MyCaseModel.get_by_citation("1 S. Ct. 2")`.
+Now we want to aggregate all of the extracted cites into clusters by resolving them to
+the common "resources" that they refer to, such as a case or statute. The third citation
+is just a reference to the previous citation, so we expect those two citations to be grouped
+together. (By default, this process also works for "supra" citations and "short form" citations.)
 
 ::
 
-    def resolve_cite(cite):
-        if isinstance(cite, FullCaseCitation):
-            resource = MyCaseModel.get_by_citation(cite.corrected_citation())
-            if resource:
-                return resource
-        return resolve_full_citation(cite)
-
-    resolutions = resolve_citations(citations, resolve_full_citation=resolve_cite)
+    resolutions = resolve_citations(citations)
 
     # resolutions:
     # {
-    #   MyCaseModel('1 U.S. 2'): [FullCaseCitation('1 U.S. 2'), FullCaseCitation('1 S.Ct. 2'), IdCitation()],
-    #   eyecite.models.Resource(...): [FullLawCitation('Mass. Gen. Laws ch. 1, § 2')],
+    #   eyecite.models.Resource('5 U.S. 137'): [FullCaseCitation('5 U.S. 137')],
+    #   eyecite.models.Resource('1 Cranch 137'): [FullCaseCitation('1 Cranch 137'), IdCitation()],
+    #   eyecite.models.Resource('Mass. Gen. Laws ch. 1, § 2'): [FullLawCitation('Mass. Gen. Laws ch. 1, § 2')],
     # }
 
-(Note the use of :code:`cite.corrected_citation()`, which returns "1 S. Ct. 2" for the matched citation "1 S.Ct. 2".
-reporters_db includes many variations for reporter names, so it's useful to match cases by their corrected
-reporters rather than the exact string found in the text.)
+This is good, but in reality :code:`5 U.S. 137` and :code:`1 Cranch 137` are *parallel citations*: they're both citations to the same case, :code:`Marbury v. Madison`, but with different reporters.
+On its own, eyecite has no way of knowing this (its resolution logic is based on simple heuristics regarding each citation's textual representation). So, in order to perform more
+sophisticated resolution -- and link these :code:`U.S.` and :code:`Cranch` citations together -- we'll have to pass a custom callback to eyecite's resolution function that integrates with some third-party API.
 
-Finally we can prepare annotations for each citation in our clusters. An annotation is
-text to insert back into cleaned_text, like :code:`((<start offset>, <end offset>), <before text>, <after text>)`::
+For this pseudo example, we'll assume that we've created a custom lookup function that can query the `CourtListener API <https://www.courtlistener.com/api/rest-info/>`_
+or the `Caselaw Access Project API <https://case.law/docs/site_features/api>`_ for information about parallel citations. In real life, you could also query your own database for this information.
+In effect, we'll assume that we have a function :code:`get_case_by_citation()` such that :code:`get_case_by_citation("5 U.S. 137")` and :code:`get_case_by_citation("1 Cranch 137")` both return an object
+representing :code:`Marbury v. Madison`.
+
+::
+
+    def custom_resolution_callback(full_citation):
+        if isinstance(full_citation, FullCaseCitation):
+            resource = get_case_by_citation(full_citation.corrected_citation())
+            if resource:
+                return resource
+        return resolve_full_citation(full_citation)
+
+    resolutions2 = resolve_citations(citations, resolve_full_citation=custom_resolution_callback)
+
+    # resolutions2 (pseudo):
+    # {
+    #   SomeCustomObject('Marbury v. Madison'): [FullCaseCitation('5 U.S. 137'), FullCaseCitation('1 Cranch 137'), IdCitation()],
+    #   eyecite.models.Resource('Mass. Gen. Laws ch. 1, § 2'): [FullLawCitation('Mass. Gen. Laws ch. 1, § 2')],
+    # }
+
+Now the first three citations are properly grouped together. Two things should be noted about this pattern. First, we fell back to using eyecite's default :code:`resolve_full_citation()` function for citations that our custom function :code:`get_case_by_citation()` didn't recognize.
+Second, we used :code:`full_citation.corrected_citation()`, which returns "5 U.S. 137" for the matched citation "5 U. S. 137". :code:`reporters_db` includes many variations for reporter names, so it's useful to match cases by their corrected reporters rather than the exact string found in the text.
+
+Finally, we can prepare annotations for each of these citations, now grouped in clusters. An annotation is
+text to insert back into the cleaned_text, like :code:`((<start offset>, <end offset>), <before text>, <after text>)`. The positional offsets for each citation
+can be easily retrieved by calling each citation's :code:`span()` method. Here, we'll plan to annotate each citation with a URL to some external API::
 
     annotations = []
-    for resource, cites in resolutions.items():
-        if isinstance(resource, MyCaseModel):
-            # add link to case we were able to resolve:
+    for resource, citations in resolutions.items():
+        # add bespoke URL to each citation:
+        url = f"/some_api?cite={resource.citation.matched_text()}"
+        for citation in citations:
+            annotations.append((citation.span(), f"<a href='{url}'>", f"</a>"))
+
+    # annotations:
+    # [
+    #   ((0, 11), "<a href='/some_api?cite=5 U. S. 137'>", '</a>'),
+    #   ((13, 25), "<a href='/some_api?cite=1 Cranch 137'>", '</a>'),
+    #   ((27, 30), "<a href='/some_api?cite=1 Cranch 137'>", '</a>'),
+    #   ((31, 57), "<a href='/some_api?cite=Mass. Gen. Laws ch. 1, § 2'>", '</a>')]
+    # ]
+
+However, recall that if we had actually overridden the resolution function before, we would have more information to possibly combine with our annotations. For example,
+let's assume that our custom :code:`get_case_by_citation()` function returned an object representing :code:`Marbury v. Madison` that contained a specific URL for that case.
+This is how we might use that information::
+
+    annotations2 = []
+    for resource, citations in resolutions.items():
+        if isinstance(resource, SomeCustomObject):
+            # add hypothetical link to case we were able to resolve using our custom function above
             url = resource.frontend_url
         else:
-            # add link to case we weren't able to resolve:
-            url = f"/unknown_cite?cite={resource.citation.matched_text()}"
-        for cite in cites:
-            annotations.append((cite.span(), f"<a href='{url}'>", f"</a>"))
+            # add generic link to all the other citations
+            url = f"/some_api?cite={resource.citation.matched_text()}"
+        for citation in citations:
+            annotations2.append((citation.span(), f"<a href='{url}'>", f"</a>"))
 
-Now we have annotations ready to add to :code:`clean_text`, but we actually want to insert them into our original
-:code:`text` variable with HTML formatting. We can pass :code:`source_text=text` into :code:`annotate()` to have the
-annotation positions adjusted and inserted into :code:`text` using the diff-match-patch library::
+    # annotations2 (pseudo):
+    # [
+    #   ((0, 11), "<a href=ACTUAL_URL_TO_CASE>", '</a>'),
+    #   ((13, 25), "<a href=ACTUAL_URL_TO_CASE>", '</a>'),
+    #   ((27, 30), "<a href=ACTUAL_URL_TO_CASE>", '</a>'),
+    #   ((31, 57), "<a href='/some_api?cite=Mass. Gen. Laws ch. 1, § 2'>", '</a>')]
+    # ]
 
-    annotated_text = annotate(cleaned_text, annotations, source_text=text)
+In either case, we now have annotations ready to add to the :code:`clean_text`, but we actually want to insert them into our original
+:code:`text` variable with the HTML formatting. To do this, we can pass :code:`source_text=text` into :code:`annotate_citations()`, which will
+intelligently adjust the annotation positions using the diff-match-patch library::
+
+    annotated_text = annotate_citations(cleaned_text, annotations, source_text=text)
 
     # annotated_text:
     # """
-    #     <p><a href='/us/1/2/'>1 <i>U.S.</i> 2</a>, <a href='/us/1/2/'>1 S.Ct. 2</a>.<p>
-    #     <p><a href='/us/1/2/'>Id.</a></p>
-    #     <p><a href='/unknown_cite?cite=Mass. Gen. Laws ch. 1, § 2'>Mass. Gen.    Laws ch. 1, § 2</a>.</p>
+    #    <p><a href='/some_api?cite=5 U. S. 137'>5 <i>U. S.</i> 137</a>, <a href='/some_api?cite=1 Cranch 137'>1 Cranch 137</a>.<p>
+    #    <p><a href='/some_api?cite=1 Cranch 137'>Id.</a></p>
+    #    <p><a href='/some_api?cite=Mass. Gen. Laws ch. 1, § 2'>Mass. Gen.    Laws ch. 1, § 2</a>.</p>
     # """
 
 Ta da!
 
-Getting Citations
+Documentation
 =================
 
-:code:`get_citations()`, the main executable function, takes several parameters.
+eyecite's full API is documented `here <https://freelawproject.github.io/eyecite/>`_, but here are details regarding its four core functions, its tokenization logic, and its debugging tools.
 
-1. :code:`remove_ambiguous` ==> bool, default :code:`False`: whether to remove citations
+Extracting Citations
+--------------------
+
+:code:`get_citations()`, the main executable function, takes three parameters.
+
+1. :code:`plain_text` ==> str: The text to parse. Should be cleaned first.
+2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations
    that might refer to more than one reporter and can't be narrowed down by date.
-2. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: an instance of a Tokenizer object (see "Tokenizers" below)
+3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
 
 
 Cleaning Input Text
-===================
+-------------------
 
 For a given citation text such as "... 1 Baldwin's Rep. 1 ...", eyecite expects that the text
 will be "clean" before being passed to :code:`get_citation`. This means:
@@ -233,7 +271,7 @@ You can use :code:`clean_text` to help with this:
     plain_text = clean_text(text, ['html', 'inline_whitespace', my_func])
     found_citations = get_citations(plain_text)
 
-See the Annotating Citations section for how to insert links into the original text using
+See the `Annotating Citations <#annotating-citations>`_ section for how to insert links into the original text using
 citations extracted from the cleaned text.
 
 :code:`clean_text` currently accepts these values as cleaners:
@@ -246,7 +284,7 @@ citations extracted from the cleaned text.
 
 
 Annotating Citations
-====================
+--------------------
 
 For simple plain text, you can insert links to citations using the :code:`annotate` function:
 
@@ -286,7 +324,7 @@ The above example extracts citations from :code:`plain_text` and applies them to
 in the original text.
 
 Wrapping HTML Tags
-------------------
+^^^^^^^^^^^^^^^^^^
 
 Note that the above example includes mismatched HTML tags: "<a>1 U.S.</i> 12</a>".
 To specify handling for unbalanced tags, use the :code:`unbalanced_tags` parameter:
@@ -294,14 +332,14 @@ To specify handling for unbalanced tags, use the :code:`unbalanced_tags` paramet
 * :code:`unbalanced_tags="skip"`: annotations that would result in unbalanced tags will not be inserted.
 * :code:`unbalanced_tags="wrap"`: unbalanced tags will be wrapped, resulting in :code:`<a>1 U.S.</a></i><a> 12</a>`
 
-**Important:** :code:`unbalanced_tags="wrap"` uses a simple regular expression and will only work for HTML where
+Important: :code:`unbalanced_tags="wrap"` uses a simple regular expression and will only work for HTML where
 angle brackets are properly escaped, such as the HTML emitted by :code:`lxml.html.tostring`. It is intended for
 regularly formatted documents such as case text published by courts. It may have
 unpredictable results for deliberately-constructed challenging inputs such as citations containing partial HTML
 comments or :code:`<pre>` tags.
 
 Customizing Annotation
-----------------------
+^^^^^^^^^^^^^^^^^^^^^^
 
 If inserting text before and after isn't sufficient, supply a callable under the :code:`annotator` parameter
 that takes :code:`(before, span_text, after)` and returns the annotated text:
@@ -316,7 +354,7 @@ that takes :code:`(before, span_text, after)` and returns the annotated text:
     'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
 
 Resolving Citations
-===================
+-------------------
 
 Once you have extracted citations from a document, you may wish to resolve them to their common references.
 To do so, just pass the results of :code:`get_citations()` into :code:`resolve_citations()`. This function will
@@ -364,8 +402,68 @@ a custom full citation resolution function as follows, using the default resolut
         <Resource object>: [<full cite>, <short cite>],
     }
 
-Dumping Citations
-=================
+Tokenizers
+----------
+
+Internally, eyecite works by applying a list of regular expressions to the source text to convert it to a list
+of tokens:
+
+::
+
+    In [1]: from eyecite.tokenizers import default_tokenizer
+
+    In [2]: list(default_tokenizer.tokenize("Foo v. Bar, 123 U.S. 456 (2016). Id. at 457."))
+    Out[2]:
+    ['Foo',
+     StopWordToken(data='v.', ...),
+     'Bar,',
+     CitationToken(data='123 U.S. 456', volume='123', reporter='U.S.', page='456', ...),
+     '(2016).',
+     IdToken(data='Id.', ...),
+     'at',
+     '457.']
+
+Tokens are then scanned to determine values like the citation year or case name for citation resolution.
+
+Alternate tokenizers can be substituted by providing a tokenizer instance to :code:`get_citations()`:
+
+::
+
+    from eyecite.tokenizers import HyperscanTokenizer
+    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
+    cites = get_citations(text, tokenizer=hyperscan_tokenizer)
+
+test_FindTest.py includes a simplified example of using a custom tokenizer that uses modified
+regular expressions to extract citations with OCR errors.
+
+eyecite ships with two tokenizers:
+
+AhocorasickTokenizer (default)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The default tokenizer uses the pyahocorasick library to filter down eyecite's list of
+extractor regexes. It then performs extraction using the builtin :code:`re` library.
+
+HyperscanTokenizer
+^^^^^^^^^^^^^^^^^^
+
+The alternate HyperscanTokenizer compiles all extraction regexes into a hyperscan database
+so they can be extracted in a single pass. This is far faster than the default tokenizer
+(exactly how much faster depends on how many citation formats are included in the target text),
+but requires the optional :code:`hyperscan` dependency that has limited platform support.
+See the "Installation" section for hyperscan installation instructions and limitations.
+
+Compiling the hyperscan database takes several seconds, so short-running scripts may want to
+provide a cache directory where the database can be stored. The directory should be writeable
+only by the user:
+
+::
+
+    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
+
+
+Debugging
+---------
 
 If you want to see what metadata eyecite is able to extract for each citation, you can use :code:`dump_citations`.
 This is primarily useful for developing eyecite, but may also be useful for exploring what data is available to you::
@@ -405,64 +503,6 @@ This is primarily useful for developing eyecite, but may also be useful for expl
 In the real terminal, the :code:`span()` of each extracted citation will be highlighted.
 You can use the :code:`context_chars=30` parameter to control how much text is shown before and after.
 
-Tokenizers
-==========
-
-Internally, eyecite works by applying a list of regular expressions to the source text to convert it to a list
-of tokens:
-
-::
-
-    In [1]: from eyecite.tokenizers import default_tokenizer
-
-    In [2]: list(default_tokenizer.tokenize("Foo v. Bar, 123 U.S. 456 (2016). Id. at 457."))
-    Out[2]:
-    ['Foo',
-     StopWordToken(data='v.', ...),
-     'Bar,',
-     CitationToken(data='123 U.S. 456', volume='123', reporter='U.S.', page='456', ...),
-     '(2016).',
-     IdToken(data='Id.', ...),
-     'at',
-     '457.']
-
-Tokens are then scanned to determine values like the citation year or case name for citation resolution.
-
-Alternate tokenizers can be substituted by providing a tokenizer instance to :code:`get_citations()`:
-
-::
-
-    from eyecite.tokenizers import HyperscanTokenizer
-    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
-    cites = get_citations(text, tokenizer=hyperscan_tokenizer)
-
-test_FindTest.py includes a simplified example of using a custom tokenizer that uses modified
-regular expressions to extract citations with OCR errors.
-
-eyecite ships with two tokenizers:
-
-AhocorasickTokenizer (default)
-------------------------------
-
-The default tokenizer uses the pyahocorasick library to filter down eyecite's list of
-extractor regexes. It then performs extraction using the builtin :code:`re` library.
-
-HyperscanTokenizer
-------------------
-
-The alternate HyperscanTokenizer compiles all extraction regexes into a hyperscan database
-so they can be extracted in a single pass. This is far faster than the default tokenizer
-(exactly how much faster depends on how many citation formats are included in the target text),
-but requires the optional :code:`hyperscan` dependency that has limited platform support.
-See the "Installation" section for hyperscan installation instructions and limitations.
-
-Compiling the hyperscan database takes several seconds, so short-running scripts may want to
-provide a cache directory where the database can be stored. The directory should be writeable
-only by the user:
-
-::
-
-    hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
 
 Installation
 ============
@@ -528,7 +568,6 @@ For a manual deployment, run:
 
 You will probably also need to push new documentation files to the gh-pages branch.
 
-
 Testing
 =======
 eyecite comes with a robust test suite of different citation strings that it is equipped to handle. Run these tests as follows:
@@ -547,6 +586,7 @@ If you would like to create mock citation objects to assist you in writing your 
         nonopinion_citation,
         supra_citation,
     )
+
 
 License
 =======
