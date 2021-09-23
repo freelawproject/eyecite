@@ -1,6 +1,8 @@
 name: Pdoc
 
-on: [push, pull_request]
+push:
+  branches:
+    - main
 
 jobs:
   build:
