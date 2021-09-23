@@ -1,0 +1,57 @@
+name: Pdoc
+
+push:
+  branches:
+    - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1.1.0
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install hyperscan
+        run: sudo apt-get install libhyperscan-dev
+
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-v2021-09-23
+
+      - name: Install dependencies
+        run: poetry install
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+
+      - name: Activate venv
+        run: |
+          echo "VIRTUAL_ENV=$GITHUB_WORKSPACE/.venv" >> $GITHUB_ENV
+          echo "PYTHONPATH=$GITHUB_WORKSPACE" >> $GITHUB_ENV
+          echo "$GITHUB_WORKSPACE/.venv/bin" >> $GITHUB_PATH
+
+      - name: Run pdoc
+        working-directory: ./api_documentation
+        run: |
+          pdoc --html ./../eyecite --output-dir . --force
+
+      - name: Run sed  # Removes insanely-long parameter definition from docs
+        working-directory: ./api_documentation
+        run: |
+          sed -i 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/find.html
+          sed -i 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/index.html
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: api_documentation
