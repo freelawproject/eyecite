@@ -164,3 +164,4 @@ dmypy.json
 
 # default cache used by tests
 .test_cache/
+/.idea/
