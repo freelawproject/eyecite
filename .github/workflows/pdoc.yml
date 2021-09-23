@@ -12,8 +12,8 @@ jobs:
           python-version: "3.8"
 
       - name: Install pdoc
-      run: |
-        python -m pip install --upgrade pip3
+        run: |
+          python -m pip install --upgrade pip3
 
       - name: Run pdoc
         working-directory: ./api_documentation
@@ -26,15 +26,8 @@ jobs:
           sed -i '' 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/find.html
           sed -i '' 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/index.html
 
-      - name: Commit changes
-        run: |
-          git config --local user.email "$(git log --format='%ae' HEAD^!)"
-          git config --local user.name "$(git log --format='%an' HEAD^!)"
-          git remote add github "https://$GITHUB_ACTOR:$GITHUB_TOKEN@github.com/$GITHUB_REPOSITORY.git"
-          git pull github ${GITHUB_REF} --ff-only
-          git add .
-          if [ -z "$(git status --porcelain)" ]; then
-            exit 0
-          fi
-          git commit -m "feat(docs): Update API documentation."
-          git push github HEAD:${GITHUB_REF}
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@4.1.5
+        with:
+          branch: gh-pages
+          folder: api_documentation
