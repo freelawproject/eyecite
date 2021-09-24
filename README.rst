@@ -1,7 +1,7 @@
 eyecite
 ==========
 
-eyecite is an open source tool for extracting legal citations from text. It is used, among other things, to process millions of legal documents in the collections of `CourtListener <https://www.courtlistener.com/>`_ and the `Caselaw Access Project <https://case.law/>`_.
+eyecite is an open source tool for extracting legal citations from text. It is used, among other things, to process millions of legal documents in the collections of `CourtListener <https://www.courtlistener.com/>`_ and Harvard's `Caselaw Access Project <https://case.law/>`_, and has been developed in collaboration with both projects.
 
 eyecite recognizes a wide variety of citations commonly appearing in American legal decisions, including:
 
@@ -236,7 +236,7 @@ intelligently adjust the annotation positions using the diff-match-patch library
 Ta da!
 
 Documentation
-=================
+=============
 
 eyecite's full API is documented `here <https://freelawproject.github.io/eyecite/>`_, but here are details regarding its four core functions, its tokenization logic, and its debugging tools.
 
