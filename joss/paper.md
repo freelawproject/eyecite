@@ -85,17 +85,18 @@ Hyperscan library [@Wang2019] to tokenize and parse its input text in a highly
 efficient fashion. Hyperscan was originally designed to scan network traffic
 against large regular expression blacklists, and it allows `eyecite` to
 simultaneously apply thousands of tuned regular expressions to match the
-idiosyncratic ways that courts have cited each other over centuries of caselaw,
-without a loss of performance.^[We estimate that `eyecite` can parse typical
-legal text on the order of approximately 10MB/second, though this depends on
-the density of citations within the text.] `eyecite`'s
+idiosyncratic ways that courts have cited each other over centuries of caselaw.
+^[We estimate that `eyecite` can parse typical legal text on the order of
+approximately 10MB/second, though this depends on the density of citations
+within the text.] `eyecite`'s
 [regular expression database](https://github.com/freelawproject/reporters-db)
-has been built from over 55 million citation formats culled from the collections
-of the [Caselaw Access Project](https://case.law/) and
+has been built from over 55 million existing citations culled from the
+collections of the [Caselaw Access Project](https://case.law/) and
 [CourtListener](https://www.courtlistener.com/), the
 [Cardiff Index to Legal Abbreviations](http://www.legalabbrevs.cardiff.ac.uk/),
 the [Indigo Book tables](https://law.resource.org/pub/us/code/blue/IndigoBook.html#sTables),
-and the LexisNexis and Westlaw databases. From these sources, `eyecite`
+and the LexisNexis and Westlaw databases.^[We estimate that `eyecite` can
+currently recognize 99.9977% of these citations.] From these sources, `eyecite`
 has honed a test suite of real-world citation strings. \autoref{fig:fig1}
 depicts `eyecite`'s extraction process of a full case citation at a high level.
 
