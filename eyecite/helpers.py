@@ -40,18 +40,16 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
     Does not work on SCOTUS, since that court lacks parentheticals, and
     needs to be handled after disambiguation has been completed.
     """
-    court_str = strip_punct(paren_string)
-
+    #remove punctuation and convert to upper case
+    court_str = re.sub(r'[^\w\s]', '',paren_string).upper()
     court_code = None
     if court_str:
-        # Map the string to a court, if possible.
+        # Map the string to a court, if possible.   
         for court in courts:
-            # Use startswith because citations are often missing final period,
-            # e.g. "2d Cir"
-            if court["citation_string"].startswith(court_str):
+            #remove punctuation and convert to upper case because punctuation is often unreliable
+            if re.sub(r'[^\w\s]', '',court["citation_string"]).upper() == court_str:
                 court_code = court["id"]
                 break
-
     return court_code
 
 
