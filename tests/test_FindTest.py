@@ -115,7 +115,7 @@ class FindTest(TestCase):
                                       'defendant': 'test'},
                             year=1982)]),
             # Test to disambiguate SC & Supreme Court
-            ('lissner v. test,  263 F.Supp. 26 (S.C. 1967)',
+            ('lissner v. test,  263 F.Supp. 26 (SC 1967)',
              [case_citation(volume='263',page='26', year=1967, reporter='F.Supp.',
                 metadata={'plaintiff': 'lissner',
                             'defendant' : 'test',
