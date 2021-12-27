@@ -362,9 +362,7 @@ class AhocorasickTokenizer(Tokenizer):
     def __post_init__(self):
         """Set up helpers to narrow down possible extractors."""
         # Build a set of all extractors that don't list required strings
-        self.unfiltered_extractors = set(
-            e for e in EXTRACTORS if not e.strings
-        )
+        self.unfiltered_extractors = {e for e in EXTRACTORS if not e.strings}
         # Build a pyahocorasick filter for all case-sensitive extractors
         self.case_sensitive_filter = self.make_ahocorasick_filter(
             (s, e)
@@ -445,7 +443,7 @@ class HyperscanTokenizer(Tokenizer):
         byte_to_str_offset = {}
         last_byte_offset = 0
         str_offset = 0
-        byte_offsets = sorted(set(i for m in matches for i in m[1]))
+        byte_offsets = sorted({i for m in matches for i in m[1]})
         for byte_offset in byte_offsets:
             try:
                 str_offset += len(

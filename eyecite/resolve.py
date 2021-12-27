@@ -141,7 +141,7 @@ def _resolve_shortcase_citation(
             candidates.append((full_citation, resource))
 
     # Remove duplicates and only accept if one candidate remains
-    if len(set(resource for full_citation, resource in candidates)) == 1:
+    if len({resource for full_citation, resource in candidates}) == 1:
         return candidates[0][1]
 
     # Otherwise, if there is an antecedent guess, try to refine further

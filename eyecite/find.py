@@ -121,10 +121,10 @@ def _extract_full_citation(
     # journals). Get the set of all sources that matched, preferring exact
     # matches to variations:
     token = cast(CitationToken, words[index])
-    cite_sources = set(
+    cite_sources = {
         e.reporter.source
         for e in (token.exact_editions or token.variation_editions)
-    )
+    }
 
     # get citation_class based on cite_sources
     citation_class: Type[ResourceCitation]
