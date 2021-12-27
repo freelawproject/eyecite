@@ -23,7 +23,6 @@ from eyecite.regexes import (
     POST_SHORT_CITATION_REGEX,
     YEAR_REGEX,
 )
-from eyecite.utils import strip_punct
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -46,7 +45,8 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
     if court_str:
         # Map the string to a court, if possible.
         for court in courts:
-            # remove punctuation and convert to upper case because punctuation is often unreliable
+            # remove punctuation and convert to upper case because punctuation
+            # is often unreliable
             if (
                 re.sub(r"[^\w\s]", "", court["citation_string"]).upper()
                 == court_str
