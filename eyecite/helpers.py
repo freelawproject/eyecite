@@ -111,8 +111,21 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             continue
         if isinstance(word, StopWordToken):
             if word.groups["stop_word"] == "v" and index > 0:
+                found_words = 0
+                for i in range(1, 20):
+                    if words[index - i] == ' ':
+                        continue
+
+                    if words[index - i][0].islower():
+                        break
+                    else:
+                        found_words += 1
+                        if found_words > 3:
+                            # now i feel like we're taking too many. but thats entirely arbitrary
+                            break
+
                 citation.metadata.plaintiff = "".join(
-                    str(w) for w in words[max(index - 2, 0) : index]
+                    str(w) for w in words[index - i + 1: index]
                 ).strip()
             start_index = index + 1
             break
