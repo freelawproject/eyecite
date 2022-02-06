@@ -8,7 +8,7 @@ Features:
  - None yet
 
 Changes:
- - None yet
+ - The `NonopinionCitation` class has been renamed `UnknownCitation` to better reflect its purpose. This change is purely semantic -- there is no change in how these citations are handled.
 
 Fixes:
  - Initial support for finding short cites with non-standard regexes, including fixing short cite extraction for `Mich.`, `N.Y.2d` and `Pa.`. 

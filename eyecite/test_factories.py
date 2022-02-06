@@ -6,11 +6,11 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
-    NonopinionCitation,
     SectionToken,
     ShortCaseCitation,
     SupraCitation,
     SupraToken,
+    UnknownCitation,
 )
 from eyecite.tokenizers import EDITIONS_LOOKUP
 
@@ -98,11 +98,9 @@ def id_citation(source_text=None, index=0, **kwargs):
     return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
 
 
-def nonopinion_citation(source_text=None, index=0, **kwargs):
-    """Convenience function for creating mock NonopinionCitation objects."""
-    return NonopinionCitation(
-        SectionToken(source_text, 0, 99), index, **kwargs
-    )
+def unknown_citation(source_text=None, index=0, **kwargs):
+    """Convenience function for creating mock UnknownCitation objects."""
+    return UnknownCitation(SectionToken(source_text, 0, 99), index, **kwargs)
 
 
 def supra_citation(source_text=None, index=0, **kwargs):

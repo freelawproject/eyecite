@@ -13,8 +13,8 @@ from eyecite.test_factories import (
     id_citation,
     journal_citation,
     law_citation,
-    nonopinion_citation,
     supra_citation,
+    unknown_citation,
 )
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
@@ -425,9 +425,9 @@ class FindTest(TestCase):
              [id_citation("Id.",
                           metadata={'pin_cite': 'at 2',
                                     'parenthetical': 'overruling ...'})]),
-            # Test non-opinion citation
+            # Test unknown citation
             ('lorem ipsum see §99 of the U.S. code.',
-             [nonopinion_citation('§99')]),
+             [unknown_citation('§99')]),
             # Test address that's not a citation (#1338)
             ('lorem 111 S.W. 12th St.',
              [],),
