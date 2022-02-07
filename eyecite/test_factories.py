@@ -103,6 +103,17 @@ def unknown_citation(source_text=None, index=0, **kwargs):
     return UnknownCitation(SectionToken(source_text, 0, 99), index, **kwargs)
 
 
+def nonopinion_citation(*args, **kwargs):
+    from warnings import warn
+
+    warn(
+        """nonopinion_citation() will be deprecated in eyecite 2.5.0.
+        Please use unknown_citation() instead.""",
+        DeprecationWarning,
+    )
+    return unknown_citation(*args, **kwargs)
+
+
 def supra_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock SupraCitation objects."""
     return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)
