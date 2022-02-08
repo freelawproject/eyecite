@@ -439,8 +439,8 @@ If you would like to create mock citation objects to assist you in writing your 
     from eyecite.test_factories import (
         case_citation,
         id_citation,
-        nonopinion_citation,
         supra_citation,
+        unknown_citation,
     )
 
 

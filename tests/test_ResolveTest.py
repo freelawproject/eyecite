@@ -210,8 +210,8 @@ class ResolveTest(TestCase):
             (None, "2 F.2d, at 2."),
             (None, "Id. at 2."),
         )
-        # Test resolving an Id. citation when the previous citation is to a
-        # non-opinion document. Since we can't resolve those documents,
+        # Test resolving an Id. citation when the previous citation is to an
+        # unknown document. Since we can't resolve those documents,
         # we expect the Id. citation to also not be matched.
         self.checkResolution(
             (0, "Foo v. Bar, 1 U.S. 1."),

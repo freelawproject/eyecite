@@ -286,7 +286,7 @@ def resolve_citations(
                 citation, last_resolution, resolutions
             )
 
-        # If the citation is to a non-opinion document, ignore for now
+        # If the citation is to an unknown document, ignore for now
         else:
             resolution = None
 

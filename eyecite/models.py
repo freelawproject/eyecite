@@ -454,17 +454,23 @@ class IdCitation(CitationBase):
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
-class NonopinionCitation(CitationBase):
-    """Convenience class which represents a citation to something that we know
-    is not an opinion. This could be a citation to a statute, to the U.S. code,
-    the U.S. Constitution, etc.
-
-    Examples:
-    ```
-    18 U.S.C. §922(g)(1)
-    U. S. Const., Art. I, §8
-    ```
+class UnknownCitation(CitationBase):
+    """Convenience class which represents an unknown citation. A recognized
+    citation should theoretically be parsed as a CaseCitation, FullLawCitation,
+    or a FullJournalCitation. If it's something else, this class serves as
+    a naive catch-all.
     """
+
+
+def NonopinionCitation(*args, **kwargs):
+    from warnings import warn
+
+    warn(
+        """NonopinionCitation will be deprecated in eyecite 2.5.0.
+        Please use UnknownCitation instead.""",
+        DeprecationWarning,
+    )
+    return UnknownCitation(*args, **kwargs)
 
 
 @dataclass(eq=True, unsafe_hash=True)
