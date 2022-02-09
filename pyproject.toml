@@ -48,13 +48,18 @@ hyperscan = ">= 0.1.5"
 exrex = "^0.10.5"
 roman = "^3.3"
 pdoc3 = "^0.10.0"
+pre-commit = "^2.16.0"
 
 [tool.black]
 include = '''.*\.pyi?$'''
 line-length = 79
 
 [tool.isort]
-profile = "black"
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
 line_length = 79
 
 [tool.pylint.master]

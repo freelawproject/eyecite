@@ -99,7 +99,5 @@ class TokenizerTest(TestCase):
             ("id.", "ibid."),
         }
         extractors = AhocorasickTokenizer().get_extractors(text)
-        extractor_strings = set(
-            tuple(e.strings) for e in extractors if e.strings
-        )
+        extractor_strings = {tuple(e.strings) for e in extractors if e.strings}
         self.assertEqual(expected_strings, extractor_strings)
