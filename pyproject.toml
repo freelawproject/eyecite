@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "2.3.0"
+version = "2.3.1"
 authors = ["Free Law Project <info@free.law>"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
@@ -34,7 +34,7 @@ lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
 diff_match_patch_python = "^1.0.2"
 regex = ">=2020.1.8"
-courts-db = "^0.9.13"
+courts-db = "^0.10.0"
 
 [tool.poetry.dev-dependencies]
 black = "^20.8b1"
