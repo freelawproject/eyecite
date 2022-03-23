@@ -5,15 +5,30 @@
 The following changes are not yet released, but are code complete:
 
 Features:
- - None yet
+- None
 
 Changes:
- - The `NonopinionCitation` class has been renamed `UnknownCitation` to better reflect its purpose. This change is purely semantic -- there is no change in how these citations are handled.
+- None
 
 Fixes:
- - Initial support for finding short cites with non-standard regexes, including fixing short cite extraction for `Mich.`, `N.Y.2d` and `Pa.`. 
+- None
 
 ## Current
+
+**2.3.1 - 2021-03-23**
+
+Features:
+- None
+
+Changes:
+- The `NonopinionCitation` class has been renamed `UnknownCitation` to better reflect its purpose. This change is purely semantic -- there is no change in how these citations are handled.
+- Updates to courts-db
+
+Fixes:
+- Initial support for finding short cites with non-standard regexes, including fixing short cite extraction for `Mich.`, `N.Y.2d` and `Pa.`.
+
+
+## Past
 
 **2.3.0 - 2021-09-23**
 
@@ -66,8 +81,6 @@ Fixes:
 [74]: https://github.com/freelawproject/eyecite/issues/74
 [79]: https://github.com/freelawproject/eyecite/pull/79
 
-
-## Past
 
 **2.1.0 - 2021-05-13**
 
