@@ -482,17 +482,23 @@ class IdCitation(CitationBase):
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
-class NonopinionCitation(CitationBase):
-    &#34;&#34;&#34;Convenience class which represents a citation to something that we know
-    is not an opinion. This could be a citation to a statute, to the U.S. code,
-    the U.S. Constitution, etc.
-
-    Examples:
-    ```
-    18 U.S.C. §922(g)(1)
-    U. S. Const., Art. I, §8
-    ```
+class UnknownCitation(CitationBase):
+    &#34;&#34;&#34;Convenience class which represents an unknown citation. A recognized
+    citation should theoretically be parsed as a CaseCitation, FullLawCitation,
+    or a FullJournalCitation. If it&#39;s something else, this class serves as
+    a naive catch-all.
     &#34;&#34;&#34;
+
+
+def NonopinionCitation(*args, **kwargs):
+    from warnings import warn
+
+    warn(
+        &#34;&#34;&#34;NonopinionCitation will be deprecated in eyecite 2.5.0.
+        Please use UnknownCitation instead.&#34;&#34;&#34;,
+        DeprecationWarning,
+    )
+    return UnknownCitation(*args, **kwargs)
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -648,6 +654,29 @@ class Resource(ResourceType):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="eyecite.models.NonopinionCitation"><code class="name flex">
+<span>def <span class="ident">NonopinionCitation</span></span>(<span>*args, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def NonopinionCitation(*args, **kwargs):
+    from warnings import warn
+
+    warn(
+        &#34;&#34;&#34;NonopinionCitation will be deprecated in eyecite 2.5.0.
+        Please use UnknownCitation instead.&#34;&#34;&#34;,
+        DeprecationWarning,
+    )
+    return UnknownCitation(*args, **kwargs)</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -848,9 +877,9 @@ types of citations that might exist.</p></div>
 <h3>Subclasses</h3>
 <ul class="hlist">
 <li><a title="eyecite.models.IdCitation" href="#eyecite.models.IdCitation">IdCitation</a></li>
-<li><a title="eyecite.models.NonopinionCitation" href="#eyecite.models.NonopinionCitation">NonopinionCitation</a></li>
 <li><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></li>
 <li><a title="eyecite.models.SupraCitation" href="#eyecite.models.SupraCitation">SupraCitation</a></li>
+<li><a title="eyecite.models.UnknownCitation" href="#eyecite.models.UnknownCitation">UnknownCitation</a></li>
 </ul>
 <h3>Class variables</h3>
 <dl>
@@ -1701,80 +1730,6 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <ul class="hlist">
 <li><code><a title="eyecite.models.Token.from_match" href="#eyecite.models.Token.from_match">from_match</a></code></li>
 <li><code><a title="eyecite.models.Token.merge" href="#eyecite.models.Token.merge">merge</a></code></li>
-</ul>
-</li>
-</ul>
-</dd>
-<dt id="eyecite.models.NonopinionCitation"><code class="flex name class">
-<span>class <span class="ident">NonopinionCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Convenience class which represents a citation to something that we know
-is not an opinion. This could be a citation to a statute, to the U.S. code,
-the U.S. Constitution, etc.</p>
-<p>Examples:</p>
-<pre><code>18 U.S.C. §922(g)(1)
-U. S. Const., Art. I, §8
-</code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class NonopinionCitation(CitationBase):
-    &#34;&#34;&#34;Convenience class which represents a citation to something that we know
-    is not an opinion. This could be a citation to a statute, to the U.S. code,
-    the U.S. Constitution, etc.
-
-    Examples:
-    ```
-    18 U.S.C. §922(g)(1)
-    U. S. Const., Art. I, §8
-    ```
-    &#34;&#34;&#34;</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.NonopinionCitation.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.NonopinionCitation.index"><code class="name">var <span class="ident">index</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.NonopinionCitation.metadata"><code class="name">var <span class="ident">metadata</span> : Any</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.NonopinionCitation.span_end"><code class="name">var <span class="ident">span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.NonopinionCitation.span_start"><code class="name">var <span class="ident">span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.NonopinionCitation.token"><code class="name">var <span class="ident">token</span> : <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
-<h3>Inherited members</h3>
-<ul class="hlist">
-<li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
-<ul class="hlist">
-<li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2784,6 +2739,72 @@ def compiled_regex(self):
 </dd>
 </dl>
 </dd>
+<dt id="eyecite.models.UnknownCitation"><code class="flex name class">
+<span>class <span class="ident">UnknownCitation</span></span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convenience class which represents an unknown citation. A recognized
+citation should theoretically be parsed as a CaseCitation, FullLawCitation,
+or a FullJournalCitation. If it's something else, this class serves as
+a naive catch-all.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class UnknownCitation(CitationBase):
+    &#34;&#34;&#34;Convenience class which represents an unknown citation. A recognized
+    citation should theoretically be parsed as a CaseCitation, FullLawCitation,
+    or a FullJournalCitation. If it&#39;s something else, this class serves as
+    a naive catch-all.
+    &#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
+</ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="eyecite.models.UnknownCitation.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.UnknownCitation.index"><code class="name">var <span class="ident">index</span> : int</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.UnknownCitation.metadata"><code class="name">var <span class="ident">metadata</span> : Any</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.UnknownCitation.span_end"><code class="name">var <span class="ident">span_end</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.UnknownCitation.span_start"><code class="name">var <span class="ident">span_start</span> : Optional[int]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.UnknownCitation.token"><code class="name">var <span class="ident">token</span> : <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
+<ul class="hlist">
+<li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
 </dl>
 </section>
 </article>
@@ -2796,6 +2817,11 @@ def compiled_regex(self):
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="eyecite" href="index.html">eyecite</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="eyecite.models.NonopinionCitation" href="#eyecite.models.NonopinionCitation">NonopinionCitation</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
@@ -2911,17 +2937,6 @@ def compiled_regex(self):
 </ul>
 </li>
 <li>
-<h4><code><a title="eyecite.models.NonopinionCitation" href="#eyecite.models.NonopinionCitation">NonopinionCitation</a></code></h4>
-<ul class="two-column">
-<li><code><a title="eyecite.models.NonopinionCitation.groups" href="#eyecite.models.NonopinionCitation.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.NonopinionCitation.index" href="#eyecite.models.NonopinionCitation.index">index</a></code></li>
-<li><code><a title="eyecite.models.NonopinionCitation.metadata" href="#eyecite.models.NonopinionCitation.metadata">metadata</a></code></li>
-<li><code><a title="eyecite.models.NonopinionCitation.span_end" href="#eyecite.models.NonopinionCitation.span_end">span_end</a></code></li>
-<li><code><a title="eyecite.models.NonopinionCitation.span_start" href="#eyecite.models.NonopinionCitation.span_start">span_start</a></code></li>
-<li><code><a title="eyecite.models.NonopinionCitation.token" href="#eyecite.models.NonopinionCitation.token">token</a></code></li>
-</ul>
-</li>
-<li>
 <h4><code><a title="eyecite.models.ParagraphToken" href="#eyecite.models.ParagraphToken">ParagraphToken</a></code></h4>
 <ul class="">
 <li><code><a title="eyecite.models.ParagraphToken.data" href="#eyecite.models.ParagraphToken.data">data</a></code></li>
@@ -3032,6 +3047,17 @@ def compiled_regex(self):
 <li><code><a title="eyecite.models.TokenExtractor.get_token" href="#eyecite.models.TokenExtractor.get_token">get_token</a></code></li>
 <li><code><a title="eyecite.models.TokenExtractor.regex" href="#eyecite.models.TokenExtractor.regex">regex</a></code></li>
 <li><code><a title="eyecite.models.TokenExtractor.strings" href="#eyecite.models.TokenExtractor.strings">strings</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="eyecite.models.UnknownCitation" href="#eyecite.models.UnknownCitation">UnknownCitation</a></code></h4>
+<ul class="two-column">
+<li><code><a title="eyecite.models.UnknownCitation.groups" href="#eyecite.models.UnknownCitation.groups">groups</a></code></li>
+<li><code><a title="eyecite.models.UnknownCitation.index" href="#eyecite.models.UnknownCitation.index">index</a></code></li>
+<li><code><a title="eyecite.models.UnknownCitation.metadata" href="#eyecite.models.UnknownCitation.metadata">metadata</a></code></li>
+<li><code><a title="eyecite.models.UnknownCitation.span_end" href="#eyecite.models.UnknownCitation.span_end">span_end</a></code></li>
+<li><code><a title="eyecite.models.UnknownCitation.span_start" href="#eyecite.models.UnknownCitation.span_start">span_start</a></code></li>
+<li><code><a title="eyecite.models.UnknownCitation.token" href="#eyecite.models.UnknownCitation.token">token</a></code></li>
 </ul>
 </li>
 </ul>

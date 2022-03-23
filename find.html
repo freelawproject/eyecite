@@ -43,13 +43,13 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
-    NonopinionCitation,
     ResourceCitation,
     SectionToken,
     ShortCaseCitation,
     SupraCitation,
     SupraToken,
     Tokens,
+    UnknownCitation,
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
@@ -88,7 +88,8 @@ def get_citations(
         citation: CitationBase
         token_type = type(token)
 
-        # CASE 1: Citation token is a reporter (e.g., &#34;U. S.&#34;).
+        # CASE 1: Token is a CitationToken (i.e., a reporter, a law journal,
+        # or a law).
         # In this case, first try extracting it as a standard, full citation,
         # and if that fails try extracting it as a short form citation.
         if token_type is CitationToken:
@@ -98,26 +99,27 @@ def get_citations(
             else:
                 citation = _extract_full_citation(words, i)
 
-        # CASE 2: Citation token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
+        # CASE 2: Token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
         # In this case, the citation should simply be to the item cited
         # immediately prior, but for safety we will leave that resolution up
         # to the user.
         elif token_type is IdToken:
             citation = _extract_id_citation(words, i)
 
-        # CASE 3: Citation token is a &#34;supra&#34; reference.
+        # CASE 3: Token is a &#34;supra&#34; reference.
         # In this case, we&#39;re not sure yet what the citation&#39;s antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won&#39;t resolve this reference yet.
         elif token_type is SupraToken:
             citation = _extract_supra_citation(words, i)
 
-        # CASE 4: Citation token is a section marker.
-        # In this case, it&#39;s likely that this is a reference to a non-
-        # opinion document. So we record this marker in order to keep
-        # an accurate list of the possible antecedents for id citations.
+        # CASE 4: Token is a section marker.
+        # In this case, it&#39;s likely that this is a reference to a citation,
+        # but we&#39;re not sure what it is if it doesn&#39;t match any of the above.
+        # So we record this marker in order to keep an accurate list of the
+        # possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = NonopinionCitation(cast(SectionToken, token), i)
+            citation = UnknownCitation(cast(SectionToken, token), i)
 
         # CASE 5: The token is not a citation.
         else:
@@ -354,7 +356,8 @@ for information about available tokenizers. Uses the
         citation: CitationBase
         token_type = type(token)
 
-        # CASE 1: Citation token is a reporter (e.g., &#34;U. S.&#34;).
+        # CASE 1: Token is a CitationToken (i.e., a reporter, a law journal,
+        # or a law).
         # In this case, first try extracting it as a standard, full citation,
         # and if that fails try extracting it as a short form citation.
         if token_type is CitationToken:
@@ -364,26 +367,27 @@ for information about available tokenizers. Uses the
             else:
                 citation = _extract_full_citation(words, i)
 
-        # CASE 2: Citation token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
+        # CASE 2: Token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
         # In this case, the citation should simply be to the item cited
         # immediately prior, but for safety we will leave that resolution up
         # to the user.
         elif token_type is IdToken:
             citation = _extract_id_citation(words, i)
 
-        # CASE 3: Citation token is a &#34;supra&#34; reference.
+        # CASE 3: Token is a &#34;supra&#34; reference.
         # In this case, we&#39;re not sure yet what the citation&#39;s antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won&#39;t resolve this reference yet.
         elif token_type is SupraToken:
             citation = _extract_supra_citation(words, i)
 
-        # CASE 4: Citation token is a section marker.
-        # In this case, it&#39;s likely that this is a reference to a non-
-        # opinion document. So we record this marker in order to keep
-        # an accurate list of the possible antecedents for id citations.
+        # CASE 4: Token is a section marker.
+        # In this case, it&#39;s likely that this is a reference to a citation,
+        # but we&#39;re not sure what it is if it doesn&#39;t match any of the above.
+        # So we record this marker in order to keep an accurate list of the
+        # possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = NonopinionCitation(cast(SectionToken, token), i)
+            citation = UnknownCitation(cast(SectionToken, token), i)
 
         # CASE 5: The token is not a citation.
         else:
