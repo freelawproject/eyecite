@@ -120,7 +120,7 @@ inserting annotations that result in invalid HTML.
 unbalanced_tags="wrap" will ensure valid HTML by wrapping
 annotations around any unbalanced tags.</dd>
 <dt><strong><code>use_dmp</code></strong></dt>
-<dd>If <code>True</code> (default), use the fast diff_match_patch_python
+<dd>If <code>True</code> (default), use the fast_diff_match_patch_python
 library for diffing. If <code>False</code>, use the slower built-in difflib,
 which may be useful for debugging.</dd>
 <dt><strong><code>annotator</code></strong></dt>
@@ -175,7 +175,7 @@ citation_text, and after_text together for each annotation.</dd>
             inserting annotations that result in invalid HTML.
             unbalanced_tags=&#34;wrap&#34; will ensure valid HTML by wrapping
             annotations around any unbalanced tags.
-        use_dmp: If `True` (default), use the fast diff_match_patch_python
+        use_dmp: If `True` (default), use the fast_diff_match_patch_python
             library for diffing. If `False`, use the slower built-in difflib,
             which may be useful for debugging.
         annotator: If provided, should be a function that takes three
