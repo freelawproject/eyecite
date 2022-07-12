@@ -3,7 +3,7 @@ from difflib import SequenceMatcher
 from functools import partial
 from typing import Any, Callable, Iterable, Optional, Tuple
 
-import diff_match_patch
+import fast_diff_match_patch
 
 from eyecite.utils import is_balanced_html, wrap_html_tags
 
@@ -46,7 +46,7 @@ def annotate_citations(
             inserting annotations that result in invalid HTML.
             unbalanced_tags="wrap" will ensure valid HTML by wrapping
             annotations around any unbalanced tags.
-        use_dmp: If `True` (default), use the fast diff_match_patch_python
+        use_dmp: If `True` (default), use the fast_diff_match_patch_python
             library for diffing. If `False`, use the slower built-in difflib,
             which may be useful for debugging.
         annotator: If provided, should be a function that takes three
@@ -187,14 +187,14 @@ class SpanUpdater:
         two characters, delete three characters.
         """
         try:
-            return diff_match_patch.diff(
-                a, b, timelimit=0, checklines=False, cleanup_semantic=False
+            return fast_diff_match_patch.diff(
+                a, b, timelimit=0, checklines=False, cleanup="No",
             )
         except AttributeError as e:
             raise AttributeError(
                 "This may be caused by having the diff_match_patch package "
                 "installed, which is incompatible with "
-                "diff_match_patch_python."
+                "fast_diff_match_patch_python."
             ) from e
 
     @staticmethod
