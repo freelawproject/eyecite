@@ -188,7 +188,7 @@ class SpanUpdater:
         """
         try:
             return fast_diff_match_patch.diff(
-                a, b, timelimit=0, checklines=False, cleanup="No",
+                a, b, timelimit=0, checklines=False, cleanup="No"
             )
         except AttributeError as e:
             raise AttributeError(
