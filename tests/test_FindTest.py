@@ -181,8 +181,11 @@ class FindTest(TestCase):
             # Test with page range with a weird suffix
             ('559 N.W.2d 826|N.D.',
              [case_citation(page='826', reporter='N.W.2d', volume='559')]),
-            # Test with malformed/missing page number
+            # Test with malformed page number
             ('1 U.S. f24601', []),
+            # Test with page number that is indicated as missing
+            ('1 U.S. ___',
+             [case_citation(volume='1', reporter='U.S.', page='___')]),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [case_citation(source_text='2007-NMCERT-008', page='008',
