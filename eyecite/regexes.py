@@ -63,7 +63,8 @@ ROMAN_NUMERAL_REGEX = "|".join(
 # (ordered in descending order of likelihood)
 # 1) A plain digit. E.g. "123"
 # 2) A roman numeral.
-PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX})"
+# 3) A page placeholder. E.g. "Carpenter v. United States, 585 U.S. ___ (2018)"
+PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX}|_+)"
 
 # Regex to match punctuation around volume numbers and stopwords.
 # This could potentially be more precise.
