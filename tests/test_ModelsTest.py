@@ -1,7 +1,7 @@
 from unittest import TestCase
 
-from eyecite.test_factories import case_citation
 from eyecite.models import Resource
+from eyecite.test_factories import case_citation
 
 
 class ModelsTest(TestCase):
