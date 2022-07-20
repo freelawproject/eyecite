@@ -1,10 +1,11 @@
 from unittest import TestCase
 
 from eyecite.test_factories import case_citation
+from eyecite.models import Resource
 
 
 class ModelsTest(TestCase):
-    def test_comparison(self):
+    def test_citation_comparison(self):
         """Are two citation objects equal when their attributes are
         the same?"""
         citations = [
@@ -14,4 +15,28 @@ class ModelsTest(TestCase):
         print("Testing citation comparison...", end=" ")
         self.assertEqual(citations[0], citations[1])
         self.assertEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
+    def test_resource_comparison(self):
+        """Are two Resource objects equal when their citations' attributes are
+        the same?"""
+        resources = [
+            Resource(case_citation(2, volume="2", reporter="U.S.", page="2")),
+            Resource(case_citation(2, volume="2", reporter="U.S.", page="2")),
+        ]
+        print("Testing resource comparison...", end=" ")
+        self.assertEqual(resources[0], resources[1])
+        self.assertEqual(hash(resources[0]), hash(resources[1]))
+        print("✓")
+
+    def test_resource_comparison_with_missing_page_cites(self):
+        """Are two Resource objects different when their citations are missing
+        pages, even if their other attributes are the same?"""
+        citations = [
+            Resource(case_citation(2, volume="2", reporter="U.S.", page="__")),
+            Resource(case_citation(2, volume="2", reporter="U.S.", page="__")),
+        ]
+        print("Testing resource comparison with missing pages...", end=" ")
+        self.assertNotEqual(citations[0], citations[1])
+        self.assertNotEqual(hash(citations[0]), hash(citations[1]))
         print("✓")

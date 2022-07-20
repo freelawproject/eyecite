@@ -114,6 +114,12 @@ class ResolveTest(TestCase):
             (0, "Foo v. Bar, 1 U.S. 1."),
             (0, "Foo v. Bar, 1 U.S. 1."),
         )
+        # Test resolving two full citations with missing page numbers but
+        # otherwise identical. These should not resolve to the same document.
+        self.checkResolution(
+            (0, "Foo v. Bar, 1 U.S. ____."),
+            (1, "Foo v. Bar, 1 U.S. ____."),
+        )
         # Test resolving multiple full citations to different documents
         self.checkResolution(
             (0, "Foo v. Bar, 1 U.S. 1."),
