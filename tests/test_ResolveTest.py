@@ -242,12 +242,10 @@ class ResolveTest(TestCase):
             (1, "Id. at 2000"),
         )
         # Test resolving an Id. citation with a pin cite when the previous
-        # citation only has a placeholder page. We expect this to still resolve
-        # because it's possible to pin cite to an opinion with pending final
-        # page numbers.
+        # citation only has a placeholder page. We expect this to fail.
         self.checkResolution(
             (0, "Foo v. Bar, 1 U.S. ___"),
-            (0, "Id. at 100."),
+            (None, "Id. at 100."),
         )
 
     def test_non_case_resolution(self):

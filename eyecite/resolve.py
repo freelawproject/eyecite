@@ -88,6 +88,13 @@ def _has_invalid_pin_cite(
 ) -> bool:
     """Return True if id_cite has a pin cite that can't be correct for the
     given full_cite."""
+    # if full cite has a known missing page, this pin cite can't be correct
+    if (
+        type(full_cite) is FullCaseCitation
+        and full_cite.groups.get("page") is None
+    ):
+        return True
+
     # if no pin cite, we're fine
     if not id_cite.metadata.pin_cite:
         return False
