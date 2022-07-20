@@ -19,6 +19,10 @@ class AnnotateTest(TestCase):
             ("foo 1 U.S. 1 bar", "foo <0>1 U.S. 1</0> bar", []),
             # cite with punctuation
             ("foo '1 U.S. 1' bar", "foo '<0>1 U.S. 1</0>' bar", []),
+            # cite with missing page number (original underscores should be
+            # rendered in annotated text even though the missing page number
+            # has been normalized to None within the citation object)
+            ("foo 1 U.S. ____ bar", "foo <0>1 U.S. ____</0> bar", []),
             # law cite
             (
                 "foo. Mass. Gen. Laws ch. 1, § 2. bar",

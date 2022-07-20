@@ -83,6 +83,12 @@ class CitationBase:
             if isinstance(self.metadata, dict)
             else self.Metadata()
         )
+        # Set known missing page numbers to None
+        if (
+            "page" in self.groups
+            and self.groups["page"] == len(self.groups["page"]) * "_"
+        ):
+            self.groups["page"] = None
 
     def __repr__(self):
         """Simplified repr() to be more readable than full dataclass repr().
