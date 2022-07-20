@@ -28,7 +28,7 @@ def resource_citation(
     if year:
         metadata["year"] = str(year)
     elif "year" in metadata:
-        year = get_year(metadata.year)
+        year = get_year(metadata["year"])
     # Avoid https://github.com/PyCQA/pylint/issues/3201
     # pylint: disable=unexpected-keyword-arg
     token = CitationToken(
