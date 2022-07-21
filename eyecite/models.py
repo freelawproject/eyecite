@@ -84,10 +84,7 @@ class CitationBase:
             else self.Metadata()
         )
         # Set known missing page numbers to None
-        if (
-            "page" in self.groups
-            and self.groups["page"] == len(self.groups["page"]) * "_"
-        ):
+        if re.search("^_+$", self.groups.get("page", "") or ""):
             self.groups["page"] = None
 
     def __repr__(self):
