@@ -7,6 +7,7 @@ from courts_db import courts
 from eyecite.models import (
     CaseCitation,
     CitationBase,
+    CitationToken,
     FullCaseCitation,
     FullJournalCitation,
     FullLawCitation,
@@ -294,15 +295,19 @@ def disambiguate_reporters(
 
 joke_cite: List[CitationBase] = [
     FullCaseCitation(
-        Token("1 FLP 1", 0, 7),
+        CitationToken(
+            "1 FLP 1",
+            0,
+            99,
+            {
+                "volume": "1",
+                "reporter": "FLP",
+                "page": "1",
+            },
+        ),
         0,
-        groups={
-            "volume": "1",
-            "reporter": "FLP",
-            "page": "1",
-        },
-        year=2021,
         metadata={
+            "year": "2021",
             "extra": "Eyecite is a collaborative community effort.",
         },
     )

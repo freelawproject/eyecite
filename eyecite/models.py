@@ -83,6 +83,9 @@ class CitationBase:
             if isinstance(self.metadata, dict)
             else self.Metadata()
         )
+        # Set known missing page numbers to None
+        if re.search("^_+$", self.groups.get("page", "") or ""):
+            self.groups["page"] = None
 
     def __repr__(self):
         """Simplified repr() to be more readable than full dataclass repr().
@@ -103,8 +106,12 @@ class CitationBase:
 
     def comparison_hash(self) -> int:
         """Return hash that will be the same if two cites are semantically
-        equivalent."""
-        return hash((type(self), tuple(self.groups.items())))
+        equivalent, unless the citation is a CaseCitation missing a page.
+        """
+        if isinstance(self, CaseCitation) and self.groups["page"] is None:
+            return id(self)
+        else:
+            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -614,7 +621,12 @@ class Resource(ResourceType):
 
     def __hash__(self):
         """Resources are the same if their citations are semantically
-        equivalent."""
+        equivalent.
+
+        Note: Resources composed of citations with missing page numbers are
+        NOT considered the same, even if their other attributes are identical.
+        This is to avoid potential false positives.
+        """
         return self.citation.comparison_hash()
 
     def __eq__(self, other):
