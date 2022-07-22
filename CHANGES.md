@@ -15,6 +15,11 @@ Fixes:
 
 ## Current
 
+**2.4.0 - 2022-07-22**
+
+Features:
+ - Unnumbered citations like "22 U.S. ___" are now identified by eyecite. They will have a page attribute set to `None`, but otherwise work just like everything else.
+
 **2.3.3 - 2021-03-23**
 
 Features:
