@@ -111,6 +111,9 @@ class CitationBase:
             if isinstance(self.metadata, dict)
             else self.Metadata()
         )
+        # Set known missing page numbers to None
+        if re.search(&#34;^_+$&#34;, self.groups.get(&#34;page&#34;, &#34;&#34;) or &#34;&#34;):
+            self.groups[&#34;page&#34;] = None
 
     def __repr__(self):
         &#34;&#34;&#34;Simplified repr() to be more readable than full dataclass repr().
@@ -131,8 +134,12 @@ class CitationBase:
 
     def comparison_hash(self) -&gt; int:
         &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent.&#34;&#34;&#34;
-        return hash((type(self), tuple(self.groups.items())))
+        equivalent, unless the citation is a CaseCitation missing a page.
+        &#34;&#34;&#34;
+        if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
+            return id(self)
+        else:
+            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -642,7 +649,12 @@ class Resource(ResourceType):
 
     def __hash__(self):
         &#34;&#34;&#34;Resources are the same if their citations are semantically
-        equivalent.&#34;&#34;&#34;
+        equivalent.
+
+        Note: Resources composed of citations with missing page numbers are
+        NOT considered the same, even if their other attributes are identical.
+        This is to avoid potential false positives.
+        &#34;&#34;&#34;
         return self.citation.comparison_hash()
 
     def __eq__(self, other):
@@ -771,7 +783,7 @@ document.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.ResourceCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -818,6 +830,9 @@ types of citations that might exist.</p></div>
             if isinstance(self.metadata, dict)
             else self.Metadata()
         )
+        # Set known missing page numbers to None
+        if re.search(&#34;^_+$&#34;, self.groups.get(&#34;page&#34;, &#34;&#34;) or &#34;&#34;):
+            self.groups[&#34;page&#34;] = None
 
     def __repr__(self):
         &#34;&#34;&#34;Simplified repr() to be more readable than full dataclass repr().
@@ -838,8 +853,12 @@ types of citations that might exist.</p></div>
 
     def comparison_hash(self) -&gt; int:
         &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent.&#34;&#34;&#34;
-        return hash((type(self), tuple(self.groups.items())))
+        equivalent, unless the citation is a CaseCitation missing a page.
+        &#34;&#34;&#34;
+        if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
+            return id(self)
+        else:
+            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -919,15 +938,19 @@ types of citations that might exist.</p></div>
 </code></dt>
 <dd>
 <div class="desc"><p>Return hash that will be the same if two cites are semantically
-equivalent.</p></div>
+equivalent, unless the citation is a CaseCitation missing a page.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def comparison_hash(self) -&gt; int:
     &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-    equivalent.&#34;&#34;&#34;
-    return hash((type(self), tuple(self.groups.items())))</code></pre>
+    equivalent, unless the citation is a CaseCitation missing a page.
+    &#34;&#34;&#34;
+    if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
+        return id(self)
+    else:
+        return hash((type(self), tuple(self.groups.items())))</code></pre>
 </details>
 </dd>
 <dt id="eyecite.models.CitationBase.corrected_citation"><code class="name flex">
@@ -1325,7 +1348,7 @@ i.e., the kind of citation that marks the first time a document is cited.</p>
 <ul class="hlist">
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -1392,7 +1415,7 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.ResourceCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1473,7 +1496,7 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.FullCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1565,7 +1588,7 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.FullCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1856,7 +1879,12 @@ resolved. See <code><a title="eyecite.resolve" href="resolve.html">eyecite.resol
 
     def __hash__(self):
         &#34;&#34;&#34;Resources are the same if their citations are semantically
-        equivalent.&#34;&#34;&#34;
+        equivalent.
+
+        Note: Resources composed of citations with missing page numbers are
+        NOT considered the same, even if their other attributes are identical.
+        This is to avoid potential false positives.
+        &#34;&#34;&#34;
         return self.citation.comparison_hash()
 
     def __eq__(self, other):
@@ -2010,6 +2038,22 @@ long.</p></div>
     self.guess_edition()</code></pre>
 </details>
 </dd>
+<dt id="eyecite.models.ResourceCitation.comparison_hash"><code class="name flex">
+<span>def <span class="ident">comparison_hash</span></span>(<span>self) ‑> int</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Return hash that will be the same if two cites are semantically
+equivalent.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def comparison_hash(self) -&gt; int:
+    &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
+    equivalent.&#34;&#34;&#34;
+    return hash((super().comparison_hash(), self.all_editions))</code></pre>
+</details>
+</dd>
 <dt id="eyecite.models.ResourceCitation.corrected_citation"><code class="name flex">
 <span>def <span class="ident">corrected_citation</span></span>(<span>self)</span>
 </code></dt>
@@ -2076,7 +2120,6 @@ long.</p></div>
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
 <ul class="hlist">
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
@@ -2240,7 +2283,7 @@ Adarand, 515 U.S. at 241
 <ul class="hlist">
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -2966,6 +3009,7 @@ a naive catch-all.</p></div>
 <ul class="two-column">
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.all_editions" href="#eyecite.models.ResourceCitation.all_editions">all_editions</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.edition_guess" href="#eyecite.models.ResourceCitation.edition_guess">edition_guess</a></code></li>
