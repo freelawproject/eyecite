@@ -142,21 +142,21 @@ citations extracted from the cleaned text.
 Annotating Citations
 --------------------
 
-For simple plain text, you can insert links to citations using the :code:`annotate` function:
+For simple plain text, you can insert links to citations using the :code:`annotate_citations` function:
 
 ::
 
-    from eyecite import get_citations, annotate
+    from eyecite import get_citations, annotate_citations
 
     plain_text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
     citations = get_citations(plain_text)
-    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations])
+    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations])
 
     returns:
     'bob lissner v. test <a>1 U.S. 12</a>, 347-348 (4th Cir. 1982)'
 
 Each citation returned by get_citations keeps track of where it was found in the source text.
-As a result, :code:`annotate` must be called with the *same* cleaned text used by :code:`get_citations`
+As a result, :code:`annotate_citations` must be called with the *same* cleaned text used by :code:`get_citations`
 to extract citations. If you do not, the offsets returned by the citation's :code:`span` method will
 not align with the text, and your annotations will be in the wrong place.
 
@@ -165,12 +165,12 @@ the original text in as :code:`source_text`:
 
 ::
 
-    from eyecite import get_citations, annotate, clean_text
+    from eyecite import get_citations, annotate_citations, clean_text
 
     source_text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
     plain_text = clean_text(source_text, ['html', 'inline_whitespace'])
     citations = get_citations(plain_text)
-    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
+    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
 
     returns:
     '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
@@ -204,7 +204,7 @@ that takes :code:`(before, span_text, after)` and returns the annotated text:
 
     def annotator(before, span_text, after):
         return before + span_text.lower() + after
-    linked_text = annotate(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], annotator=annotator)
+    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], annotator=annotator)
 
     returns:
     'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
