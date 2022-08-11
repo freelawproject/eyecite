@@ -1,0 +1,42 @@
+name: Generate Report on Eyecite PR
+on:
+  pull_request:
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v2
+      - uses: snok/install-poetry@v1
+        with:
+          version: 1.1.13
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install Poetry and Run Make File
+        run: |
+          cd benchmark/
+          sh benchmark.sh main ${{ github.head_ref }}
+
+      - name: Embed Timing Chart into Markdown Post
+        run: |
+          echo "![image](https://github.com/freelawproject/eyecite/blob/main/pr${{github.event.number}}-time-comparison.png?raw=true)" >> benchmark/outputs/report.md
+
+      - name: Upload and Post Files to PR
+        if: ${{ github.event_name == 'pull_request' }}
+        uses: gavv/pull-request-artifacts@v1.0.0
+        with:
+          commit: ${{ github.event.pull_request.head.sha }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts: |
+            benchmark/outputs/report.md
+            benchmark/outputs/time-comparison.png
+            benchmark/outputs/output.csv
+
+      - name: Add or Update PR Comment from Generated Report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: benchmark/outputs/report.md
+
