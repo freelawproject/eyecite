@@ -9,8 +9,8 @@ import matplotlib.pyplot as plt
 
 csv.field_size_limit(sys.maxsize)
 
-class Report(object):
 
+class Report(object):
     def __init__(self):
         """"""
         self.root = Path(__file__).parent.absolute()
@@ -18,7 +18,7 @@ class Report(object):
         self.branch2 = None
 
     def compare_dataframes(self) -> None:
-        """ Compare generated data frames between branches
+        """Compare generated data frames between branches
 
         Generates (mostly) the markdown report for the PR comment
 
@@ -117,6 +117,7 @@ class Report(object):
 
         df.plot(x="Time", y=[f"Total {self.branch1}", f"Total {self.branch2}"])
         plt.savefig("outputs/time-comparison.png")
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="A tool to generate reports.")
