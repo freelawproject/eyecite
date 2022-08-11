@@ -55,7 +55,7 @@ class Benchmark(object):
         for row in csv_data:
             self.fetch_citations(row)
         rows = zip(self.list_of_ids, self.times, self.totals, self.opinions)
-        with open(f"../outputs/plotted-{branch}.csv", "w") as f:
+        with open(f"../outputs/data-{branch}.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(["OpinionID", "Time", f"Total", "Opinions"])
             for row in rows:
