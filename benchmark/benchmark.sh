@@ -67,7 +67,7 @@ if [ "$local" ]
     cp benchmark.py eyecite/
     cd eyecite/
     poetry install --no-dev
-    poetry run python benchmark.py --branch branch2
+    poetry run python benchmark.py --branch $branch2
     cd ..
     rm -rf eyecite/
 
