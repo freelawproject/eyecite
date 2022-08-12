@@ -55,7 +55,7 @@ class Benchmark(object):
         return: None
         """
         zipfile = bz2.BZ2File(
-            Path.joinpath(self.root, "..", "one-percent.csv.bz2")
+            Path.joinpath(self.root, "..", "bulk-file.csv.bz2")
         )
         csv_data = csv.reader(StringIO(zipfile.read().decode()), delimiter=",")
         self.fields = next(csv_data)
