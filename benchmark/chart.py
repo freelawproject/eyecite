@@ -72,12 +72,13 @@ class Report(object):
                 f"There were {len(gains)} gains and {len(losses)} losses.\n"
             )
             f.write(
-                f"You can verify any losses by using the cluster id generated\n"
+                "You can verify any losses by using the cluster id generated\n"
             )
-            f.write(f"# Output\n")
-            f.write(f"---------\n\n")
+            f.write("# Output\n")
+            f.write("---------\n\n")
             f.write(
-                f"The following chart illustrates the gains and losses (if any) from the current pr.\n"
+                "The following chart illustrates the gains and losses "
+                "(if any) from the current pr.\n"
             )
 
         # Add markdown report file outputs

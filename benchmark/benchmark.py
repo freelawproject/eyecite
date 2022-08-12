@@ -5,9 +5,9 @@ from pathlib import Path
 import csv
 from io import StringIO
 import sys
+from eyecite import get_citations
 
 csv.field_size_limit(sys.maxsize)
-from eyecite import get_citations
 
 
 class Benchmark(object):
@@ -57,7 +57,7 @@ class Benchmark(object):
         rows = zip(self.list_of_ids, self.times, self.totals, self.opinions)
         with open(f"../outputs/data-{branch}.csv", "w") as f:
             writer = csv.writer(f)
-            writer.writerow(["OpinionID", "Time", f"Total", "Opinions"])
+            writer.writerow(["OpinionID", "Time", "Total", "Opinions"])
             for row in rows:
                 writer.writerow(row)
 
