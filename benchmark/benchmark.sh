@@ -18,34 +18,58 @@ else
    url=https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2
 fi
 
+[ -d "eyecite/" ] && rm -rf eyecite/
 curl $url --output bulk-file.csv.bz2
 
 # if local is flagged with a value - pass the url to local and run it using
 # the current checked out local branch
 if [ "$local" ]
  then
-   sh local.sh $url
-   branch1=current
-   branch2=main
+
+    [ -d "eyecite/" ] && rm -rf eyecite/
+    cd "$PWD/../" && git clone "file:///$PWD" "$PWD/benchmark/eyecite/"
+    cd benchmark
+
+    curl $url --output bulk-file.csv.bz2
+    cp benchmark.py eyecite/
+
+    cd eyecite/
+    poetry install --no-dev
+    poetry run python benchmark.py --branch current
+    cd ..
+    rm -rf eyecite/
+
+    git clone -b main https://github.com/freelawproject/eyecite.git eyecite
+    cp benchmark.py eyecite/
+    cd eyecite/
+    poetry install --no-dev
+    poetry run python benchmark.py --branch main
+    cd ..
+    rm -rf eyecite/
+
+    branch1=current
+    branch2=main
+
  else
 
     #Otherwise run this comparing two branches online.
-    [ -d "eyecite/" ] && rm -rf eyecite/
+    echo "Cloning $branch1 branch"
+    git clone -b $branch1 https://github.com/freelawproject/eyecite.git
+    cp benchmark.py eyecite/
+    cd eyecite/
+    poetry install --no-dev
+    poetry run python benchmark.py --branch $branch1
+    cd ..
+    rm -rf eyecite/
 
-    curl $url --output bulk-file.csv.bz2
-    ourBranches=($branch1 $branch2)
-
-    for var in ${ourBranches[@]};
-    do
-        echo "Closing $var branch"
-        git clone -b $var https://github.com/freelawproject/eyecite.git
-        cp benchmark.py eyecite/
-        cd eyecite
-        poetry install --no-dev
-        poetry run python benchmark.py --branch $var
-        cd ..
-        rm -rf eyecite/
-    done
+    echo "Cloning $branch2 branch"
+    git clone -b $branch2 https://github.com/freelawproject/eyecite.git
+    cp benchmark.py eyecite/
+    cd eyecite/
+    poetry install --no-dev
+    poetry run python benchmark.py --branch branch2
+    cd ..
+    rm -rf eyecite/
 
 fi
 
