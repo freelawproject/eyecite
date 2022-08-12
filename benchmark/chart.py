@@ -12,6 +12,7 @@ csv.field_size_limit(sys.maxsize)
 
 root = Path(__file__).parent.absolute()
 
+
 def compare_dataframes(branch1: str, branch2: str) -> None:
     """Compare generated data frames between branches
 

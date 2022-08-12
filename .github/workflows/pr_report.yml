@@ -14,7 +14,7 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-      - name: Install Poetry and run Bash script
+      - name: Run benchmarking script
         run: |
           cd benchmark/
           sh benchmark.sh -m main -b ${{ github.head_ref }}
