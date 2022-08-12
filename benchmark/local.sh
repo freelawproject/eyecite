@@ -29,7 +29,7 @@ rm -rf eyecite/
 echo "Now lets compare our files and generate a graph we can use"
 
 poetry init --no-interaction
-poetry add matplotlib pandas
+poetry add matplotlib pandas tables tabulate
 poetry install --no-dev
 poetry run python chart.py --branch1 main --branch2 current
 #
