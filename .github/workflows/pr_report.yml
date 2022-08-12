@@ -21,7 +21,7 @@ jobs:
 
       - name: Embed Timing Chart into Markdown Post
         run: |
-          echo "![image](https://github.com/freelawproject/eyecite/blob/main/pr${{github.event.number}}-time-comparison.png?raw=true)" >> benchmark/outputs/report.md
+          echo "![image](https://github.com/freelawproject/eyecite/blob/artifacts/benchmark/pr${{github.event.number}}-time-comparison.png?raw=true)" >> benchmark/outputs/report.md
 
       - name: Upload and Post Files to PR
         if: ${{ github.event_name == 'pull_request' }}
@@ -29,6 +29,8 @@ jobs:
         with:
           commit: ${{ github.event.pull_request.head.sha }}
           repo-token: ${{ secrets.GITHUB_TOKEN }}
+          artifacts-branch: artifacts
+          artifacts-dir: benchmark
           artifacts: |
             benchmark/outputs/report.md
             benchmark/outputs/time-comparison.png
