@@ -1,17 +1,18 @@
 import argparse
 import bz2
-import datetime
-from pathlib import Path
 import csv
-from io import StringIO
+import datetime
 import sys
+from io import StringIO
+from pathlib import Path
+
 from eyecite import get_citations
 
 csv.field_size_limit(sys.maxsize)
 
 
 class Benchmark(object):
-    """"""
+    """Benchmark the different eyecite branches"""
 
     def __init__(self):
         self.root = Path(__file__).parent.absolute()
@@ -23,8 +24,11 @@ class Benchmark(object):
         self.count = 0
         self.fields = []
 
-    def fetch_citations(self, row: list) -> None:
-        """"""
+    def fetch_citations(self, row) -> None:
+        """Fetch citations from rows opinion data
+
+        return: None
+        """
         row_id = row[0]
         row = dict(zip(self.fields, row))
         non_empty_rows = [
@@ -46,7 +50,10 @@ class Benchmark(object):
         self.times.append((datetime.datetime.now() - self.now).total_seconds())
 
     def generate_branch_report(self, branch: str) -> None:
-        """"""
+        """Generate Branch v Main Report
+
+        return: None
+        """
         zipfile = bz2.BZ2File(
             Path.joinpath(self.root, "..", "one-percent.csv.bz2")
         )
@@ -58,8 +65,7 @@ class Benchmark(object):
         with open(f"../outputs/data-{branch}.csv", "w") as f:
             writer = csv.writer(f)
             writer.writerow(["OpinionID", "Time", "Total", "Opinions"])
-            for row in rows:
-                writer.writerow(row)
+            writer.writerows(rows)
 
 
 if __name__ == "__main__":

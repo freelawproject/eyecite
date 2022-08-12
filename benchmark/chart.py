@@ -1,11 +1,12 @@
 import argparse
 import ast
-import re
-from pathlib import Path
 import csv
+import re
 import sys
-import pandas as pd
+from pathlib import Path
+
 import matplotlib.pyplot as plt
+import pandas as pd
 
 csv.field_size_limit(sys.maxsize)
 
