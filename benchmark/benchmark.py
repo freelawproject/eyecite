@@ -15,9 +15,10 @@ from eyecite import get_citations
 
 csv.field_size_limit(sys.maxsize)
 
-root = Path(__file__).parent.absolute()
-fp_main = Path.joinpath(root, "..", "outputs", "main.csv")
-fp_branch = Path.joinpath(root, "..", "outputs", "branch.csv")
+root = Path(__file__).parent.parent.absolute()
+fp_main = Path.joinpath(root, "outputs", "main.csv")
+fp_branch = Path.joinpath(root, "outputs", "branch.csv")
+fp_bulk_file = Path.joinpath(root, "bulk-file.csv.bz2")
 MAX_ROWS_IN_MD = 51
 
 
@@ -25,7 +26,6 @@ class Benchmark(object):
     """Benchmark the different eyecite branches"""
 
     def __init__(self):
-        self.root = Path(__file__).parent.absolute()
         self.now = datetime.datetime.now()
         self.times = []
         self.totals = []
@@ -43,6 +43,8 @@ class Benchmark(object):
         """
         row_id = row[0]
         row = dict(zip(self.fields, row))
+        # Find opinions to test against from the zip file and return
+        # citations found
         non_empty_rows = [
             row[field] for field in self.fields if type(row[field]) == str
         ]
@@ -67,9 +69,7 @@ class Benchmark(object):
         :param branch: Is a branch from main or not
         :return: None
         """
-        zipfile = bz2.BZ2File(
-            Path.joinpath(self.root, "..", "bulk-file.csv.bz2")
-        )
+        zipfile = bz2.BZ2File(fp_bulk_file)
         csv_data = csv.reader(StringIO(zipfile.read().decode()), delimiter=",")
         self.fields = next(csv_data)
         for row in csv_data:
@@ -105,7 +105,8 @@ class Benchmark(object):
             for row in comparison.iterrows():
                 if row[1][0] == row[1][1]:
                     continue
-
+                # Convert str list of citations back to list to compare across
+                # branches
                 non_overlap = set(to_list(row[1][0])) ^ set(to_list(row[1][1]))
                 if len(list(non_overlap)) == 0:
                     continue
@@ -188,7 +189,7 @@ class Benchmark(object):
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description="")
+    parser = argparse.ArgumentParser()
     parser.add_argument("--branch", action="store_true")
     parser.add_argument("--chart", action="store_true")
     args = parser.parse_args()
