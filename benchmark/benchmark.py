@@ -9,8 +9,9 @@ from io import StringIO
 from pathlib import Path
 
 import pandas as pd  # type: ignore
-from eyecite import get_citations
 from matplotlib import pyplot as plt  # type: ignore
+
+from eyecite import get_citations
 
 csv.field_size_limit(sys.maxsize)
 
@@ -123,7 +124,6 @@ class Benchmark(object):
 
         :return: None
         """
-
         with open("../outputs/report.md", "w") as f:
             f.write("# The Eyecite Report :eye:\n\n")
             f.write("\n\nGains and Losses\n")
