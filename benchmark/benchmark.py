@@ -8,9 +8,9 @@ from ast import literal_eval as to_list
 from io import StringIO
 from pathlib import Path
 
-import pandas as pd
+import pandas as pd # type: ignore
 from eyecite import get_citations
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt # type: ignore
 
 csv.field_size_limit(sys.maxsize)
 
