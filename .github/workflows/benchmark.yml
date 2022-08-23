@@ -1,9 +1,9 @@
-name: Generate Report on Eyecite PR
+name: Benchmark Pull Request
 on:
   pull_request:
 
 jobs:
-  Build:
+  benchmark:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,27 +14,38 @@ jobs:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
-      - name: Run benchmarking script
+      - name: Run Benchmarking Script
         run: |
-          cd benchmark/
-          sh benchmark.sh -m main -b ${{ github.head_ref }}
+          curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
+          
+          git clone https://github.com/freelawproject/eyecite.git benchmark/eyecite
+          cp benchmark/benchmark.py benchmark/eyecite/ && cd benchmark/eyecite/
+          poetry install --no-dev
+          poetry run pip install matplotlib pandas tabulate
+          
+          poetry run python benchmark.py
+          git checkout ${{ github.head_ref }}
+          poetry install --no-dev
+          poetry run python benchmark.py --branch
+          poetry run python benchmark.py --chart
 
       - name: Embed Timing Chart into Markdown Post
         run: |
           echo "![image](https://github.com/freelawproject/eyecite/blob/artifacts/benchmark/pr${{github.event.number}}-time-comparison.png?raw=true)" >> benchmark/outputs/report.md
 
       - name: Upload and Post Files to PR
-        if: ${{ github.event_name == 'pull_request' }}
         uses: gavv/pull-request-artifacts@v1.0.0
         with:
           commit: ${{ github.event.pull_request.head.sha }}
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.TOKEN }}
           artifacts-branch: artifacts
           artifacts-dir: benchmark
           artifacts: |
             benchmark/outputs/report.md
             benchmark/outputs/time-comparison.png
             benchmark/outputs/output.csv
+            benchmark/outputs/main.csv
+            benchmark/outputs/branch.csv
 
       - name: Add or Update PR Comment from Generated Report
         uses: marocchino/sticky-pull-request-comment@v2
