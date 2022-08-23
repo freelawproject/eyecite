@@ -15,8 +15,9 @@ from matplotlib import pyplot as plt  # type: ignore
 csv.field_size_limit(sys.maxsize)
 
 root = Path(__file__).parent.absolute()
-fp_main = Path.joinpath(root, "..", "outputs", f"main.csv")
-fp_branch = Path.joinpath(root, "..", "outputs", f"branch.csv")
+fp_main = Path.joinpath(root, "..", "outputs", "main.csv")
+fp_branch = Path.joinpath(root, "..", "outputs", "branch.csv")
+MAX_ROWS_IN_MD = 51
 
 
 class Benchmark(object):
@@ -128,7 +129,8 @@ class Benchmark(object):
             f.write("\n\nGains and Losses\n")
             f.write("---------\n")
             f.write(
-                f"There were {len(self.gains)} gains and {len(self.losses)} losses.\n"
+                f"There were {len(self.gains)} gains and "
+                f"{len(self.losses)} losses.\n"
             )
             f.write("\n<details>\n")
             f.write("<summary>Click here to see details.</summary>\n\n")
@@ -137,7 +139,7 @@ class Benchmark(object):
         df = pd.read_csv("../outputs/output.csv")
 
         with open("../outputs/report.md", "a") as md:
-            if df.__len__() > 51:
+            if df.__len__() > MAX_ROWS_IN_MD:
                 with open("outputs/report.md", "a+") as f:
                     f.write(
                         f"There were {df.__len__()} changes so we are only "
@@ -146,7 +148,7 @@ class Benchmark(object):
                         f"file linked above.\n\n"
                     )
 
-                df[:51].to_markdown(buf=md)
+                df[:MAX_ROWS_IN_MD].to_markdown(buf=md)
             else:
                 df.to_markdown(buf=md)
 
@@ -175,11 +177,11 @@ class Benchmark(object):
         main = pd.read_csv(fp_main)
         branch = pd.read_csv(fp_branch)
 
-        main.columns = main.columns.str.replace("Total", f"Total Main")
-        branch.columns = branch.columns.str.replace("Total", f"Total Branch")
+        main.columns = main.columns.str.replace("Total", "Total Main")
+        branch.columns = branch.columns.str.replace("Total", "Total Branch")
 
         df = pd.merge_asof(main, branch, on="Time")
-        df.plot(kind="line", x="Time", y=[f"Total Main", f"Total Branch"])
+        df.plot(kind="line", x="Time", y=["Total Main", "Total Branch"])
 
         plt.ylabel("# Cites Found ", rotation="vertical")
         plt.savefig("../outputs/time-comparison.png")
