@@ -8,9 +8,9 @@ from ast import literal_eval as to_list
 from io import StringIO
 from pathlib import Path
 
-import pandas as pd # type: ignore
+import pandas as pd  # type: ignore
 from eyecite import get_citations
-from matplotlib import pyplot as plt # type: ignore
+from matplotlib import pyplot as plt  # type: ignore
 
 csv.field_size_limit(sys.maxsize)
 
@@ -65,7 +65,9 @@ class Benchmark(object):
         :param branch: Is a branch from main or not
         :return: None
         """
-        zipfile = bz2.BZ2File(Path.joinpath(self.root, "..", "bulk-file.csv.bz2"))
+        zipfile = bz2.BZ2File(
+            Path.joinpath(self.root, "..", "bulk-file.csv.bz2")
+        )
         csv_data = csv.reader(StringIO(zipfile.read().decode()), delimiter=",")
         self.fields = next(csv_data)
         for row in csv_data:
