@@ -172,7 +172,7 @@ def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
 def process_parenthetical(
     matched_parenthetical: Optional[str],
 ) -> Optional[str]:
-    """Exclude any additional parentheticals matched as well as year parentheticals
+    """Exclude any additional paren matched as well as year parentheticals
 
     For example: 'something) (something else)' will be trimmed down
     to 'something' but 'something (clarifying something) or other' will be
