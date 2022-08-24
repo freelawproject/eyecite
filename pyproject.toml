@@ -8,7 +8,6 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.7",
   "Programming Language :: Python :: 3.8",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
@@ -29,7 +28,7 @@ include = ["eyecite/py.typed"]
 "Organisation Homepage" = "https://free.law/"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
 reporters-db = "^3.2.2"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
@@ -49,6 +48,9 @@ hyperscan = ">= 0.1.5"
 exrex = "^0.10.5"
 roman = "^3.3"
 pdoc3 = "^0.10.0"
+pandas = "^1.4.3"
+tabulate = "^0.8.10"
+matplotlib = "^3.5.3"
 
 [tool.black]
 include = '''.*\.pyi?$'''
