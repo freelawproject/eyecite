@@ -98,7 +98,8 @@ class Benchmark(object):
         Returns: None
         """
         main = pd.read_csv(
-            self.get_filepath(f"{main_hash}.csv"), usecols=["OpinionID", "Opinions"]
+            self.get_filepath(f"{main_hash}.csv"),
+            usecols=["OpinionID", "Opinions"],
         )
         branch = pd.read_csv(
             self.get_filepath(f"{branch_hash}.csv"),
