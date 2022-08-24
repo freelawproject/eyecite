@@ -90,15 +90,20 @@ class Benchmark(object):
         )
         df.to_csv(index=False, path_or_buf=self.get_filepath(f"{branch}.csv"))
 
-    def compare_dataframes(self, main: str, branch: str) -> None:
+    def compare_dataframes(self, main_hash: str, branch_hash: str) -> None:
         """Compare generated data frames between branches
 
         Generates (mostly) the markdown report for the PR comment
 
         Returns: None
         """
-        main = pd.read_csv(self.get_filepath(f"{main}.csv"), usecols=["OpinionID", "Opinions"])
-        branch = pd.read_csv(self.get_filepath(f"{branch}.csv"), usecols=["OpinionID", "Opinions"])
+        main = pd.read_csv(
+            self.get_filepath(f"{main_hash}.csv"), usecols=["OpinionID", "Opinions"]
+        )
+        branch = pd.read_csv(
+            self.get_filepath(f"{branch_hash}.csv"),
+            usecols=["OpinionID", "Opinions"],
+        )
 
         comparison = main.compare(branch)
 
