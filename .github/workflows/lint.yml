@@ -86,8 +86,8 @@ jobs:
 
       - name: pylint Generate Report
         run: >
-          pylint --exit-zero --load-plugins=pylint_json2html -f jsonextended eyecite |
-          pylint-json2html -f jsonextended -o pylint-report.html
+          pylint --exit-zero --load-plugins=pylint_json2html -f json eyecite |
+          pylint-json2html -f json -o pylint-report.html
 
       - name: Upload report
         uses: actions/upload-artifact@v2
