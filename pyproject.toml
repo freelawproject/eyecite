@@ -44,10 +44,14 @@ mypy = "^0.812"
 pylint = "^2.7.2"
 wheel = "^0.35.1"
 pylint-json2html = "^0.3.0"
-hyperscan = ">= 0.1.5"
 exrex = "^0.10.5"
 roman = "^3.3"
 pdoc3 = "^0.10.0"
+
+[tool.poetry.group.x86.dependencies]
+hyperscan = ">= 0.1.5"
+
+[tool.poetry.group.benchmark.dependencies]
 tabulate = "^0.8.10"
 matplotlib = "^3.5.3"
 pandas = "^1.4.3"
