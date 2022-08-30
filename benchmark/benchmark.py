@@ -40,7 +40,6 @@ class Benchmark(object):
         now = datetime.datetime.now()
         data = []
         for row in csv_data:
-            id = row.pop("id")
             text = (
                 row["xml_harvard"]
                 or row["html_lawbox"]
@@ -56,7 +55,7 @@ class Benchmark(object):
             cites = [cite.token.data for cite in found_citations if cite.token]
             count += len(cites)
             output = {
-                "id": id,
+                "id": row["id"],
                 "cites": cites,
                 "total": count,
                 "time": (datetime.datetime.now() - now).total_seconds(),
