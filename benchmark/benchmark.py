@@ -52,8 +52,12 @@ class Benchmark(object):
             )
             cites = [cite.token.data for cite in found_citations if cite.token]
             count += len(cites)
-            output = {"id": id, "cites": cites, "total": count,
-                      "time": (datetime.datetime.now() - now).total_seconds()}
+            output = {
+                "id": id,
+                "cites": cites,
+                "total": count,
+                "time": (datetime.datetime.now() - now).total_seconds(),
+            }
             data.append(output)
         with open(self.get_filepath(f"{branch}.json"), "w") as f:
             json.dump(data, fp=f, indent=4)
