@@ -1,4 +1,3 @@
-# flake8: noqa: E402
 import argparse
 import bz2
 import csv
@@ -42,11 +41,16 @@ class Benchmark(object):
         data = []
         for row in csv_data:
             id = row.pop("id")
-            newrow = {k: v for k, v in row.items() if v}
+            text = (
+                row["xml_harvard"]
+                or row["html_lawbox"]
+                or row["html_columbia"]
+                or row["html_anon_2020"]
+                or row["html"]
+                or row["plain_text"]
+            )
             found_citations = get_citations(
-                clean_text(
-                    list(newrow.values())[0], ["html", "inline_whitespace"]
-                )
+                clean_text(text, ["html", "inline_whitespace"])
             )
             cites = [cite.token.data for cite in found_citations if cite.token]
             count += len(cites)
