@@ -9,7 +9,7 @@ import sys
 from io import StringIO
 from pathlib import Path
 
-from matplotlib import pyplot as plt
+from matplotlib import pyplot as plt  # type: ignore
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -159,7 +159,7 @@ class Benchmark(object):
                 f"[Full Output CSV ](https://raw.githubusercontent.com/{repo}/artifacts/{pr_number}/results/output.csv)\n"
             )
 
-    def generate_time_chart(self, main, branch) -> None:
+    def generate_time_chart(self, main: str, branch: str) -> None:
         """Generate time chart showing speed across branches
 
         return: None
@@ -167,6 +167,7 @@ class Benchmark(object):
 
         with open(f"benchmark/{main}.json", "r") as f:
             main_file = json.load(f)
+
         with open(f"benchmark/{branch}.json", "r") as b:
             branch_file = json.load(b)
 
@@ -174,18 +175,18 @@ class Benchmark(object):
             writer = csv.writer(csvfile)
             writer.writerow(["ID", "Gain", "Loss"])
 
-            for (m, b) in zip(main_file, branch_file):
-                if set(m["cites"]) == set(b["cites"]):
+            for (main_row, branch_row) in zip(main_file, branch_file):
+                if set(main_row["cites"]) == set(branch_row["cites"]):
                     continue
 
-                changes = set(m["cites"]) ^ set(b["cites"])
+                changes = set(main_row["cites"]) ^ set(branch_row["cites"])
                 for change in list(changes):
                     gain, loss = "", ""
-                    if change in m["cites"]:
+                    if change in main_row["cites"]:
                         loss = change
                     else:
                         gain = change
-                    writer.writerow([m["id"], gain, loss])
+                    writer.writerow([main_row["id"], gain, loss])
 
         plt.plot(
             [x["time"] for x in main_file],
