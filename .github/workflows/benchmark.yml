@@ -55,7 +55,14 @@ jobs:
           echo ${{ github.event.issue.pull_request }}
           echo "::set-output name=filepath::benchmark/${{ env.main }}.json"
           echo "::set-output name=hash::${{ env.main }}"
-
+      #----------------------------------------------
+      #             Download Testing File
+      #
+      #    We generated our testing datasets with the following command
+      #
+      # root@maintenance:/opt/courtlistener# PGPASSWORD=$DB_PASSWORD psql       --command         'set statement_timeout to 0;
+      #           COPY (SELECT id, plain_text, html, html_lawbox, html_columbia, html_anon_2020, xml_harvard FROM search_opinion TABLESAMPLE BERNOULLI (0.1)) TO STDOUT WITH (FORMAT csv, ENCODING utf8, HEADER)'      --host $DB_HOST         --username $DB_USER     --dbname courtlistener  |       bzip2 |         aws s3 cp - s3://com-courtlistener-storage/bulk-data/eyecite/tests/ten-percent.csv.bz2 --acl public-read
+      #----------------------------------------------
       - name: Download Testing File
         run: |
           curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
@@ -103,13 +110,13 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.TOKEN }}
         with:
-          user_email: 'bill@free.law'
-          user_name: 'flooie'
+          user_email: 'info@free.law'
+          user_name: 'freelawbot'
           source_file: 'results/'
           destination_repo: 'freelawproject/eyecite'
           destination_folder: '${{ github.event.number }}'
           destination_branch: 'artifacts'
-          commit_message: 'Upload to Repo'
+          commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
 
       - name: Add or Update PR Comment from Generated Report
         uses: marocchino/sticky-pull-request-comment@v2
@@ -178,13 +185,13 @@ jobs:
         env:
           API_TOKEN_GITHUB: ${{ secrets.TOKEN }}
         with:
-          user_email: 'bill@free.law'
-          user_name: 'flooie'
+          user_email: 'info@free.law'
+          user_name: 'freelawbot'
           source_file: 'results/'
           destination_repo: 'freelawproject/reporters-db'
           destination_folder: '${{ github.event.client_payload.pr_number }}'
           destination_branch: 'artifacts'
-          commit_message: 'Upload to Repo'
+          commit_message: 'feat(ci): Add artifacts for PR #${{ github.event.client_payload.pr_number }}'
       #----------------------------------------------
       #             Upload to Github PR
       #----------------------------------------------
