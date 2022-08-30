@@ -35,10 +35,8 @@ class Benchmark(object):
         :param branch: Is a branch from main or not
         :return: None
         """
-        zipfile = bz2.BZ2File(self.get_filepath("bulk-file.csv.bz2"))
-        csv_data = csv.DictReader(
-            StringIO(zipfile.read().decode()), delimiter=","
-        )
+        with bz2.BZ2File(self.get_filepath("bulk-file.csv.bz2")) as zipfile:
+            csv_data = csv.DictReader(zipfile.read().decode(), delimiter=",")
         count = 0
         now = datetime.datetime.now()
         data = []
