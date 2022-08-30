@@ -8,12 +8,13 @@ import os
 import sys
 from io import StringIO
 from pathlib import Path
+
 from matplotlib import pyplot as plt
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from eyecite import get_citations, clean_text
+from eyecite import clean_text, get_citations
 
 csv.field_size_limit(sys.maxsize)
 
@@ -42,7 +43,6 @@ class Benchmark(object):
         now = datetime.datetime.now()
         data = []
         for row in csv_data:
-            output = {}
             id = row.pop("id")
             newrow = {k: v for k, v in row.items() if v}
             found_citations = get_citations(
@@ -52,10 +52,8 @@ class Benchmark(object):
             )
             cites = [cite.token.data for cite in found_citations if cite.token]
             count += len(cites)
-            output["id"] = id
-            output["cites"] = cites
-            output["total"] = count
-            output["time"] = (datetime.datetime.now() - now).total_seconds()
+            output = {"id": id, "cites": cites, "total": count,
+                      "time": (datetime.datetime.now() - now).total_seconds()}
             data.append(output)
         with open(self.get_filepath(f"{branch}.json"), "w") as f:
             json.dump(data, fp=f, indent=4)
@@ -210,8 +208,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     repo = (
-        "freelawproject/reporters-db" if args.reporters else "freelawproject/eyecite"
-    )  # this will be updated to our branches
+        "freelawproject/reporters-db"
+        if args.reporters
+        else "freelawproject/eyecite"
+    )
     benchmark = Benchmark()
     if len(args.branches) == 1:
         benchmark.generate_branch_report(branch=args.branches[0])
