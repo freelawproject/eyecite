@@ -48,8 +48,6 @@ pylint-json2html = "^0.3.0"
 exrex = "^0.10.5"
 roman = "^3.3"
 pdoc3 = "^0.10.0"
-
-[tool.poetry.group.x86.dependencies]
 hyperscan = ">= 0.1.5"
 
 [tool.poetry.group.benchmark.dependencies]
