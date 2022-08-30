@@ -52,6 +52,7 @@ class Benchmark(object):
             found_citations = get_citations(
                 clean_text(text, ["html", "inline_whitespace"])
             )
+            # Get the citation text string from the cite object
             cites = [cite.token.data for cite in found_citations if cite.token]
             count += len(cites)
             output = {
