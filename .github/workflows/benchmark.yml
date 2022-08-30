@@ -25,6 +25,8 @@ jobs:
           python-version: 3.9
       #----------------------------------------------
       #  -----  install & configure poetry  -----
+      # We are indeed using a pre-release version of poetry
+      # That we should drop once groups is released for main
       #----------------------------------------------
       - name: Install Poetry
         uses: snok/install-poetry@v1
