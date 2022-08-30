@@ -33,7 +33,6 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-          installer-parallel: true
           version: 1.2.0rc2
       #----------------------------------------------
       #       load cached venv if cache exists
@@ -149,7 +148,6 @@ jobs:
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-          installer-parallel: true
           version: 1.2.0rc2
 
       #----------------------------------------------
