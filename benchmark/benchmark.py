@@ -1,3 +1,5 @@
+# !/bin/python3
+# isort: skip_file
 import argparse
 import bz2
 import csv
@@ -10,8 +12,6 @@ from pathlib import Path
 from matplotlib import pyplot as plt  # type: ignore
 
 from eyecite import clean_text, get_citations
-
-# isort: off
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
