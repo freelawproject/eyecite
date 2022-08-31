@@ -1,0 +1,206 @@
+name: Benchmark Pull Request
+on:
+  pull_request:
+  repository_dispatch:
+    types: [ reporters-db-pr ]
+
+env:
+  main: "$(/usr/bin/git log -1 --format='%H')"
+
+jobs:
+  benchmark:
+    name: PR comment
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      # We are indeed using a pre-release version of poetry
+      # That we should drop once groups is released for main
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          version: 1.2.0rc2
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --with benchmark --without dev
+
+      - name: Setup variables I
+        id: branch1
+        run: |
+          echo ${{ github.event.issue.pull_request }}
+          echo "::set-output name=filepath::benchmark/${{ env.main }}.json"
+          echo "::set-output name=hash::${{ env.main }}"
+      #----------------------------------------------
+      #             Download Testing File
+      #
+      #    We generated our testing datasets with the following command
+      #
+      # root@maintenance:/opt/courtlistener# PGPASSWORD=$DB_PASSWORD psql       --command         'set statement_timeout to 0;
+      #           COPY (SELECT id, plain_text, html, html_lawbox, html_columbia, html_anon_2020, xml_harvard FROM search_opinion TABLESAMPLE BERNOULLI (0.1)) TO STDOUT WITH (FORMAT csv, ENCODING utf8, HEADER)'      --host $DB_HOST         --username $DB_USER     --dbname courtlistener  |       bzip2 |         aws s3 cp - s3://com-courtlistener-storage/bulk-data/eyecite/tests/ten-percent.csv.bz2 --acl public-read
+      #----------------------------------------------
+      - name: Download Testing File
+        run: |
+          curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
+
+      - name: Run first benchmark
+        run: |
+          poetry run python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }}
+          git stash --include-untracked
+
+      - uses: actions/checkout@v3
+        with:
+          repository: freelawproject/eyecite
+          ref: main
+
+      - name: Load cached venv 2
+        id: cached-poetry-dependencies2
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies 2
+        if: steps.cached-poetry-dependencies2.outputs.cache-hit != 'true'
+        run: poetry install --with benchmark --without dev
+      - name: Setup variables II
+        id: branch2
+        run: |
+          echo "::set-output name=filepath::benchmark/${{ env.main }}.json"
+          echo "::set-output name=hash::${{ env.main }}"
+
+      - name: Run second benchmark
+        run: |
+          git stash pop
+          poetry run python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }} ${{ steps.branch2.outputs.hash }} --pr ${{ github.event.number }}
+          mkdir results
+          mv benchmark/output.csv benchmark/${{ steps.branch1.outputs.hash }}.json benchmark/${{ steps.branch2.outputs.hash }}.json benchmark/report.md benchmark/chart.png results/
+
+      #----------------------------------------------
+      #             Upload to Github PR
+      #----------------------------------------------
+      - name: Pushes test file
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.TOKEN }}
+        with:
+          user_email: 'info@free.law'
+          user_name: 'freelawbot'
+          source_file: 'results/'
+          destination_repo: 'freelawproject/eyecite'
+          destination_folder: '${{ github.event.number }}'
+          destination_branch: 'artifacts'
+          commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
+
+      - name: Add or Update PR Comment from Generated Report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          path: results/report.md
+
+  dispatch:
+    name: Reporters-DB-Dipatch
+    if: github.event_name == 'repository_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      #----------------------------------------------
+      #       check-out repo and set-up python
+      #----------------------------------------------
+      - name: Check out repository
+        uses: actions/checkout@v2
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.9
+      #----------------------------------------------
+      #  -----  install & configure poetry  -----
+      #----------------------------------------------
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+          version: 1.2.0rc2
+
+      #----------------------------------------------
+      #       load cached venv if cache exists
+      #----------------------------------------------
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      #----------------------------------------------
+      # install dependencies if cache does not exist
+      #----------------------------------------------
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --with benchmark --without dev
+      #----------------------------------------------
+      #              run test suite
+      #----------------------------------------------
+      - name: Run Tests
+        run: |
+          echo ${{ github.event.client_payload.pr_number }}
+          curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
+          poetry run python benchmark/benchmark.py --branches original
+          poetry run pip install "git+https://github.com/freelawproject/reporters-db.git@${{ github.event.client_payload.commit }}"
+          poetry run python benchmark/benchmark.py --branches original update --reporters --pr ${{ github.event.client_payload.pr_number }}
+          mkdir results
+          mv benchmark/output.csv benchmark/original.json benchmark/update.json benchmark/report.md benchmark/chart.png results/
+      #----------------------------------------------
+      #             Upload to Github PR
+      #----------------------------------------------
+      - name: Pushes test file
+        uses: dmnemec/copy_file_to_another_repo_action@main
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.TOKEN }}
+        with:
+          user_email: 'info@free.law'
+          user_name: 'freelawbot'
+          source_file: 'results/'
+          destination_repo: 'freelawproject/reporters-db'
+          destination_folder: '${{ github.event.client_payload.pr_number }}'
+          destination_branch: 'artifacts'
+          commit_message: 'feat(ci): Add artifacts for PR #${{ github.event.client_payload.pr_number }}'
+      #----------------------------------------------
+      #             Upload to Github PR
+      #----------------------------------------------
+      - name: Add or Update PR Comment from Generated Report
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          path: results/report.md
+          number: ${{ github.event.client_payload.pr_number }}
+          repo: reporters-db
+
