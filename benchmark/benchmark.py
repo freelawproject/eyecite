@@ -5,15 +5,15 @@ import datetime
 import json
 import os
 import sys
-from io import StringIO
 from pathlib import Path
 
 from matplotlib import pyplot as plt  # type: ignore
 
+from eyecite import clean_text, get_citations
+
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
 
-from eyecite import clean_text, get_citations
 
 csv.field_size_limit(sys.maxsize)
 
@@ -137,7 +137,10 @@ class Benchmark(object):
 
         with open(self.get_filepath("report.md"), "a") as f:
             # Add Link to Repository Chart image
-            link = f"\n![image](https://raw.githubusercontent.com/{repo}/artifacts/{pr_number}/results/chart.png)\n"
+            link = (
+                f"\n![image](https://raw.githubusercontent.com/"
+                f"{repo}/artifacts/{pr_number}/results/chart.png)\n"
+            )
             f.write(link)
 
     def append_links(self, branch1, branch2, pr_number, repo):
@@ -152,13 +155,16 @@ class Benchmark(object):
         with open(self.get_filepath("report.md"), "a") as f:
             f.write("\n\nGenerated Files\n---------\n\n")
             f.write(
-                f"[Branch 1 Output](https://raw.githubusercontent.com/{repo}/artifacts/{pr_number}/results/{branch1}.json)\n"
+                f"[Branch 1 Output](https://raw.githubusercontent.com/"
+                f"{repo}/artifacts/{pr_number}/results/{branch1}.json)\n"
             )
             f.write(
-                f"[Branch 2 Output](https://raw.githubusercontent.com/{repo}/artifacts/{pr_number}/results/{branch2}.json)\n"
+                f"[Branch 2 Output](https://raw.githubusercontent.com/"
+                f"{repo}/artifacts/{pr_number}/results/{branch2}.json)\n"
             )
             f.write(
-                f"[Full Output CSV ](https://raw.githubusercontent.com/{repo}/artifacts/{pr_number}/results/output.csv)\n"
+                f"[Full Output CSV ](https://raw.githubusercontent.com/"
+                f"{repo}/artifacts/{pr_number}/results/output.csv)\n"
             )
 
     def generate_time_chart(self, main: str, branch: str) -> None:
