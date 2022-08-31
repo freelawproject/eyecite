@@ -444,6 +444,16 @@ If you would like to create mock citation objects to assist you in writing your 
     )
 
 
+Development
+===========
+When a pull request is generated for changes from changes to eyecite, a github
+workflow will automatically trigger.  The workflow, benchmark.yml will
+test improvements in accuracy and speed against the current main branch.
+
+The results are committed to an artifacts branch, and an ever updating comment
+in the PR comments with the output.
+
+
 License
 =======
 This repository is available under the permissive BSD license, making it easy and safe to incorporate in your own libraries.
