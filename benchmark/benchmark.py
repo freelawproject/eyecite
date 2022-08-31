@@ -1,5 +1,3 @@
-# !/bin/python3
-# isort: skip_file
 import argparse
 import bz2
 import csv
