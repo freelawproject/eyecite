@@ -5,6 +5,7 @@ import datetime
 import json
 import os
 import sys
+from io import StringIO
 from pathlib import Path
 
 from matplotlib import pyplot as plt  # type: ignore
@@ -35,7 +36,10 @@ class Benchmark(object):
         :return: None
         """
         with bz2.BZ2File(self.get_filepath("bulk-file.csv.bz2")) as zipfile:
-            csv_data = csv.DictReader(zipfile.read().decode(), delimiter=",")
+            csv_data = csv.DictReader(
+                StringIO(zipfile.read().decode()),
+                delimiter=",",
+            )
         count = 0
         now = datetime.datetime.now()
         data = []
