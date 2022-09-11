@@ -24,6 +24,17 @@ jobs:
         with:
           python-version: 3.9
       #----------------------------------------------
+      #   Alert PR to eyecite benchmark test
+      #----------------------------------------------
+      - name: Add or Update comment on PR that Test is running
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          message: |
+            Eyecite Benchmarking in progress ...
+            This message will be updated when the test is completed.
+
+      #----------------------------------------------
       #  -----  install & configure poetry  -----
       # We are indeed using a pre-release version of poetry
       # That we should drop once groups is released for main
