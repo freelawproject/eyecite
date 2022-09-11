@@ -170,6 +170,7 @@ jobs:
       #----------------------------------------------
       - name: Run Tests
         run: |
+          poetry run pip install "git+https://github.com/freelawproject/reporters-db.git"
           echo ${{ github.event.client_payload.pr_number }}
           curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
           poetry run python benchmark/benchmark.py --branches original
