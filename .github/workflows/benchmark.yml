@@ -141,6 +141,19 @@ jobs:
         with:
           python-version: 3.9
       #----------------------------------------------
+      #   Alert PR to eyecite benchmark test
+      #----------------------------------------------
+      - name: Add or Update comment on PR that Test is running
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          recreate: true
+          GITHUB_TOKEN: ${{ secrets.FREELAWBOT_TOKEN }}
+          number: ${{ github.event.client_payload.pr_number }}
+          repo: reporters-db
+          message: |
+            Eyecite Benchmarking in progress ...
+            This message will be updated when the test is completed.
+      #----------------------------------------------
       #  -----  install & configure poetry  -----
       #----------------------------------------------
       - name: Install Poetry
