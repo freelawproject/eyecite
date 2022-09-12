@@ -31,7 +31,10 @@ jobs:
         with:
           recreate: true
           message: |
-            Eyecite Benchmarking in progress ...
+            Eyecite Benchmarking in progress...
+            
+            For details, see: https://github.com/freelawproject/eyecite/actions/workflows/benchmark.yml
+            
             This message will be updated when the test is completed.
 
       #----------------------------------------------
