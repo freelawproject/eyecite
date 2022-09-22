@@ -49,7 +49,9 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
         for court in courts:
             # Use startswith because citations are often missing final period,
             # e.g. "2d Cir"
-            if court["citation_string"].startswith(court_str):
+            if court["citation_string"] == (court_str) or court[
+                "citation_string"
+            ][:-1] == (court_str):
                 court_code = court["id"]
                 break
 
@@ -80,11 +82,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
 
     See POST_CITATION_REGEX for examples.
     """
-    m = match_on_tokens(
-        words,
-        citation.index + 1,
-        POST_FULL_CITATION_REGEX,
-    )
+    m = match_on_tokens(words, citation.index + 1, POST_FULL_CITATION_REGEX,)
     if not m:
         return
 
@@ -296,14 +294,7 @@ def disambiguate_reporters(
 joke_cite: List[CitationBase] = [
     FullCaseCitation(
         CitationToken(
-            "1 FLP 1",
-            0,
-            99,
-            {
-                "volume": "1",
-                "reporter": "FLP",
-                "page": "1",
-            },
+            "1 FLP 1", 0, 99, {"volume": "1", "reporter": "FLP", "page": "1",},
         ),
         0,
         metadata={
