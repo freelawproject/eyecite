@@ -1,9 +1,8 @@
-import unittest
+from unittest import TestCase
 from eyecite import get_citations
-from courts_db import courts
 
 
-class RegexesTest(unittest.TestCase):
+class RegexesTest(TestCase):
     def test_parenthetical_court_parser(self):
         """Check that citations return the appropriate court."""
         samples = {
