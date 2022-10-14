@@ -437,7 +437,7 @@ python-versions = "*"
 
 [[package]]
 name = "reporters-db"
-version = "3.2.30"
+version = "3.2.32"
 description = "Database of Court Reporters"
 category = "main"
 optional = false
@@ -558,7 +558,7 @@ testing = ["func-timeout", "jaraco.itertools", "jaraco.test (>=3.2.0)", "pytest 
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "8a56b217ddc6f65d304c9cc32f2bed0d2b71049175a9a8adf20b9c0519658e27"
+content-hash = "c400dbe805034a5e4577f13ac5db3ee8bda398048524b162072baf7e3d13686d"
 
 [metadata.files]
 appdirs = [
@@ -1145,8 +1145,8 @@ regex = [
     {file = "regex-2021.4.4.tar.gz", hash = "sha256:52ba3d3f9b942c49d7e4bc105bb28551c44065f139a65062ab7912bef10c9afb"},
 ]
 reporters-db = [
-    {file = "reporters-db-3.2.30.tar.gz", hash = "sha256:ef2e63156f06c037b5bdb2b34a05fe4a6456f83c5032d48fd1f4f063918d462d"},
-    {file = "reporters_db-3.2.30-py2.py3-none-any.whl", hash = "sha256:8231294dfaadc5b43d493e4d0e44fab51e301b6a57f7592d6ac9c9680b4fd326"},
+    {file = "reporters-db-3.2.32.tar.gz", hash = "sha256:284c03f445702c4f2ecac85d19cec8e129d5fa2427cd7a447332c9d4a735437b"},
+    {file = "reporters_db-3.2.32-py2.py3-none-any.whl", hash = "sha256:811b0970b300112acb0e1ea67bb9437d39ca884a4f94ca93c269778ec216a5e6"},
 ]
 roman = [
     {file = "roman-3.3-py2.py3-none-any.whl", hash = "sha256:c2a1f14ab47373aecc141edbcdd66595949c9d0ed932fe76bd547df1b55f7278"},
