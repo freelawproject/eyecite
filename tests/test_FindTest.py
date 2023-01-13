@@ -709,3 +709,21 @@ class FindTest(TestCase):
         self.run_test_pairs(
             test_pairs, "Custom tokenizer", tokenizers=[tokenizer]
         )
+
+    def test_citation_fullspan(self):
+        example = 'citation number one is Wilson v. Mar. Overseas Corp., 150 F.3d 1, 6-7 ( 1st Cir. 1998); This is different from Commonwealth v. Bauer, 604 A.2d 1098 (Pa.Super. 1992), my second example'
+        extracted = get_citations(example)
+
+        answers = [(0, (23, 86)), (1, (111, 164))]
+        for cit_idx, (start, end) in answers:
+
+            self.assertEqual(
+                extracted[cit_idx].full_span()[0],
+                start,
+                f"full_span start index doesn't match for {extracted[cit_idx]}",
+            )
+            self.assertEqual(
+                extracted[cit_idx].full_span()[1],
+                end,
+                f"full_span end index doesn't match for {extracted[cit_idx]}",
+            )

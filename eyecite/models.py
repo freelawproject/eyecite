@@ -69,7 +69,9 @@ class CitationBase:
     index: int  # index of _token in the token list
     # span() overrides
     span_start: Optional[int] = None
+    full_span_start: Optional[int] = None
     span_end: Optional[int] = None
+    full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
 
@@ -144,6 +146,13 @@ class CitationBase:
             if self.span_start is not None
             else self.token.start,
             self.span_end if self.span_end is not None else self.token.end,
+        )
+
+    def full_span(self):
+        """Start and Stop offsets in source text for full citation text (including plaintiff, defendant, post citation, ...)"""
+        return (
+            self.full_span_start if self.full_span_start else self.span()[0],
+            self.full_span_end if self.full_span_end else self.span()[1]
         )
 
 
@@ -262,7 +271,7 @@ class FullLawCitation(FullCitation):
             i for i in (m.publisher, m.month, m.day, m.year) if i
         )
         if publisher_date:
-            parts.append(f" ({publisher_date}")
+            parts.append(f" ({publisher_date})")
         if m.parenthetical:
             parts.append(f" ({m.parenthetical})")
         return "".join(parts)
@@ -358,7 +367,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
             parts.append(f", {m.pin_cite}")
         if m.extra:
             parts.append(m.extra)
-        publisher_date = " ".join(m[i] for i in (m.court, m.year) if i)
+        publisher_date = " ".join(i for i in (m.court, m.year) if i)
         if publisher_date:
             parts.append(f" ({publisher_date}")
         if m.parenthetical:
