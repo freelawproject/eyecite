@@ -69,8 +69,8 @@ class CitationBase:
     index: int  # index of _token in the token list
     # span() overrides
     span_start: Optional[int] = None
-    full_span_start: Optional[int] = None
     span_end: Optional[int] = None
+    full_span_start: Optional[int] = None
     full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
@@ -149,11 +149,20 @@ class CitationBase:
         )
 
     def full_span(self):
-        """Start and Stop offsets in source text for full citation text (including plaintiff, defendant, post citation, ...)"""
-        return (
-            self.full_span_start if self.full_span_start else self.span()[0],
-            self.full_span_end if self.full_span_end else self.span()[1]
-        )
+        """Span indices that fully cover the citation
+
+        Start and stop offsets in source text for full citation text (including plaintiff, defendant, post citation, ...)
+        Relevant for FullCaseCitation, FullJournalCitation and FullLawCitation.
+        """
+        start = self.full_span_start
+        if start is None:
+            start = self.span()[0]
+
+        end = self.full_span_end
+        if end is None:
+            end = self.span()[1]
+
+        return (start, end)
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
