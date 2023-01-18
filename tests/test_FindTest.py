@@ -739,13 +739,24 @@ class FindTest(TestCase):
             '37 A.L.R.4th 972, 974 (1985)',
             '497 Fed. Appx. 274 (4th Cir. 2012)',
             "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
-            "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)"
+            "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
         ]
         for example in simple_examples:
             extracted = get_citations(example)[0]
-            print(extracted, extracted.full_span(), len(example))
             error_msg = "Full span indices for a simple example should be (0, len(example)) "
             self.assertEqual(extracted.full_span(),
                              (0, len(example)),
+                             error_msg
+                             )
+        # Sentence and correct start_index
+        stopword_examples = [
+            ("See 66 B.U. L. Rev. 71 (1986)", 4),
+            ("Citing 66 B.U. L. Rev. 71 (1986)", 7)
+        ]
+        for sentence, start_idx in stopword_examples:
+            extracted = get_citations(sentence)[0]
+            error_msg = "Wrong span for stopword example"
+            self.assertEqual(extracted.full_span(),
+                             (start_idx, len(sentence)),
                              error_msg
                              )

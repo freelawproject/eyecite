@@ -105,7 +105,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     future, this could be improved.
     """
     # To turn word indexing into char indexing, useful for span, account for shift
-    offset = 1
+    offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
     for index in range(citation.index - 1, max(back_seek, -1), -1):
@@ -119,7 +119,11 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
                 citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0): index]
                 ).strip()
-                offset += len(citation.metadata.plaintiff)
+                offset += len(citation.metadata.plaintiff) + 1
+            else:
+                # We don't want to include stop words such as 'citing' in the span
+                offset -= len(word)
+
             start_index = index + 1
             break
         if word.endswith(";"):
