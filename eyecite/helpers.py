@@ -88,6 +88,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
@@ -103,10 +104,14 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
+    # To turn word indexing into char indexing,
+    # useful for span, account for shift
+    offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
     for index in range(citation.index - 1, max(back_seek, -1), -1):
         word = words[index]
+        offset += len(word)
         if word == ",":
             # Skip it
             continue
@@ -115,12 +120,19 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
                 citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip()
+                offset += len(citation.metadata.plaintiff) + 1
+            else:
+                # We don't want to include stop words such as
+                # 'citing' in the span
+                offset -= len(word)
+
             start_index = index + 1
             break
         if word.endswith(";"):
             # String citation
             break
     if start_index:
+        citation.full_span_start = citation.span()[0] - offset
         citation.metadata.defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", ")
@@ -134,6 +146,7 @@ def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.publisher = m["publisher"]
     citation.metadata.day = m["day"]
@@ -155,6 +168,7 @@ def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
     citation.metadata.year = m["year"]

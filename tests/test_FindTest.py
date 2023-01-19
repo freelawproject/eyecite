@@ -709,3 +709,52 @@ class FindTest(TestCase):
         self.run_test_pairs(
             test_pairs, "Custom tokenizer", tokenizers=[tokenizer]
         )
+
+    def test_citation_fullspan(self):
+        """Check that the full_span function returns the correct indices."""
+
+        # Make sure it works with several citations in one string
+        combined_example = "citation number one is Wilson v. Mar. Overseas Corp., 150 F.3d 1, 6-7 ( 1st Cir. 1998); This is different from Commonwealth v. Bauer, 604 A.2d 1098 (Pa.Super. 1992), my second example"
+        extracted = get_citations(combined_example)
+        # answers format is (citation_index, (full_span_start, full_span_end))
+        answers = [(0, (23, 86)), (1, (111, 164))]
+        for cit_idx, (start, end) in answers:
+
+            self.assertEqual(
+                extracted[cit_idx].full_span()[0],
+                start,
+                f"full_span start index doesn't match for {extracted[cit_idx]}",
+            )
+            self.assertEqual(
+                extracted[cit_idx].full_span()[1],
+                end,
+                f"full_span end index doesn't match for {extracted[cit_idx]}",
+            )
+
+        # full_span should cover the whole string
+        simple_examples = [
+            "66 B.U. L. Rev. 71 (1986)",
+            "5 Minn. L. Rev. 1339, 1341 (1991)",
+            "42 U.S.C. § 405(r)(2) (2019)",
+            "37 A.L.R.4th 972, 974 (1985)",
+            "497 Fed. Appx. 274 (4th Cir. 2012)",
+            "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+            "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
+        ]
+        for example in simple_examples:
+            extracted = get_citations(example)[0]
+            error_msg = "Full span indices for a simple example should be (0, len(example)) "
+            self.assertEqual(
+                extracted.full_span(), (0, len(example)), error_msg
+            )
+        # Sentence and correct start_index
+        stopword_examples = [
+            ("See 66 B.U. L. Rev. 71 (1986)", 4),
+            ("Citing 66 B.U. L. Rev. 71 (1986)", 7),
+        ]
+        for sentence, start_idx in stopword_examples:
+            extracted = get_citations(sentence)[0]
+            error_msg = "Wrong span for stopword example"
+            self.assertEqual(
+                extracted.full_span(), (start_idx, len(sentence)), error_msg
+            )

@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Tuple,
     Union,
     cast,
 )
@@ -70,6 +71,8 @@ class CitationBase:
     # span() overrides
     span_start: Optional[int] = None
     span_end: Optional[int] = None
+    full_span_start: Optional[int] = None
+    full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
 
@@ -145,6 +148,26 @@ class CitationBase:
             else self.token.start,
             self.span_end if self.span_end is not None else self.token.end,
         )
+
+    def full_span(self) -> Tuple[int, int]:
+        """Span indices that fully cover the citation
+
+        Start and stop offsets in source text for full citation text (including
+        plaintiff, defendant, post citation, ...)
+
+        Relevant for FullCaseCitation, FullJournalCitation and FullLawCitation.
+
+        :returns: Tuple of start and end indicies
+        """
+        start = self.full_span_start
+        if start is None:
+            start = self.span()[0]
+
+        end = self.full_span_end
+        if end is None:
+            end = self.span()[1]
+
+        return start, end
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
@@ -262,7 +285,7 @@ class FullLawCitation(FullCitation):
             i for i in (m.publisher, m.month, m.day, m.year) if i
         )
         if publisher_date:
-            parts.append(f" ({publisher_date}")
+            parts.append(f" ({publisher_date})")
         if m.parenthetical:
             parts.append(f" ({m.parenthetical})")
         return "".join(parts)
@@ -358,7 +381,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
             parts.append(f", {m.pin_cite}")
         if m.extra:
             parts.append(m.extra)
-        publisher_date = " ".join(m[i] for i in (m.court, m.year) if i)
+        publisher_date = " ".join(i for i in (m.court, m.year) if i)
         if publisher_date:
             parts.append(f" ({publisher_date}")
         if m.parenthetical:
