@@ -104,7 +104,8 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
-    # To turn word indexing into char indexing, useful for span, account for shift
+    # To turn word indexing into char indexing,
+    # useful for span, account for shift
     offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
@@ -117,11 +118,12 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         if isinstance(word, StopWordToken):
             if word.groups["stop_word"] == "v" and index > 0:
                 citation.metadata.plaintiff = "".join(
-                    str(w) for w in words[max(index - 2, 0): index]
+                    str(w) for w in words[max(index - 2, 0) : index]
                 ).strip()
                 offset += len(citation.metadata.plaintiff) + 1
             else:
-                # We don't want to include stop words such as 'citing' in the span
+                # We don't want to include stop words such as
+                # 'citing' in the span
                 offset -= len(word)
 
             start_index = index + 1
@@ -132,7 +134,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     if start_index:
         citation.full_span_start = citation.span()[0] - offset
         citation.metadata.defendant = "".join(
-            str(w) for w in words[start_index: citation.index]
+            str(w) for w in words[start_index : citation.index]
         ).strip(", ")
 
 

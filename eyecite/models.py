@@ -10,6 +10,7 @@ from typing import (
     List,
     Optional,
     Sequence,
+    Tuple,
     Union,
     cast,
 )
@@ -148,11 +149,15 @@ class CitationBase:
             self.span_end if self.span_end is not None else self.token.end,
         )
 
-    def full_span(self):
+    def full_span(self) -> Tuple[int, int]:
         """Span indices that fully cover the citation
 
-        Start and stop offsets in source text for full citation text (including plaintiff, defendant, post citation, ...)
+        Start and stop offsets in source text for full citation text (including
+        plaintiff, defendant, post citation, ...)
+
         Relevant for FullCaseCitation, FullJournalCitation and FullLawCitation.
+
+        :returns: Tuple of start and end indicies
         """
         start = self.full_span_start
         if start is None:
@@ -162,7 +167,7 @@ class CitationBase:
         if end is None:
             end = self.span()[1]
 
-        return (start, end)
+        return start, end
 
 
 @dataclass(eq=True, unsafe_hash=True, repr=False)
