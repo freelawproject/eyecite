@@ -179,6 +179,9 @@ The above example extracts citations from :code:`plain_text` and applies them to
 :code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
 in the original text.
 
+There is also a :code:`full_span` attribute that can be used to get the indexes of the full citation, including the
+pre- and post-citation attributes.
+
 Wrapping HTML Tags
 ^^^^^^^^^^^^^^^^^^
 
@@ -413,7 +416,7 @@ Deployment
 
 1. Update version info in :code:`pyproject.toml` by running :code:`poetry version [major, minor, patch]`.
 
-For an automated deployment, tag the commit with vx.y.z, and push it to master.
+For an automated deployment, tag the commit with vx.y.z, and push it to main.
 An automated deploy and documentation update will be completed for you.
 
 For a manual deployment, run:
