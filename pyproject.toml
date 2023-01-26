@@ -34,7 +34,7 @@ reporters-db = "3.2.32"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
 fast-diff-match-patch = "^2.0.0"
-regex = ">=2020.1.8"
+regex = "2021.4.4"
 courts-db = "0.10.9"
 
 [tool.poetry.dev-dependencies]
