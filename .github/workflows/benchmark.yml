@@ -128,7 +128,7 @@ jobs:
           user_email: 'info@free.law'
           user_name: 'freelawbot'
           source_file: 'results/'
-          destination_repo: 'freelawproject/eyecite'
+          destination_repo: 'albertisfu/eyecite'
           destination_folder: '${{ github.event.number }}'
           destination_branch: 'artifacts'
           commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
