@@ -43,11 +43,10 @@ jobs:
       # That we should drop once groups is released for main
       #----------------------------------------------
       - name: Install Poetry
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@v1.3.3
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-          version: 1.2.0rc2
       #----------------------------------------------
       #       load cached venv if cache exists
       #----------------------------------------------
@@ -171,11 +170,10 @@ jobs:
       #  -----  install & configure poetry  -----
       #----------------------------------------------
       - name: Install Poetry
-        uses: snok/install-poetry@v1
+        uses: snok/install-poetry@v1.3.3
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
-          version: 1.2.0rc2
 
       #----------------------------------------------
       #       load cached venv if cache exists
