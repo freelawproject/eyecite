@@ -30,7 +30,7 @@ include = ["eyecite/py.typed"]
 
 [tool.poetry.dependencies]
 python = "^3.7"
-reporters-db = "^3.2.32"
+reporters-db = "3.2.34"
 lxml = "^4.6.3"
 pyahocorasick = ">= 1.2"
 fast-diff-match-patch = "^2.0.0"
