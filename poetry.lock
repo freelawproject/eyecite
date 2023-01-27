@@ -86,14 +86,14 @@ files = [
 
 [[package]]
 name = "courts-db"
-version = "0.10.17"
+version = "0.10.9"
 description = "Database of Courts"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "courts-db-0.10.17.tar.gz", hash = "sha256:4ef522a662e85b2f6652e9716f7c32a77f6038c85fa114f4b85367d03381e9ab"},
-    {file = "courts_db-0.10.17-py2.py3-none-any.whl", hash = "sha256:fa91ba2e3e695f525835de03f8ad0299b8fb0a01287cc6926c4465919581f92e"},
+    {file = "courts-db-0.10.9.tar.gz", hash = "sha256:d746267d647a6346336cc7ef088150d99695d5a13f0103ba51dd79d49a7669e3"},
+    {file = "courts_db-0.10.9-py2.py3-none-any.whl", hash = "sha256:5ada2dda4bf1b19a84448c6494b8b4e192863c32b57260e3be6b52c18e996c68"},
 ]
 
 [[package]]
@@ -1186,14 +1186,14 @@ files = [
 
 [[package]]
 name = "reporters-db"
-version = "3.2.36"
+version = "3.2.32"
 description = "Database of Court Reporters"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "reporters-db-3.2.36.tar.gz", hash = "sha256:a28b4ddf167e179c6176db1d27b6b0cb6e0a8acfbddd0dbce8afdae26b69c421"},
-    {file = "reporters_db-3.2.36-py2.py3-none-any.whl", hash = "sha256:7d0986e1c5ddc260cae65a1fd10dc7c2e550c9de0dc413c5a51c691e539b7315"},
+    {file = "reporters-db-3.2.32.tar.gz", hash = "sha256:284c03f445702c4f2ecac85d19cec8e129d5fa2427cd7a447332c9d4a735437b"},
+    {file = "reporters_db-3.2.32-py2.py3-none-any.whl", hash = "sha256:811b0970b300112acb0e1ea67bb9437d39ca884a4f94ca93c269778ec216a5e6"},
 ]
 
 [package.dependencies]
@@ -1424,4 +1424,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "4d45a35a3cae8c254e9ae592e7db7bce3edfcc229a8e6eafe2c86b8539eb222e"
+content-hash = "b6df35b3607d892a1a20b9699e93883215e922754d919a2455dfcd715e436e51"
