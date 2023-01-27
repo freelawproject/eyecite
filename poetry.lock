@@ -256,17 +256,18 @@ woff = ["brotli (>=1.0.1)", "brotlicffi (>=0.8.0)", "zopfli (>=0.1.4)"]
 
 [[package]]
 name = "hyperscan"
-version = "0.2.0"
+version = "0.3.2"
 description = "Python bindings for Hyperscan."
 category = "dev"
 optional = false
 python-versions = ">=3.6.1,<4.0"
 files = [
-    {file = "hyperscan-0.2.0-cp36-cp36m-manylinux2014_x86_64.whl", hash = "sha256:47ef10b4297f9976d257b7f260ae4ae8834e87e1abb7f46cf0707ba496fb6e49"},
-    {file = "hyperscan-0.2.0-cp37-cp37m-manylinux2014_x86_64.whl", hash = "sha256:78e97de71896b9fda4368c185e6609e53bb240c85302909ac46e738f14621f40"},
-    {file = "hyperscan-0.2.0-cp38-cp38-manylinux2014_x86_64.whl", hash = "sha256:794eecc13fa9bcf061004340582aab342471fb22b710f92020e3ea508776ff53"},
-    {file = "hyperscan-0.2.0-cp39-cp39-manylinux2014_x86_64.whl", hash = "sha256:fd0d0fe64484443b9e5ee1e8b156a30f2ba91494b1343fae5c943130ff847607"},
-    {file = "hyperscan-0.2.0.tar.gz", hash = "sha256:10cb8939d7db85d522ed319031ff5ab86fd0133126b986290f01aa83dbfb9ff7"},
+    {file = "hyperscan-0.3.2-cp310-cp310-manylinux_2_24_x86_64.whl", hash = "sha256:fa6eebbd9d4c618eb8d09680ae332d508c5c6060431a38b23ae336c8be6eb130"},
+    {file = "hyperscan-0.3.2-cp36-cp36m-manylinux_2_24_x86_64.whl", hash = "sha256:1863df991196a883472132e7945425f165bac3dd3ea05f45d98bdf44508fe55f"},
+    {file = "hyperscan-0.3.2-cp37-cp37m-manylinux_2_24_x86_64.whl", hash = "sha256:18b964bc277458eb2a915f1f02b5e326e1a3b48dbb790a7dd952a220ed7fec29"},
+    {file = "hyperscan-0.3.2-cp38-cp38-manylinux_2_24_x86_64.whl", hash = "sha256:866d635698f2767c1bccf78d8a5ebec415085a65d74fa1d6c1017d134504a13f"},
+    {file = "hyperscan-0.3.2-cp39-cp39-manylinux_2_24_x86_64.whl", hash = "sha256:f1c6c4fd4df700a0031501ab4e3e51db7615b73b86ca69a1775197ed9eadfecd"},
+    {file = "hyperscan-0.3.2.tar.gz", hash = "sha256:8dacf5b839cfb31004aee07cf3f3e0c57e0da7dc4445e2e70aeab3250863796f"},
 ]
 
 [[package]]
@@ -1185,14 +1186,14 @@ files = [
 
 [[package]]
 name = "reporters-db"
-version = "3.2.36"
+version = "3.2.32"
 description = "Database of Court Reporters"
 category = "main"
 optional = false
 python-versions = "*"
 files = [
-    {file = "reporters-db-3.2.36.tar.gz", hash = "sha256:a28b4ddf167e179c6176db1d27b6b0cb6e0a8acfbddd0dbce8afdae26b69c421"},
-    {file = "reporters_db-3.2.36-py2.py3-none-any.whl", hash = "sha256:7d0986e1c5ddc260cae65a1fd10dc7c2e550c9de0dc413c5a51c691e539b7315"},
+    {file = "reporters-db-3.2.32.tar.gz", hash = "sha256:284c03f445702c4f2ecac85d19cec8e129d5fa2427cd7a447332c9d4a735437b"},
+    {file = "reporters_db-3.2.32-py2.py3-none-any.whl", hash = "sha256:811b0970b300112acb0e1ea67bb9437d39ca884a4f94ca93c269778ec216a5e6"},
 ]
 
 [package.dependencies]
@@ -1423,4 +1424,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.7"
-content-hash = "69d7f3e2c5338ca6709794fb80f37bdc807484146c19074d678303743da2adc7"
+content-hash = "dcf31ea8bf0beb725fb22b5c7e04db972ef9383f6c96c8191f2fa4e458262e34"
