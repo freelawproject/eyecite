@@ -271,7 +271,6 @@ def resolve_citations(
 
     # Iterate over each citation and attempt to resolve it to a resource
     for citation in citations:
-
         # If the citation is a full citation, try to resolve it
         if isinstance(citation, FullCitation):
             resolution = resolve_full_citation(citation)
