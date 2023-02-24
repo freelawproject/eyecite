@@ -571,6 +571,9 @@ class CitationToken(Token):
                 self.variation_editions = cast(
                     tuple, self.variation_editions
                 ) + cast(tuple, other.variation_editions)
+                # Remove duplicate editions after merge
+                self.exact_editions = tuple(set(self.exact_editions))
+                self.variation_editions = tuple(set(self.variation_editions))
                 return self
         return None
 

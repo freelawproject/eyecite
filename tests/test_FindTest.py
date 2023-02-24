@@ -186,6 +186,10 @@ class FindTest(TestCase):
             # Test with page number that is indicated as missing
             ('1 U.S. ___',
              [case_citation(volume='1', reporter='U.S.', page=None)]),
+            # Test with page number that is indicated as missing, followed by
+            # a comma (cf. eyecite#137)
+            ('1 U. S. ___,',
+             [case_citation(volume='1', reporter_found='U. S.', page=None)]),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [case_citation(source_text='2007-NMCERT-008', page='008',
