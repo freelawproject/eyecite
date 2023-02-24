@@ -187,7 +187,7 @@ class Benchmark(object):
             writer = csv.writer(csvfile)
             writer.writerow(["ID", "Gain", "Loss"])
 
-            for (main_row, branch_row) in zip(main_file, branch_file):
+            for main_row, branch_row in zip(main_file, branch_file):
                 if set(main_row["cites"]) == set(branch_row["cites"]):
                     continue
 
