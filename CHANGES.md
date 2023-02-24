@@ -15,6 +15,14 @@ Fixes:
 
 ## Current
 
+**2.5.0 - 2023-01-20**
+
+Features:
+ - Citations now have a `full_span` property that returns the start and end indexes for the full citation, including any pre- or post-citation attributes.
+
+
+## Past
+
 **2.4.0 - 2022-07-22**
 
 Features:
@@ -32,8 +40,6 @@ Changes:
 Fixes:
 - Initial support for finding short cites with non-standard regexes, including fixing short cite extraction for `Mich.`, `N.Y.2d` and `Pa.`.
 
-
-## Past
 
 **2.3.2 - 2021-03-23**
 

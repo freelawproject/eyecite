@@ -8,7 +8,4 @@ updates:
     # https://github.com/freelawproject/eyecite/issues/42 for more discussion.
     open-pull-requests-limit: 0
     ignore:
-    - dependency-name: black
-    - dependency-name: pylint
-    - dependency-name: flake8
-    - dependency-name: isort
+    - dependency-name: "*"

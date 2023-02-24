@@ -723,7 +723,6 @@ class FindTest(TestCase):
         # answers format is (citation_index, (full_span_start, full_span_end))
         answers = [(0, (23, 86)), (1, (111, 164))]
         for cit_idx, (start, end) in answers:
-
             self.assertEqual(
                 extracted[cit_idx].full_span()[0],
                 start,

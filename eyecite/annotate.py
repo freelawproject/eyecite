@@ -142,6 +142,7 @@ class SpanUpdater:
         This indicates that offsets 0 to 4 need to be shifted by 0,
         and offsets 4 and up need to be shifted by 4.
         """
+
         # helpers for the two kinds of updates we need to apply to offsets:
         def shift_offset(offset, delta):
             return offset + delta
