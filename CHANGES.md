@@ -15,13 +15,19 @@ Fixes:
 
 ## Current
 
+**2.5.1 - 2023-03-09**
+
+Fixes:
+ - Fix & update dependencies
+
+
+## Past
+
 **2.5.0 - 2023-01-20**
 
 Features:
  - Citations now have a `full_span` property that returns the start and end indexes for the full citation, including any pre- or post-citation attributes.
 
-
-## Past
 
 **2.4.0 - 2022-07-22**
 
