@@ -114,7 +114,20 @@ class CitationBase:
         if isinstance(self, CaseCitation) and self.groups["page"] is None:
             return id(self)
         else:
-            return hash((type(self), tuple(self.groups.items())))
+            # Groups contains the original reporter, use the corrected one instead
+            if "reporter" in self.groups:
+                return hash(
+                    (
+                        type(self),
+                        tuple(
+                            self.groups["volume"],
+                            self.corrected_reporter(),
+                            self.groups["page"],
+                        ),
+                    )
+                )
+            else:
+                return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
