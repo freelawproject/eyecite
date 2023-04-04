@@ -55,9 +55,19 @@ class ModelsTest(TestCase):
 
     def test_corrected_reporter_hash(self):
         """Does comparison_hash takes into account the CORRECTED reporter name"""
+        print("Testing corrected reporter in comparison_hash...", end=" ")
         citation1 = case_citation(2, volume="2", reporter="U.S.", page="4")
         citation2 = case_citation(2, volume="2", reporter="U. S.", page="4")
         assert (
             citation1.comparison_hash() == citation2.comparison_hash()
         ), "Hashes should correct the name of the reporter"
+        print("✓")
+
+    def test_persistent_hash(self):
+        print("Testing persistent citation hash...", end=" ")
+        citation1 = case_citation(2, volume="2", reporter="U.S.", page="4")
+        cit_hash = 41398057837623049865611268249760442187458636286341871197701747101994433366327
+        assert (
+            citation1.comparison_hash() == cit_hash
+        ), "Hashes should be persistent"
         print("✓")
