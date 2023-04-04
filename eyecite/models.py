@@ -15,7 +15,7 @@ from typing import (
     cast,
 )
 
-from eyecite.utils import HashableDict
+from eyecite.utils import HashableDict, arr_sha256
 
 ResourceType = Hashable
 
@@ -111,23 +111,7 @@ class CitationBase:
         """Return hash that will be the same if two cites are semantically
         equivalent, unless the citation is a CaseCitation missing a page.
         """
-        if isinstance(self, CaseCitation) and self.groups["page"] is None:
-            return id(self)
-        else:
-            # Groups contains the original reporter, use the corrected one instead
-            if "reporter" in self.groups:
-                return hash(
-                    (
-                        type(self),
-                        tuple(
-                            self.groups["volume"],
-                            self.corrected_reporter(),
-                            self.groups["page"],
-                        ),
-                    )
-                )
-            else:
-                return hash((type(self), tuple(self.groups.items())))
+        return arr_sha256([str(type(self)), hash(self.groups)])
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -217,7 +201,7 @@ class ResourceCitation(CitationBase):
     def comparison_hash(self) -> int:
         """Return hash that will be the same if two cites are semantically
         equivalent."""
-        return hash((super().comparison_hash(), self.all_editions))
+        return arr_sha256([super().comparison_hash(), self.all_editions])
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
@@ -343,6 +327,23 @@ class CaseCitation(ResourceCitation):
         # court is included for ShortCaseCitation as well. It won't appear in
         # the cite itself but can also be guessed from the reporter
         court: Optional[str] = None
+
+    def comparison_hash(self) -> int:
+        """Return hash that will be the same if two cites are semantically
+        equivalent, unless the citation is a CaseCitation missing a page.
+        """
+        if self.groups["page"] is None:
+            return id(self)
+        else:
+            # Groups contains the original reporter, use the corrected one instead
+            return arr_sha256(
+                [
+                    str(type(self)),
+                    self.groups["volume"],
+                    self.corrected_reporter(),
+                    self.groups["page"],
+                ]
+            )
 
     def guess_court(self):
         """Set court based on reporter."""

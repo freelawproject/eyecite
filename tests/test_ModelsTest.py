@@ -52,3 +52,12 @@ class ModelsTest(TestCase):
         self.assertIsNone(citation1.groups["page"])
         self.assertIsNone(citation2.groups["page"])
         print("✓")
+
+    def test_corrected_reporter_hash(self):
+        """Does comparison_hash takes into account the CORRECTED reporter name"""
+        citation1 = case_citation(2, volume="2", reporter="U.S.", page="4")
+        citation2 = case_citation(2, volume="2", reporter="U. S.", page="4")
+        assert (
+            citation1.comparison_hash() == citation2.comparison_hash()
+        ), "Hashes should correct the name of the reporter"
+        print("✓")

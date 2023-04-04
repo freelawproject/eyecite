@@ -1,4 +1,6 @@
 import re
+import hashlib
+import json
 
 from lxml import etree
 
@@ -76,7 +78,8 @@ class HashableDict(dict):
     """Dict that works as an attribute of a hashable dataclass."""
 
     def __hash__(self):
-        return hash(frozenset(self.items()))
+        # dict -> sorted dict -> json (str) -> sha256 (int)
+        return str_sha256(json.dumps(self, sort_keys=True).encode("utf8"))
 
 
 def dump_citations(citations, text, context_chars=30):
@@ -117,3 +120,29 @@ def dump_citations(citations, text, context_chars=30):
                 else:
                     out.append(f"  * {key}={repr(value)}")
     return "\n".join(out)
+
+
+def str_sha256(s):
+    """Return the sha256sum of a string.
+    :param s: The data to hash. Ideally bytes, but if unicode is passed in, it
+    will convert it to bytes first.
+    :return A integer equals to the hexidecimal SHA256 hash of the data
+    """
+    if isinstance(s, str):
+        s = s.encode()
+    sha256sum = hashlib.sha256()
+    sha256sum.update(s)
+    return int(sha256sum.hexdigest(), 16)
+
+
+def arr_sha256(arr):
+    """Return the sha256sum of a list.
+    :param arr: The list to hash.
+    :return A integer equals to the hexidecimal SHA256 hash of the array
+    """
+    sha256sum = hashlib.sha256()
+    for s in arr:
+        if isinstance(s, str):
+            s = s.encode()
+        sha256sum.update(s)
+    return int(sha256sum.hexdigest(), 16)
