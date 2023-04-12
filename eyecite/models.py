@@ -354,7 +354,7 @@ class CaseCitation(ResourceCitation):
         if self.groups["page"] is None:
             return id(self)
         else:
-            # Groups contains the original reporter, use the corrected one instead
+            # Groups contains the original reporter, use corrected one instead
             return arr_sha256(
                 [
                     str(type(self)),
