@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-import pytest
 from eyecite import get_citations
 from eyecite.models import Resource
 from eyecite.test_factories import case_citation
