@@ -142,6 +142,9 @@ def arr_sha256(arr):
     """
     sha256sum = hashlib.sha256()
     for s in arr:
+        if isinstance(s, int):
+            s = str(s)
+
         if isinstance(s, str):
             s = s.encode()
         sha256sum.update(s)

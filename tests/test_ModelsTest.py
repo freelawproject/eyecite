@@ -1,5 +1,6 @@
 from unittest import TestCase
 
+import pytest
 from eyecite import get_citations
 from eyecite.models import Resource
 from eyecite.test_factories import case_citation
@@ -65,9 +66,27 @@ class ModelsTest(TestCase):
 
     def test_persistent_hash(self):
         print("Testing persistent citation hash...", end=" ")
-        citation1 = case_citation(2, volume="2", reporter="U.S.", page="4")
-        cit_hash = 41398057837623049865611268249760442187458636286341871197701747101994433366327
-        assert (
-            citation1.comparison_hash() == cit_hash
-        ), "Hashes should be persistent"
+        to_try = [
+            (
+                "410 U. S. 113",
+                5904291041102972810493908667478218834778705903309186584557044276298549009917,
+            ),
+            (
+                "Mass. Gen. Laws ch. 1, § 2",
+                98891269647289523286825964672272849189828231198517528987112432466498422590834,
+            ),
+            (
+                "1 Minn. L. Rev. 1.",
+                69915006852161462854562160007484851653820242543399933830251998315868402860112,
+            ),
+            (
+                "2006-Ohio-2095",
+                110457034384732404262597239748797657065588592487529346764178536066702898199641,
+            ),
+        ]
+        for citation, cit_hash in to_try:
+            assert (
+                get_citations(citation)[0].comparison_hash() == cit_hash
+            ), "Hashes should be persistent"
+
         print("✓")

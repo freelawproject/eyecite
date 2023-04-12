@@ -37,6 +37,13 @@ class Reporter:
             # use setattr because this class is frozen
             object.__setattr__(self, "is_scotus", True)
 
+    def __hash__(self):
+        """Uses hashlib to make hashes persistent across sessions."""
+        to_hash = [self.short_name, self.name, self.cite_type, self.source]
+        if self.is_scotus:
+            to_hash.append(self.is_scotus)
+        return arr_sha256(to_hash)
+
 
 @dataclass(eq=True, frozen=True)
 class Edition:
@@ -58,6 +65,15 @@ class Edition:
             and (self.start is None or self.start.year <= year)
             and (self.end is None or self.end.year >= year)
         )
+
+    def __hash__(self):
+        """Uses hashlib to make hashes persistent across sessions."""
+        to_hash = [hash(self.reporter), self.short_name]
+        if self.start:
+            to_hash.append(str(self.start))
+        if self.end:
+            to_hash.append(str(self.end))
+        return arr_sha256(to_hash)
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -201,7 +217,10 @@ class ResourceCitation(CitationBase):
     def comparison_hash(self) -> int:
         """Return hash that will be the same if two cites are semantically
         equivalent."""
-        return arr_sha256([super().comparison_hash(), self.all_editions])
+        to_hash = [super().comparison_hash()]
+        for edition in self.all_editions:
+            to_hash.append(hash(edition))
+        return arr_sha256(to_hash)
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
