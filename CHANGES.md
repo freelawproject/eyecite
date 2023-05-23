@@ -13,15 +13,23 @@ Changes:
 Fixes:
 - None
 
+
+
 ## Current
+
+**2.5.2 - 2023-05-23**
+
+Fixes:
+ - Update dependencies and add Python 3.11 support.
+
+
+## Past
 
 **2.5.1 - 2023-03-09**
 
 Fixes:
  - Fix & update dependencies
 
-
-## Past
 
 **2.5.0 - 2023-01-20**
 

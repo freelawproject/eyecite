@@ -414,6 +414,8 @@ Hyperscan installation example with homebrew on x86 MacOS:
 Deployment
 ==========
 
+1. Update CHANGES.md.
+
 1. Update version info in :code:`pyproject.toml` by running :code:`poetry version [major, minor, patch]`.
 
 For an automated deployment, tag the commit with vx.y.z, and push it to main.
