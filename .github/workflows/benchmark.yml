@@ -72,10 +72,27 @@ jobs:
       #----------------------------------------------
       #             Download Testing File
       #
-      #    We generated our testing datasets with the following command
+      # We generated our testing datasets with the following command:
       #
-      # root@maintenance:/opt/courtlistener# PGPASSWORD=$DB_PASSWORD psql       --command         'set statement_timeout to 0;
-      #           COPY (SELECT id, plain_text, html, html_lawbox, html_columbia, html_anon_2020, xml_harvard FROM search_opinion TABLESAMPLE BERNOULLI (0.1)) TO STDOUT WITH (FORMAT csv, ENCODING utf8, HEADER)'      --host $DB_HOST         --username $DB_USER     --dbname courtlistener  |       bzip2 |         aws s3 cp - s3://com-courtlistener-storage/bulk-data/eyecite/tests/ten-percent.csv.bz2 --acl public-read
+      # root@maintenance:/opt/courtlistener# PGPASSWORD=$DB_PASSWORD psql \
+      #   --host $DB_HOST \
+      #   --username $DB_USER \
+      #   --dbname courtlistener \
+      #   --command \
+      #     'set statement_timeout to 0;
+      #      COPY (
+      #        SELECT \
+      #          id, plain_text, html, html_lawbox, html_columbia, html_anon_2020, xml_harvard \
+      #        FROM \
+      #          search_opinion \
+      #        TABLESAMPLE BERNOULLI (0.1) \
+      #      ) \
+      #      TO STDOUT \
+      #      WITH (FORMAT csv, ENCODING utf8, HEADER); \
+      #     ' \
+      #   | bzip2 \
+      #   | aws s3 cp - s3://com-courtlistener-storage/bulk-data/eyecite/tests/ten-percent.csv.bz2 \
+      #      --acl public-read
       #----------------------------------------------
       - name: Download Testing File
         run: |
