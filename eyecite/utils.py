@@ -1,4 +1,7 @@
+import hashlib
+import json
 import re
+from ctypes import c_int32
 
 from lxml import etree
 
@@ -72,13 +75,6 @@ def hyperscan_match(regexes, text):
     return matches
 
 
-class HashableDict(dict):
-    """Dict that works as an attribute of a hashable dataclass."""
-
-    def __hash__(self):
-        return hash(frozenset(self.items()))
-
-
 def dump_citations(citations, text, context_chars=30):
     """Dump citations extracted from text, for debugging. Example:
     >>> text = "blah. Foo v. Bar, 1 U.S. 1, 2 (1999). blah"
@@ -117,3 +113,22 @@ def dump_citations(citations, text, context_chars=30):
                 else:
                     out.append(f"  * {key}={repr(value)}")
     return "\n".join(out)
+
+
+def hash_sha256(dictionary: dict) -> int:
+    """Hash dictionaries in a deterministic way.
+
+    :param dictionary: The dictionary to hash
+    :return: An integer hash
+    """
+
+    # Convert the dictionary to a JSON string
+    json_str: str = json.dumps(dictionary, sort_keys=True)
+
+    # Convert the JSON string to bytes
+    json_bytes: bytes = json_str.encode("utf-8")
+
+    # Calculate the hash of the bytes, convert to 32-bit int, and return
+    return c_int32(
+        int.from_bytes(hashlib.sha256(json_bytes).digest(), byteorder="big")
+    ).value
