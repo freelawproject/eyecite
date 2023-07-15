@@ -94,6 +94,20 @@ class ModelsTest(TestCase):
         self.assertEqual(hash(citations[0]), hash(citations[1]))
         print("✓")
 
+    def test_citation_comparison_with_nominative_reporter(self):
+        """Are two citation objects equal when their attributes are
+        the same, even if one of them has a nominative reporter?"""
+        citations = [
+            get_citations("5 U.S. 137")[0],
+            get_citations("5 U.S. (1 Cranch) 137")[0],
+        ]
+        print(
+            "Testing citation comparison with nominative reporter...", end=" "
+        )
+        self.assertEqual(citations[0], citations[1])
+        self.assertEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
     def test_citation_comparison_with_different_reporter(self):
         """Are two citation objects different when they have different
         reporters, even if their other attributes are the same?
