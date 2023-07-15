@@ -141,3 +141,37 @@ class ModelsTest(TestCase):
         self.assertIsNone(citation1.groups["page"])
         self.assertIsNone(citation2.groups["page"])
         print("✓")
+
+    def test_persistent_hash(self):
+        """Are object hashes reproducible across runs?"""
+        print("Testing persistent citation hash...", end=" ")
+        objects = [
+            (
+                case_citation(),
+                1009797070,
+            ),
+            (
+                journal_citation(),
+                -1332833206,
+            ),
+            (
+                law_citation(),
+                554454242,
+            ),
+            (
+                Resource(case_citation()),
+                -666984820,
+            ),
+        ]
+        for citation, citation_hash in objects:
+            self.assertEqual(hash(citation), citation_hash)
+            print("✓")
+
+    def test_hash_function_identity(self):
+        """Do hash() and __hash__() output the same hash?"""
+        citation = case_citation()
+        resource = Resource(case_citation())
+        print("Testing hash function identity...", end=" ")
+        self.assertEqual(hash(citation), citation.__hash__())
+        self.assertEqual(hash(resource), resource.__hash__())
+        print("✓")
