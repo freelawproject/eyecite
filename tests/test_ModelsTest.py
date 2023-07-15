@@ -42,6 +42,20 @@ class ModelsTest(TestCase):
         self.assertNotEqual(hash(citations[0]), hash(citations[1]))
         print("✓")
 
+    def test_citation_comparison_with_corrected_reporter(self):
+        """Are two citation objects equal when their attributes are
+        the same, even if the reporter has been normalized?"""
+        citations = [
+            case_citation(2, volume="2", reporter="U.S.", page="4"),
+            case_citation(2, volume="2", reporter="U. S.", page="4"),
+        ]
+        print(
+            "Testing citation comparison with corrected reporter...", end=" "
+        )
+        self.assertEqual(citations[0], citations[1])
+        self.assertEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
     def test_missing_page_cite_conversion(self):
         """Do citations with missing page numbers get their groups['page']
         attribute set to None?"""
