@@ -67,8 +67,8 @@ def case_citation(
 
 
 def law_citation(
-    source_text,
-    reporter,
+    source_text=None,
+    reporter="Mass. Gen. Laws",
     **kwargs,
 ):
     """Convenience function for creating mock FullLawCitation objects."""
