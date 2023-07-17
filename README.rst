@@ -14,6 +14,19 @@ eyecite recognizes a wide variety of citations commonly appearing in American le
 
 All contributors, corrections, and additions are welcome!
 
+If you use eyecite for your research, please consider citing our paper::
+
+    @article{eyecite,
+        title = {eyecite: A Tool for Parsing Legal Citations},
+        author = {Cushman, Jack and Dahl, Matthew and Lissner, Michael},
+        year = {2021},
+        journal = {Journal of Open Source Software},
+        volume = {6},
+        number = {66},
+        pages = {3617},
+        url = {https://doi.org/10.21105/joss.03617},
+    }
+
 Functionality
 =============
 
