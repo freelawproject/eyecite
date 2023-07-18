@@ -1,7 +1,6 @@
 import hashlib
 import json
 import re
-from ctypes import c_int32
 
 from lxml import etree
 
@@ -128,7 +127,5 @@ def hash_sha256(dictionary: dict) -> int:
     # Convert the JSON string to bytes
     json_bytes: bytes = json_str.encode("utf-8")
 
-    # Calculate the hash of the bytes, convert to 32-bit int, and return
-    return c_int32(
-        int.from_bytes(hashlib.sha256(json_bytes).digest(), byteorder="big")
-    ).value
+    # Calculate the hash of the bytes, convert to an int, and return
+    return int.from_bytes(hashlib.sha256(json_bytes).digest(), byteorder="big")

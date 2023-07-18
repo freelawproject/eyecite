@@ -162,19 +162,19 @@ class ModelsTest(TestCase):
         objects = [
             (
                 case_citation(),
-                1009797070,
+                376794172219282606,
             ),
             (
                 journal_citation(),
-                -1332833206,
+                1073308118601601409,
             ),
             (
                 law_citation(),
-                554454242,
+                407008277458283218,
             ),
             (
                 Resource(case_citation()),
-                -666984820,
+                1986750081022884797,
             ),
         ]
         for citation, citation_hash in objects:

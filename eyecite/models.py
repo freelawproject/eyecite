@@ -108,8 +108,10 @@ class CitationBase:
         specify equivalence behavior that is more appropriate for certain
         kinds of citations (e.g., see CaseCitation override).
         """
-        return hash_sha256(
-            {**dict(self.groups.items()), **{"class": type(self).__name__}}
+        return hash(
+            hash_sha256(
+                {**dict(self.groups.items()), **{"class": type(self).__name__}}
+            )
         )
 
     def __eq__(self, other):
@@ -209,17 +211,19 @@ class ResourceCitation(CitationBase):
         parent class (CitationBase) objects, except that we also take into
         consideration the all_editions field.
         """
-        return hash_sha256(
-            {
-                **dict(self.groups.items()),
-                **{
-                    "all_editions": sorted(
-                        [asdict(e) for e in self.all_editions],
-                        key=lambda d: d["short_name"],  # type: ignore
-                    ),
-                    "class": type(self).__name__,
-                },
-            }
+        return hash(
+            hash_sha256(
+                {
+                    **dict(self.groups.items()),
+                    **{
+                        "all_editions": sorted(
+                            [asdict(e) for e in self.all_editions],
+                            key=lambda d: d["short_name"],  # type: ignore
+                        ),
+                        "class": type(self).__name__,
+                    },
+                }
+            )
         )
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -354,13 +358,15 @@ class CaseCitation(ResourceCitation):
         if self.groups["page"] is None:
             return id(self)
         else:
-            return hash_sha256(
-                {
-                    "volume": self.groups["volume"],
-                    "reporter": self.corrected_reporter(),
-                    "page": self.groups["page"],
-                    "class": type(self).__name__,
-                }
+            return hash(
+                hash_sha256(
+                    {
+                        "volume": self.groups["volume"],
+                        "reporter": self.corrected_reporter(),
+                        "page": self.groups["page"],
+                        "class": type(self).__name__,
+                    }
+                )
             )
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -701,11 +707,13 @@ class Resource(ResourceType):
         NOT considered the same, even if their other attributes are identical.
         This is to avoid potential false positives.
         """
-        return hash_sha256(
-            {
-                "citation": hash(self.citation),
-                "class": type(self).__name__,
-            }
+        return hash(
+            hash_sha256(
+                {
+                    "citation": hash(self.citation),
+                    "class": type(self).__name__,
+                }
+            )
         )
 
     def __eq__(self, other):
