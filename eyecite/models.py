@@ -546,17 +546,6 @@ class UnknownCitation(CitationBase):
         return id(self)
 
 
-def NonopinionCitation(*args, **kwargs):
-    from warnings import warn
-
-    warn(
-        """NonopinionCitation will be deprecated in eyecite 2.5.0.
-        Please use UnknownCitation instead.""",
-        DeprecationWarning,
-    )
-    return UnknownCitation(*args, **kwargs)
-
-
 @dataclass(eq=True, unsafe_hash=True)
 class Token(UserString):
     """Base class for special tokens. For performance, this isn't used
