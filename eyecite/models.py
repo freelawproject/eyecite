@@ -361,10 +361,15 @@ class CaseCitation(ResourceCitation):
             return hash(
                 hash_sha256(
                     {
-                        "volume": self.groups["volume"],
-                        "reporter": self.corrected_reporter(),
-                        "page": self.groups["page"],
-                        "class": type(self).__name__,
+                        **{
+                            k: self.groups[k]
+                            for k in ["volume", "page"]
+                            if k in self.groups
+                        },
+                        **{
+                            "reporter": self.corrected_reporter(),
+                            "class": type(self).__name__,
+                        },
                     }
                 )
             )
