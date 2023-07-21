@@ -123,6 +123,19 @@ class ModelsTest(TestCase):
         self.assertNotEqual(hash(citations[0]), hash(citations[1]))
         print("✓")
 
+    def test_tax_court_citation_comparison(self):
+        """Are two citation objects equal when their attributes are
+        the same, even if they are tax court citations and might not
+        have volumes?"""
+        citations = [
+            get_citations("T.C.M. (RIA) ¶ 95,342")[0],
+            get_citations("T.C.M. (RIA) ¶ 95,342")[0],
+        ]
+        print("Testing tax court citation comparison...", end=" ")
+        self.assertEqual(citations[0], citations[1])
+        self.assertEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
     def test_id_citation_comparison(self):
         """Are two IdCitation objects always different?"""
         citations = [
