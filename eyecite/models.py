@@ -107,6 +107,25 @@ class CitationBase:
         from the matched text). Subclasses may override this method in order to
         specify equivalence behavior that is more appropriate for certain
         kinds of citations (e.g., see CaseCitation override).
+
+        self.groups typically contains different keys for different objects:
+
+        FullLawCitation (non-exhaustive and non-guaranteed):
+        - chapter
+        - reporter
+        - law_section
+        - issue
+        - page
+        - docket_number
+        - pamphlet
+        - title
+
+        FullJournalCitation (non-exhaustive and non-guaranteed):
+        - volume
+        - reporter
+        - page
+
+        FullCaseCitation (see CaseCitation.__hash__() notes)
         """
         return hash(
             hash_sha256(
@@ -354,6 +373,13 @@ class CaseCitation(ResourceCitation):
         """CaseCitation objects that have the same volume, reporter, and page
         are considered equivalent, unless the citation is missing a page, in
         which case the object's hash will be unique for safety.
+
+        self.groups for CaseCitation objects usually contains these keys:
+        - page (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - reporter (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - volume (almost always present, but some tax court citations don't have volumes)  # noqa: E501
+        - reporter_nominative (sometimes)
+        - volumes_nominative (sometimes)
         """
         if self.groups["page"] is None:
             return id(self)
