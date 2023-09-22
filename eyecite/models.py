@@ -1,6 +1,6 @@
 import re
 from collections import UserString
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import (
     Any,
@@ -15,7 +15,7 @@ from typing import (
     cast,
 )
 
-from eyecite.utils import HashableDict
+from eyecite.utils import hash_sha256
 
 ResourceType = Hashable
 
@@ -60,7 +60,7 @@ class Edition:
         )
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(eq=False, unsafe_hash=False)
 class CitationBase:
     """Base class for objects returned by `eyecite.find.get_citations`. We
     define several subclasses of this class below, representing the various
@@ -79,7 +79,7 @@ class CitationBase:
     def __post_init__(self):
         """Set up groups and metadata."""
         # Allow groups to be used in comparisons:
-        self.groups = HashableDict(self.token.groups)
+        self.groups = self.token.groups
         # Make metadata a self.Metadata object:
         self.metadata = (
             self.Metadata(**self.metadata)
@@ -101,20 +101,51 @@ class CitationBase:
             + ")"
         )
 
+    def __hash__(self) -> int:
+        """In general, citations are considered equivalent if they have the
+        same group values (i.e., the same regex group content that is extracted
+        from the matched text). Subclasses may override this method in order to
+        specify equivalence behavior that is more appropriate for certain
+        kinds of citations (e.g., see CaseCitation override).
+
+        self.groups typically contains different keys for different objects:
+
+        FullLawCitation (non-exhaustive and non-guaranteed):
+        - chapter
+        - reporter
+        - law_section
+        - issue
+        - page
+        - docket_number
+        - pamphlet
+        - title
+
+        FullJournalCitation (non-exhaustive and non-guaranteed):
+        - volume
+        - reporter
+        - page
+
+        FullCaseCitation (see CaseCitation.__hash__() notes)
+        """
+        return hash(
+            hash_sha256(
+                {**dict(self.groups.items()), **{"class": type(self).__name__}}
+            )
+        )
+
+    def __eq__(self, other):
+        """This method is inherited by all subclasses and should not be
+        overridden. It implements object equality in exactly the same way as
+        defined in an object's __hash__() function, which should be overridden
+        instead if desired.
+        """
+        return self.__hash__() == other.__hash__()
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata:
         """Define fields on self.metadata."""
 
         parenthetical: Optional[str] = None
-
-    def comparison_hash(self) -> int:
-        """Return hash that will be the same if two cites are semantically
-        equivalent, unless the citation is a CaseCitation missing a page.
-        """
-        if isinstance(self, CaseCitation) and self.groups["page"] is None:
-            return id(self)
-        else:
-            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -170,7 +201,7 @@ class CitationBase:
         return start, end
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class ResourceCitation(CitationBase):
     """Base class for a case, law, or journal citation. Could be short or
     long."""
@@ -194,17 +225,32 @@ class ResourceCitation(CitationBase):
         )
         super().__post_init__()
 
+    def __hash__(self) -> int:
+        """ResourceCitation objects are hashed in the same way as their
+        parent class (CitationBase) objects, except that we also take into
+        consideration the all_editions field.
+        """
+        return hash(
+            hash_sha256(
+                {
+                    **dict(self.groups.items()),
+                    **{
+                        "all_editions": sorted(
+                            [asdict(e) for e in self.all_editions],
+                            key=lambda d: d["short_name"],  # type: ignore
+                        ),
+                        "class": type(self).__name__,
+                    },
+                }
+            )
+        )
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
         pin_cite: Optional[str] = None
         year: Optional[str] = None
-
-    def comparison_hash(self) -> int:
-        """Return hash that will be the same if two cites are semantically
-        equivalent."""
-        return hash((super().comparison_hash(), self.all_editions))
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
@@ -248,13 +294,13 @@ class ResourceCitation(CitationBase):
             self.edition_guess = editions[0]
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullCitation(ResourceCitation):
     """Abstract base class indicating that a citation fully identifies a
     resource."""
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullLawCitation(FullCitation):
     """Citation to a source from `reporters_db/laws.json`."""
 
@@ -291,7 +337,7 @@ class FullLawCitation(FullCitation):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullJournalCitation(FullCitation):
     """Citation to a source from `reporters_db/journals.json`."""
 
@@ -317,11 +363,42 @@ class FullJournalCitation(FullCitation):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class CaseCitation(ResourceCitation):
     """Convenience class which represents a single citation found in a
     document.
     """
+
+    def __hash__(self) -> int:
+        """CaseCitation objects that have the same volume, reporter, and page
+        are considered equivalent, unless the citation is missing a page, in
+        which case the object's hash will be unique for safety.
+
+        self.groups for CaseCitation objects usually contains these keys:
+        - page (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - reporter (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - volume (almost always present, but some tax court citations don't have volumes)  # noqa: E501
+        - reporter_nominative (sometimes)
+        - volumes_nominative (sometimes)
+        """
+        if self.groups["page"] is None:
+            return id(self)
+        else:
+            return hash(
+                hash_sha256(
+                    {
+                        **{
+                            k: self.groups[k]
+                            for k in ["volume", "page"]
+                            if k in self.groups
+                        },
+                        **{
+                            "reporter": self.corrected_reporter(),
+                            "class": type(self).__name__,
+                        },
+                    }
+                )
+            )
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(FullCitation.Metadata):
@@ -339,7 +416,7 @@ class CaseCitation(ResourceCitation):
             self.metadata.court = "scotus"
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullCaseCitation(CaseCitation, FullCitation):
     """Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
@@ -389,7 +466,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class ShortCaseCitation(CaseCitation):
     """Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
@@ -419,7 +496,7 @@ class ShortCaseCitation(CaseCitation):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class SupraCitation(CitationBase):
     """Convenience class which represents a 'supra' citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
@@ -458,7 +535,7 @@ class SupraCitation(CitationBase):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class IdCitation(CitationBase):
     """Convenience class which represents an 'id' or 'ibid' citation, i.e., a
     citation to the document referenced immediately prior. An 'id' citation is
@@ -468,6 +545,10 @@ class IdCitation(CitationBase):
 
     Example: "... foo bar," id., at 240
     """
+
+    def __hash__(self) -> int:
+        """IdCitation objects are always considered unique for safety."""
+        return id(self)
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
@@ -483,13 +564,17 @@ class IdCitation(CitationBase):
         return "".join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class UnknownCitation(CitationBase):
     """Convenience class which represents an unknown citation. A recognized
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
     or a FullJournalCitation. If it's something else, this class serves as
     a naive catch-all.
     """
+
+    def __hash__(self) -> int:
+        """UnknownCitation objects are always considered unique for safety."""
+        return id(self)
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -636,13 +721,20 @@ class Resource(ResourceType):
 
     def __hash__(self):
         """Resources are the same if their citations are semantically
-        equivalent.
+        equivalent, as defined by their hash function.
 
         Note: Resources composed of citations with missing page numbers are
         NOT considered the same, even if their other attributes are identical.
         This is to avoid potential false positives.
         """
-        return self.citation.comparison_hash()
+        return hash(
+            hash_sha256(
+                {
+                    "citation": hash(self.citation),
+                    "class": type(self).__name__,
+                }
+            )
+        )
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
