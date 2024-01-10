@@ -1296,13 +1296,13 @@ files = [
 
 [[package]]
 name = "reporters-db"
-version = "3.2.36"
+version = "3.2.38"
 description = "Database of Court Reporters"
 optional = false
 python-versions = "*"
 files = [
-    {file = "reporters-db-3.2.36.tar.gz", hash = "sha256:a28b4ddf167e179c6176db1d27b6b0cb6e0a8acfbddd0dbce8afdae26b69c421"},
-    {file = "reporters_db-3.2.36-py2.py3-none-any.whl", hash = "sha256:7d0986e1c5ddc260cae65a1fd10dc7c2e550c9de0dc413c5a51c691e539b7315"},
+    {file = "reporters-db-3.2.38.tar.gz", hash = "sha256:c0048d34a4493e24dcfd0cab9e3b0e69e000e5a3c2ef21d04598f93ac1c2582c"},
+    {file = "reporters_db-3.2.38-py2.py3-none-any.whl", hash = "sha256:ab5e818b3a806efe35d3b29e4fe123ae5943aff54c9ef6d7db804a37f20ddf43"},
 ]
 
 [package.dependencies]
@@ -1479,4 +1479,4 @@ testing = ["big-O", "flake8 (<5)", "jaraco.functools", "jaraco.itertools", "more
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8.1"
-content-hash = "d0dfa3438251194fa8bfded9cc5d51f4b8084d8e53b746aab0d6e8b2d3aaeac8"
+content-hash = "9a244c7e6ff559438476acfe44605b25e250734b3a2f6640a450bbddcd67409d"
