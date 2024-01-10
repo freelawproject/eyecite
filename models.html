@@ -28,7 +28,7 @@
 </summary>
 <pre><code class="python">import re
 from collections import UserString
-from dataclasses import dataclass, field
+from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import (
     Any,
@@ -43,7 +43,7 @@ from typing import (
     cast,
 )
 
-from eyecite.utils import HashableDict
+from eyecite.utils import hash_sha256
 
 ResourceType = Hashable
 
@@ -88,7 +88,7 @@ class Edition:
         )
 
 
-@dataclass(eq=True, unsafe_hash=True)
+@dataclass(eq=False, unsafe_hash=False)
 class CitationBase:
     &#34;&#34;&#34;Base class for objects returned by `eyecite.find.get_citations`. We
     define several subclasses of this class below, representing the various
@@ -107,7 +107,7 @@ class CitationBase:
     def __post_init__(self):
         &#34;&#34;&#34;Set up groups and metadata.&#34;&#34;&#34;
         # Allow groups to be used in comparisons:
-        self.groups = HashableDict(self.token.groups)
+        self.groups = self.token.groups
         # Make metadata a self.Metadata object:
         self.metadata = (
             self.Metadata(**self.metadata)
@@ -129,20 +129,51 @@ class CitationBase:
             + &#34;)&#34;
         )
 
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;In general, citations are considered equivalent if they have the
+        same group values (i.e., the same regex group content that is extracted
+        from the matched text). Subclasses may override this method in order to
+        specify equivalence behavior that is more appropriate for certain
+        kinds of citations (e.g., see CaseCitation override).
+
+        self.groups typically contains different keys for different objects:
+
+        FullLawCitation (non-exhaustive and non-guaranteed):
+        - chapter
+        - reporter
+        - law_section
+        - issue
+        - page
+        - docket_number
+        - pamphlet
+        - title
+
+        FullJournalCitation (non-exhaustive and non-guaranteed):
+        - volume
+        - reporter
+        - page
+
+        FullCaseCitation (see CaseCitation.__hash__() notes)
+        &#34;&#34;&#34;
+        return hash(
+            hash_sha256(
+                {**dict(self.groups.items()), **{&#34;class&#34;: type(self).__name__}}
+            )
+        )
+
+    def __eq__(self, other):
+        &#34;&#34;&#34;This method is inherited by all subclasses and should not be
+        overridden. It implements object equality in exactly the same way as
+        defined in an object&#39;s __hash__() function, which should be overridden
+        instead if desired.
+        &#34;&#34;&#34;
+        return self.__hash__() == other.__hash__()
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata:
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         parenthetical: Optional[str] = None
-
-    def comparison_hash(self) -&gt; int:
-        &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent, unless the citation is a CaseCitation missing a page.
-        &#34;&#34;&#34;
-        if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
-            return id(self)
-        else:
-            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -198,7 +229,7 @@ class CitationBase:
         return start, end
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class ResourceCitation(CitationBase):
     &#34;&#34;&#34;Base class for a case, law, or journal citation. Could be short or
     long.&#34;&#34;&#34;
@@ -222,17 +253,32 @@ class ResourceCitation(CitationBase):
         )
         super().__post_init__()
 
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;ResourceCitation objects are hashed in the same way as their
+        parent class (CitationBase) objects, except that we also take into
+        consideration the all_editions field.
+        &#34;&#34;&#34;
+        return hash(
+            hash_sha256(
+                {
+                    **dict(self.groups.items()),
+                    **{
+                        &#34;all_editions&#34;: sorted(
+                            [asdict(e) for e in self.all_editions],
+                            key=lambda d: d[&#34;short_name&#34;],  # type: ignore
+                        ),
+                        &#34;class&#34;: type(self).__name__,
+                    },
+                }
+            )
+        )
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         pin_cite: Optional[str] = None
         year: Optional[str] = None
-
-    def comparison_hash(self) -&gt; int:
-        &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent.&#34;&#34;&#34;
-        return hash((super().comparison_hash(), self.all_editions))
 
     def add_metadata(self, words: &#34;Tokens&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
@@ -276,13 +322,13 @@ class ResourceCitation(CitationBase):
             self.edition_guess = editions[0]
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullCitation(ResourceCitation):
     &#34;&#34;&#34;Abstract base class indicating that a citation fully identifies a
     resource.&#34;&#34;&#34;
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullLawCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/laws.json`.&#34;&#34;&#34;
 
@@ -319,7 +365,7 @@ class FullLawCitation(FullCitation):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullJournalCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/journals.json`.&#34;&#34;&#34;
 
@@ -345,11 +391,42 @@ class FullJournalCitation(FullCitation):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class CaseCitation(ResourceCitation):
     &#34;&#34;&#34;Convenience class which represents a single citation found in a
     document.
     &#34;&#34;&#34;
+
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;CaseCitation objects that have the same volume, reporter, and page
+        are considered equivalent, unless the citation is missing a page, in
+        which case the object&#39;s hash will be unique for safety.
+
+        self.groups for CaseCitation objects usually contains these keys:
+        - page (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - reporter (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - volume (almost always present, but some tax court citations don&#39;t have volumes)  # noqa: E501
+        - reporter_nominative (sometimes)
+        - volumes_nominative (sometimes)
+        &#34;&#34;&#34;
+        if self.groups[&#34;page&#34;] is None:
+            return id(self)
+        else:
+            return hash(
+                hash_sha256(
+                    {
+                        **{
+                            k: self.groups[k]
+                            for k in [&#34;volume&#34;, &#34;page&#34;]
+                            if k in self.groups
+                        },
+                        **{
+                            &#34;reporter&#34;: self.corrected_reporter(),
+                            &#34;class&#34;: type(self).__name__,
+                        },
+                    }
+                )
+            )
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(FullCitation.Metadata):
@@ -367,7 +444,7 @@ class CaseCitation(ResourceCitation):
             self.metadata.court = &#34;scotus&#34;
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullCaseCitation(CaseCitation, FullCitation):
     &#34;&#34;&#34;Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
@@ -417,7 +494,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class ShortCaseCitation(CaseCitation):
     &#34;&#34;&#34;Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
@@ -447,7 +524,7 @@ class ShortCaseCitation(CaseCitation):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class SupraCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents a &#39;supra&#39; citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
@@ -486,7 +563,7 @@ class SupraCitation(CitationBase):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class IdCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents an &#39;id&#39; or &#39;ibid&#39; citation, i.e., a
     citation to the document referenced immediately prior. An &#39;id&#39; citation is
@@ -496,6 +573,10 @@ class IdCitation(CitationBase):
 
     Example: &#34;... foo bar,&#34; id., at 240
     &#34;&#34;&#34;
+
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;IdCitation objects are always considered unique for safety.&#34;&#34;&#34;
+        return id(self)
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
@@ -511,7 +592,7 @@ class IdCitation(CitationBase):
         return &#34;&#34;.join(parts)
 
 
-@dataclass(eq=True, unsafe_hash=True, repr=False)
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class UnknownCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents an unknown citation. A recognized
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
@@ -519,16 +600,9 @@ class UnknownCitation(CitationBase):
     a naive catch-all.
     &#34;&#34;&#34;
 
-
-def NonopinionCitation(*args, **kwargs):
-    from warnings import warn
-
-    warn(
-        &#34;&#34;&#34;NonopinionCitation will be deprecated in eyecite 2.5.0.
-        Please use UnknownCitation instead.&#34;&#34;&#34;,
-        DeprecationWarning,
-    )
-    return UnknownCitation(*args, **kwargs)
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;UnknownCitation objects are always considered unique for safety.&#34;&#34;&#34;
+        return id(self)
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -675,13 +749,20 @@ class Resource(ResourceType):
 
     def __hash__(self):
         &#34;&#34;&#34;Resources are the same if their citations are semantically
-        equivalent.
+        equivalent, as defined by their hash function.
 
         Note: Resources composed of citations with missing page numbers are
         NOT considered the same, even if their other attributes are identical.
         This is to avoid potential false positives.
         &#34;&#34;&#34;
-        return self.citation.comparison_hash()
+        return hash(
+            hash_sha256(
+                {
+                    &#34;citation&#34;: hash(self.citation),
+                    &#34;class&#34;: type(self).__name__,
+                }
+            )
+        )
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()</code></pre>
@@ -692,29 +773,6 @@ class Resource(ResourceType):
 <section>
 </section>
 <section>
-<h2 class="section-title" id="header-functions">Functions</h2>
-<dl>
-<dt id="eyecite.models.NonopinionCitation"><code class="name flex">
-<span>def <span class="ident">NonopinionCitation</span></span>(<span>*args, **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def NonopinionCitation(*args, **kwargs):
-    from warnings import warn
-
-    warn(
-        &#34;&#34;&#34;NonopinionCitation will be deprecated in eyecite 2.5.0.
-        Please use UnknownCitation instead.&#34;&#34;&#34;,
-        DeprecationWarning,
-    )
-    return UnknownCitation(*args, **kwargs)</code></pre>
-</details>
-</dd>
-</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -734,6 +792,37 @@ document.</p></div>
     &#34;&#34;&#34;Convenience class which represents a single citation found in a
     document.
     &#34;&#34;&#34;
+
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;CaseCitation objects that have the same volume, reporter, and page
+        are considered equivalent, unless the citation is missing a page, in
+        which case the object&#39;s hash will be unique for safety.
+
+        self.groups for CaseCitation objects usually contains these keys:
+        - page (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - reporter (guaranteed here: https://github.com/freelawproject/reporters-db/blob/main/tests.py#L129)  # noqa: E501
+        - volume (almost always present, but some tax court citations don&#39;t have volumes)  # noqa: E501
+        - reporter_nominative (sometimes)
+        - volumes_nominative (sometimes)
+        &#34;&#34;&#34;
+        if self.groups[&#34;page&#34;] is None:
+            return id(self)
+        else:
+            return hash(
+                hash_sha256(
+                    {
+                        **{
+                            k: self.groups[k]
+                            for k in [&#34;volume&#34;, &#34;page&#34;]
+                            if k in self.groups
+                        },
+                        **{
+                            &#34;reporter&#34;: self.corrected_reporter(),
+                            &#34;class&#34;: type(self).__name__,
+                        },
+                    }
+                )
+            )
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(FullCitation.Metadata):
@@ -809,7 +898,6 @@ document.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.ResourceCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -852,7 +940,7 @@ types of citations that might exist.</p></div>
     def __post_init__(self):
         &#34;&#34;&#34;Set up groups and metadata.&#34;&#34;&#34;
         # Allow groups to be used in comparisons:
-        self.groups = HashableDict(self.token.groups)
+        self.groups = self.token.groups
         # Make metadata a self.Metadata object:
         self.metadata = (
             self.Metadata(**self.metadata)
@@ -874,20 +962,51 @@ types of citations that might exist.</p></div>
             + &#34;)&#34;
         )
 
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;In general, citations are considered equivalent if they have the
+        same group values (i.e., the same regex group content that is extracted
+        from the matched text). Subclasses may override this method in order to
+        specify equivalence behavior that is more appropriate for certain
+        kinds of citations (e.g., see CaseCitation override).
+
+        self.groups typically contains different keys for different objects:
+
+        FullLawCitation (non-exhaustive and non-guaranteed):
+        - chapter
+        - reporter
+        - law_section
+        - issue
+        - page
+        - docket_number
+        - pamphlet
+        - title
+
+        FullJournalCitation (non-exhaustive and non-guaranteed):
+        - volume
+        - reporter
+        - page
+
+        FullCaseCitation (see CaseCitation.__hash__() notes)
+        &#34;&#34;&#34;
+        return hash(
+            hash_sha256(
+                {**dict(self.groups.items()), **{&#34;class&#34;: type(self).__name__}}
+            )
+        )
+
+    def __eq__(self, other):
+        &#34;&#34;&#34;This method is inherited by all subclasses and should not be
+        overridden. It implements object equality in exactly the same way as
+        defined in an object&#39;s __hash__() function, which should be overridden
+        instead if desired.
+        &#34;&#34;&#34;
+        return self.__hash__() == other.__hash__()
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata:
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         parenthetical: Optional[str] = None
-
-    def comparison_hash(self) -&gt; int:
-        &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent, unless the citation is a CaseCitation missing a page.
-        &#34;&#34;&#34;
-        if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
-            return id(self)
-        else:
-            return hash((type(self), tuple(self.groups.items())))
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -990,26 +1109,6 @@ types of citations that might exist.</p></div>
 </dl>
 <h3>Methods</h3>
 <dl>
-<dt id="eyecite.models.CitationBase.comparison_hash"><code class="name flex">
-<span>def <span class="ident">comparison_hash</span></span>(<span>self) ‑> int</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Return hash that will be the same if two cites are semantically
-equivalent, unless the citation is a CaseCitation missing a page.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def comparison_hash(self) -&gt; int:
-    &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-    equivalent, unless the citation is a CaseCitation missing a page.
-    &#34;&#34;&#34;
-    if isinstance(self, CaseCitation) and self.groups[&#34;page&#34;] is None:
-        return id(self)
-    else:
-        return hash((type(self), tuple(self.groups.items())))</code></pre>
-</details>
-</dd>
 <dt id="eyecite.models.CitationBase.corrected_citation"><code class="name flex">
 <span>def <span class="ident">corrected_citation</span></span>(<span>self)</span>
 </code></dt>
@@ -1445,7 +1544,6 @@ i.e., the kind of citation that marks the first time a document is cited.</p>
 <ul class="hlist">
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -1513,7 +1611,6 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.ResourceCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1595,7 +1692,6 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.FullCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1688,7 +1784,6 @@ resource.</p></div>
 <ul class="hlist">
 <li><code><a title="eyecite.models.FullCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
@@ -1725,6 +1820,10 @@ possesses is a record of the pin cite after the 'id' token.</p>
 
     Example: &#34;... foo bar,&#34; id., at 240
     &#34;&#34;&#34;
+
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;IdCitation objects are always considered unique for safety.&#34;&#34;&#34;
+        return id(self)
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
@@ -1803,7 +1902,6 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
 <ul class="hlist">
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -1989,13 +2087,20 @@ resolved. See <code><a title="eyecite.resolve" href="resolve.html">eyecite.resol
 
     def __hash__(self):
         &#34;&#34;&#34;Resources are the same if their citations are semantically
-        equivalent.
+        equivalent, as defined by their hash function.
 
         Note: Resources composed of citations with missing page numbers are
         NOT considered the same, even if their other attributes are identical.
         This is to avoid potential false positives.
         &#34;&#34;&#34;
-        return self.citation.comparison_hash()
+        return hash(
+            hash_sha256(
+                {
+                    &#34;citation&#34;: hash(self.citation),
+                    &#34;class&#34;: type(self).__name__,
+                }
+            )
+        )
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()</code></pre>
@@ -2047,17 +2152,32 @@ long.</p></div>
         )
         super().__post_init__()
 
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;ResourceCitation objects are hashed in the same way as their
+        parent class (CitationBase) objects, except that we also take into
+        consideration the all_editions field.
+        &#34;&#34;&#34;
+        return hash(
+            hash_sha256(
+                {
+                    **dict(self.groups.items()),
+                    **{
+                        &#34;all_editions&#34;: sorted(
+                            [asdict(e) for e in self.all_editions],
+                            key=lambda d: d[&#34;short_name&#34;],  # type: ignore
+                        ),
+                        &#34;class&#34;: type(self).__name__,
+                    },
+                }
+            )
+        )
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         pin_cite: Optional[str] = None
         year: Optional[str] = None
-
-    def comparison_hash(self) -&gt; int:
-        &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-        equivalent.&#34;&#34;&#34;
-        return hash((super().comparison_hash(), self.all_editions))
 
     def add_metadata(self, words: &#34;Tokens&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
@@ -2146,22 +2266,6 @@ long.</p></div>
 <pre><code class="python">def add_metadata(self, words: &#34;Tokens&#34;):
     &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
     self.guess_edition()</code></pre>
-</details>
-</dd>
-<dt id="eyecite.models.ResourceCitation.comparison_hash"><code class="name flex">
-<span>def <span class="ident">comparison_hash</span></span>(<span>self) ‑> int</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Return hash that will be the same if two cites are semantically
-equivalent.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def comparison_hash(self) -&gt; int:
-    &#34;&#34;&#34;Return hash that will be the same if two cites are semantically
-    equivalent.&#34;&#34;&#34;
-    return hash((super().comparison_hash(), self.all_editions))</code></pre>
 </details>
 </dd>
 <dt id="eyecite.models.ResourceCitation.corrected_citation"><code class="name flex">
@@ -2394,7 +2498,6 @@ Adarand, 515 U.S. at 241
 <ul class="hlist">
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -2586,7 +2689,6 @@ Adarand, supra. somethingelse
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
 <ul class="hlist">
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -2921,7 +3023,11 @@ a naive catch-all.</p></div>
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
     or a FullJournalCitation. If it&#39;s something else, this class serves as
     a naive catch-all.
-    &#34;&#34;&#34;</code></pre>
+    &#34;&#34;&#34;
+
+    def __hash__(self) -&gt; int:
+        &#34;&#34;&#34;UnknownCitation objects are always considered unique for safety.&#34;&#34;&#34;
+        return id(self)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -2967,7 +3073,6 @@ a naive catch-all.</p></div>
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
 <ul class="hlist">
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -2992,11 +3097,6 @@ a naive catch-all.</p></div>
 <li><code><a title="eyecite" href="index.html">eyecite</a></code></li>
 </ul>
 </li>
-<li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
-<li><code><a title="eyecite.models.NonopinionCitation" href="#eyecite.models.NonopinionCitation">NonopinionCitation</a></code></li>
-</ul>
-</li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
@@ -3014,7 +3114,6 @@ a naive catch-all.</p></div>
 <h4><code><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></code></h4>
 <ul class="">
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
-<li><code><a title="eyecite.models.CitationBase.comparison_hash" href="#eyecite.models.CitationBase.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
@@ -3144,7 +3243,6 @@ a naive catch-all.</p></div>
 <ul class="two-column">
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.all_editions" href="#eyecite.models.ResourceCitation.all_editions">all_editions</a></code></li>
-<li><code><a title="eyecite.models.ResourceCitation.comparison_hash" href="#eyecite.models.ResourceCitation.comparison_hash">comparison_hash</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.edition_guess" href="#eyecite.models.ResourceCitation.edition_guess">edition_guess</a></code></li>
