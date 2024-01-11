@@ -16,6 +16,19 @@ Fixes:
 
 ## Current
 
+**2.5.5 - 2024-01-10**
+
+Fixes:
+ - 
+
+Changes:
+ - Update dependencies
+
+
+## Past
+
+## Current
+
 **2.5.4 - 2024-01-10**
 
 Fixes:
@@ -23,9 +36,6 @@ Fixes:
 
 Changes:
 - As noted in 2.3.3 (2021-03-23), the old `NonopinionCitation` class was renamed `UnknownCitation` to better reflect its purpose. Support for the old class name has now been completely deprecated. This change is purely semantic -- there is no change in how these citations are handled.
-
-
-## Past
 
 **2.5.2 - 2023-05-23**
 
