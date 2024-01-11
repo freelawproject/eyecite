@@ -8,10 +8,9 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.8",
-  "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: Implementation :: PyPy",
   "Topic :: Software Development :: Libraries :: Python Modules",
@@ -29,22 +28,22 @@ include = ["eyecite/py.typed"]
 "Organisation Homepage" = "https://free.law/"
 
 [tool.poetry.dependencies]
-python = "^3.8.1"
-reporters-db = "^3.2.38"
-lxml = "^4.6.3"
+python = ">=3.10,<4.0"
+reporters-db = ">=3.2.38"
+lxml = ">=4.6.3"
 pyahocorasick = ">= 1.2"
-fast-diff-match-patch = "^2.0.0"
+fast-diff-match-patch = ">=2.0.0"
 regex = ">=2020.1.8"
-courts-db = "^0.10.9"
+courts-db = ">=0.10.9"
 
 [tool.poetry.dev-dependencies]
 black = "^23.1.0"
-flake8 = "^6.0.0"
+flake8 = "^7.0.0"
 isort = "^5.8.0"
 mypy = "^1.3.0"
-pylint = "^2.7.2"
-wheel = "^0.40.0"
-pylint-json2html = "^0.4.0"
+pylint = "^3.0.3"
+wheel = "^0.42.0"
+pylint-json2html = "^0.5.0"
 exrex = "^0.11.0"
 roman = "^4.0"
 pdoc3 = "^0.10.0"

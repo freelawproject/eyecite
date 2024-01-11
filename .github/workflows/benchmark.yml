@@ -17,12 +17,12 @@ jobs:
       #       check-out repo and set-up python
       #----------------------------------------------
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up python
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       #----------------------------------------------
       #   Alert PR to eyecite benchmark test
       #----------------------------------------------
@@ -32,9 +32,9 @@ jobs:
           recreate: true
           message: |
             Eyecite Benchmarking in progress...
-            
+
             For details, see: https://github.com/freelawproject/eyecite/actions/workflows/benchmark.yml
-            
+
             This message will be updated when the test is completed.
 
       #----------------------------------------------
@@ -43,7 +43,7 @@ jobs:
       # That we should drop once groups is released for main
       #----------------------------------------------
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.3
+        uses: snok/install-poetry@v1.3.4
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
@@ -52,7 +52,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -103,14 +103,14 @@ jobs:
           poetry run python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }}
           git stash --include-untracked
 
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           repository: freelawproject/eyecite
           ref: main
 
       - name: Load cached venv 2
         id: cached-poetry-dependencies2
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
@@ -164,12 +164,12 @@ jobs:
       #       check-out repo and set-up python
       #----------------------------------------------
       - name: Check out repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up python
         id: setup-python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
-          python-version: 3.11
+          python-version: 3.12
       #----------------------------------------------
       #   Alert PR to eyecite benchmark test
       #----------------------------------------------
@@ -187,7 +187,7 @@ jobs:
       #  -----  install & configure poetry  -----
       #----------------------------------------------
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.3
+        uses: snok/install-poetry@v1.3.4
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
@@ -197,7 +197,7 @@ jobs:
       #----------------------------------------------
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
