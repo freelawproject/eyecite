@@ -12,13 +12,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2-beta
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.12"
 
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.3
+        uses: snok/install-poetry@v1.3.4
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
@@ -28,7 +28,7 @@ jobs:
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock')}}
@@ -47,10 +47,10 @@ jobs:
         uses: psf/black@stable
 
       - name: Run flake8
-        uses: py-actions/flake8@v1
+        uses: py-actions/flake8@v2
 
       - name: isort Import Sorter
-        uses: isort/isort-action@v0.1.0
+        uses: isort/isort-action@v1
 
       - name: pylint Error Checker
         run: pylint --fail-under 9 -f colorized eyecite
@@ -61,20 +61,20 @@ jobs:
   lint-report:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2-beta
-      - uses: actions/setup-python@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: "3.8"
+          python-version: "3.12"
 
       - name: Install Poetry
-        uses: snok/install-poetry@v1.3.3
+        uses: snok/install-poetry@v1.3.4
         with:
           virtualenvs-create: true
           virtualenvs-in-project: true
 
       - name: Load cached venv
         id: cached-poetry-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: .venv
           key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock')}}
@@ -95,7 +95,7 @@ jobs:
           pylint-json2html -f json -o pylint-report.html
 
       - name: Upload report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pylint report
           path: pylint-report.html
