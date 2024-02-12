@@ -174,9 +174,11 @@ class CitationBase:
     def span(self):
         """Start and stop offsets in source text for matched_text()."""
         return (
-            self.span_start
-            if self.span_start is not None
-            else self.token.start,
+            (
+                self.span_start
+                if self.span_start is not None
+                else self.token.start
+            ),
             self.span_end if self.span_end is not None else self.token.end,
         )
 
