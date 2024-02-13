@@ -202,9 +202,11 @@ class CitationBase:
     def span(self):
         &#34;&#34;&#34;Start and stop offsets in source text for matched_text().&#34;&#34;&#34;
         return (
-            self.span_start
-            if self.span_start is not None
-            else self.token.start,
+            (
+                self.span_start
+                if self.span_start is not None
+                else self.token.start
+            ),
             self.span_end if self.span_end is not None else self.token.end,
         )
 
@@ -788,7 +790,8 @@ document.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CaseCitation(ResourceCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class CaseCitation(ResourceCitation):
     &#34;&#34;&#34;Convenience class which represents a single citation found in a
     document.
     &#34;&#34;&#34;
@@ -849,29 +852,6 @@ document.</p></div>
 <li><a title="eyecite.models.FullCaseCitation" href="#eyecite.models.FullCaseCitation">FullCaseCitation</a></li>
 <li><a title="eyecite.models.ShortCaseCitation" href="#eyecite.models.ShortCaseCitation">ShortCaseCitation</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.CaseCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.CaseCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.CaseCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.CaseCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.CaseCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.CaseCitation.guess_court"><code class="name flex">
@@ -922,7 +902,8 @@ types of citations that might exist.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CitationBase:
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False)
+class CitationBase:
     &#34;&#34;&#34;Base class for objects returned by `eyecite.find.get_citations`. We
     define several subclasses of this class below, representing the various
     types of citations that might exist.&#34;&#34;&#34;
@@ -1035,9 +1016,11 @@ types of citations that might exist.</p></div>
     def span(self):
         &#34;&#34;&#34;Start and stop offsets in source text for matched_text().&#34;&#34;&#34;
         return (
-            self.span_start
-            if self.span_start is not None
-            else self.token.start,
+            (
+                self.span_start
+                if self.span_start is not None
+                else self.token.start
+            ),
             self.span_end if self.span_end is not None else self.token.end,
         )
 
@@ -1220,9 +1203,11 @@ plaintiff, defendant, post citation, &hellip;)</p>
 <pre><code class="python">def span(self):
     &#34;&#34;&#34;Start and stop offsets in source text for matched_text().&#34;&#34;&#34;
     return (
-        self.span_start
-        if self.span_start is not None
-        else self.token.start,
+        (
+            self.span_start
+            if self.span_start is not None
+            else self.token.start
+        ),
         self.span_end if self.span_end is not None else self.token.end,
     )</code></pre>
 </details>
@@ -1239,7 +1224,8 @@ plaintiff, defendant, post citation, &hellip;)</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class CitationToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class CitationToken(Token):
     &#34;&#34;&#34;String matching a citation regex from `reporters_db/reporters.json`.&#34;&#34;&#34;
 
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
@@ -1349,7 +1335,8 @@ like "S.W." and "S.W.2d".</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Edition:
+<pre><code class="python">@dataclass(eq=True, frozen=True)
+class Edition:
     &#34;&#34;&#34;Class for individual editions in `reporters_db`,
     like &#34;S.W.&#34; and &#34;S.W.2d&#34;.&#34;&#34;&#34;
 
@@ -1427,7 +1414,8 @@ i.e., the kind of citation that marks the first time a document is cited.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class FullCaseCitation(CaseCitation, FullCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class FullCaseCitation(CaseCitation, FullCitation):
     &#34;&#34;&#34;Convenience class which represents a standard, fully named citation,
     i.e., the kind of citation that marks the first time a document is cited.
 
@@ -1482,29 +1470,6 @@ i.e., the kind of citation that marks the first time a document is cited.</p>
 <li><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></li>
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.FullCaseCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCaseCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCaseCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCaseCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCaseCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.FullCaseCitation.corrected_citation_full"><code class="name flex">
@@ -1567,7 +1532,8 @@ resource.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class FullCitation(ResourceCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class FullCitation(ResourceCitation):
     &#34;&#34;&#34;Abstract base class indicating that a citation fully identifies a
     resource.&#34;&#34;&#34;</code></pre>
 </details>
@@ -1582,29 +1548,6 @@ resource.</p></div>
 <li><a title="eyecite.models.FullJournalCitation" href="#eyecite.models.FullJournalCitation">FullJournalCitation</a></li>
 <li><a title="eyecite.models.FullLawCitation" href="#eyecite.models.FullLawCitation">FullLawCitation</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.FullCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></b></code>:
@@ -1633,7 +1576,8 @@ resource.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class FullJournalCitation(FullCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class FullJournalCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/journals.json`.&#34;&#34;&#34;
 
     def add_metadata(self, words: &#34;Tokens&#34;):
@@ -1663,29 +1607,6 @@ resource.</p></div>
 <li><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></li>
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.FullJournalCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullJournalCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullJournalCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullJournalCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullJournalCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></b></code>:
@@ -1714,7 +1635,8 @@ resource.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class FullLawCitation(FullCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class FullLawCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/laws.json`.&#34;&#34;&#34;
 
     @dataclass(eq=True, unsafe_hash=True)
@@ -1755,29 +1677,6 @@ resource.</p></div>
 <li><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></li>
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.FullLawCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullLawCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullLawCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullLawCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.FullLawCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></b></code>:
@@ -1811,7 +1710,8 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IdCitation(CitationBase):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class IdCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents an &#39;id&#39; or &#39;ibid&#39; citation, i.e., a
     citation to the document referenced immediately prior. An &#39;id&#39; citation is
     unlike a regular citation object since it has no knowledge of its reporter,
@@ -1842,41 +1742,6 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <ul class="hlist">
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.IdCitation.full_span_end"><code class="name">var <span class="ident">full_span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.full_span_start"><code class="name">var <span class="ident">full_span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.index"><code class="name">var <span class="ident">index</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.metadata"><code class="name">var <span class="ident">metadata</span> : Any</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.span_end"><code class="name">var <span class="ident">span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.span_start"><code class="name">var <span class="ident">span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdCitation.token"><code class="name">var <span class="ident">token</span> : <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.IdCitation.formatted"><code class="name flex">
@@ -1922,7 +1787,8 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class IdToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class IdToken(Token):
     &#34;&#34;&#34;Word matching &#34;id&#34; or &#34;ibid&#34;.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1936,25 +1802,6 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <li>collections.abc.Iterable</li>
 <li>collections.abc.Container</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.IdToken.data"><code class="name">var <span class="ident">data</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdToken.end"><code class="name">var <span class="ident">end</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdToken.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.IdToken.start"><code class="name">var <span class="ident">start</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
@@ -1975,7 +1822,8 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ParagraphToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class ParagraphToken(Token):
     &#34;&#34;&#34;Word matching a break between paragraphs.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -1989,25 +1837,6 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <li>collections.abc.Iterable</li>
 <li>collections.abc.Container</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.ParagraphToken.data"><code class="name">var <span class="ident">data</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ParagraphToken.end"><code class="name">var <span class="ident">end</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ParagraphToken.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ParagraphToken.start"><code class="name">var <span class="ident">start</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
@@ -2028,7 +1857,8 @@ possesses is a record of the pin cite after the 'id' token.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Reporter:
+<pre><code class="python">@dataclass(eq=True, frozen=True)
+class Reporter:
     &#34;&#34;&#34;Class for top-level reporters in `reporters_db`, like &#34;S.W.&#34; &#34;&#34;&#34;
 
     short_name: str
@@ -2079,7 +1909,8 @@ resolved. See <code><a title="eyecite.resolve" href="resolve.html">eyecite.resol
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Resource(ResourceType):
+<pre><code class="python">@dataclass(frozen=True)
+class Resource(ResourceType):
     &#34;&#34;&#34;Thin resource class representing an object to which a citation can be
     resolved. See `eyecite.resolve` for more details.&#34;&#34;&#34;
 
@@ -2129,7 +1960,8 @@ long.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ResourceCitation(CitationBase):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class ResourceCitation(CitationBase):
     &#34;&#34;&#34;Base class for a case, law, or journal citation. Could be short or
     long.&#34;&#34;&#34;
 
@@ -2353,7 +2185,8 @@ long.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SectionToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class SectionToken(Token):
     &#34;&#34;&#34;Word containing a section symbol.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2367,25 +2200,6 @@ long.</p></div>
 <li>collections.abc.Iterable</li>
 <li>collections.abc.Container</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.SectionToken.data"><code class="name">var <span class="ident">data</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SectionToken.end"><code class="name">var <span class="ident">end</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SectionToken.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SectionToken.start"><code class="name">var <span class="ident">start</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
@@ -2414,7 +2228,8 @@ Adarand, 515 U.S. at 241
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class ShortCaseCitation(CaseCitation):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class ShortCaseCitation(CaseCitation):
     &#34;&#34;&#34;Convenience class which represents a short form citation, i.e., the kind
     of citation made after a full citation has already appeared. This kind of
     citation lacks a full case name and usually has a different page number
@@ -2448,29 +2263,6 @@ Adarand, 515 U.S. at 241
 <li><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></li>
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.ShortCaseCitation.all_editions"><code class="name">var <span class="ident">all_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ShortCaseCitation.edition_guess"><code class="name">var <span class="ident">edition_guess</span> : Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ShortCaseCitation.exact_editions"><code class="name">var <span class="ident">exact_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ShortCaseCitation.variation_editions"><code class="name">var <span class="ident">variation_editions</span> : Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.ShortCaseCitation.year"><code class="name">var <span class="ident">year</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.ShortCaseCitation.corrected_citation_full"><code class="name flex">
@@ -2520,7 +2312,8 @@ Adarand, 515 U.S. at 241
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class StopWordToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class StopWordToken(Token):
     &#34;&#34;&#34;Word matching one of the STOP_TOKENS.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2534,25 +2327,6 @@ Adarand, 515 U.S. at 241
 <li>collections.abc.Iterable</li>
 <li>collections.abc.Container</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.StopWordToken.data"><code class="name">var <span class="ident">data</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.StopWordToken.end"><code class="name">var <span class="ident">end</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.StopWordToken.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.StopWordToken.start"><code class="name">var <span class="ident">start</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
@@ -2582,7 +2356,8 @@ Adarand, supra. somethingelse
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SupraCitation(CitationBase):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class SupraCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents a &#39;supra&#39; citation, i.e., a citation
     to something that is above in the document. Like a short form citation,
     this kind of citation lacks a full case name and usually has a different
@@ -2623,41 +2398,6 @@ Adarand, supra. somethingelse
 <ul class="hlist">
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.SupraCitation.full_span_end"><code class="name">var <span class="ident">full_span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.full_span_start"><code class="name">var <span class="ident">full_span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.index"><code class="name">var <span class="ident">index</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.metadata"><code class="name">var <span class="ident">metadata</span> : Any</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.span_end"><code class="name">var <span class="ident">span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.span_start"><code class="name">var <span class="ident">span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraCitation.token"><code class="name">var <span class="ident">token</span> : <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.SupraCitation.formatted"><code class="name flex">
@@ -2709,7 +2449,8 @@ Adarand, supra. somethingelse
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class SupraToken(Token):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class SupraToken(Token):
     &#34;&#34;&#34;Word matching &#34;supra&#34; with or without punctuation.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -2723,25 +2464,6 @@ Adarand, supra. somethingelse
 <li>collections.abc.Iterable</li>
 <li>collections.abc.Container</li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.SupraToken.data"><code class="name">var <span class="ident">data</span> : str</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraToken.end"><code class="name">var <span class="ident">end</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraToken.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.SupraToken.start"><code class="name">var <span class="ident">start</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
@@ -2763,7 +2485,8 @@ for generic words.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class Token(UserString):
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class Token(UserString):
     &#34;&#34;&#34;Base class for special tokens. For performance, this isn&#39;t used
     for generic words.&#34;&#34;&#34;
 
@@ -2890,7 +2613,7 @@ self.</p></div>
 </dd>
 <dt id="eyecite.models.TokenExtractor"><code class="flex name class">
 <span>class <span class="ident">TokenExtractor</span></span>
-<span>(</span><span>regex: str, constructor: Callable[..., <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>], extra: Dict[~KT, ~VT] = &lt;factory&gt;, flags: int = 0, strings: List[~T] = &lt;factory&gt;)</span>
+<span>(</span><span>regex: str, constructor: Callable[..., <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>], extra: Dict = &lt;factory&gt;, flags: int = 0, strings: List = &lt;factory&gt;)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Class for extracting all matches from a given string for the given
@@ -2899,7 +2622,8 @@ regex, and then for returning Token objects for all matches.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class TokenExtractor:
+<pre><code class="python">@dataclass
+class TokenExtractor:
     &#34;&#34;&#34;Class for extracting all matches from a given string for the given
     regex, and then for returning Token objects for all matches.&#34;&#34;&#34;
 
@@ -2938,7 +2662,7 @@ regex, and then for returning Token objects for all matches.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="eyecite.models.TokenExtractor.extra"><code class="name">var <span class="ident">extra</span> : Dict[~KT, ~VT]</code></dt>
+<dt id="eyecite.models.TokenExtractor.extra"><code class="name">var <span class="ident">extra</span> : Dict</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -2950,7 +2674,7 @@ regex, and then for returning Token objects for all matches.</p></div>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="eyecite.models.TokenExtractor.strings"><code class="name">var <span class="ident">strings</span> : List[~T]</code></dt>
+<dt id="eyecite.models.TokenExtractor.strings"><code class="name">var <span class="ident">strings</span> : List</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -3018,7 +2742,8 @@ a naive catch-all.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class UnknownCitation(CitationBase):
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
+class UnknownCitation(CitationBase):
     &#34;&#34;&#34;Convenience class which represents an unknown citation. A recognized
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
     or a FullJournalCitation. If it&#39;s something else, this class serves as
@@ -3033,41 +2758,6 @@ a naive catch-all.</p></div>
 <ul class="hlist">
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="eyecite.models.UnknownCitation.full_span_end"><code class="name">var <span class="ident">full_span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.full_span_start"><code class="name">var <span class="ident">full_span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.groups"><code class="name">var <span class="ident">groups</span> : dict</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.index"><code class="name">var <span class="ident">index</span> : int</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.metadata"><code class="name">var <span class="ident">metadata</span> : Any</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.span_end"><code class="name">var <span class="ident">span_end</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.span_start"><code class="name">var <span class="ident">span_start</span> : Optional[int]</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="eyecite.models.UnknownCitation.token"><code class="name">var <span class="ident">token</span> : <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
@@ -3101,13 +2791,8 @@ a naive catch-all.</p></div>
 <ul>
 <li>
 <h4><code><a title="eyecite.models.CaseCitation" href="#eyecite.models.CaseCitation">CaseCitation</a></code></h4>
-<ul class="two-column">
-<li><code><a title="eyecite.models.CaseCitation.all_editions" href="#eyecite.models.CaseCitation.all_editions">all_editions</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.edition_guess" href="#eyecite.models.CaseCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.exact_editions" href="#eyecite.models.CaseCitation.exact_editions">exact_editions</a></code></li>
+<ul class="">
 <li><code><a title="eyecite.models.CaseCitation.guess_court" href="#eyecite.models.CaseCitation.guess_court">guess_court</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.variation_editions" href="#eyecite.models.CaseCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.CaseCitation.year" href="#eyecite.models.CaseCitation.year">year</a></code></li>
 </ul>
 </li>
 <li>
@@ -3152,75 +2837,29 @@ a naive catch-all.</p></div>
 <li>
 <h4><code><a title="eyecite.models.FullCaseCitation" href="#eyecite.models.FullCaseCitation">FullCaseCitation</a></code></h4>
 <ul class="">
-<li><code><a title="eyecite.models.FullCaseCitation.all_editions" href="#eyecite.models.FullCaseCitation.all_editions">all_editions</a></code></li>
 <li><code><a title="eyecite.models.FullCaseCitation.corrected_citation_full" href="#eyecite.models.FullCaseCitation.corrected_citation_full">corrected_citation_full</a></code></li>
-<li><code><a title="eyecite.models.FullCaseCitation.edition_guess" href="#eyecite.models.FullCaseCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.FullCaseCitation.exact_editions" href="#eyecite.models.FullCaseCitation.exact_editions">exact_editions</a></code></li>
-<li><code><a title="eyecite.models.FullCaseCitation.variation_editions" href="#eyecite.models.FullCaseCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.FullCaseCitation.year" href="#eyecite.models.FullCaseCitation.year">year</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.FullCitation.all_editions" href="#eyecite.models.FullCitation.all_editions">all_editions</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.edition_guess" href="#eyecite.models.FullCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.exact_editions" href="#eyecite.models.FullCitation.exact_editions">exact_editions</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.variation_editions" href="#eyecite.models.FullCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.year" href="#eyecite.models.FullCitation.year">year</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.FullJournalCitation" href="#eyecite.models.FullJournalCitation">FullJournalCitation</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.FullJournalCitation.all_editions" href="#eyecite.models.FullJournalCitation.all_editions">all_editions</a></code></li>
-<li><code><a title="eyecite.models.FullJournalCitation.edition_guess" href="#eyecite.models.FullJournalCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.FullJournalCitation.exact_editions" href="#eyecite.models.FullJournalCitation.exact_editions">exact_editions</a></code></li>
-<li><code><a title="eyecite.models.FullJournalCitation.variation_editions" href="#eyecite.models.FullJournalCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.FullJournalCitation.year" href="#eyecite.models.FullJournalCitation.year">year</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.FullLawCitation" href="#eyecite.models.FullLawCitation">FullLawCitation</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.FullLawCitation.all_editions" href="#eyecite.models.FullLawCitation.all_editions">all_editions</a></code></li>
-<li><code><a title="eyecite.models.FullLawCitation.edition_guess" href="#eyecite.models.FullLawCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.FullLawCitation.exact_editions" href="#eyecite.models.FullLawCitation.exact_editions">exact_editions</a></code></li>
-<li><code><a title="eyecite.models.FullLawCitation.variation_editions" href="#eyecite.models.FullLawCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.FullLawCitation.year" href="#eyecite.models.FullLawCitation.year">year</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.IdCitation" href="#eyecite.models.IdCitation">IdCitation</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="eyecite.models.IdCitation.formatted" href="#eyecite.models.IdCitation.formatted">formatted</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.full_span_end" href="#eyecite.models.IdCitation.full_span_end">full_span_end</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.full_span_start" href="#eyecite.models.IdCitation.full_span_start">full_span_start</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.groups" href="#eyecite.models.IdCitation.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.index" href="#eyecite.models.IdCitation.index">index</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.metadata" href="#eyecite.models.IdCitation.metadata">metadata</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.span_end" href="#eyecite.models.IdCitation.span_end">span_end</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.span_start" href="#eyecite.models.IdCitation.span_start">span_start</a></code></li>
-<li><code><a title="eyecite.models.IdCitation.token" href="#eyecite.models.IdCitation.token">token</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.IdToken" href="#eyecite.models.IdToken">IdToken</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.IdToken.data" href="#eyecite.models.IdToken.data">data</a></code></li>
-<li><code><a title="eyecite.models.IdToken.end" href="#eyecite.models.IdToken.end">end</a></code></li>
-<li><code><a title="eyecite.models.IdToken.groups" href="#eyecite.models.IdToken.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.IdToken.start" href="#eyecite.models.IdToken.start">start</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.ParagraphToken" href="#eyecite.models.ParagraphToken">ParagraphToken</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.ParagraphToken.data" href="#eyecite.models.ParagraphToken.data">data</a></code></li>
-<li><code><a title="eyecite.models.ParagraphToken.end" href="#eyecite.models.ParagraphToken.end">end</a></code></li>
-<li><code><a title="eyecite.models.ParagraphToken.groups" href="#eyecite.models.ParagraphToken.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.ParagraphToken.start" href="#eyecite.models.ParagraphToken.start">start</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.Reporter" href="#eyecite.models.Reporter">Reporter</a></code></h4>
@@ -3254,55 +2893,24 @@ a naive catch-all.</p></div>
 </li>
 <li>
 <h4><code><a title="eyecite.models.SectionToken" href="#eyecite.models.SectionToken">SectionToken</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.SectionToken.data" href="#eyecite.models.SectionToken.data">data</a></code></li>
-<li><code><a title="eyecite.models.SectionToken.end" href="#eyecite.models.SectionToken.end">end</a></code></li>
-<li><code><a title="eyecite.models.SectionToken.groups" href="#eyecite.models.SectionToken.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.SectionToken.start" href="#eyecite.models.SectionToken.start">start</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.ShortCaseCitation" href="#eyecite.models.ShortCaseCitation">ShortCaseCitation</a></code></h4>
 <ul class="">
-<li><code><a title="eyecite.models.ShortCaseCitation.all_editions" href="#eyecite.models.ShortCaseCitation.all_editions">all_editions</a></code></li>
 <li><code><a title="eyecite.models.ShortCaseCitation.corrected_citation_full" href="#eyecite.models.ShortCaseCitation.corrected_citation_full">corrected_citation_full</a></code></li>
-<li><code><a title="eyecite.models.ShortCaseCitation.edition_guess" href="#eyecite.models.ShortCaseCitation.edition_guess">edition_guess</a></code></li>
-<li><code><a title="eyecite.models.ShortCaseCitation.exact_editions" href="#eyecite.models.ShortCaseCitation.exact_editions">exact_editions</a></code></li>
-<li><code><a title="eyecite.models.ShortCaseCitation.variation_editions" href="#eyecite.models.ShortCaseCitation.variation_editions">variation_editions</a></code></li>
-<li><code><a title="eyecite.models.ShortCaseCitation.year" href="#eyecite.models.ShortCaseCitation.year">year</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.StopWordToken" href="#eyecite.models.StopWordToken">StopWordToken</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.StopWordToken.data" href="#eyecite.models.StopWordToken.data">data</a></code></li>
-<li><code><a title="eyecite.models.StopWordToken.end" href="#eyecite.models.StopWordToken.end">end</a></code></li>
-<li><code><a title="eyecite.models.StopWordToken.groups" href="#eyecite.models.StopWordToken.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.StopWordToken.start" href="#eyecite.models.StopWordToken.start">start</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.SupraCitation" href="#eyecite.models.SupraCitation">SupraCitation</a></code></h4>
-<ul class="two-column">
+<ul class="">
 <li><code><a title="eyecite.models.SupraCitation.formatted" href="#eyecite.models.SupraCitation.formatted">formatted</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.full_span_end" href="#eyecite.models.SupraCitation.full_span_end">full_span_end</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.full_span_start" href="#eyecite.models.SupraCitation.full_span_start">full_span_start</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.groups" href="#eyecite.models.SupraCitation.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.index" href="#eyecite.models.SupraCitation.index">index</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.metadata" href="#eyecite.models.SupraCitation.metadata">metadata</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.span_end" href="#eyecite.models.SupraCitation.span_end">span_end</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.span_start" href="#eyecite.models.SupraCitation.span_start">span_start</a></code></li>
-<li><code><a title="eyecite.models.SupraCitation.token" href="#eyecite.models.SupraCitation.token">token</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.SupraToken" href="#eyecite.models.SupraToken">SupraToken</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.SupraToken.data" href="#eyecite.models.SupraToken.data">data</a></code></li>
-<li><code><a title="eyecite.models.SupraToken.end" href="#eyecite.models.SupraToken.end">end</a></code></li>
-<li><code><a title="eyecite.models.SupraToken.groups" href="#eyecite.models.SupraToken.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.SupraToken.start" href="#eyecite.models.SupraToken.start">start</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></code></h4>
@@ -3330,16 +2938,6 @@ a naive catch-all.</p></div>
 </li>
 <li>
 <h4><code><a title="eyecite.models.UnknownCitation" href="#eyecite.models.UnknownCitation">UnknownCitation</a></code></h4>
-<ul class="two-column">
-<li><code><a title="eyecite.models.UnknownCitation.full_span_end" href="#eyecite.models.UnknownCitation.full_span_end">full_span_end</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.full_span_start" href="#eyecite.models.UnknownCitation.full_span_start">full_span_start</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.groups" href="#eyecite.models.UnknownCitation.groups">groups</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.index" href="#eyecite.models.UnknownCitation.index">index</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.metadata" href="#eyecite.models.UnknownCitation.metadata">metadata</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.span_end" href="#eyecite.models.UnknownCitation.span_end">span_end</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.span_start" href="#eyecite.models.UnknownCitation.span_start">span_start</a></code></li>
-<li><code><a title="eyecite.models.UnknownCitation.token" href="#eyecite.models.UnknownCitation.token">token</a></code></li>
-</ul>
 </li>
 </ul>
 </li>
