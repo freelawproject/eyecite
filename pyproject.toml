@@ -1,5 +1,5 @@
 [tool.poetry]
-version = "2.5.5"
+version = "2.6.0"
 authors = ["Free Law Project <info@free.law>"]
 classifiers = [
   "Development Status :: 5 - Production/Stable",
