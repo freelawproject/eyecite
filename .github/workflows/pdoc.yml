@@ -23,12 +23,16 @@ jobs:
       - name: Install hyperscan
         run: sudo apt-get install libhyperscan-dev
 
+      - name: Get full Python version
+        id: full-python-version
+        run: echo "version=$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))")" >> $GITHUB_OUTPUT
+
       - name: Load cached venv
         id: cached-poetry-dependencies
         uses: actions/cache@v3
         with:
           path: .venv
-          key: venv-${{ runner.os }}-${{ hashFiles('**/poetry.lock') }}-v2021-09-23
+          key: venv-${{ runner.os }}-cache-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock')}}-v20210414
 
       - name: Install dependencies
         run: poetry install
