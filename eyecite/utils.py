@@ -122,7 +122,8 @@ def hash_sha256(dictionary: dict) -> int:
     """
 
     # Convert the dictionary to a JSON string
-    json_str: str = json.dumps(dictionary, sort_keys=True,default=str)
+    # default needed because of dates
+    json_str: str = json.dumps(dictionary, sort_keys=True, default=str)
 
     # Convert the JSON string to bytes
     json_bytes: bytes = json_str.encode("utf-8")
