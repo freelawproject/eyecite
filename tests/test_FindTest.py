@@ -121,6 +121,13 @@ class FindTest(TestCase):
                                       'defendant': 'test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348'})]),
+            # Test with court string without space
+            ('bob lissner v. test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
+             [case_citation(page='12', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test',
+                                      'court': 'pasuperct',
+                                      'pin_cite': '347-348'})]),
             # Parallel cite with parenthetical
             ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,

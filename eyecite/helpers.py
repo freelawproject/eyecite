@@ -42,14 +42,17 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
     needs to be handled after disambiguation has been completed.
     """
     court_str = strip_punct(paren_string)
+    court_str = court_str.replace(" ", "")
 
     court_code = None
     if court_str:
         # Map the string to a court, if possible.
         for court in courts:
-            # Use startswith because citations are often missing final period,
-            # e.g. "2d Cir"
-            if court["citation_string"].startswith(court_str):
+            # Use startswith because citation strings are often missing final
+            # period, e.g. "2d Cir"
+            # Remove whitespace because citation strings sometimes lack
+            # internal spaces, e.g. "Pa.Super."
+            if court["citation_string"].replace(" ", "").startswith(court_str):
                 court_code = court["id"]
                 break
 
