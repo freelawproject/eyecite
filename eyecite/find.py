@@ -1,5 +1,6 @@
 from typing import List, Type, cast
 
+from eyecite.clean import normalize_whitespace
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
@@ -50,8 +51,8 @@ def get_citations(
     Returns:
         A list of `eyecite.models.CitationBase` objects
     """
-    if plain_text == "eyecite":
-        return joke_cite
+
+    plain_text = normalize_whitespace(plain_text)
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
     citations = []
@@ -124,8 +125,7 @@ def _extract_full_citation(
     # matches to variations:
     token = cast(CitationToken, words[index])
     cite_sources = set(
-        e.reporter.source
-        for e in (token.exact_editions or token.variation_editions)
+        e.reporter.source for e in (token.exact_editions or token.variation_editions)
     )
 
     # get citation_class based on cite_sources

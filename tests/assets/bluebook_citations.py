@@ -50,18 +50,3 @@ dismiss, at any time, any action that fails to state a claim on which relief may
 
 U.S.C. § 1915(e)(2)(B)(ii). Also, here is a short citation Bob, 123 F.3d at
 124."""
-
-bluebook_5 = """
-Legislative history on the demand letter provision and access to courts.
-The pre-suit notice requirement of Florida’s PIP statute, also known as the demand letter
-provision, was enacted by the Florida legislature in 2001 in response to the report and
-recommendations of the Fifteenth Statewide Grand Jury investigation of fraud related to the
-Florida Motor Vehicle No-Fault Law. See FLA. S. CRIMINAL JUSTICE AND BANKING AND
-INSURANCE COMMITTEE, CS/CS/SB 1092, STAFF ANALYSIS (April 23, 2001) and Shenandoah
-Chiropractic, P.A. v. National Specialty Ins. Co., 526 F. Supp. 2d 1283, 1286 (S.D. Fla. 2007).
-In its report, the Fifteenth Statewide Grand Jury “examined the issue of PIP fraud, and concluded
-that fraud and abuse in the area of PIP coverage was widespread and undermining the purposes
-of the PIP statute.” Shenandoah Chiropractic, 526 F. Supp. 2d at 1286, citing Statewide Grand
-Jury Report on Insurance Fraud Related to Personal Injury Protection, Florida Supreme Court
-Case No. 95,746.
-"""

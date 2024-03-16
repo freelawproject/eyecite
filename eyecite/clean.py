@@ -68,6 +68,19 @@ def inline_whitespace(text: str) -> str:
     return re.sub(r"[ \t]+", " ", text)
 
 
+def normalize_whitespace(s: str) -> str:
+    """
+    Normalize whitespace in a string by replacing all consecutive whitespace characters with a single space.
+
+    Args:
+        s (str): The input string to normalize.
+
+    Returns:
+        str: The normalized string with consecutive whitespace characters replaced by a single space.
+    """
+    return re.sub(r"\s+", " ", s).strip()
+
+
 def all_whitespace(text: str) -> str:
     """Collapse multiple whitespace characters within a string into one space
     character.
