@@ -34,3 +34,7 @@ dev = [
     "roman>=4.1",
     "pytest>=8.1.1",
 ]
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
