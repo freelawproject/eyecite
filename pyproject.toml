@@ -36,5 +36,5 @@ dev = [
 ]
 
 [tool.pyright]
-venvPath = "."
+venvPath = ".devbox/virtenv/python310/"
 venv = ".venv"
