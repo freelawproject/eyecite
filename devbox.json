@@ -2,12 +2,10 @@
   "packages": [
     "python310@latest",
     "pdm@latest",
-    "pre-commit@latest",
-    "gcc@latest",
-    "gcc-unwrapped@latest"
+    "pre-commit@latest"
   ],
   "env": {
-    "PDM_PYTHON": ".devbox/virtenv/python/.venv",
+    "PDM_PYTHON":      ".devbox/virtenv/python/.venv",
     "LD_LIBRARY_PATH": ".devbox/nix/profile/default/bin/gcc/lib:$LD_LIBRARY_PATH"
   },
   "shell": {

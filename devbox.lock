@@ -1,40 +1,6 @@
 {
   "lockfile_version": "1",
   "packages": {
-    "gcc-unwrapped@latest": {
-      "last_modified": "2024-03-07T02:56:54Z",
-      "resolved": "github:NixOS/nixpkgs/f945939fd679284d736112d3d5410eb867f3b31c#gcc-unwrapped",
-      "source": "devbox-search",
-      "version": "13.2.0",
-      "systems": {
-        "aarch64-linux": {
-          "store_path": "/nix/store/yk0nw4wb0y7hy187p6s5i1cayzj1nbya-gcc-13.2.0"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/cmr8qd8w64w8q0cbfc30p98z2pydc1k7-gcc-13.2.0"
-        }
-      }
-    },
-    "gcc@latest": {
-      "last_modified": "2024-02-24T23:06:34Z",
-      "resolved": "github:NixOS/nixpkgs/9a9dae8f6319600fa9aebde37f340975cab4b8c0#gcc",
-      "source": "devbox-search",
-      "version": "13.2.0",
-      "systems": {
-        "aarch64-darwin": {
-          "store_path": "/nix/store/5m4l7v79w13qa341ffhfxs45d4m8g8ag-gcc-wrapper-13.2.0"
-        },
-        "aarch64-linux": {
-          "store_path": "/nix/store/z062sjm2ppd5jdcisdgaxvl8l08dq774-gcc-wrapper-13.2.0"
-        },
-        "x86_64-darwin": {
-          "store_path": "/nix/store/9g3ysibwgx9yfxqlzkksjl7df6ixzdlx-gcc-wrapper-13.2.0"
-        },
-        "x86_64-linux": {
-          "store_path": "/nix/store/ln6zld1ia7rxddmxgbpfhrmb42rbxdw8-gcc-wrapper-13.2.0"
-        }
-      }
-    },
     "pdm@latest": {
       "last_modified": "2024-02-29T01:10:36Z",
       "resolved": "github:NixOS/nixpkgs/ec25c90d35d24e36c0af3b3d58a09542367ebbee#pdm",

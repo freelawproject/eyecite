@@ -3,8 +3,7 @@ from difflib import SequenceMatcher
 from functools import partial
 from typing import Any, Callable, Iterable, Optional, Tuple
 
-import fast_diff_match_patch
-
+# import fast_diff_match_patch
 from eyecite.utils import is_balanced_html, wrap_html_tags
 
 
@@ -155,9 +154,7 @@ class SpanUpdater:
         delta = 0
         self.offsets = offsets = []
         self.updaters = updaters = []
-        get_diff_steps = (
-            self.get_diff_steps if use_dmp else self.get_diff_steps_builtin
-        )
+        get_diff_steps = self.get_diff_steps if use_dmp else self.get_diff_steps_builtin
         for operation, amount in get_diff_steps(text_before, text_after):
             if operation == "=":
                 # start a new range with a relative delta,
@@ -172,9 +169,7 @@ class SpanUpdater:
                 # Start a new range with an absolute delta.
                 # Push the offset forward and delta backward.
                 offsets.append(offset)
-                updaters.append(
-                    partial(replace_offset, new_offset=offset + delta)
-                )
+                updaters.append(partial(replace_offset, new_offset=offset + delta))
                 offset += amount
                 delta -= amount
 
@@ -187,16 +182,19 @@ class SpanUpdater:
         insert three new characters (we don't care what), keep the next
         two characters, delete three characters.
         """
-        try:
-            return fast_diff_match_patch.diff(
-                a, b, timelimit=0, checklines=False, cleanup="No"
-            )
-        except AttributeError as e:
-            raise AttributeError(
-                "This may be caused by having the diff_match_patch package "
-                "installed, which is incompatible with "
-                "fast_diff_match_patch_python."
-            ) from e
+        raise NotImplementedError(
+            "Removed fast diff match patch dependency. Either resolve the c++ dependency issues to make it usable or find an alternative lib that does the same thing."
+        )
+        # try:
+        #     return fast_diff_match_patch.diff(
+        #         a, b, timelimit=0, checklines=False, cleanup="No"
+        #     )
+        # except AttributeError as e:
+        #     raise AttributeError(
+        #         "This may be caused by having the diff_match_patch package "
+        #         "installed, which is incompatible with "
+        #         "fast_diff_match_patch_python."
+        #     ) from e
 
     @staticmethod
     def get_diff_steps_builtin(a: str, b: str):
