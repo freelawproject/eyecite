@@ -6,6 +6,7 @@ from tests.assets.bluebook_citations import (
     bluebook_2,
     bluebook_3,
     bluebook_4,
+    bluebook_5,
 )
 from tests.assets.ca_citations import ca_1, ca_2
 
@@ -17,6 +18,7 @@ from tests.assets.ca_citations import ca_1, ca_2
         (bluebook_2, 4),
         (bluebook_3, 2),
         (bluebook_4, 5),
+        (bluebook_5, 2),
     ],
 )
 def test_bluebook_count(input_text: str, count: int):
