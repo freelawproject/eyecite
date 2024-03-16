@@ -1,0 +1,23 @@
+{
+  "packages": [
+    "python310@latest",
+    "pdm@latest",
+    "pre-commit@latest",
+    "gcc@latest",
+    "gcc-unwrapped@latest"
+  ],
+  "env": {
+    "PDM_PYTHON": ".devbox/virtenv/python/.venv",
+    "LD_LIBRARY_PATH": ".devbox/nix/profile/default/bin/gcc/lib:$LD_LIBRARY_PATH"
+  },
+  "shell": {
+    "init_hook": [
+      "source $VENV_DIR/bin/activate"
+    ],
+    "scripts": {
+      "test": [
+        "echo \"Error: no test specified\" && exit 1"
+      ]
+    }
+  }
+}
