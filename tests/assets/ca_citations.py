@@ -22,3 +22,22 @@ MPA ISO PLAINTIFFS’ MOTION FOR AWARD Case No. 17CV313947
 OF PREJUDGMENT INTEREST Barbaccia v. GBR Magic Sands, LLCCw rd DH WH B®
 expenses incurred in litigation with these Plaintiffs. The former is plainly a
 legal issue."""
+
+ca_3 = """
+receivership. California Rules of Court, rule 3.1183, 3.1184.' A receiver is an independent third
+party, a “hand” or “agent” of the court that acts only upon the direction and authority of the
+appointing court. Takeba v. Superior Court (1919) 43 Cal.App. 469, 475. Thus, all actions
+undertaken are subject to final ratification by the Court, and the discharge hearing is the
+appropriate venue for a court to utilize its discretion on all receivership actions. Hanno v.
+ 
+' All later citations to rules are to the California Rules of Court, unless otherwise noted.
+3-
+MEMORANDUM OF POINTS AND AUTHORITIES IN SUPPORT OF RECEIVER’S
+MOTION FOR DISCHARGE
+Superior Court.(1939) 30 Cal.App.2d 639, 641. The order discharging the receiver is necessary
+ 
+to fully complete the receivership and end the court’s involvement. Jun v. Myers (2001) 88
+Cal.App.4th 117, 123-24. But the discharge does not happen automatically, and must be
+requested. Scoville v. De Bretteville (1942) 50 Cal.App.2d 622, 632; Hanno 30 Cal.App.2d at
+641; Pacific Bank v. Madera, (1899) 124 Cal. 525, 527,
+"""
