@@ -23,7 +23,7 @@
             "program": "${workspaceFolder}/script.py",
             "console": "integratedTerminal",
             "args": [
-                "test-id"
+                "test-post"
             ]
         }
     ]
