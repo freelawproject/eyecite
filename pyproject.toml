@@ -11,7 +11,6 @@ dependencies = [
     "pyahocorasick>=2.0.0",
     "regex>=2023.12.25",
     "courts-db>=0.10.22",
-    "pydantic>=2.6.4",
     "typer>=0.9.0",
 ]
 requires-python = ">=3.10"
