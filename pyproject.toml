@@ -12,7 +12,7 @@ dependencies = [
     "regex>=2023.12.25",
     "courts-db>=0.10.22",
 ]
-requires-python = ">=3.10"
+requires-python = ">=3.8"
 readme = "README.md"
 
 [build-system]
