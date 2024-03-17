@@ -76,6 +76,8 @@ class CitationBase:
     groups: dict = field(default_factory=dict)
     metadata: Any = None
 
+    name_candidate: Optional[str] = None
+
     def __post_init__(self):
         """Set up groups and metadata."""
         # Allow groups to be used in comparisons:
@@ -128,9 +130,7 @@ class CitationBase:
         FullCaseCitation (see CaseCitation.__hash__() notes)
         """
         return hash(
-            hash_sha256(
-                {**dict(self.groups.items()), **{"class": type(self).__name__}}
-            )
+            hash_sha256({**dict(self.groups.items()), **{"class": type(self).__name__}})
         )
 
     def __eq__(self, other):
@@ -161,9 +161,7 @@ class CitationBase:
         return {
             "groups": self.groups,
             "metadata": {
-                k: v
-                for k, v in self.metadata.__dict__.items()
-                if v is not None
+                k: v for k, v in self.metadata.__dict__.items() if v is not None
             },
         }
 
@@ -174,11 +172,7 @@ class CitationBase:
     def span(self):
         """Start and stop offsets in source text for matched_text()."""
         return (
-            (
-                self.span_start
-                if self.span_start is not None
-                else self.token.start
-            ),
+            (self.span_start if self.span_start is not None else self.token.start),
             self.span_end if self.span_end is not None else self.token.end,
         )
 
@@ -222,9 +216,7 @@ class ResourceCitation(CitationBase):
         """Make iterables into tuples to make sure we're hashable."""
         self.exact_editions = tuple(self.exact_editions)
         self.variation_editions = tuple(self.variation_editions)
-        self.all_editions = tuple(self.exact_editions) + tuple(
-            self.variation_editions
-        )
+        self.all_editions = tuple(self.exact_editions) + tuple(self.variation_editions)
         super().__post_init__()
 
     def __hash__(self) -> int:
@@ -329,9 +321,7 @@ class FullLawCitation(FullCitation):
         m = self.metadata
         if m.pin_cite:
             parts.append(f"{m.pin_cite}")
-        publisher_date = " ".join(
-            i for i in (m.publisher, m.month, m.day, m.year) if i
-        )
+        publisher_date = " ".join(i for i in (m.publisher, m.month, m.day, m.year) if i)
         if publisher_date:
             parts.append(f" ({publisher_date})")
         if m.parenthetical:
@@ -644,9 +634,9 @@ class CitationToken(Token):
                 self.exact_editions = cast(tuple, self.exact_editions) + cast(
                     tuple, other.exact_editions
                 )
-                self.variation_editions = cast(
-                    tuple, self.variation_editions
-                ) + cast(tuple, other.variation_editions)
+                self.variation_editions = cast(tuple, self.variation_editions) + cast(
+                    tuple, other.variation_editions
+                )
                 # Remove duplicate editions after merge
                 self.exact_editions = tuple(set(self.exact_editions))
                 self.variation_editions = tuple(set(self.variation_editions))

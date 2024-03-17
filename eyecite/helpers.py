@@ -1,3 +1,4 @@
+from collections import deque
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
@@ -238,6 +239,35 @@ def extract_pin_cite(
     return None, None, None
 
 
+def get_case_name_candidate(
+    *, start_index: int, original_text: str, net_size=120, word_limit=10
+) -> str:
+    STOP_REGEXES = [r";", r"\((?:[A-Z]+\.)*[A-Z]* \d{4}\)"]
+
+    combined_stop_regex = "|".join(STOP_REGEXES)
+
+    start_pos = max(0, start_index - net_size)
+
+    preceding_text_block = original_text[start_pos:start_index]
+
+    preceding_tokens = re.split(r"(\W+)", preceding_text_block)
+    preceding_tokens = [token for token in preceding_tokens if token.strip()]
+
+    candidate = deque([])
+
+    for i in range(len(preceding_tokens) - 1, -1, -1):
+        word = preceding_tokens[i]
+
+        if re.search(combined_stop_regex, word):
+            break
+
+        candidate.appendleft(word)
+        if len(candidate) >= word_limit:
+            break
+
+    return " ".join(candidate)
+
+
 def match_on_tokens(
     words,
     start_index,
@@ -301,9 +331,7 @@ def disambiguate_reporters(
 ) -> List[CitationBase]:
     """Filter out citations where there is more than one possible reporter."""
     return [
-        c
-        for c in citations
-        if not isinstance(c, ResourceCitation) or c.edition_guess
+        c for c in citations if not isinstance(c, ResourceCitation) or c.edition_guess
     ]
 
 

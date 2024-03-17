@@ -4,7 +4,7 @@ from eyecite.clean import normalize_whitespace
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
-    joke_cite,
+    get_case_name_candidate,
     match_on_tokens,
 )
 from eyecite.models import (
@@ -68,7 +68,9 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = _extract_shortform_citation(words, i)
+                citation = _extract_shortform_citation(
+                    words=words, index=i, original_text=plain_text
+                )
             else:
                 citation = _extract_full_citation(words, i)
 
@@ -152,8 +154,7 @@ def _extract_full_citation(
 
 
 def _extract_shortform_citation(
-    words: Tokens,
-    index: int,
+    *, words: Tokens, index: int, original_text: str
 ) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
     a ShortCaseCitation object.
@@ -191,6 +192,12 @@ def _extract_shortform_citation(
             "pin_cite": pin_cite,
             "parenthetical": parenthetical,
         },
+        name_candidate=get_case_name_candidate(
+            start_index=index - 1,
+            original_text=original_text,
+            net_size=75,
+            word_limit=3,
+        ),
     )
 
     # add metadata
