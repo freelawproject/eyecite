@@ -79,6 +79,7 @@ class CitationBase:
     metadata: Any = None
 
     name_candidate: Optional[str] = None
+    full_candidate_text: Optional[str] = None
 
     def __post_init__(self):
         """Set up groups and metadata."""
@@ -421,6 +422,8 @@ class FullCaseCitation(CaseCitation, FullCitation):
     ```
     """
 
+    post_guid_stuff: str = field(default_factory=str)
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CaseCitation.Metadata):
         """Define fields on self.metadata."""
@@ -429,14 +432,26 @@ class FullCaseCitation(CaseCitation, FullCitation):
         defendant: Optional[str] = None
         extra: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, words: Tokens):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_defendant, add_post_citation
+        from eyecite.helpers import (
+            add_defendant,
+            add_post_citation,
+            get_post_guid_stuff,
+        )
+
+        self.post_guid_stuff = get_post_guid_stuff(citation=self, words=words)
 
         add_post_citation(self, words)
         add_defendant(self, words)
         self.guess_court()
+        self.full_candidate_text = (
+            (self.name_candidate or "")
+            + " "
+            + self.corrected_citation()
+            + self.post_guid_stuff
+        )
         super().add_metadata(words)
 
     def corrected_citation_full(self):

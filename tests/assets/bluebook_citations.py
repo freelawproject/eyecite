@@ -189,3 +189,6 @@ shed and the Court should render
 judgment pursuant to 12 O.S. Ch. 2, App. Rule 13 in favor
 of the Plaintiff in the amount of
 $6476.74 with costs of this action."""
+
+bluebook_9 = """The Court has jurisdiction over this matter pursuant to 28
+             U.S.C. § 1332. The amount in"""
