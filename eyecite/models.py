@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import re
 from collections import UserString
 from dataclasses import asdict, dataclass, field
@@ -66,7 +68,7 @@ class CitationBase:
     define several subclasses of this class below, representing the various
     types of citations that might exist."""
 
-    token: "Token"  # token this citation came from
+    token: Token  # token this citation came from
     index: int  # index of _token in the token list
     # span() overrides
     span_start: Optional[int] = None
@@ -591,7 +593,7 @@ class Token(UserString):
             m[1], start + offset, end + offset, groups=m.groupdict(), **extra
         )
 
-    def merge(self, other: "Token") -> Optional["Token"]:
+    def merge(self, other: Token) -> Optional[Token]:
         """Merge two tokens, by returning self if other is identical to
         self."""
         if (

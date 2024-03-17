@@ -193,10 +193,9 @@ def _extract_shortform_citation(
             "parenthetical": parenthetical,
         },
         name_candidate=get_case_name_candidate(
-            start_index=index - 1,
-            original_text=original_text,
-            net_size=75,
-            word_limit=3,
+            start_index=index,
+            words=words,
+            word_limit=6,
         ),
     )
 

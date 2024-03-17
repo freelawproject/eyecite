@@ -1,6 +1,6 @@
 from collections import deque
 from datetime import date
-from typing import List, Optional, Tuple, cast
+from typing import Deque, List, Optional, Tuple, cast
 
 import regex as re
 from courts_db import courts
@@ -239,16 +239,43 @@ def extract_pin_cite(
     return None, None, None
 
 
-def get_case_name_candidate(
-    *, start_index: int, original_text: str, net_size=120, word_limit=10
-) -> str:
+def process_case_name_candidate(candidate_tokens: Deque[str]) -> Deque[str]:
+    processed = deque([])
+
+    i = len(candidate_tokens) - 1
+
+    while i > 0:
+        current_token = candidate_tokens[i]
+        previous_token = candidate_tokens[i - 1]
+
+        # If the current token is punctuation, attach it to the previous token
+        if re.fullmatch(r"\W+", current_token):
+            processed.appendleft(previous_token + current_token)
+            i -= 2
+        else:
+            processed.appendleft(current_token)
+            i -= 1
+
+    if i == 0:
+        # condition is meant to avoid adding when the second word is punct
+        # because this would have resulted in adding the first candidate token
+        # if such an addition was made, then i would have gone from 1 -> -1
+        # and that is why this check works
+        processed.appendleft(candidate_tokens[0])
+
+    return processed
+
+
+def get_case_name_candidate(*, start_index: int, words: Tokens, word_limit=10) -> str:
     STOP_REGEXES = [r";", r"\((?:[A-Z]+\.)*[A-Z]* \d{4}\)"]
 
     combined_stop_regex = "|".join(STOP_REGEXES)
 
-    start_pos = max(0, start_index - net_size)
+    start_pos = max(0, start_index - word_limit)
 
-    preceding_text_block = original_text[start_pos:start_index]
+    preceding_text_block = "".join(
+        str(w) for w in words[start_pos:start_index]
+    )  # rejoin and then split using a different rule
 
     preceding_tokens = re.split(r"(\W+)", preceding_text_block)
     preceding_tokens = [token for token in preceding_tokens if token.strip()]
@@ -262,10 +289,9 @@ def get_case_name_candidate(
             break
 
         candidate.appendleft(word)
-        if len(candidate) >= word_limit:
-            break
 
-    return " ".join(candidate)
+    processed = process_case_name_candidate(candidate)
+    return " ".join([p.strip() for p in processed])
 
 
 def match_on_tokens(
