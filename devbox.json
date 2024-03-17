@@ -10,7 +10,7 @@
   },
   "shell": {
     "init_hook": [
-      "source $VENV_DIR/bin/activate"
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "test": [
