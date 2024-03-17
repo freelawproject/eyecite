@@ -1,9 +1,10 @@
 from typing import List, Type, cast
 
+from eyecite.clean import normalize_whitespace
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
-    joke_cite,
+    get_case_name_candidate,
     match_on_tokens,
 )
 from eyecite.models import (
@@ -50,8 +51,8 @@ def get_citations(
     Returns:
         A list of `eyecite.models.CitationBase` objects
     """
-    if plain_text == "eyecite":
-        return joke_cite
+
+    plain_text = normalize_whitespace(plain_text)
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
     citations = []
@@ -67,7 +68,9 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = _extract_shortform_citation(words, i)
+                citation = _extract_shortform_citation(
+                    words=words, index=i, original_text=plain_text
+                )
             else:
                 citation = _extract_full_citation(words, i)
 
@@ -124,8 +127,7 @@ def _extract_full_citation(
     # matches to variations:
     token = cast(CitationToken, words[index])
     cite_sources = set(
-        e.reporter.source
-        for e in (token.exact_editions or token.variation_editions)
+        e.reporter.source for e in (token.exact_editions or token.variation_editions)
     )
 
     # get citation_class based on cite_sources
@@ -139,12 +141,15 @@ def _extract_full_citation(
     else:
         raise ValueError(f"Unknown cite_sources value {cite_sources}")
 
+    case_name_candidate = get_case_name_candidate(start_index=index, words=words)
+
     # make citation
     citation = citation_class(
         token,
         index,
         exact_editions=token.exact_editions,
         variation_editions=token.variation_editions,
+        name_candidate=case_name_candidate,
     )
     citation.add_metadata(words)
 
@@ -152,8 +157,7 @@ def _extract_full_citation(
 
 
 def _extract_shortform_citation(
-    words: Tokens,
-    index: int,
+    *, words: Tokens, index: int, original_text: str
 ) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
     a ShortCaseCitation object.
@@ -191,6 +195,11 @@ def _extract_shortform_citation(
             "pin_cite": pin_cite,
             "parenthetical": parenthetical,
         },
+        name_candidate=get_case_name_candidate(
+            start_index=index,
+            words=words,
+            word_limit=6,
+        ),
     )
 
     # add metadata

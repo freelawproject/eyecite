@@ -71,7 +71,7 @@ PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX}|_+)"
 PUNCTUATION_REGEX = r"[^\sa-zA-Z0-9]*"
 
 # Regex for IdToken
-ID_REGEX = space_boundaries_re(r"id\.,?|ibid\.")
+ID_REGEX = r"(?:^|\s|\()(id\.,?|ibid\.)(?:\s|$)"
 
 # Regex for SupraToken
 SUPRA_REGEX = space_boundaries_re(strip_punctuation_re("supra"))

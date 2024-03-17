@@ -34,3 +34,7 @@ dev = [
     "roman>=4.1",
     "pytest>=8.1.1",
 ]
+
+[tool.pyright]
+venvPath = ".devbox/virtenv/python310/"
+venv = ".venv"

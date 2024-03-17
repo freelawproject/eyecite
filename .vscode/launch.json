@@ -1,0 +1,30 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: pytest",
+            "type": "debugpy",
+            "request": "launch",
+            "module": "pytest",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "tests/test_helpers.py::test_case_name_candidate",
+                "-s"
+            ],
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "internalConsoleOptions": "openOnSessionStart",
+            "env": {}
+        },
+        {
+            "name": "Python: Typer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/script.py",
+            "console": "integratedTerminal",
+            "args": [
+                "test-id"
+            ]
+        }
+    ]
+}
