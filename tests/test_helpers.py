@@ -22,11 +22,22 @@ def test_process_case_name_candidate(test_candidate, expected):
     assert res == expected
 
 
-def test_case_name_candidate():
-    test_text = """ This left rescissory damages as the
-principal alternative, but rescissory damages are the exception; not the rule. Strassbourg, 675 F.3d at 579."""
-
+@pytest.mark.parametrize(
+    ["test_text", "expected"],
+    [
+        (
+            "This left rescissory damages as the principal alternative, but rescissory damages are the exception; not the rule. Strassbourg, 675 F.3d at 579.",
+            "the rule. Strassbourg,",
+        ),
+        ("cool.stuff. Loki, 123 F.3d at 870; but hi", "cool. stuff. Loki,"),
+        (
+            "YOROR (S.D.N.Y. 1987); Cool v. Stuff, 123 F.3d 870, 876 (E.D. Cal. 1996). but I digress",
+            "Cool v. Stuff,",
+        ),
+    ],
+)
+def test_case_name_candidate(test_text, expected):
     citations = get_citations(test_text)
     citation = citations[0]
 
-    assert citation.name_candidate == "the rule. Strassbourg,"
+    assert citation.name_candidate == expected

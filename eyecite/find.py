@@ -141,12 +141,15 @@ def _extract_full_citation(
     else:
         raise ValueError(f"Unknown cite_sources value {cite_sources}")
 
+    case_name_candidate = get_case_name_candidate(start_index=index, words=words)
+
     # make citation
     citation = citation_class(
         token,
         index,
         exact_editions=token.exact_editions,
         variation_editions=token.variation_editions,
+        name_candidate=case_name_candidate,
     )
     citation.add_metadata(words)
 
