@@ -5,16 +5,19 @@
     "pre-commit@latest"
   ],
   "env": {
-    "PDM_PYTHON":      ".devbox/virtenv/python310/.venv",
+    "PDM_PYTHON": ".devbox/virtenv/python310/.venv",
     "LD_LIBRARY_PATH": ".devbox/nix/profile/default/bin/gcc/lib:$LD_LIBRARY_PATH"
   },
   "shell": {
     "init_hook": [
-      "source $VENV_DIR/bin/activate"
+      ". $VENV_DIR/bin/activate"
     ],
     "scripts": {
       "test": [
         "echo \"Error: no test specified\" && exit 1"
+      ],
+      "install-precommit": [
+        "pre-commit install"
       ]
     }
   }
