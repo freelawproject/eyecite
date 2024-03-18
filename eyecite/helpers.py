@@ -266,7 +266,7 @@ def process_case_name_candidate(candidate_tokens: Deque[str]) -> Deque[str]:
     return processed
 
 
-def get_case_name_candidate(*, start_index: int, words: Tokens, word_limit=15) -> str:
+def get_case_name_candidate(*, start_index: int, words: Tokens, word_limit=20) -> str:
     STOP_REGEXES = [r";", r"\((?:[A-Z]+\.)*[A-Z]* \d{4}\)"]
 
     combined_stop_regex = "|".join(STOP_REGEXES)
