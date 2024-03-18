@@ -202,6 +202,10 @@ def _extract_shortform_citation(
         ),
     )
 
+    citation.full_candidate_text = (
+        (citation.name_candidate or "") + " " + citation.corrected_citation()
+    )
+
     # add metadata
     citation.guess_edition()
     citation.guess_court()
