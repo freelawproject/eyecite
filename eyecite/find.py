@@ -241,7 +241,9 @@ def _extract_supra_citation(
         volume = m["volume"]
 
     # Return SupraCitation
-    return SupraCitation(
+
+    post_id = get_post_guid_stuff(starting_index=index + 1, words=words, word_limit=7)
+    cit = SupraCitation(
         cast(SupraToken, words[index]),
         index,
         span_end=span_end,
@@ -252,6 +254,9 @@ def _extract_supra_citation(
             "volume": volume,
         },
     )
+
+    cit.full_candidate_text = cit.corrected_citation() + post_id
+    return cit
 
 
 def _extract_id_citation(
