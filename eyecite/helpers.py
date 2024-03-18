@@ -288,6 +288,9 @@ def get_case_name_candidate(*, start_index: int, words: Tokens, word_limit=20) -
         if re.search(combined_stop_regex, word):
             break
 
+        if not isinstance(word, str) or isinstance(word, ParagraphToken):
+            break
+
         candidate.appendleft(word)
 
     processed = process_case_name_candidate(candidate)
@@ -303,6 +306,9 @@ def get_post_guid_stuff(*, starting_index: int, words: Tokens, word_limit=10) ->
     count = 0
     while count < word_limit and starting_index < len(words):
         word = words[starting_index]
+
+        if not isinstance(word, str) or isinstance(word, ParagraphToken):
+            break
 
         res.append(word)
 
