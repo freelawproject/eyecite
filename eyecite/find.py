@@ -5,6 +5,7 @@ from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
     get_case_name_candidate,
+    get_post_guid_stuff,
     match_on_tokens,
 )
 from eyecite.models import (
@@ -262,7 +263,8 @@ def _extract_id_citation(
     object.
     """
     pin_cite, span_end, parenthetical = extract_pin_cite(words, index)
-    return IdCitation(
+    post_id = get_post_guid_stuff(starting_index=index + 1, words=words, word_limit=7)
+    cit = IdCitation(
         cast(IdToken, words[index]),
         index,
         span_end=span_end,
@@ -271,3 +273,6 @@ def _extract_id_citation(
             "parenthetical": parenthetical,
         },
     )
+
+    cit.full_candidate_text = cit.corrected_citation() + post_id
+    return cit

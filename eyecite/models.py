@@ -441,7 +441,9 @@ class FullCaseCitation(CaseCitation, FullCitation):
             get_post_guid_stuff,
         )
 
-        self.post_guid_stuff = get_post_guid_stuff(citation=self, words=words)
+        self.post_guid_stuff = get_post_guid_stuff(
+            starting_index=self.index + 1, words=words
+        )
 
         add_post_citation(self, words)
         add_defendant(self, words)

@@ -294,18 +294,15 @@ def get_case_name_candidate(*, start_index: int, words: Tokens, word_limit=15) -
     return " ".join([p.strip() for p in processed])
 
 
-def get_post_guid_stuff(
-    *, citation: FullCaseCitation, words: Tokens, word_limit=10
-) -> str:
+def get_post_guid_stuff(*, starting_index: int, words: Tokens, word_limit=10) -> str:
     STOP_REGEXES = [r"\)"]
     combined_stop_regex = "|".join(STOP_REGEXES)
 
-    start_pos = citation.index + 1
     res = []
 
     count = 0
-    while count < word_limit and start_pos < len(words):
-        word = words[start_pos]
+    while count < word_limit and starting_index < len(words):
+        word = words[starting_index]
 
         res.append(word)
 
@@ -313,7 +310,7 @@ def get_post_guid_stuff(
             break
 
         count += 1
-        start_pos += 1
+        starting_index += 1
 
     return "".join(res)
 
