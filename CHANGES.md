@@ -11,7 +11,7 @@ Changes:
 - None
 
 Fixes:
-- None
+- Adds missing closing parentheses to the corrected_citation_full method in FullCaseCitation and FullJournalCitation classes.
 
 
 ## Current
