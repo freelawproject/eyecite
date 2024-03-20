@@ -387,7 +387,7 @@ class FullJournalCitation(FullCitation):
         if m.pin_cite:
             parts.append(f&#34;, {m.pin_cite}&#34;)
         if m.year:
-            parts.append(f&#34; ({m.year}&#34;)
+            parts.append(f&#34; ({m.year})&#34;)
         if m.parenthetical:
             parts.append(f&#34; ({m.parenthetical})&#34;)
         return &#34;&#34;.join(parts)
@@ -490,7 +490,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
             parts.append(m.extra)
         publisher_date = &#34; &#34;.join(i for i in (m.court, m.year) if i)
         if publisher_date:
-            parts.append(f&#34; ({publisher_date}&#34;)
+            parts.append(f&#34; ({publisher_date})&#34;)
         if m.parenthetical:
             parts.append(f&#34; ({m.parenthetical})&#34;)
         return &#34;&#34;.join(parts)
@@ -1458,7 +1458,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
             parts.append(m.extra)
         publisher_date = &#34; &#34;.join(i for i in (m.court, m.year) if i)
         if publisher_date:
-            parts.append(f&#34; ({publisher_date}&#34;)
+            parts.append(f&#34; ({publisher_date})&#34;)
         if m.parenthetical:
             parts.append(f&#34; ({m.parenthetical})&#34;)
         return &#34;&#34;.join(parts)</code></pre>
@@ -1496,7 +1496,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         parts.append(m.extra)
     publisher_date = &#34; &#34;.join(i for i in (m.court, m.year) if i)
     if publisher_date:
-        parts.append(f&#34; ({publisher_date}&#34;)
+        parts.append(f&#34; ({publisher_date})&#34;)
     if m.parenthetical:
         parts.append(f&#34; ({m.parenthetical})&#34;)
     return &#34;&#34;.join(parts)</code></pre>
@@ -1596,7 +1596,7 @@ class FullJournalCitation(FullCitation):
         if m.pin_cite:
             parts.append(f&#34;, {m.pin_cite}&#34;)
         if m.year:
-            parts.append(f&#34; ({m.year}&#34;)
+            parts.append(f&#34; ({m.year})&#34;)
         if m.parenthetical:
             parts.append(f&#34; ({m.parenthetical})&#34;)
         return &#34;&#34;.join(parts)</code></pre>
