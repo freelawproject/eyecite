@@ -11,19 +11,25 @@ Changes:
 - None
 
 Fixes:
-- Adds missing closing parentheses to the corrected_citation_full method in FullCaseCitation and FullJournalCitation classes.
+- None
 
 
 ## Current
+
+**2.6.2 - 2024-03-19**
+
+Fixes:
+
+- Adds missing closing parentheses to the corrected_citation_full method in FullCaseCitation and FullJournalCitation classes.
+
+
+## Past
 
 **2.6.1 - 2024-02-29**
 
 Fixes:
 
  - Improves reliability of utils.hash_sha256() by providing a default function to handle non-serializable objects.
-
-
-## Past
 
 **2.6.0 - 2024-02-07**
 
