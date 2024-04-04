@@ -520,7 +520,20 @@ class HyperscanTokenizer(Tokenizer):
                 cache_dir.mkdir(exist_ok=True)
                 cache = cache_dir / fingerprint
                 if cache.exists():
-                    hyperscan_db = hyperscan.loadb(cache.read_bytes())
+                    cache_bytes = cache.read_bytes()
+                    try:
+                        # hyperscan >= 0.5.0 added a mandatory mode argument
+                        hyperscan_db = hyperscan.loadb(
+                            cache_bytes, mode=hyperscan.HS_MODE_BLOCK
+                        )
+                    except TypeError:
+                        hyperscan_db = hyperscan.loadb(cache_bytes)
+                    try:
+                        # at some point Scratch became necessary --
+                        # https://github.com/darvid/python-hyperscan/issues/50#issuecomment-1386243477
+                        hyperscan_db.scratch = hyperscan.Scratch(hyperscan_db)
+                    except AttributeError:
+                        pass
 
             if not hyperscan_db:
                 # No cache, so compile database.
