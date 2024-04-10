@@ -16,14 +16,20 @@ Fixes:
 
 ## Current
 
+**2.6.3 - 2024-04-09**
+
+Fixes:
+
+- Addresses compatibility issues identified with the current version of hyperscan(0.7.7).
+
+
+## Past
+
 **2.6.2 - 2024-03-19**
 
 Fixes:
 
 - Adds missing closing parentheses to the corrected_citation_full method in FullCaseCitation and FullJournalCitation classes.
-
-
-## Past
 
 **2.6.1 - 2024-02-29**
 
