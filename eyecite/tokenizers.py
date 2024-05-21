@@ -528,6 +528,12 @@ class HyperscanTokenizer(Tokenizer):
                         )
                     except TypeError:
                         hyperscan_db = hyperscan.loadb(cache_bytes)
+                    except hyperscan.InvalidError:
+                        # Skipping hyperscan_db assignment to force a full
+                        # database recompile as the cached version seems to be
+                        # invalid.
+                        pass
+
                     try:
                         # at some point Scratch became necessary --
                         # https://github.com/darvid/python-hyperscan/issues/50#issuecomment-1386243477
