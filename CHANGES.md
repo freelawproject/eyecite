@@ -16,14 +16,19 @@ Fixes:
 
 ## Current
 
+**2.6.4 - 2024-06-03**
+
+Fixes:
+
+- Bump eyecite to for InvalidError/hyperscan bug
+
+## Past
+
 **2.6.3 - 2024-04-09**
 
 Fixes:
 
 - Addresses compatibility issues identified with the current version of hyperscan(0.7.7).
-
-
-## Past
 
 **2.6.2 - 2024-03-19**
 
