@@ -174,9 +174,11 @@ class CitationBase:
     def span(self):
         """Start and stop offsets in source text for matched_text()."""
         return (
-            self.span_start
-            if self.span_start is not None
-            else self.token.start,
+            (
+                self.span_start
+                if self.span_start is not None
+                else self.token.start
+            ),
             self.span_end if self.span_end is not None else self.token.end,
         )
 
@@ -357,7 +359,7 @@ class FullJournalCitation(FullCitation):
         if m.pin_cite:
             parts.append(f", {m.pin_cite}")
         if m.year:
-            parts.append(f" ({m.year}")
+            parts.append(f" ({m.year})")
         if m.parenthetical:
             parts.append(f" ({m.parenthetical})")
         return "".join(parts)
@@ -460,7 +462,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
             parts.append(m.extra)
         publisher_date = " ".join(i for i in (m.court, m.year) if i)
         if publisher_date:
-            parts.append(f" ({publisher_date}")
+            parts.append(f" ({publisher_date})")
         if m.parenthetical:
             parts.append(f" ({m.parenthetical})")
         return "".join(parts)

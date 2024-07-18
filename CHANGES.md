@@ -8,22 +8,78 @@ Features:
 - None
 
 Changes:
-- As noted in 2.3.3 (2021-03-23), the old `NonopinionCitation` class was renamed `UnknownCitation` to better reflect its purpose. Support for the old class name has now been completely deprecated. This change is purely semantic -- there is no change in how these citations are handled.
-
-Fixes:
 - None
 
+Fixes:
+- Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
 
 
 ## Current
+
+**2.6.4 - 2024-06-03**
+
+Fixes:
+
+- Bump eyecite to for InvalidError/hyperscan bug
+
+## Past
+
+**2.6.3 - 2024-04-09**
+
+Fixes:
+
+- Addresses compatibility issues identified with the current version of hyperscan(0.7.7).
+
+**2.6.2 - 2024-03-19**
+
+Fixes:
+
+- Adds missing closing parentheses to the corrected_citation_full method in FullCaseCitation and FullJournalCitation classes.
+
+**2.6.1 - 2024-02-29**
+
+Fixes:
+
+ - Improves reliability of utils.hash_sha256() by providing a default function to handle non-serializable objects.
+
+**2.6.0 - 2024-02-07**
+
+Features:
+
+ - Removes Python 3.8 and 3.9 support
+ - Adds Python 3.12 support
+
+Changes:
+
+- The hashing and equality behavior of `CitationBase` objects has changed in subtle ways in order to conform with user intuitions and define previously ill-defined behavior. Most importantly, to compare two `eyecite` objects going forward, simply use the native Python syntax `citation1 == citation2`. You can also take the hash of each object and compare that with identical results: `hash(citation1) == hash(citation2)`. This broad change has several more specific implications:
+  - Citation objects that are created from text with a normalized/corrected reporter are now treated as equal to objects created from text *without* a normalized/corrected reporter (e.g., `1 U.S. 1` versus `1 U. S. 1` are now treated as equal)
+  - Citation objects that are created from text with a nominative reporter are now treated as equal to objects created from text *without* a nominative reporter (e.g., `5 U.S. 137` versus `5 U.S. (1 Cranch) 137` are now treated as equal)
+  - Any `IdCitation` and `UnknownCitation` object will always be treated as unequal to any other object
+  - Previously, `CitationBase` objects had a `comparison_hash()` method. This method was never intended to be a "public" method and has been removed.
+  - Citation hashes are now stable and reproducible across module loadings of `eyecite`, as we are now using `hashlib.sha256` under the hood. However, note that due to `hashlib`'s implementation details, hashes with NOT be consistent across 32 and 64 machines.
+
+- As noted in 2.3.3 (2021-03-23), the old `NonopinionCitation` class was renamed `UnknownCitation` to better reflect its purpose. Support for the old class name has now been completely deprecated. This change is purely semantic -- there is no change in how these citations are handled.
+
+Fixes:
+
+ - Update dependencies for reporters-db
+
+**2.5.5 - 2024-01-10**
+
+Yanked.
+
+**2.5.4 - 2024-01-10**
+
+Yanked.
+
+**2.5.3 - 2024-01-10**
+
+Yanked.
 
 **2.5.2 - 2023-05-23**
 
 Fixes:
  - Update dependencies and add Python 3.11 support.
-
-
-## Past
 
 **2.5.1 - 2023-03-09**
 

@@ -202,3 +202,22 @@ class ModelsTest(TestCase):
         self.assertEqual(hash(citation), citation.__hash__())
         self.assertEqual(hash(resource), resource.__hash__())
         print("✓")
+
+    def test_corrected_full_citation_includes_closing_parenthesis(self):
+        """Does the corrected_citation_full method return a properly formatted
+        citation?"""
+        journal_citation = get_citations(
+            "Originalism without Foundations, 65 N.Y.U. L. Rev. 1373 (1990)"
+        )[0]
+        self.assertEqual(
+            journal_citation.corrected_citation_full(),
+            "65 N.Y.U. L. Rev. 1373 (1990)",
+        )
+
+        full_case_citation = get_citations(
+            "Meritor Sav. Bank v. Vinson, 477 U.S. 57, 60 (1986)"
+        )[0]
+        self.assertEqual(
+            full_case_citation.corrected_citation_full(),
+            "Bank v. Vinson, 477 U.S. 57, 60 (scotus 1986)",
+        )
