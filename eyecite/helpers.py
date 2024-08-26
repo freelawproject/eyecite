@@ -233,6 +233,7 @@ def extract_pin_cite(
         return (
             pin_cite,
             from_token.end + extra_chars - len(prefix),
+            from_token.end + m.end(),
             parenthetical,
         )
     return None, None, None

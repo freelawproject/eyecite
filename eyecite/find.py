@@ -175,7 +175,7 @@ def _extract_shortform_citation(
 
     # Get pin_cite
     cite_token = cast(CitationToken, words[index])
-    pin_cite, span_end, parenthetical = extract_pin_cite(
+    pin_cite, span_end, full_span_end, parenthetical = extract_pin_cite(
         words, index, prefix=cite_token.groups["page"]
     )
 
@@ -186,6 +186,12 @@ def _extract_shortform_citation(
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
+        full_span_start=(
+            index
+            if not antecedent_guess
+            else index - 1 + m.start()
+        ),
+        full_span_end=full_span_end,
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
@@ -212,7 +218,7 @@ def _extract_supra_citation(
     Supra 3: Adarand, supra, somethingelse
     Supra 4: Adrand, supra. somethingelse
     """
-    pin_cite, span_end, parenthetical = extract_pin_cite(words, index)
+    pin_cite, span_end, full_span_end, parenthetical = extract_pin_cite(words, index)
     antecedent_guess = None
     volume = None
     m = match_on_tokens(
@@ -231,6 +237,12 @@ def _extract_supra_citation(
         cast(SupraToken, words[index]),
         index,
         span_end=span_end,
+        full_span_start=(
+            index
+            if not antecedent_guess
+            else index - 1 + m.start()
+        ),
+        full_span_end=full_span_end,
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
@@ -248,11 +260,12 @@ def _extract_id_citation(
     immediately succeeding tokens to construct and return an IdCitation
     object.
     """
-    pin_cite, span_end, parenthetical = extract_pin_cite(words, index)
+    pin_cite, span_end, full_span_end, parenthetical = extract_pin_cite(words, index)
     return IdCitation(
         cast(IdToken, words[index]),
         index,
         span_end=span_end,
+        full_span_end=full_span_end,
         metadata={
             "pin_cite": pin_cite,
             "parenthetical": parenthetical,
