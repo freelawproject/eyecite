@@ -128,6 +128,12 @@ class FindTest(TestCase):
                                       'defendant': 'test',
                                       'court': 'pasuperct',
                                       'pin_cite': '347-348'})]),
+            # Test with court string exact match
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)',
+             [case_citation(page='1189', reporter='A.3d', volume='164', year=2017,
+                            metadata={'plaintiff': 'Commonwealth',
+                                      'defendant': 'Muniz',
+                                      'court': 'pa'})]),
             # Parallel cite with parenthetical
             ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
