@@ -53,7 +53,7 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
 
             # Check for an exact match first
             if s == court_str:
-                return court["id"]
+                return str(court["id"])
 
             # If no exact match, try to record a startswith match for possible
             # eventual return
