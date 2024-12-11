@@ -46,19 +46,20 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
 
     court_code = None
     if court_str:
-        # Try with an exact match, e.g. Pa.
-        exact_match = next((court["id"] for court in courts if strip_punct(court["citation_string"].replace(" ", "")) == court_str), None)
-        if exact_match:
-            return exact_match
-        # Map the string to a court, if possible.
         for court in courts:
-            # Use startswith because citation strings are often missing final
-            # period, e.g. "2d Cir"
             # Remove whitespace because citation strings sometimes lack
             # internal spaces, e.g. "Pa.Super."
-            if court["citation_string"].replace(" ", "").startswith(court_str):
+            s = strip_punct(court["citation_string"]).replace(" ", "")
+
+            # Check for an exact match first
+            if s == court_str:
+                return court["id"]
+
+            # If no exact match, try to record a startswith match for possible eventual return
+            if s.startswith(court_str):
                 court_code = court["id"]
-                break
+
+        return court_code
 
     return court_code
 
