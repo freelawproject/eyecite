@@ -477,13 +477,41 @@ class FindTest(TestCase):
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
             # Test volume nominative reporter
             ("Ridgely's Notebook, 362",
-             [case_citation(volume=None, reporter="Ridgely's Notebook", groups={'volume': None, 'reporter': "Ridgely's Notebook", 'page': '362'})]),
+             [case_citation(volume=None,
+                            reporter="Ridgely's Notebook",
+                            groups={'volume': None,
+                                    'reporter': "Ridgely's Notebook",
+                                    'page': '362'}
+                            )]),
             # Test volume nominative reporter with right single quotation mark
             ('Bayard’s Notebook, 235',
-             [case_citation(volume=None, reporter="Bayard’s Notebook", groups={'volume': None, 'reporter': 'Bayard’s Notebook', 'page': '235'})]),
+             [case_citation(volume=None,
+                            reporter="Bayard’s Notebook",
+                            groups={'volume': None,
+                                    'reporter': 'Bayard’s Notebook',
+                                    'page': '235'}
+                            )]),
             # Test citation with parallel citation in parentheses
             ('24 Del. (1 Boyce) 1',
-             [case_citation(reporter="Del.", groups={'volume': '24', 'reporter': 'Del.', 'parallel_volume': '1', 'reporter_nominative': 'Boyce', 'page': '1'})]),
+             [case_citation(reporter="Del.",
+                            groups={'volume': '24',
+                                    'reporter': 'Del.',
+                                    'parallel_volume': '1',
+                                    'parallel_reporter': 'Boyce',
+                                    'page': '1'}
+                            )]),
+            # Test citation with parallel citation in parentheses and year
+            ('Smith v. Henry, 18 S.C.L. (2 Bail.) 118 (1831)',
+             [case_citation(reporter="S.C.L.",
+                            year=1831,
+                            groups={'volume': '18',
+                                    'reporter': 'S.C.L.',
+                                    'parallel_volume': '2',
+                                    'parallel_reporter': 'Bail.',
+                                    'page': '118'},
+                            metadata={'plaintiff': 'Smith',
+                                      'defendant': 'Henry'}
+                            )]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
