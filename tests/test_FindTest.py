@@ -512,6 +512,34 @@ class FindTest(TestCase):
                             metadata={'plaintiff': 'Smith',
                                       'defendant': 'Henry'}
                             )]),
+            # Test citation with P
+            ('Metzler v. Arcadian Corp.  1997 OSHD (CCH) P31,311',
+             [case_citation(reporter="OSHD (CCH)",
+                            groups={'volume': '1997',
+                                    'reporter': 'OSHD (CCH)',
+                                    'page': '31,311'},
+                            metadata={'plaintiff': 'Metzler',
+                                      'defendant': 'Arcadian Corp.'}
+                            )]),
+            # Test another citation with P
+            ('CCH OSHD P 20,091 (1975)',
+             [case_citation(reporter="CCH OSHD",
+                            year=1975,
+                            groups={'volume': None,
+                                    'reporter': 'CCH OSHD',
+                                    'page': '20,091'}
+                            )]),
+            # Test hyphenated volume
+            ('Williams v. IRS, 2007-2 U.S. Tax Cas. (CCH) P50,568 (E.D. Mo. 2007)',
+            [case_citation(reporter="U.S. Tax Cas. (CCH)",
+                           groups={'volume': '2007-2',
+                                   'reporter': 'U.S. Tax Cas. (CCH)',
+                                   'page': '50,568'},
+                           metadata={'plaintiff': 'Williams',
+                                     'defendant': 'IRS',
+                                     'court': 'moed',
+                                     'year': '2007'}
+                           )]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
