@@ -64,7 +64,7 @@ def case_citation(
     groups.setdefault("volume", volume)
     groups.setdefault("page", page)
     if nominative and not volume:
-        # We don't need volume key in groups if we are testing a citation with 
+        # We don't need volume key in groups if we are testing a citation with
         # nominative reporter
         del groups["volume"]
     cls = ShortCaseCitation if short else FullCaseCitation
