@@ -479,45 +479,43 @@ class FindTest(TestCase):
             ("Ridgely's Notebook, 362",
              [case_citation(volume=None,
                             reporter="Ridgely's Notebook",
-                            groups={'volume': None,
-                                    'reporter': "Ridgely's Notebook",
-                                    'page': '362'}
+                            page='362',
+                            groups={'volume_nominative': None},
+                            nominative=True
                             )]),
             # Test volume nominative reporter with right single quotation mark
             ('Bayard’s Notebook, 235',
              [case_citation(volume=None,
                             reporter="Bayard’s Notebook",
-                            groups={'volume': None,
-                                    'reporter': 'Bayard’s Notebook',
-                                    'page': '235'}
+                            page='235',
+                            groups={'volume_nominative': None},
+                            nominative=True
                             )]),
             # Test citation with parallel citation in parentheses
             ('24 Del. (1 Boyce) 1',
              [case_citation(reporter="Del.",
-                            groups={'volume': '24',
-                                    'reporter': 'Del.',
-                                    'parallel_volume': '1',
-                                    'parallel_reporter': 'Boyce',
-                                    'page': '1'}
+                            volume='24',
+                            page='1',
+                            groups={'volume_nominative': '1',
+                                    'reporter_nominative': 'Boyce'},
+                            nominative=True
                             )]),
             # Test citation with parallel citation in parentheses and year
             ('Smith v. Henry, 18 S.C.L. (2 Bail.) 118 (1831)',
              [case_citation(reporter="S.C.L.",
+                            volume='18',
                             year=1831,
-                            groups={'volume': '18',
-                                    'reporter': 'S.C.L.',
-                                    'parallel_volume': '2',
-                                    'parallel_reporter': 'Bail.',
-                                    'page': '118'},
+                            page='118',
+                            groups={'volume_nominative': '2',
+                                    'reporter_nominative': 'Bail.'},
                             metadata={'plaintiff': 'Smith',
                                       'defendant': 'Henry'}
                             )]),
             # Test citation with P
             ('Metzler v. Arcadian Corp.  1997 OSHD (CCH) P31,311',
              [case_citation(reporter="OSHD (CCH)",
-                            groups={'volume': '1997',
-                                    'reporter': 'OSHD (CCH)',
-                                    'page': '31,311'},
+                            volume='1997',
+                            page='31,311',
                             metadata={'plaintiff': 'Metzler',
                                       'defendant': 'Arcadian Corp.'}
                             )]),
@@ -525,16 +523,14 @@ class FindTest(TestCase):
             ('CCH OSHD P 20,091 (1975)',
              [case_citation(reporter="CCH OSHD",
                             year=1975,
-                            groups={'volume': None,
-                                    'reporter': 'CCH OSHD',
-                                    'page': '20,091'}
+                            volume=None,
+                            page='20,091'
                             )]),
             # Test hyphenated volume
             ('Williams v. IRS, 2007-2 U.S. Tax Cas. (CCH) P50,568 (E.D. Mo. 2007)',
             [case_citation(reporter="U.S. Tax Cas. (CCH)",
-                           groups={'volume': '2007-2',
-                                   'reporter': 'U.S. Tax Cas. (CCH)',
-                                   'page': '50,568'},
+                           volume='2007-2',
+                           page='50,568',
                            metadata={'plaintiff': 'Williams',
                                      'defendant': 'IRS',
                                      'court': 'moed',
