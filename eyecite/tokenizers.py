@@ -297,7 +297,7 @@ class Tokenizer:
         # descending. Remove overlaps by returning only matches
         # where the current start offset is greater than the previously
         # returned end offset. Also return text between matches.
-        citation_tokens = []
+        citation_tokens = []  # type: ignore
         all_tokens: Tokens = []
         tokens = sorted(
             self.extract_tokens(text), key=lambda m: (m.start, -m.end)
