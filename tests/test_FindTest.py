@@ -527,15 +527,7 @@ class FindTest(TestCase):
                             page='20,091'
                             )]),
             # Test hyphenated volume
-            ('Williams v. IRS, 2007-2 U.S. Tax Cas. (CCH) P50,568 (E.D. Mo. 2007)',
-            [case_citation(reporter="U.S. Tax Cas. (CCH)",
-                           volume='2007-2',
-                           page='50,568',
-                           metadata={'plaintiff': 'Williams',
-                                     'defendant': 'IRS',
-                                     'court': 'moed',
-                                     'year': '2007'}
-                           )]),
+            ('Williams v. IRS, 2007-2 U.S. Tax Cas. (CCH) P50,568 (E.D. Mo. 2007)', [case_citation(reporter="U.S. Tax Cas. (CCH)", volume='2007-2', page='50,568', metadata={'plaintiff': 'Williams', 'defendant': 'IRS', 'court': 'moed', 'year': '2007'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
