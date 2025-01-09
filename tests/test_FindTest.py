@@ -475,6 +475,20 @@ class FindTest(TestCase):
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
+            # Test with Thomson in case name (bad citation match due defendant same as nominative reporter)
+            ('Shapiro v. Thompson, 394 U. S. 618',
+             [case_citation(volume='394', reporter='U. S.', page='618',
+                            metadata={'plaintiff': 'Shapiro',
+                                      'defendant': 'Thompson',
+                                      'court': 'scotus'}
+                            )]),
+            # Test other nominative in case name
+            ('Foo v. Cooke, 1 U. S. 1',
+             [case_citation(volume='1', reporter='U. S.', page='1',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Cooke',
+                                      'court': 'scotus'}
+                            )]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")

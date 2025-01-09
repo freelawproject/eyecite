@@ -313,17 +313,44 @@ class Tokenizer:
                 if merged:
                     continue
             if offset > token.start:
-                # skip overlaps
-                continue
+                # Overlap found
+                skip_token = True
+                # Check if previous token is a CitationToken and current token
+                # is a CitationToken
+                if (
+                    isinstance(token, CitationToken)
+                    and citation_tokens
+                    and isinstance(citation_tokens[-1][1], CitationToken)
+                ):
+                    last_citation_token = citation_tokens[-1][1]
+                    all_tokens_idx = all_tokens.index(last_citation_token)
+                    # If previous CitationToken has a nominative reporter check
+                    # overlap between tokens
+                    if "volume_nominative" in last_citation_token.groups:
+                        result, overlap = self.find_and_remove_overlap(
+                            last_citation_token.data, token.data
+                        )
+                        if overlap:
+                            # We make sure there is an overlap, replace bad
+                            # CitationToken with correct text from overlap
+                            all_tokens[all_tokens_idx] = result
+                            # Remove bad CitationToken from citation_tokens
+                            del citation_tokens[-1]
+                            skip_token = False
+
+                if skip_token:
+                    # Different overlap, skip it
+                    continue
+
             if offset < token.start:
-                # capture plain text before each match
+                # Capture plain text before each match
                 self.append_text(all_tokens, text[offset : token.start])
-            # capture match
+            # Capture match
             citation_tokens.append((len(all_tokens), token))
             all_tokens.append(token)
             offset = token.end
             last_token = token
-        # capture plain text after final match
+        # Capture plain text after final match
         if offset < len(text):
             self.append_text(all_tokens, text[offset:])
         return all_tokens, citation_tokens
@@ -350,6 +377,35 @@ class Tokenizer:
             else:
                 tokens.append(" ")
         tokens.pop()  # remove final extra space
+
+    @staticmethod
+    def find_and_remove_overlap(str1: str, str2: str) -> tuple[str, str]:
+        """Find the overlap between two strings and removes the overlap form
+        the first string
+
+        :param str1: first string to compare and modify
+        :param str2: second string to find overlap with
+
+        :return: A tuple containing:
+            - The cleaned version of `str1` with the overlap removed
+            - The overlapping substring found between `str1` and `str2`
+        """
+        overlap = ""
+        for i in range(len(str1)):
+            # Check for substring of str1 starting from index i in str2
+            if str2.startswith(str1[i:]):
+                overlap = str1[i:]
+                break
+
+        # Remove the overlap from the first string
+        result = str1.replace(overlap, "", 1)
+
+        # Remove trailing comma if it is the last character (ignoring spaces)
+        result = result.strip()
+        if result.endswith(","):
+            result = result[:-1].rstrip()
+
+        return result, overlap
 
 
 @dataclass
