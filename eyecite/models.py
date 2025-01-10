@@ -304,13 +304,10 @@ class FullCitation(ResourceCitation):
     def is_parallel_citation(self, preceding: CitationBase):
         """Check if preceding citation is parallel
 
-        If parallel match plaintiff and defendant metadata
-
         Args:
             preceding (): The previous citation found
 
         Returns: None
-
         """
         is_parallel = (
             self.full_span_start == preceding.full_span_start
@@ -318,6 +315,7 @@ class FullCitation(ResourceCitation):
             and isinstance(preceding, FullCaseCitation)
         )
         if is_parallel:
+            # if parallel merge plaintiff/defendant data
             self.metadata.defendant = preceding.metadata.defendant
             self.metadata.plaintiff = preceding.metadata.plaintiff
 

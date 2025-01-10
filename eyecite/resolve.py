@@ -91,8 +91,6 @@ def _filter_by_matching_plaintiff_or_defendant(
 ) -> Optional[ResourceType]:
     """Filter out any impossible reference citations"""
     matches: List[ResourceType] = []
-    plaintiff: str = strip_punct(plaintiff or "")
-    defendant: str = strip_punct(defendant or "")
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
             continue

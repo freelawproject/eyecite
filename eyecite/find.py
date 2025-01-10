@@ -58,7 +58,7 @@ def get_citations(
         return joke_cite
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
-    citations = []
+    citations: list[CitationBase] = []
 
     for i, token in citation_tokens:
         citation: CitationBase
@@ -73,9 +73,8 @@ def get_citations(
             if citation_token.short:
                 citation = _extract_shortform_citation(words, i)
             else:
-                citation: FullCitation = _extract_full_citation(words, i)
-                if citations and citation.is_parallel_citation(citations[-1]):
-                    # Check if parallel citation and merge plaintiff/defendants
+                citation = _extract_full_citation(words, i)
+                if citations and isinstance(citation, FullCitation):
                     citation.is_parallel_citation(citations[-1])
 
                 # Check for reference citations that follow a full citation
