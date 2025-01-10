@@ -96,14 +96,14 @@ def _filter_by_matching_plaintiff_or_defendant(
         if not isinstance(full_citation, FullCaseCitation):
             continue
         defendant_match = (
-                defendant
-                and full_citation.metadata.defendant
-                and defendant in full_citation.metadata.defendant
+            defendant
+            and full_citation.metadata.defendant
+            and defendant in full_citation.metadata.defendant
         )
         plaintiff_match = (
-                plaintiff
-                and full_citation.metadata.plaintiff
-                and plaintiff in full_citation.metadata.plaintiff
+            plaintiff
+            and full_citation.metadata.plaintiff
+            and plaintiff in full_citation.metadata.plaintiff
         )
         if defendant_match or plaintiff_match:
             matches.append(resource)
