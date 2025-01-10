@@ -47,6 +47,12 @@ class AnnotateTest(TestCase):
                 "<0>1 U.S. 1</0>. Foo v. Bar, <1>supra at 2</1>.",
                 [],
             ),
+            # Refernce cite
+            (
+                "Foo v. Bar 1 U.S. 1. In Foo at 2.",
+                "Foo v. Bar <0>1 U.S. 1</0>. In <1>Foo at 2</1>.",
+                [],
+            ),
             # whitespace and html -- no unbalanced tag check
             (
                 "<body>foo  <i>1   <b>U.S.</b></i>   1 bar</body>",

@@ -11,6 +11,8 @@ from eyecite.models import (
     SupraCitation,
     SupraToken,
     UnknownCitation,
+    ReferenceCitation,
+    CaseReferenceToken,
 )
 from eyecite.tokenizers import EDITIONS_LOOKUP
 
@@ -96,6 +98,13 @@ def journal_citation(
 def id_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock IdCitation objects."""
     return IdCitation(IdToken(source_text, 0, 99), index, **kwargs)
+
+
+def reference_citation(source_text=None, index=0, **kwargs):
+    """Convenience function for creating mock ReferenceCitation objects."""
+    return ReferenceCitation(
+        CaseReferenceToken(source_text, 0, 99), index, **kwargs
+    )
 
 
 def unknown_citation(source_text=None, index=0, **kwargs):

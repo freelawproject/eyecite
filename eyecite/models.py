@@ -301,6 +301,26 @@ class FullCitation(ResourceCitation):
     """Abstract base class indicating that a citation fully identifies a
     resource."""
 
+    def is_parallel_citation(self, preceding: CitationBase):
+        """Check if preceding citation is parallel
+
+        If parallel match plaintiff and defendant metadata
+
+        Args:
+            preceding (): The previous citation found
+
+        Returns: None
+
+        """
+        is_parallel = (
+            self.full_span_start == preceding.full_span_start
+            and self.full_span_end == preceding.full_span_end
+            and type(preceding) == FullCaseCitation
+        )
+        if is_parallel:
+            self.metadata.defendant = preceding.metadata.defendant
+            self.metadata.plaintiff = preceding.metadata.plaintiff
+
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullLawCitation(FullCitation):
@@ -567,6 +587,26 @@ class IdCitation(CitationBase):
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
+class ReferenceCitation(CitationBase):
+    """A reference citation is a citation that refers to
+    a full case citation by name and pincite alone.
+
+    Future versions hopefully with drop the pincite requirement
+
+    Examples:
+    Roe at 240
+    """
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CitationBase.Metadata):
+        """Define fields on self.metadata."""
+
+        plaintiff: Optional[str] = None
+        defendant: Optional[str] = None
+        pin_cite: Optional[str] = None
+
+
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class UnknownCitation(CitationBase):
     """Convenience class which represents an unknown citation. A recognized
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
@@ -677,6 +717,11 @@ class ParagraphToken(Token):
 @dataclass(eq=True, unsafe_hash=True)
 class StopWordToken(Token):
     """Word matching one of the STOP_TOKENS."""
+
+
+@dataclass(eq=True, unsafe_hash=True)
+class CaseReferenceToken(Token):
+    """Word matching plaintiff or defendant in a full case citation"""
 
 
 @dataclass

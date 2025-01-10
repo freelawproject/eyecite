@@ -306,6 +306,15 @@ def disambiguate_reporters(
         if not isinstance(c, ResourceCitation) or c.edition_guess
     ]
 
+def order_citations(citations: List[CitationBase]) -> List[CitationBase]:
+    """
+    Order citations that may have reference citations out or sequential order
+
+    :param citations: List of citation`
+    :return: Sorted citations
+    """
+    return sorted(citations, key=lambda citation: citation.span())
+
 
 joke_cite: List[CitationBase] = [
     FullCaseCitation(

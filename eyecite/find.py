@@ -1,3 +1,4 @@
+import re
 from typing import List, Type, cast
 
 from eyecite.helpers import (
@@ -5,6 +6,7 @@ from eyecite.helpers import (
     extract_pin_cite,
     joke_cite,
     match_on_tokens,
+    order_citations,
 )
 from eyecite.models import (
     CitationBase,
@@ -15,6 +17,7 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
+    ReferenceCitation,
     ResourceCitation,
     SectionToken,
     ShortCaseCitation,
@@ -22,6 +25,7 @@ from eyecite.models import (
     SupraToken,
     Tokens,
     UnknownCitation,
+    CaseReferenceToken,
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
@@ -69,7 +73,15 @@ def get_citations(
             if citation_token.short:
                 citation = _extract_shortform_citation(words, i)
             else:
-                citation = _extract_full_citation(words, i)
+                citation: FullCitation = _extract_full_citation(words, i)
+                if citations and citation.is_parallel_citation(citations[-1]):
+                    # Check if parallel citation and merge plaintiff/defendants
+                    citation.is_parallel_citation(citations[-1])
+
+                # Check for reference citations that follow a full citation
+                # Using the plaintiff or defendant
+                references = _extract_reference_citations(citation, plain_text)
+                citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
@@ -99,6 +111,8 @@ def get_citations(
 
         citations.append(citation)
 
+    citations = order_citations(citations)
+
     # Remove citations with multiple reporter candidates where we couldn't
     # guess correct reporter
     if remove_ambiguous:
@@ -107,8 +121,62 @@ def get_citations(
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
     # the references of the ShortCaseCitation, SupraCitation, and
-    # IdCitation objects.
+    # IdCitation and ReferenceCitation objects.
     return citations
+
+
+def _extract_reference_citations(
+    citation: FullCitation, plain_text: str
+) -> List[ReferenceCitation]:
+    """Extract reference citations that follow a full citation
+
+    :param citation: the full case citation found
+    :param plain_text: the text
+    :return: Pincite reference citations
+    """
+    if type(citation) != FullCaseCitation:
+        # Skip if not case law citation
+        return []
+    if not citation.metadata.defendant:
+        # Skip if no defendant exists
+        return []
+    escaped_plaintiff = re.escape(citation.metadata.plaintiff or "")
+    escaped_defendant = re.escape(citation.metadata.defendant)
+    pin_cite_regex = (
+        rf"\b(?:"
+        rf"(?P<plaintiff>{escaped_plaintiff})|"
+        rf"(?P<defendant>{escaped_defendant})\s?"
+        rf")\s+at\s+(?P<page>\d{{1,5}})?\b"
+    )
+
+    pin_cite_pattern = re.compile(pin_cite_regex)
+    reference_citations = []
+    if len(plain_text) <= citation.span()[-1]:
+        return []
+
+    remaining_text = plain_text[citation.span()[-1] :]
+    offset = citation.span()[-1]
+    for match in pin_cite_pattern.finditer(remaining_text):
+        start, end = match.span()
+        matched_text = match.group(0)
+
+        reference = ReferenceCitation(
+            token=CaseReferenceToken(
+                data=matched_text, start=start + offset, end=end + offset
+            ),
+            span_start=start + offset,
+            span_end=end + offset,
+            full_span_start=start + offset,
+            full_span_end=end + offset,
+            index=0,
+            metadata={
+                "plaintiff": match.group("plaintiff"),
+                "defendant": match.group("defendant"),
+                "pin_cite": match.group("page"),
+            },
+        )
+        reference_citations.append(reference)
+    return reference_citations
 
 
 def _extract_full_citation(
