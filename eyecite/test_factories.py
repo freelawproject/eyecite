@@ -1,18 +1,18 @@
 from eyecite.helpers import get_year
 from eyecite.models import (
+    CaseReferenceToken,
     CitationToken,
     FullCaseCitation,
     FullJournalCitation,
     FullLawCitation,
     IdCitation,
     IdToken,
+    ReferenceCitation,
     SectionToken,
     ShortCaseCitation,
     SupraCitation,
     SupraToken,
     UnknownCitation,
-    ReferenceCitation,
-    CaseReferenceToken,
 )
 from eyecite.tokenizers import EDITIONS_LOOKUP
 

@@ -7,11 +7,11 @@ from eyecite.models import (
     FullCaseCitation,
     FullCitation,
     IdCitation,
+    ReferenceCitation,
     Resource,
     ResourceType,
     ShortCaseCitation,
     SupraCitation,
-    ReferenceCitation,
 )
 from eyecite.utils import strip_punct
 

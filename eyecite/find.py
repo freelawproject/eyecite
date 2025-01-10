@@ -9,6 +9,7 @@ from eyecite.helpers import (
     order_citations,
 )
 from eyecite.models import (
+    CaseReferenceToken,
     CitationBase,
     CitationToken,
     FullCaseCitation,
@@ -25,7 +26,6 @@ from eyecite.models import (
     SupraToken,
     Tokens,
     UnknownCitation,
-    CaseReferenceToken,
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
