@@ -313,9 +313,9 @@ class FullCitation(ResourceCitation):
 
         """
         is_parallel = (
-                self.full_span_start == preceding.full_span_start
-                and self.full_span_end == preceding.full_span_end
-                and isinstance(preceding, FullCaseCitation)
+            self.full_span_start == preceding.full_span_start
+            and self.full_span_end == preceding.full_span_end
+            and isinstance(preceding, FullCaseCitation)
         )
         if is_parallel:
             self.metadata.defendant = preceding.metadata.defendant
