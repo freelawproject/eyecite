@@ -448,16 +448,16 @@ class FindTest(TestCase):
                             year=1983,
                             metadata={'plaintiff': 'Amick',
                                       'defendant': 'Liberty Mut. Ins. Co.',
-                                      'court':'ri'
+                                      'court': 'ri'
                                       }),
-              reference_citation('Amick at 795', metadata={'plaintiff':'Amick', 'pin_cite': '795'})]),
+              reference_citation('Amick at 795', metadata={'plaintiff': 'Amick', 'pin_cite': '795'})]),
             # Test reference citation
             ('Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that',
              [case_citation(page='12',
                             metadata={'plaintiff': 'Foo',
                                       'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
-              reference_citation('Foo at 62', metadata={'plaintiff':'Foo', 'pin_cite': '62'})]),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
             # Test that reference citation must occur after full case citation
             ('In Foo at 62 we see that, Foo v. Bar 1 U.S. 12, 347-348. something something,',
              [case_citation(page='12',
@@ -466,30 +466,16 @@ class FindTest(TestCase):
                                       'pin_cite': '347-348'})]),
             # Test reference against defendant name
             ('In re Foo 1 Mass. 12, 347-348. something something, in Foo at 62 we see that, ',
-            [case_citation(page='12',
-                           reporter="Mass.",
-                           volume="1",
-                           metadata={
-                                     'defendant': 'Foo',
-                                     'pin_cite': '347-348'
-                           }),
-             reference_citation('Foo at 62', metadata={'defendant': 'Foo',
-                                                     "pin_cite": "62"}),
-             ]),
+             [case_citation(page='12', reporter="Mass.", volume="1",
+                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
-             [case_citation(page='535',
-                            year=1974,
-                            volume="417",
+             [case_citation(page='535', year=1974, volume="417",
                             reporter="U. S.",
-                            metadata={'plaintiff': 'Morton',
-                                      'defendant': 'Mancari',
-                                      "pin_cite": "552",
-                                      "court":"scotus",
-                                      }),
+                            metadata={'plaintiff': 'Morton', 'defendant': 'Mancari', "pin_cite": "552", "court": "scotus"}),
               id_citation('Id.,', metadata={}),
-              reference_citation('Mancari', metadata={'defendant':'Mancari', "pin_cite": "665"}),
-              ]),
+              reference_citation('Mancari',
+                                 metadata={'defendant': 'Mancari', "pin_cite": "665"})]),
             # Test Conn. Super. Ct. regex variation.
             ('Failed to recognize 1993 Conn. Super. Ct. 5243-P',
              [case_citation(volume='1993', reporter='Conn. Super. Ct.',
@@ -776,7 +762,8 @@ class FindTest(TestCase):
             self.assertEqual(
                 extracted[cit_idx].full_span()[0],
                 start,
-                f"full_span start index doesn't match for {extracted[cit_idx]}",
+                f"full_span start index doesn't match for {
+                    extracted[cit_idx]}",
             )
             self.assertEqual(
                 extracted[cit_idx].full_span()[1],
