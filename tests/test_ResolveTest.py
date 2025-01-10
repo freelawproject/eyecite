@@ -31,7 +31,9 @@ class ResolveTest(TestCase):
             format_resolution(expected_resolution_dict),
         )
 
-    def checkReferenceResolution(self, *expected_resolutions: tuple[list[list[int]], str]):
+    def checkReferenceResolution(
+        self, *expected_resolutions: tuple[list[list[int]], str]
+    ):
         """
         Helper function to help test reference citations.
 
@@ -49,8 +51,8 @@ class ResolveTest(TestCase):
 
             # Step 2: Build a helper dict to map corrected citations to indices
             resolution_index_map = {
-                cite.corrected_citation(): idx for idx, cite in
-                enumerate(citations)
+                cite.corrected_citation(): idx
+                for idx, cite in enumerate(citations)
             }
 
             # Step 3: Resolve citations and format the resolution
@@ -66,7 +68,6 @@ class ResolveTest(TestCase):
             # Step 5: Compare the actual results with expected indices
             actual_indices = list(result.values())
             self.assertEqual(expected_indices, actual_indices)
-
 
     def checkResolution(
         self, *expected_resolutions: Tuple[Optional[int], str]
@@ -337,24 +338,18 @@ class ResolveTest(TestCase):
 
     def test_reference_resolution(self):
         self.checkReferenceResolution(
+            ([[0, 1]], "Foo v. Bar, 1 U.S. 1 ... Foo at 2"),
+            ([[0]], "Foo at 2. .... ; Foo v. Bar, 1 U.S. 1"),
             (
                 [[0, 1]],
-                "Foo v. Bar, 1 U.S. 1 ... Foo at 2"
-            ),
-            (
-                [[0]],
-                "Foo at 2. .... ; Foo v. Bar, 1 U.S. 1"
-            ),
-            (
-                [[0, 1]],
-                "Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that"
+                "Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that",
             ),
             (
                 [[0, 2], [1]],
-                "Foo v. Bar 1 U.S. 12, 347-348; 12 U.S. 1. someting; In Foo at 2 we see that"
+                "Foo v. Bar 1 U.S. 12, 347-348; 12 U.S. 1. someting; In Foo at 2 we see that",
             ),
             (
                 [[0, 2], [1]],
-                "Foo v. Bar 1 U.S. 12, 347-348; In Smith, 12 U.S. 1 (1999) we saw something else. someting. In Foo at 2 we see that"
-             )
+                "Foo v. Bar 1 U.S. 12, 347-348; In Smith, 12 U.S. 1 (1999) we saw something else. someting. In Foo at 2 we see that",
+            ),
         )
