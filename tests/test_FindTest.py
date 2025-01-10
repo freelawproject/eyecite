@@ -467,7 +467,10 @@ class FindTest(TestCase):
             # Test reference against defendant name
             ('In re Foo 1 Mass. 12, 347-348. something something, in Foo at 62 we see that, ',
              [case_citation(page='12', reporter="Mass.", volume="1",
-                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'})]),
+                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'}),
+              reference_citation('Foo at 62',
+                                 metadata={'defendant': 'Foo',
+                                           "pin_cite": "62"})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
              [case_citation(page='535', year=1974, volume="417",
@@ -762,8 +765,7 @@ class FindTest(TestCase):
             self.assertEqual(
                 extracted[cit_idx].full_span()[0],
                 start,
-                f"full_span start index doesn't match for {
-                    extracted[cit_idx]}",
+                f"full_span start index doesn't match for {extracted[cit_idx]}",
             )
             self.assertEqual(
                 extracted[cit_idx].full_span()[1],

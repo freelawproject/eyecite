@@ -134,7 +134,7 @@ def _extract_reference_citations(
     :param plain_text: the text
     :return: Pincite reference citations
     """
-    if type(citation) != FullCaseCitation:
+    if not isinstance(citation, FullCaseCitation):
         # Skip if not case law citation
         return []
     if not citation.metadata.defendant:
