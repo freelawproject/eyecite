@@ -91,20 +91,22 @@ def _filter_by_matching_plaintiff_or_defendant(
 ) -> Optional[ResourceType]:
     """Filter out any impossible reference citations"""
     matches: List[ResourceType] = []
+
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
             continue
-        if (
-            full_citation.metadata.defendant
-            and defendant in full_citation.metadata.defendant
-        ):
+        defendant_match = (
+                defendant
+                and full_citation.metadata.defendant
+                and defendant in full_citation.metadata.defendant
+        )
+        plaintiff_match = (
+                plaintiff
+                and full_citation.metadata.plaintiff
+                and plaintiff in full_citation.metadata.plaintiff
+        )
+        if defendant_match or plaintiff_match:
             matches.append(resource)
-        elif (
-            full_citation.metadata.plaintiff
-            and plaintiff in full_citation.metadata.plaintiff
-        ):
-            matches.append(resource)
-
     # Remove duplicates and only accept if one candidate remains
     matches = list(set(matches))
     return matches[0] if len(matches) == 1 else None
