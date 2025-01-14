@@ -480,7 +480,7 @@ class FindTest(TestCase):
              [case_citation(page='657', reporter="F.2d", volume="909",
                             metadata={'plaintiff': 'U.S.', 'defendant': 'Boch Oldsmobile, Inc.', 'pin_cite': '660'}),
               case_citation(volume="454", page='241', reporter_found='U.S.', short=True,
-                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': None})]),
+                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
              [case_citation(page='535', year=1974, volume="417",
