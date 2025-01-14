@@ -307,14 +307,25 @@ def disambiguate_reporters(
     ]
 
 
-def order_citations(citations: List[CitationBase]) -> List[CitationBase]:
-    """
-    Order citations that may have reference citations out or sequential order
+def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
+    """Filter and order citations that may have reference cites out of order
 
     :param citations: List of citation`
-    :return: Sorted citations
+    :return: Sorted and filtered citations
     """
-    return sorted(citations, key=lambda citation: citation.span())
+    filtered_citations = []
+    sorted_citations = sorted(citations, key=lambda citation: citation.span())
+    for citation in sorted_citations:
+        if filtered_citations:
+            last_citation = filtered_citations[-1]
+            last_span = last_citation.span()
+            current_span = citation.span()
+
+            if current_span[0] <= last_span[1]:
+                # Remove overlapping citations that can occur in edge cases
+                continue
+        filtered_citations.append(citation)
+    return filtered_citations
 
 
 joke_cite: List[CitationBase] = [

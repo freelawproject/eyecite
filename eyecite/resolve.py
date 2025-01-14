@@ -213,7 +213,8 @@ def _resolve_reference_citation(
     reference_citation: ReferenceCitation,
     resolved_full_cites: ResolvedFullCites,
 ) -> Optional[ResourceType]:
-    """
+    """Resolve reference citations
+
     Try to resolve reference citations by checking whether their is only one
     full citation that appears with either the defendant or plaintiff
     field of any of the previously resolved full citations.

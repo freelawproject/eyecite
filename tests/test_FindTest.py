@@ -471,6 +471,16 @@ class FindTest(TestCase):
               reference_citation('Foo at 62',
                                  metadata={'defendant': 'Foo',
                                            "pin_cite": "62"})]),
+            # Test reference citation that contains at
+            ('In re Foo 1 Mass. 12, 347-348. something something, in at we see that',
+             [case_citation(page='12', reporter="Mass.", volume="1",
+                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'})]),
+            # Test U.S. as plaintiff with reference citations
+            ('U.S. v. Boch Oldsmobile, Inc., 909 F.2d 657, 660 (1st Cir.1990); Piper Aircraft, 454 U.S. at 241',
+             [case_citation(page='657', reporter="F.2d", volume="909",
+                            metadata={'plaintiff': 'U.S.', 'defendant': 'Boch Oldsmobile, Inc.', 'pin_cite': '660'}),
+              case_citation(volume="454", page='241', reporter_found='U.S.', short=True,
+                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': None})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
              [case_citation(page='535', year=1974, volume="417",

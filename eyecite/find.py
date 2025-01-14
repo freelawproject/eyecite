@@ -4,9 +4,9 @@ from typing import List, Type, cast
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
+    filter_citations,
     joke_cite,
     match_on_tokens,
-    order_citations,
 )
 from eyecite.models import (
     CaseReferenceToken,
@@ -110,7 +110,7 @@ def get_citations(
 
         citations.append(citation)
 
-    citations = order_citations(citations)
+    citations = filter_citations(citations)
 
     # Remove citations with multiple reporter candidates where we couldn't
     # guess correct reporter
@@ -139,13 +139,23 @@ def _extract_reference_citations(
     if not citation.metadata.defendant:
         # Skip if no defendant exists
         return []
-    escaped_plaintiff = re.escape(citation.metadata.plaintiff or "")
-    escaped_defendant = re.escape(citation.metadata.defendant)
+    plaintiff_regex = (
+        rf"(?P<plaintiff>{re.escape(citation.metadata.plaintiff)})"
+        if citation.metadata.plaintiff
+        else ""
+    )
+    defendant_regex = (
+        rf"(?P<defendant>{re.escape(citation.metadata.defendant)})"
+        if citation.metadata.defendant
+        else ""
+    )
+
+    # Combine the components if they are not empty
+    combined_regex_parts = "|".join(
+        filter(None, [plaintiff_regex, defendant_regex])
+    )
     pin_cite_regex = (
-        rf"\b(?:"
-        rf"(?P<plaintiff>{escaped_plaintiff})|"
-        rf"(?P<defendant>{escaped_defendant})\s?"
-        rf")\s+at\s+(?P<page>\d{{1,5}})?\b"
+        rf"\b(?:{combined_regex_parts})\s+at\s+(?P<page>\d{{1,5}})\b"
     )
 
     pin_cite_pattern = re.compile(pin_cite_regex)
@@ -169,7 +179,11 @@ def _extract_reference_citations(
             full_span_end=end + offset,
             index=0,
             metadata={
-                "plaintiff": match.group("plaintiff"),
+                "plaintiff": (
+                    match.group("plaintiff")
+                    if "plaintiff" in match.groupdict()
+                    else None
+                ),
                 "defendant": match.group("defendant"),
                 "pin_cite": match.group("page"),
             },
