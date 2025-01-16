@@ -121,6 +121,19 @@ class FindTest(TestCase):
                                       'defendant': 'test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348'})]),
+            # Test with court string without space
+            ('bob lissner v. test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
+             [case_citation(page='12', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test',
+                                      'court': 'pasuperct',
+                                      'pin_cite': '347-348'})]),
+            # Test with court string exact match
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)',
+             [case_citation(page='1189', reporter='A.3d', volume='164', year=2017,
+                            metadata={'plaintiff': 'Commonwealth',
+                                      'defendant': 'Muniz',
+                                      'court': 'pa'})]),
             # Parallel cite with parenthetical
             ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
@@ -475,6 +488,12 @@ class FindTest(TestCase):
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)', [
+                case_citation(volume='164', reporter='A.3d', year=2017,
+                              page='1189',
+                              metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
+                                        'court': 'pa'})]),
+            ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
