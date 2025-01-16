@@ -67,8 +67,8 @@ def case_citation(
 
 
 def law_citation(
-    source_text,
-    reporter,
+    source_text=None,
+    reporter="Mass. Gen. Laws",
     **kwargs,
 ):
     """Convenience function for creating mock FullLawCitation objects."""
@@ -101,17 +101,6 @@ def id_citation(source_text=None, index=0, **kwargs):
 def unknown_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock UnknownCitation objects."""
     return UnknownCitation(SectionToken(source_text, 0, 99), index, **kwargs)
-
-
-def nonopinion_citation(*args, **kwargs):
-    from warnings import warn
-
-    warn(
-        """nonopinion_citation() will be deprecated in eyecite 2.5.0.
-        Please use unknown_citation() instead.""",
-        DeprecationWarning,
-    )
-    return unknown_citation(*args, **kwargs)
 
 
 def supra_citation(source_text=None, index=0, **kwargs):

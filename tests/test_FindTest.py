@@ -121,6 +121,19 @@ class FindTest(TestCase):
                                       'defendant': 'test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348'})]),
+            # Test with court string without space
+            ('bob lissner v. test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
+             [case_citation(page='12', year=1982,
+                            metadata={'plaintiff': 'lissner',
+                                      'defendant': 'test',
+                                      'court': 'pasuperct',
+                                      'pin_cite': '347-348'})]),
+            # Test with court string exact match
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)',
+             [case_citation(page='1189', reporter='A.3d', volume='164', year=2017,
+                            metadata={'plaintiff': 'Commonwealth',
+                                      'defendant': 'Muniz',
+                                      'court': 'pa'})]),
             # Parallel cite with parenthetical
             ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
@@ -186,6 +199,10 @@ class FindTest(TestCase):
             # Test with page number that is indicated as missing
             ('1 U.S. ___',
              [case_citation(volume='1', reporter='U.S.', page=None)]),
+            # Test with page number that is indicated as missing, followed by
+            # a comma (cf. eyecite#137)
+            ('1 U. S. ___,',
+             [case_citation(volume='1', reporter_found='U. S.', page=None)]),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [case_citation(source_text='2007-NMCERT-008', page='008',
@@ -471,6 +488,12 @@ class FindTest(TestCase):
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)', [
+                case_citation(volume='164', reporter='A.3d', year=2017,
+                              page='1189',
+                              metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
+                                        'court': 'pa'})]),
+            ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
@@ -709,3 +732,51 @@ class FindTest(TestCase):
         self.run_test_pairs(
             test_pairs, "Custom tokenizer", tokenizers=[tokenizer]
         )
+
+    def test_citation_fullspan(self):
+        """Check that the full_span function returns the correct indices."""
+
+        # Make sure it works with several citations in one string
+        combined_example = "citation number one is Wilson v. Mar. Overseas Corp., 150 F.3d 1, 6-7 ( 1st Cir. 1998); This is different from Commonwealth v. Bauer, 604 A.2d 1098 (Pa.Super. 1992), my second example"
+        extracted = get_citations(combined_example)
+        # answers format is (citation_index, (full_span_start, full_span_end))
+        answers = [(0, (23, 86)), (1, (111, 164))]
+        for cit_idx, (start, end) in answers:
+            self.assertEqual(
+                extracted[cit_idx].full_span()[0],
+                start,
+                f"full_span start index doesn't match for {extracted[cit_idx]}",
+            )
+            self.assertEqual(
+                extracted[cit_idx].full_span()[1],
+                end,
+                f"full_span end index doesn't match for {extracted[cit_idx]}",
+            )
+
+        # full_span should cover the whole string
+        simple_examples = [
+            "66 B.U. L. Rev. 71 (1986)",
+            "5 Minn. L. Rev. 1339, 1341 (1991)",
+            "42 U.S.C. § 405(r)(2) (2019)",
+            "37 A.L.R.4th 972, 974 (1985)",
+            "497 Fed. Appx. 274 (4th Cir. 2012)",
+            "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+            "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
+        ]
+        for example in simple_examples:
+            extracted = get_citations(example)[0]
+            error_msg = "Full span indices for a simple example should be (0, len(example)) "
+            self.assertEqual(
+                extracted.full_span(), (0, len(example)), error_msg
+            )
+        # Sentence and correct start_index
+        stopword_examples = [
+            ("See 66 B.U. L. Rev. 71 (1986)", 4),
+            ("Citing 66 B.U. L. Rev. 71 (1986)", 7),
+        ]
+        for sentence, start_idx in stopword_examples:
+            extracted = get_citations(sentence)[0]
+            error_msg = "Wrong span for stopword example"
+            self.assertEqual(
+                extracted.full_span(), (start_idx, len(sentence)), error_msg
+            )

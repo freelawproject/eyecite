@@ -24,7 +24,6 @@ from eyecite.regexes import (
     POST_SHORT_CITATION_REGEX,
     YEAR_REGEX,
 )
-from eyecite.utils import strip_punct
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -41,19 +40,26 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
     Does not work on SCOTUS, since that court lacks parentheticals, and
     needs to be handled after disambiguation has been completed.
     """
-    court_str = strip_punct(paren_string)
+
+    # Remove whitespace and punctuation because citation strings sometimes lack
+    # internal spaces, e.g. "Pa.Super." or "SC" (South Carolina)
+    court_str = re.sub(r"[^\w]", "", paren_string).lower()
 
     court_code = None
     if court_str:
-        # Map the string to a court, if possible.
         for court in courts:
-            # Use startswith because citations are often missing final period,
-            # e.g. "2d Cir"
-            if court["citation_string"] == (court_str) or court[
-                "citation_string"
-            ][:-1] == (court_str):
+            s = re.sub(r"[^\w]", "", court["citation_string"]).lower()
+
+            # Check for an exact match first
+            if s == court_str:
+                return str(court["id"])
+
+            # If no exact match, try to record a startswith match for possible
+            # eventual return
+            if s.startswith(court_str):
                 court_code = court["id"]
-                break
+
+        return court_code
 
     return court_code
 
@@ -82,10 +88,15 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
 
     See POST_CITATION_REGEX for examples.
     """
-    m = match_on_tokens(words, citation.index + 1, POST_FULL_CITATION_REGEX,)
+    m = match_on_tokens(
+        words,
+        citation.index + 1,
+        POST_FULL_CITATION_REGEX,
+    )
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
@@ -101,10 +112,14 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
+    # To turn word indexing into char indexing,
+    # useful for span, account for shift
+    offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
     for index in range(citation.index - 1, max(back_seek, -1), -1):
         word = words[index]
+        offset += len(word)
         if word == ",":
             # Skip it
             continue
@@ -113,12 +128,19 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
                 citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip()
+                offset += len(citation.metadata.plaintiff) + 1
+            else:
+                # We don't want to include stop words such as
+                # 'citing' in the span
+                offset -= len(word)
+
             start_index = index + 1
             break
         if word.endswith(";"):
             # String citation
             break
     if start_index:
+        citation.full_span_start = citation.span()[0] - offset
         citation.metadata.defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", ")
@@ -132,6 +154,7 @@ def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.publisher = m["publisher"]
     citation.metadata.day = m["day"]
@@ -153,6 +176,7 @@ def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
     if not m:
         return
 
+    citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
     citation.metadata.year = m["year"]
@@ -294,7 +318,14 @@ def disambiguate_reporters(
 joke_cite: List[CitationBase] = [
     FullCaseCitation(
         CitationToken(
-            "1 FLP 1", 0, 99, {"volume": "1", "reporter": "FLP", "page": "1",},
+            "1 FLP 1",
+            0,
+            99,
+            {
+                "volume": "1",
+                "reporter": "FLP",
+                "page": "1",
+            },
         ),
         0,
         metadata={

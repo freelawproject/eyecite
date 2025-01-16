@@ -14,6 +14,19 @@ eyecite recognizes a wide variety of citations commonly appearing in American le
 
 All contributors, corrections, and additions are welcome!
 
+If you use eyecite for your research, please consider citing our paper::
+
+    @article{eyecite,
+        title = {eyecite: A Tool for Parsing Legal Citations},
+        author = {Cushman, Jack and Dahl, Matthew and Lissner, Michael},
+        year = {2021},
+        journal = {Journal of Open Source Software},
+        volume = {6},
+        number = {66},
+        pages = {3617},
+        url = {https://doi.org/10.21105/joss.03617},
+    }
+
 Functionality
 =============
 
@@ -178,6 +191,9 @@ the original text in as :code:`source_text`:
 The above example extracts citations from :code:`plain_text` and applies them to
 :code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
 in the original text.
+
+There is also a :code:`full_span` attribute that can be used to get the indexes of the full citation, including the
+pre- and post-citation attributes.
 
 Wrapping HTML Tags
 ^^^^^^^^^^^^^^^^^^
@@ -411,9 +427,11 @@ Hyperscan installation example with homebrew on x86 MacOS:
 Deployment
 ==========
 
+1. Update CHANGES.md.
+
 1. Update version info in :code:`pyproject.toml` by running :code:`poetry version [major, minor, patch]`.
 
-For an automated deployment, tag the commit with vx.y.z, and push it to master.
+For an automated deployment, tag the commit with vx.y.z, and push it to main.
 An automated deploy and documentation update will be completed for you.
 
 For a manual deployment, run:

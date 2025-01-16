@@ -104,6 +104,9 @@ class ResolveTest(TestCase):
 
         self.assertResolution(citations, expected_resolution_dict)
 
+    def test_issue_167(self):
+        self.checkResolution((0, "25 Texas L.Rev. 199"))
+
     def test_full_resolution(self):
         # Test resolving a single, full citation
         self.checkResolution(
