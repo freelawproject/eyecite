@@ -318,7 +318,12 @@ def disambiguate_reporters(
 
 
 def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
-    """Filter and order citations that may have reference cites out of order
+    """Filter and order citations, ensuring reference citations are in sequence
+
+    This function resolves rare but possible overlaps between ref. citations
+    and short citations. It also orders all citations by their `citation.span`,
+    as reference citations may be extracted out of order. The final result is a
+    properly sorted list of citations as they appear in the text
 
     :param citations: List of citations
     :return: Sorted and filtered citations
