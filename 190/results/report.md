@@ -11,9 +11,9 @@ There were 1 gains and 2 losses.
 
 |     id     |     Gain     |        Loss        |
 | ---------- | ------------ | ------------------ |
+|  2737168   |              | 141 Ill. 2d at 242 |
 |  2737168   |  Holmes, 141 |                    |
 |  2737168   |              |  141 Ill. 2d 204   |
-|  2737168   |              | 141 Ill. 2d at 242 |
 
 
 </details>
@@ -29,6 +29,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/190/results/fcef78f78b8b924439784dab8a89a98c1c6c114b.json)
-[Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/190/results/5d3cf67501648c5ea2954f126f5f843ada81aa39.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/190/results/ecf759bbcbd1793326f13c57da4868e7eb2b080d.json)
+[Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/190/results/f2a0c4cf1087177e217af66d0d481e639ee0dd08.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/190/results/output.csv)
