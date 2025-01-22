@@ -131,44 +131,46 @@ def _extract_reference_citations(
 
     :param citation: the full case citation found
     :param plain_text: the text
-    :return: Pincite reference citations
+    :return: Pin cite reference citations
     """
-    if not isinstance(citation, FullCaseCitation):
-        # Skip if not case law citation
-        return []
-    if not citation.metadata.defendant:
-        # Skip if no defendant exists
-        return []
-    plaintiff_regex = (
-        rf"(?P<plaintiff>{re.escape(citation.metadata.plaintiff)})"
-        if citation.metadata.plaintiff
-        else ""
-    )
-    defendant_regex = (
-        rf"(?P<defendant>{re.escape(citation.metadata.defendant)})"
-        if citation.metadata.defendant
-        else ""
-    )
-
-    # Combine the components if they are not empty
-    combined_regex_parts = "|".join(
-        filter(None, [plaintiff_regex, defendant_regex])
-    )
-    pin_cite_regex = (
-        rf"\b(?:{combined_regex_parts})\s+at\s+(?P<page>\d{{1,5}})\b"
-    )
-
-    pin_cite_pattern = re.compile(pin_cite_regex)
-    reference_citations = []
     if len(plain_text) <= citation.span()[-1]:
         return []
+    if not isinstance(citation, FullCaseCitation):
+        return []
 
+    def is_valid_name(name: str) -> bool:
+        """Validate name isnt a regex issue
+
+        Excludes strings like Co., numbers or lower case strs
+
+        :param name: The name to check
+        :return: True if usable, false if not
+        """
+        return (
+            isinstance(name, str)
+            and len(name) > 2
+            and name[0].isupper()
+            and not name.endswith(".")
+            and not name.isdigit()
+        )
+
+    regexes = [
+        rf"(?P<{key}>{re.escape(value)})"
+        for key in ["plaintiff", "defendant"]
+        if (value := getattr(citation.metadata, key, None))
+        and is_valid_name(value)
+    ]
+    if not regexes:
+        return []
+    pin_cite_re = (
+        rf"\b(?:{'|'.join(regexes)})\s+at\s+(?P<pin_cite>\d{{1,5}})\b"
+    )
+    reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
     offset = citation.span()[-1]
-    for match in pin_cite_pattern.finditer(remaining_text):
+    for match in re.compile(pin_cite_re).finditer(remaining_text):
         start, end = match.span()
         matched_text = match.group(0)
-
         reference = ReferenceCitation(
             token=CaseReferenceToken(
                 data=matched_text, start=start + offset, end=end + offset
@@ -178,15 +180,7 @@ def _extract_reference_citations(
             full_span_start=start + offset,
             full_span_end=end + offset,
             index=0,
-            metadata={
-                "plaintiff": (
-                    match.group("plaintiff")
-                    if "plaintiff" in match.groupdict()
-                    else None
-                ),
-                "defendant": match.group("defendant"),
-                "pin_cite": match.group("page"),
-            },
+            metadata=match.groupdict(),
         )
         reference_citations.append(reference)
     return reference_citations

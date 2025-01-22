@@ -441,6 +441,38 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
+            # Eyecite has issue with linebreaks when identifying defendants and
+            # previously could store defendant as only whitespace
+            ('<em>\n   rt. denied,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n',
+             [case_citation(
+                 page='1085',
+                 volume="541",
+                 reporter="U.S.",
+                 year=2004,
+                 metadata={'plaintiff': None,
+                           'defendant': None,
+                           'court': 'scotus'
+                   }
+                )],
+             {'clean': ['html', 'inline_whitespace']}),
+            # Test filtering overlapping citations - this finds four citations
+            # but should filter down to three
+            ("Miles v. Smith 1 Ga. 1; asdfasdf asd Something v. Else, 1 Miles 3; 1 Miles at 10",
+            [case_citation(page='1',
+                           volume="1",
+                           reporter="Ga.",
+                           metadata={'plaintiff': 'Miles',
+                                     'defendant': 'Smith',
+                                     }),
+             case_citation(page='3',
+                           volume="1",
+                           reporter="Miles",
+                           metadata={'plaintiff': 'Something',
+                                     'defendant': 'Else'}
+                           ),
+             case_citation(volume="1", page='10', reporter='Miles',
+                           short=True,
+                           metadata={'pin_cite': '10'})]),
             ('General Casualty cites as compelling Amick v. Liberty Mut. Ins. Co., 455 A.2d 793 (R.I. 1983). In that case ... Stats, do. See Amick at 795',
              [case_citation(page='793',
                             volume="455",

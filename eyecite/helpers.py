@@ -133,9 +133,11 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             break
     if start_index:
         citation.full_span_start = citation.span()[0] - offset
-        citation.metadata.defendant = "".join(
+        defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", ")
+        if defendant.strip():
+            citation.metadata.defendant = defendant
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
@@ -310,7 +312,7 @@ def disambiguate_reporters(
 def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     """Filter and order citations that may have reference cites out of order
 
-    :param citations: List of citation`
+    :param citations: List of citations
     :return: Sorted and filtered citations
     """
     filtered_citations: List[CitationBase] = []

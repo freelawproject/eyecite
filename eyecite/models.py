@@ -315,7 +315,9 @@ class FullCitation(ResourceCitation):
             and isinstance(preceding, FullCaseCitation)
         )
         if is_parallel:
-            # if parallel merge plaintiff/defendant data
+            # if parallel get plaintiff/defendant data from
+            # the earlier citation, since it won't be on the
+            # parallel one.
             self.metadata.defendant = preceding.metadata.defendant
             self.metadata.plaintiff = preceding.metadata.plaintiff
 
