@@ -24,7 +24,6 @@ from eyecite.regexes import (
     POST_SHORT_CITATION_REGEX,
     YEAR_REGEX,
 )
-from eyecite.utils import strip_punct
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -41,17 +40,26 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
     Does not work on SCOTUS, since that court lacks parentheticals, and
     needs to be handled after disambiguation has been completed.
     """
-    court_str = strip_punct(paren_string)
+
+    # Remove whitespace and punctuation because citation strings sometimes lack
+    # internal spaces, e.g. "Pa.Super." or "SC" (South Carolina)
+    court_str = re.sub(r"[^\w]", "", paren_string).lower()
 
     court_code = None
     if court_str:
-        # Map the string to a court, if possible.
         for court in courts:
-            # Use startswith because citations are often missing final period,
-            # e.g. "2d Cir"
-            if court["citation_string"].startswith(court_str):
+            s = re.sub(r"[^\w]", "", court["citation_string"]).lower()
+
+            # Check for an exact match first
+            if s == court_str:
+                return str(court["id"])
+
+            # If no exact match, try to record a startswith match for possible
+            # eventual return
+            if s.startswith(court_str):
                 court_code = court["id"]
-                break
+
+        return court_code
 
     return court_code
 
