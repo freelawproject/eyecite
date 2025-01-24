@@ -141,9 +141,11 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             break
     if start_index:
         citation.full_span_start = citation.span()[0] - offset
-        citation.metadata.defendant = "".join(
+        defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", ")
+        if defendant.strip():
+            citation.metadata.defendant = defendant
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
@@ -313,6 +315,32 @@ def disambiguate_reporters(
         for c in citations
         if not isinstance(c, ResourceCitation) or c.edition_guess
     ]
+
+
+def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
+    """Filter and order citations, ensuring reference citations are in sequence
+
+    This function resolves rare but possible overlaps between ref. citations
+    and short citations. It also orders all citations by their `citation.span`,
+    as reference citations may be extracted out of order. The final result is a
+    properly sorted list of citations as they appear in the text
+
+    :param citations: List of citations
+    :return: Sorted and filtered citations
+    """
+    filtered_citations: List[CitationBase] = []
+    sorted_citations = sorted(citations, key=lambda citation: citation.span())
+    for citation in sorted_citations:
+        if filtered_citations:
+            last_citation = filtered_citations[-1]
+            last_span = last_citation.span()
+            current_span = citation.span()
+
+            if current_span[0] <= last_span[1]:
+                # Remove overlapping citations that can occur in edge cases
+                continue
+        filtered_citations.append(citation)
+    return filtered_citations
 
 
 joke_cite: List[CitationBase] = [
