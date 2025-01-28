@@ -354,7 +354,7 @@ for information about available tokenizers. Uses the
         return joke_cite
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
-    citations = []
+    citations: list[CitationBase] = []
 
     for i, token in citation_tokens:
         citation: CitationBase
@@ -370,6 +370,13 @@ for information about available tokenizers. Uses the
                 citation = _extract_shortform_citation(words, i)
             else:
                 citation = _extract_full_citation(words, i)
+                if citations and isinstance(citation, FullCitation):
+                    citation.is_parallel_citation(citations[-1])
+
+                # Check for reference citations that follow a full citation
+                # Using the plaintiff or defendant
+                references = _extract_reference_citations(citation, plain_text)
+                citations.extend(references)
 
         # CASE 2: Token is an &#34;Id.&#34; or &#34;Ibid.&#34; reference.
         # In this case, the citation should simply be to the item cited
@@ -399,6 +406,8 @@ for information about available tokenizers. Uses the
 
         citations.append(citation)
 
+    citations = filter_citations(citations)
+
     # Remove citations with multiple reporter candidates where we couldn&#39;t
     # guess correct reporter
     if remove_ambiguous:
@@ -407,12 +416,12 @@ for information about available tokenizers. Uses the
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
     # the references of the ShortCaseCitation, SupraCitation, and
-    # IdCitation objects.
+    # IdCitation and ReferenceCitation objects.
     return citations</code></pre>
 </details>
 </dd>
 <dt id="eyecite.resolve_citations"><code class="name flex">
-<span>def <span class="ident">resolve_citations</span></span>(<span>citations: List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], Hashable] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_supra_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, Hashable, Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[Hashable]] = &lt;function _resolve_id_citation&gt;) ‑> Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
+<span>def <span class="ident">resolve_citations</span></span>(<span>citations: List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], Hashable] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_supra_citation&gt;, resolve_reference_citation: Callable[[<a title="eyecite.models.ReferenceCitation" href="models.html#eyecite.models.ReferenceCitation">ReferenceCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_reference_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, Hashable, Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[Hashable]] = &lt;function _resolve_id_citation&gt;) ‑> Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resolve a list of citations to their associated resources by matching
@@ -474,6 +483,10 @@ to lists of <code><a title="eyecite.models.CitationBase" href="models.html#eyeci
         [SupraCitation, ResolvedFullCites],
         Optional[ResourceType],
     ] = _resolve_supra_citation,
+    resolve_reference_citation: Callable[
+        [ReferenceCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_reference_citation,
     resolve_id_citation: Callable[
         [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
     ] = _resolve_id_citation,
@@ -545,6 +558,11 @@ to lists of <code><a title="eyecite.models.CitationBase" href="models.html#eyeci
         # If the citation is a supra citation, try to resolve it
         elif isinstance(citation, SupraCitation):
             resolution = resolve_supra_citation(citation, resolved_full_cites)
+
+        elif isinstance(citation, ReferenceCitation):
+            resolution = resolve_reference_citation(
+                citation, resolved_full_cites
+            )
 
         # If the citation is an id citation, try to resolve it
         elif isinstance(citation, IdCitation):
