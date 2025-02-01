@@ -456,6 +456,9 @@ class FullCaseCitation(CaseCitation, FullCitation):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         extra: Optional[str] = None
+        # May be populated after citation resolution
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
 
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
@@ -604,6 +607,15 @@ class ReferenceCitation(CitationBase):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         pin_cite: Optional[str] = None
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
+
+    name_fields = [
+        "plaintiff",
+        "defendant",
+        "resolved_case_name_short",
+        "resolved_case_name",
+    ]
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
