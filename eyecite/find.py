@@ -79,7 +79,7 @@ def get_citations(
 
                 # Check for reference citations that follow a full citation
                 # Using the plaintiff or defendant
-                references = _extract_reference_citations(citation, plain_text)
+                references = extract_reference_citations(citation, plain_text)
                 citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
@@ -124,8 +124,9 @@ def get_citations(
     return citations
 
 
-def _extract_reference_citations(
-    citation: FullCitation, plain_text: str
+def extract_reference_citations(
+    citation: FullCitation,
+    plain_text: str,
 ) -> List[ReferenceCitation]:
     """Extract reference citations that follow a full citation
 
@@ -156,7 +157,7 @@ def _extract_reference_citations(
 
     regexes = [
         rf"(?P<{key}>{re.escape(value)})"
-        for key in ["plaintiff", "defendant"]
+        for key in ReferenceCitation.name_fields
         if (value := getattr(citation.metadata, key, None))
         and is_valid_name(value)
     ]

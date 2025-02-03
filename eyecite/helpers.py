@@ -12,6 +12,7 @@ from eyecite.models import (
     FullJournalCitation,
     FullLawCitation,
     ParagraphToken,
+    ReferenceCitation,
     ResourceCitation,
     StopWordToken,
     Token,
@@ -335,6 +336,19 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
             last_citation = filtered_citations[-1]
             last_span = last_citation.span()
             current_span = citation.span()
+
+            if current_span == last_span and isinstance(
+                last_citation, ReferenceCitation
+            ):
+                # a single ReferenceCitation may be found via different
+                # names. Save the name metadata to account for collisions
+                for field in ReferenceCitation.name_fields:
+                    if not getattr(last_citation.metadata, field):
+                        setattr(
+                            last_citation.metadata,
+                            field,
+                            getattr(citation.metadata, field),
+                        )
 
             if current_span[0] <= last_span[1]:
                 # Remove overlapping citations that can occur in edge cases

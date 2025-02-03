@@ -4,6 +4,8 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
+from eyecite.find import extract_reference_citations
+from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
@@ -857,4 +859,31 @@ class FindTest(TestCase):
             error_msg = "Wrong span for stopword example"
             self.assertEqual(
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
+            )
+
+    def test_reference_extraction(self):
+        """Can we extract a reference citation using resolved metadata?"""
+        texts = [
+            # In this case the reference citation got with the
+            # resolved_case_name is redundant, was already got in the regular
+            # process. Can we deduplicate?
+            """See, e.g., State v. Wingler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+            # In this case the resolved_case_name actually helps getting the
+            # reference citation
+            """See, e.g., State v. W1ngler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+        ]
+        for plain_text in texts:
+            citations = get_citations(plain_text)
+            citations[0].metadata.resolved_case_name = "State v. Wingler"
+            references = extract_reference_citations(citations[0], plain_text)
+            final_citations = filter_citations(citations + references)
+            self.assertEqual(
+                len(final_citations), 2, "There should only be 2 citations"
+            )
+            self.assertEqual(
+                len(references),
+                1,
+                "Only a reference citation should had been picked up",
             )
