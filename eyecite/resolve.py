@@ -84,29 +84,28 @@ def _filter_by_matching_antecedent(
     return matches[0] if len(matches) == 1 else None
 
 
-def _filter_by_matching_plaintiff_or_defendant(
+def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
     resolved_full_cites: ResolvedFullCites,
-    plaintiff: str,
-    defendant: str,
+    reference_citation: ReferenceCitation,
 ) -> Optional[ResourceType]:
-    """Filter out any impossible reference citations"""
+    """Filter out reference citations that point to more than 1 Resource"""
     matches: List[ResourceType] = []
 
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
             continue
-        defendant_match = (
-            defendant
-            and full_citation.metadata.defendant
-            and defendant in full_citation.metadata.defendant
-        )
-        plaintiff_match = (
-            plaintiff
-            and full_citation.metadata.plaintiff
-            and plaintiff in full_citation.metadata.plaintiff
-        )
-        if defendant_match or plaintiff_match:
-            matches.append(resource)
+
+        for key in ReferenceCitation.name_fields:
+            reference_value = getattr(reference_citation.metadata, key)
+            full_case_value = getattr(full_citation.metadata, key)
+            if (
+                reference_value
+                and full_case_value
+                and reference_value in full_case_value
+            ):
+                matches.append(resource)
+                break
+
     # Remove duplicates and only accept if one candidate remains
     matches = list(set(matches))
     return matches[0] if len(matches) == 1 else None
@@ -216,18 +215,19 @@ def _resolve_reference_citation(
     """Resolve reference citations
 
     Try to resolve reference citations by checking whether their is only one
-    full citation that appears with either the defendant or plaintiff
+    full citation that appears with either the defendant or plaintiff or
+    resolved_case_name_short or resolved_case_name
     field of any of the previously resolved full citations.
     """
     if (
         not reference_citation.metadata.defendant
         and not reference_citation.metadata.plaintiff
+        and not reference_citation.metadata.resolved_case_name_short
+        and not reference_citation.metadata.resolved_case_name
     ):
         return None
-    return _filter_by_matching_plaintiff_or_defendant(
-        resolved_full_cites,
-        reference_citation.metadata.plaintiff,
-        reference_citation.metadata.defendant,
+    return _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
+        resolved_full_cites, reference_citation
     )
 
 
