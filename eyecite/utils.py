@@ -147,3 +147,57 @@ def is_valid_name(name: str) -> bool:
         and not name.endswith(".")
         and not name.isdigit()
     )
+
+
+def maybe_balance_style_tags(
+    start: int, end: int, plain_text: str
+) -> tuple[int, int, str]:
+    """Try to include style tags at the edge of the span marked as invalid
+
+    In some HTML sources the citations are styled with tags like <i> or <em>
+    When the citation is found in a stripped-of-tags text, the span may
+    leave out the opening or closing tag. When this happens and we try to
+    annotate the HTML, it will render invalid HTML. This happens mostly with
+    IdCitation, ReferenceCitation, etc.
+
+    This function will try to find opening or closing tags inmediately
+    preceding or following the citation span. If it finds them, it will
+    return the new start, end and span. If not, it will return the old ones
+
+    :param start: the original start of the span
+    :param end: the origina end of the span
+    :param plain_text: the text to annotate
+    :return: a tuple (new start, new end, new span text)
+    """
+    span_text = plain_text[start:end]
+    style_tags = ["i", "em", "b"]
+    tolerance = 5  # tolerate at most this amount of whitespace
+
+    for tag in style_tags:
+        opening_tag = f"<{tag}>"
+        closing_tag = f"</{tag}>"
+        has_opening = opening_tag in span_text
+        has_closing = closing_tag in span_text
+        if has_opening and not has_closing:
+            # look for closing tag after the end
+            extended_end = max(
+                end + len(closing_tag) + tolerance, len(plain_text)
+            )
+            if end_match := re.search(
+                rf"{span_text}\s*{closing_tag}",
+                plain_text[start:extended_end],
+                flags=re.MULTILINE,
+            ):
+                end = start + end_match.end()
+
+        if not has_opening and has_closing:
+            # look for opening tag before the start
+            extended_start = min(start - len(opening_tag) - tolerance, 0)
+            if start_match := re.search(
+                rf"{opening_tag}\s*{span_text}",
+                plain_text[extended_start:end],
+                flags=re.MULTILINE,
+            ):
+                start = extended_start + start_match.start()
+
+    return start, end, plain_text[start:end]

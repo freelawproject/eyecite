@@ -358,7 +358,7 @@ def find_reference_citations_from_markup(
                 continue
             value = re.sub(r"\s+", re.escape(" "), re.escape(value))
             regexes.append(
-                r"(?P<{}>{})".format(key, value.replace(" ", "\s+"))
+                r"(?P<{}>{})".format(key, value.replace(" ", r"\s+"))
             )
 
         # Include punctuation and spaces surrounding the party name.
