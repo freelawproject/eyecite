@@ -130,3 +130,20 @@ def hash_sha256(dictionary: dict) -> int:
 
     # Calculate the hash of the bytes, convert to an int, and return
     return int.from_bytes(hashlib.sha256(json_bytes).digest(), byteorder="big")
+
+
+def is_valid_name(name: str) -> bool:
+    """Validate name isnt a regex issue
+
+    Excludes strings like Co., numbers or lower case strs
+
+    :param name: The name to check
+    :return: True if usable, false if not
+    """
+    return (
+        isinstance(name, str)
+        and len(name) > 2
+        and name[0].isupper()
+        and not name.endswith(".")
+        and not name.isdigit()
+    )

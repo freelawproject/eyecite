@@ -54,9 +54,9 @@ class ResolveTest(TestCase):
         """
         citations = get_citations(citation_text)
         if resolved_case_name_short:
-            citations[0].metadata.resolved_case_name_short = (
-                resolved_case_name_short
-            )
+            citations[
+                0
+            ].metadata.resolved_case_name_short = resolved_case_name_short
             citations.extend(
                 extract_reference_citations(
                     citations[0], citation_text  # type: ignore[arg-type]

@@ -1,6 +1,8 @@
 import re
+from bisect import bisect_left, bisect_right
 from typing import List, Type, cast
 
+from eyecite.annotate import SpanUpdater
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
@@ -29,6 +31,7 @@ from eyecite.models import (
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
+from eyecite.utils import is_valid_name
 
 
 def get_citations(
@@ -138,22 +141,6 @@ def extract_reference_citations(
         return []
     if not isinstance(citation, FullCaseCitation):
         return []
-
-    def is_valid_name(name: str) -> bool:
-        """Validate name isnt a regex issue
-
-        Excludes strings like Co., numbers or lower case strs
-
-        :param name: The name to check
-        :return: True if usable, false if not
-        """
-        return (
-            isinstance(name, str)
-            and len(name) > 2
-            and name[0].isupper()
-            and not name.endswith(".")
-            and not name.isdigit()
-        )
 
     regexes = [
         rf"(?P<{key}>{re.escape(value)})"
@@ -334,3 +321,72 @@ def _extract_id_citation(
             "parenthetical": parenthetical,
         },
     )
+
+
+def find_reference_citations_from_markup(
+    markup_text: str, plain_text: str, citations: list
+) -> list[ReferenceCitation]:
+    """Use HTML/XML style tags and parties names to find ReferenceCitations
+
+    We will use SpanUpdaters to go back and forth between `markup_text` and
+    `plain_text` spaces. The ReferenceCitations found will be in the same
+    (plain_text) space as the citations got from `find.get_citations`
+
+    Depending on the input FullCaseCitations, the References may be repeated
+    so it's important to apply `eyecite.helpers.filter_citations` once
+
+    :param markup_text: HTML or XML source
+    :param plain_text: cleaned text
+    :param citations: list of citations found over plain text. The full cites
+        will be used to access parties names metadata
+    :return: a list of ReferenceCitations
+    """
+    references = []
+    markup_to_plain = SpanUpdater(markup_text, plain_text)
+    plain_to_markup = SpanUpdater(plain_text, markup_text)
+    tags = "|".join(["em", "i"])
+
+    for citation in citations:
+        if not isinstance(citation, FullCaseCitation):
+            continue
+
+        regexes = []
+        for key in ReferenceCitation.name_fields:
+            if not (value := getattr(citation.metadata, key, None)):
+                continue
+            if not is_valid_name(value):
+                continue
+            value = re.sub(r"\s+", re.escape(" "), re.escape(value))
+            regexes.append(
+                r"(?P<{}>{})".format(key, value.replace(" ", "\s+"))
+            )
+
+        # Include punctuation and spaces surrounding the party name.
+        # See related test for real data example where this happens
+        # It is also important to include those characters to preserve
+        # valid HTML when creation `html_with_citations`
+        regex = rf"<({tags})>\s*({'|'.join(regexes)})[:;.,\s]*</({tags})>"
+        start_in_markup = plain_to_markup.update(
+            citation.span()[0], bisect_right
+        )
+        for match in re.finditer(regex, markup_text[start_in_markup:]):
+            start_in_plain = markup_to_plain.update(
+                start_in_markup + match.start(), bisect_left
+            )
+            end_in_plain = markup_to_plain.update(
+                start_in_markup + match.end(), bisect_right
+            )
+            reference = ReferenceCitation(
+                token=CaseReferenceToken(
+                    data=plain_text[start_in_plain:end_in_plain],
+                    start=start_in_plain,
+                    end=end_in_plain,
+                ),
+                span_start=start_in_plain,
+                span_end=end_in_plain,
+                index=0,
+                metadata=match.groupdict(),
+            )
+            references.append(reference)
+
+    return references
