@@ -8,7 +8,7 @@ from lxml import etree
 # this is partially taken from juriscraper
 DISALLOWED_NAMES = [
     # Common options
-    'state',
+    "state",
     "united states",
     "people",
     "commonwealth",
@@ -285,5 +285,3 @@ def maybe_balance_style_tags(
                 start = extended_start + start_match.start()
 
     return start, end, plain_text[start:end]
-
-
