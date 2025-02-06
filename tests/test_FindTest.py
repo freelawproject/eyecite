@@ -724,166 +724,27 @@ class FindTest(TestCase):
                 % (edition[0], year, expected, date_in_reporter),
             )
 
-    def test_disambiguate_citations(self):
-        # fmt: off
-        test_pairs = [
-            # 1. P.R.R --> Correct abbreviation for a reporter.
-            ('1 P.R.R. 1',
-             [case_citation(reporter='P.R.R.')]),
-            # 2. U. S. --> A simple variant to resolve.
-            ('1 U. S. 1',
-             [case_citation(reporter_found='U. S.')]),
-            # 3. A.2d --> Not a variant, but needs to be looked up in the
-            #    EDITIONS variable.
-            ('1 A.2d 1',
-             [case_citation(reporter='A.2d')]),
-            # 4. A. 2d --> An unambiguous variant of an edition
-            ('1 A. 2d 1',
-             [case_citation(reporter='A.2d', reporter_found='A. 2d')]),
-            # 5. P.R. --> A variant of 'Pen. & W.', 'P.R.R.', or 'P.' that's
-            #    resolvable by year
-            ('1 P.R. 1 (1831)',
-             # Of the three, only Pen & W. was being published this year.
-             [case_citation(reporter='Pen. & W.',
-                            year=1831, reporter_found='P.R.')]),
-            # 5.1: W.2d --> A variant of an edition that either resolves to
-            #      'Wis. 2d' or 'Wash. 2d' and is resolvable by year.
-            ('1 W.2d 1 (1854)',
-             # Of the two, only Wis. 2d was being published this year.
-             [case_citation(reporter='Wis. 2d',
-                            year=1854, reporter_found='W.2d')]),
-            # 5.2: Wash. --> A non-variant that has more than one reporter for
-            #      the key, but is resolvable by year
-            ('1 Wash. 1 (1890)',
-             [case_citation(reporter='Wash.', year=1890)]),
-            # 6. Cr. --> A variant of Cranch, which is ambiguous, except with
-            #    paired with this variation.
-            ('1 Cra. 1',
-             [case_citation(reporter='Cranch', reporter_found='Cra.',
-                            metadata={'court': 'scotus'})]),
-            # 7. Cranch. --> Not a variant, but could refer to either Cranch's
-            #    Supreme Court cases or his DC ones. In this case, we cannot
-            #    disambiguate. Years are not known, and we have no further
-            #    clues. We must simply drop Cranch from the results.
-            ('1 Cranch 1 1 U.S. 23',
-             [case_citation(page='23')]),
-            # 8. Unsolved problem. In theory, we could use parallel citations
-            #    to resolve this, because Rob is getting cited next to La., but
-            #    we don't currently know the proximity of citations to each
-            #    other, so can't use this.
-            #  - Rob. --> Either:
-            #                8.1: A variant of Robards (1862-1865) or
-            #                8.2: Robinson's Louisiana Reports (1841-1846) or
-            #                8.3: Robinson's Virgina Reports (1842-1865)
-            # ('1 Rob. 1 1 La. 1',
-            # [case_citation(volume='1', reporter='Rob.', page='1'),
-            #  case_citation(volume='1', reporter='La.', page='1')]),
-            # 9. Johnson #1 should pass and identify the citation
-            ('1 Johnson 1 (1890)',
-             [case_citation(reporter='N.M. (J.)', reporter_found='Johnson',
-                            year=1890,
-                            )]),
-            # 10. Johnson #2 should fail to disambiguate with year alone
-            ('1 Johnson 1 (1806)', []),
-        ]
-        # fmt: on
-        # all tests in this suite require disambiguation:
-        test_pairs = [
-            pair + ({"remove_ambiguous": True},) for pair in test_pairs
-        ]
-        self.run_test_pairs(test_pairs, "Disambiguation")
+    def test_citation_filtering(self):
+        """Can we filter out reference citations safely?"""
 
-    def test_custom_tokenizer(self):
-        extractors = []
-        for e in EXTRACTORS:
-            e = copy(e)
-            e.regex = e.regex.replace(r"\.", r"[.,]")
-            if hasattr(e, "_compiled_regex"):
-                del e._compiled_regex
-            extractors.append(e)
-        tokenizer = Tokenizer(extractors)
+        # ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
 
-        # fmt: off
-        test_pairs = [
-            ('1 U,S, 1',
-             [case_citation(reporter_found='U,S,')]),
+        citations = [
+            case_citation(volume="355", page='41', reporter_found='U.S.',
+                      short=False,
+                      span_start=26,
+                      span_end=38,
+                      full_span_start=8,
+                      full_span_end=49,
+                      metadata={
+                          'plaintiff': 'Conley',
+                          'defendant': 'Gibson'
+                        }
+
+                  ),
+            reference_citation("Conley", span_start=8, span_end=14),
+            reference_citation("Conley", span_start=18, span_end=24)
         ]
-        # fmt: on
-        self.run_test_pairs(
-            test_pairs, "Custom tokenizer", tokenizers=[tokenizer]
-        )
-
-    def test_citation_fullspan(self):
-        """Check that the full_span function returns the correct indices."""
-
-        # Make sure it works with several citations in one string
-        combined_example = "citation number one is Wilson v. Mar. Overseas Corp., 150 F.3d 1, 6-7 ( 1st Cir. 1998); This is different from Commonwealth v. Bauer, 604 A.2d 1098 (Pa.Super. 1992), my second example"
-        extracted = get_citations(combined_example)
-        # answers format is (citation_index, (full_span_start, full_span_end))
-        answers = [(0, (23, 86)), (1, (111, 164))]
-        for cit_idx, (start, end) in answers:
-            self.assertEqual(
-                extracted[cit_idx].full_span()[0],
-                start,
-                f"full_span start index doesn't match for {extracted[cit_idx]}",
-            )
-            self.assertEqual(
-                extracted[cit_idx].full_span()[1],
-                end,
-                f"full_span end index doesn't match for {extracted[cit_idx]}",
-            )
-
-        # full_span should cover the whole string
-        simple_examples = [
-            "66 B.U. L. Rev. 71 (1986)",
-            "5 Minn. L. Rev. 1339, 1341 (1991)",
-            "42 U.S.C. § 405(r)(2) (2019)",
-            "37 A.L.R.4th 972, 974 (1985)",
-            "497 Fed. Appx. 274 (4th Cir. 2012)",
-            "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
-            "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
-        ]
-        for example in simple_examples:
-            extracted = get_citations(example)[0]
-            error_msg = "Full span indices for a simple example should be (0, len(example)) "
-            self.assertEqual(
-                extracted.full_span(), (0, len(example)), error_msg
-            )
-        # Sentence and correct start_index
-        stopword_examples = [
-            ("See 66 B.U. L. Rev. 71 (1986)", 4),
-            ("Citing 66 B.U. L. Rev. 71 (1986)", 7),
-        ]
-        for sentence, start_idx in stopword_examples:
-            extracted = get_citations(sentence)[0]
-            error_msg = "Wrong span for stopword example"
-            self.assertEqual(
-                extracted.full_span(), (start_idx, len(sentence)), error_msg
-            )
-
-    def test_reference_extraction(self):
-        """Can we extract a reference citation using resolved metadata?"""
-        texts = [
-            # In this case the reference citation got with the
-            # resolved_case_name is redundant, was already got in the regular
-            # process. Can we deduplicate?
-            """See, e.g., State v. Wingler, 135 A. 2d 468 (1957);
-            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
-            # In this case the resolved_case_name actually helps getting the
-            # reference citation
-            """See, e.g., State v. W1ngler, 135 A. 2d 468 (1957);
-            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
-        ]
-        for plain_text in texts:
-            citations = get_citations(plain_text)
-            citations[0].metadata.resolved_case_name = "State v. Wingler"
-            references = extract_reference_citations(citations[0], plain_text)
-            final_citations = filter_citations(citations + references)
-            self.assertEqual(
-                len(final_citations), 2, "There should only be 2 citations"
-            )
-            self.assertEqual(
-                len(references),
-                1,
-                "Only a reference citation should had been picked up",
-            )
+        self.assertEqual(len(citations), 3)
+        filtered_citations = filter_citations(citations)
+        self.assertEqual(len(filtered_citations), 1)

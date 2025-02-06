@@ -318,6 +318,16 @@ def disambiguate_reporters(
     ]
 
 
+def overlapping_citations(cite1, cite2) -> bool:
+    """Check if citations overlap at all
+
+    Returns: True or false
+    """
+    start_1, end_1 = cite1.full_span()
+    start_2, end_2 = cite2.full_span()
+    return max(start_1, start_2) < min(end_1, end_2)
+
+
 def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     """Filter and order citations, ensuring reference citations are in sequence
 
@@ -330,18 +340,23 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     :return: Sorted and filtered citations
     """
     filtered_citations: List[CitationBase] = []
-    sorted_citations = sorted(citations, key=lambda citation: citation.span())
+    sorted_citations = sorted(
+        citations, key=lambda citation: citation.full_span()
+    )
     for citation in sorted_citations:
         if filtered_citations:
             last_citation = filtered_citations[-1]
-            last_span = last_citation.span()
-            current_span = citation.span()
-
-            if current_span == last_span and isinstance(
-                last_citation, ReferenceCitation
-            ):
-                # a single ReferenceCitation may be found via different
-                # names. Save the name metadata to account for collisions
+            is_overlapping = overlapping_citations(citation, last_citation)
+            if is_overlapping and isinstance(last_citation, ReferenceCitation):
+                # Remove the overlapping reference citation
+                filtered_citations.pop(-1)
+                filtered_citations.append(citation)
+                continue
+            if is_overlapping and isinstance(citation, ReferenceCitation):
+                # Skip overlapping reference citations
+                continue
+            filtered_citations.append(citation)
+            if isinstance(last_citation, ReferenceCitation):
                 for field in ReferenceCitation.name_fields:
                     if not getattr(last_citation.metadata, field):
                         setattr(
@@ -349,11 +364,8 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
                             field,
                             getattr(citation.metadata, field),
                         )
-
-            if current_span[0] <= last_span[1]:
-                # Remove overlapping citations that can occur in edge cases
-                continue
-        filtered_citations.append(citation)
+        else:
+            filtered_citations.append(citation)
     return filtered_citations
 
 
