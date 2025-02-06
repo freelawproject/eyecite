@@ -7,7 +7,7 @@ from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation, FullCaseCitation
+from eyecite.models import FullCaseCitation, ResourceCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
