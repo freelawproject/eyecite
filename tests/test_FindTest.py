@@ -9,7 +9,7 @@ from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation
+from eyecite.models import ResourceCitation, FullCitation, FullCaseCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -725,9 +725,16 @@ class FindTest(TestCase):
             )
 
     def test_citation_filtering(self):
-        """Can we filter out reference citations safely?"""
+        """Ensure citations with overlapping spans are correctly filtered
 
-        # ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
+        Imagine a scenario where
+        .... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ...
+        this returns two reference citations Conley, Gibson and the full citation
+        this shouldn't occur but if it did we would be able to filter these
+        correcly
+        """
+
+        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
 
         citations = [
             case_citation(volume="355", page='41', reporter_found='U.S.',
@@ -748,3 +755,4 @@ class FindTest(TestCase):
         self.assertEqual(len(citations), 3)
         filtered_citations = filter_citations(citations)
         self.assertEqual(len(filtered_citations), 1)
+        self.assertEqual(type(filtered_citations[0]), FullCaseCitation)
