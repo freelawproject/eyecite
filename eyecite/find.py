@@ -257,6 +257,7 @@ def _extract_shortform_citation(
     pin_cite, span_end, parenthetical = extract_pin_cite(
         words, index, prefix=cite_token.groups["page"]
     )
+    span_end = span_end if span_end else 0
 
     # make ShortCaseCitation
     citation = ShortCaseCitation(
