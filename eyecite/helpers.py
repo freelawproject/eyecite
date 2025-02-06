@@ -101,6 +101,11 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
+    if m["parenthetical"] != None:
+        if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
+            citation.full_span_end = citation.full_span_end - (
+                len(m["parenthetical"]) - len(citation.metadata.parenthetical)
+            )
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -356,14 +361,6 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
                 # Skip overlapping reference citations
                 continue
             filtered_citations.append(citation)
-            if isinstance(last_citation, ReferenceCitation):
-                for field in ReferenceCitation.name_fields:
-                    if not getattr(last_citation.metadata, field):
-                        setattr(
-                            last_citation.metadata,
-                            field,
-                            getattr(citation.metadata, field),
-                        )
         else:
             filtered_citations.append(citation)
     return filtered_citations

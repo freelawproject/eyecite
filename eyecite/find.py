@@ -81,6 +81,9 @@ def get_citations(
                 # Using the plaintiff or defendant
                 references = extract_reference_citations(citation, plain_text)
                 citations.extend(references)
+                # if a duplicate citation is found from another citation
+                # remove it essentially - we resolve this later
+                citations = list(set(citations))
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
@@ -334,3 +337,6 @@ def _extract_id_citation(
             "parenthetical": parenthetical,
         },
     )
+
+
+# [he has not agreed so to submit.’” Howsam v. Dean Witter Reynolds, Inc. , 537 U.S. 79, (2002) (combined mandamus and interlocutory appeal) (citing Howsam at 84, 123 S. Ct. at 592)]
