@@ -101,10 +101,13 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
-    if m["parenthetical"] is not None:
+    if (
+        m["parenthetical"] is not None
+        and citation.metadata.parenthetical is not None
+    ):
         if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
-            citation.full_span_end = citation.full_span_end - (
-                len(m["parenthetical"]) - len(citation.metadata.parenthetical)
+            citation.full_span_end -= len(m["parenthetical"]) - len(
+                citation.metadata.parenthetical
             )
     citation.metadata.year = m["year"]
     if m["year"]:
@@ -323,11 +326,8 @@ def disambiguate_reporters(
     ]
 
 
-def overlapping_citations(cite1, cite2) -> bool:
-    """Check if citations overlap at all
-
-    Returns: True or false
-    """
+def overlapping_citations(cite1: CaseCitation, cite2: CaseCitation) -> bool:
+    """Check if citations overlap at all"""
     start_1, end_1 = cite1.full_span()
     start_2, end_2 = cite2.full_span()
     return max(start_1, start_2) < min(end_1, end_2)
