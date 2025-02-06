@@ -737,20 +737,19 @@ class FindTest(TestCase):
         ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
 
         citations = [
-            case_citation(volume="355", page='41', reporter_found='U.S.',
-                      short=False,
-                      span_start=26,
-                      span_end=38,
-                      full_span_start=8,
-                      full_span_end=49,
-                      metadata={
-                          'plaintiff': 'Conley',
-                          'defendant': 'Gibson'
-                        }
-
-                  ),
+            case_citation(
+                volume="355",
+                page="41",
+                reporter_found="U.S.",
+                short=False,
+                span_start=26,
+                span_end=38,
+                full_span_start=8,
+                full_span_end=49,
+                metadata={"plaintiff": "Conley", "defendant": "Gibson"},
+            ),
             reference_citation("Conley", span_start=8, span_end=14),
-            reference_citation("Conley", span_start=18, span_end=24)
+            reference_citation("Conley", span_start=18, span_end=24),
         ]
         self.assertEqual(len(citations), 3)
         filtered_citations = filter_citations(citations)
