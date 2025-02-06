@@ -101,7 +101,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
-    if m["parenthetical"] != None:
+    if m["parenthetical"] is not None:
         if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
             citation.full_span_end = citation.full_span_end - (
                 len(m["parenthetical"]) - len(citation.metadata.parenthetical)

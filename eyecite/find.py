@@ -337,6 +337,3 @@ def _extract_id_citation(
             "parenthetical": parenthetical,
         },
     )
-
-
-# [he has not agreed so to submit.’” Howsam v. Dean Witter Reynolds, Inc. , 537 U.S. 79, (2002) (combined mandamus and interlocutory appeal) (citing Howsam at 84, 123 S. Ct. at 592)]

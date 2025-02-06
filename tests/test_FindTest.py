@@ -1,15 +1,13 @@
 import os
-from copy import copy
 from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
-from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation, FullCitation, FullCaseCitation
+from eyecite.models import ResourceCitation, FullCaseCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -21,7 +19,6 @@ from eyecite.test_factories import (
 )
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
-    EXTRACTORS,
     AhocorasickTokenizer,
     HyperscanTokenizer,
     Tokenizer,
