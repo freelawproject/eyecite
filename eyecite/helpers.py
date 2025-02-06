@@ -101,11 +101,17 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
-    if m["parenthetical"] is not None and isinstance(citation.metadata.parenthetical, str):
+
+    if (
+        citation.full_span_end
+        and m["parenthetical"] is not None
+        and isinstance(citation.metadata.parenthetical, str)
+    ):
         if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
-            citation.full_span_end -= len(m["parenthetical"]) - len(
+            offset = len(m["parenthetical"]) - len(
                 citation.metadata.parenthetical
             )
+            citation.full_span_end = citation.full_span_end - offset
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
