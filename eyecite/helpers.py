@@ -326,10 +326,12 @@ def disambiguate_reporters(
     ]
 
 
-def overlapping_citations(cite1: CaseCitation, cite2: CaseCitation) -> bool:
+def overlapping_citations(
+    full_span_1: Tuple[int, int], full_span_2: Tuple[int, int]
+) -> bool:
     """Check if citations overlap at all"""
-    start_1, end_1 = cite1.full_span()
-    start_2, end_2 = cite2.full_span()
+    start_1, end_1 = full_span_1
+    start_2, end_2 = full_span_2
     return max(start_1, start_2) < min(end_1, end_2)
 
 
@@ -351,7 +353,9 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     for citation in sorted_citations:
         if filtered_citations:
             last_citation = filtered_citations[-1]
-            is_overlapping = overlapping_citations(citation, last_citation)
+            is_overlapping = overlapping_citations(
+                citation.full_span(), last_citation.full_span()
+            )
             if is_overlapping and isinstance(last_citation, ReferenceCitation):
                 # Remove the overlapping reference citation
                 filtered_citations.pop(-1)
