@@ -349,6 +349,7 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     :param citations: List of citations
     :return: Sorted and filtered citations
     """
+    citations = list({citation.span(): citation for citation in citations}.values())
     filtered_citations: List[CitationBase] = []
     sorted_citations = sorted(
         citations, key=lambda citation: citation.full_span()

@@ -82,9 +82,6 @@ def get_citations(
                 # Using the plaintiff or defendant
                 references = extract_reference_citations(citation, plain_text)
                 citations.extend(references)
-                # if a duplicate citation is found from another citation
-                # remove it essentially - we resolve this later
-                citations = list(set(citations))
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
@@ -169,7 +166,7 @@ def extract_reference_citations(
     if not regexes:
         return []
     pin_cite_re = (
-        rf"\b(?:{'|'.join(regexes)})\s+at\s+(?P<pin_cite>\d{{1,5}})\b"
+        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
     )
     reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
