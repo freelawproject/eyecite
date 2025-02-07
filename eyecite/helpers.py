@@ -12,6 +12,7 @@ from eyecite.models import (
     FullJournalCitation,
     FullLawCitation,
     ParagraphToken,
+    ReferenceCitation,
     ResourceCitation,
     StopWordToken,
     Token,
@@ -100,6 +101,17 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
+
+    if (
+        citation.full_span_end
+        and m["parenthetical"] is not None
+        and isinstance(citation.metadata.parenthetical, str)
+    ):
+        if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
+            offset = len(m["parenthetical"]) - len(
+                citation.metadata.parenthetical
+            )
+            citation.full_span_end = citation.full_span_end - offset
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -141,9 +153,11 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             break
     if start_index:
         citation.full_span_start = citation.span()[0] - offset
-        citation.metadata.defendant = "".join(
+        defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", ")
+        if defendant.strip():
+            citation.metadata.defendant = defendant
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
@@ -313,6 +327,53 @@ def disambiguate_reporters(
         for c in citations
         if not isinstance(c, ResourceCitation) or c.edition_guess
     ]
+
+
+def overlapping_citations(
+    full_span_1: Tuple[int, int], full_span_2: Tuple[int, int]
+) -> bool:
+    """Check if citations overlap at all"""
+    start_1, end_1 = full_span_1
+    start_2, end_2 = full_span_2
+    return max(start_1, start_2) < min(end_1, end_2)
+
+
+def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
+    """Filter and order citations, ensuring reference citations are in sequence
+
+    This function resolves rare but possible overlaps between ref. citations
+    and short citations. It also orders all citations by their `citation.span`,
+    as reference citations may be extracted out of order. The final result is a
+    properly sorted list of citations as they appear in the text
+
+    :param citations: List of citations
+    :return: Sorted and filtered citations
+    """
+    citations = list(
+        {citation.span(): citation for citation in citations}.values()
+    )
+    filtered_citations: List[CitationBase] = []
+    sorted_citations = sorted(
+        citations, key=lambda citation: citation.full_span()
+    )
+    for citation in sorted_citations:
+        if filtered_citations:
+            last_citation = filtered_citations[-1]
+            is_overlapping = overlapping_citations(
+                citation.full_span(), last_citation.full_span()
+            )
+            if is_overlapping and isinstance(last_citation, ReferenceCitation):
+                # Remove the overlapping reference citation
+                filtered_citations.pop(-1)
+                filtered_citations.append(citation)
+                continue
+            if is_overlapping and isinstance(citation, ReferenceCitation):
+                # Skip overlapping reference citations
+                continue
+            filtered_citations.append(citation)
+        else:
+            filtered_citations.append(citation)
+    return filtered_citations
 
 
 joke_cite: List[CitationBase] = [

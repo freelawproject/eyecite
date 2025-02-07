@@ -119,6 +119,45 @@ Extracting Citations
    that might refer to more than one reporter and can't be narrowed down by date.
 3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
 
+Resolving Reference Citations
+-----------------------------
+
+Eyecite now supports a two-step process for extracting and resolving reference citations. This feature improves handling of citations that reference previously mentioned cases without explicitly repeating the full case name or citation.
+
+Reference citations, such as “Theatre Enterprises at 552”, can be difficult to extract accurately if a judge is citing to `Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954)` they lack a full case name. To address this, Eyecite allows for an initial citation extraction, followed by a secondary reference resolution step. If you have an external database (e.g., CourtListener) that provides resolved case names, you can use this feature to enhance citation finding.
+
+from eyecite import get_citations
+from eyecite.find import extract_reference_citations
+from eyecite.helpers import filter_citations
+
+plain_text = (
+    "quoting Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954); "
+    "alterations in original). Thus, the District Court understood that allegations of "
+    "parallel business conduct, taken alone, do not state a claim under § 1; "
+    "plaintiffs must allege additional facts that “ten[d] to exclude independent "
+    "self-interested conduct as an As Theatre Enterprises at 552 held, parallel"
+)
+
+::
+
+    from eyecite import get_citations
+    from eyecite.find import extract_reference_citations
+    from eyecite.helpers import filter_citations
+
+    # Step 1: Extract full citations
+    citations = get_citations(plain_text)
+
+    # Step 2: Resolve the case name from an external database or prior knowledge
+    citations[0].metadata.resolved_case_name_short = "Theatre Enterprises"
+
+    # Step 3: Extract reference citations using the resolved name
+    references = extract_reference_citations(citations[0], plain_text)
+
+    # Step 4: Filter and merge citations
+    new_citations = filter_citations(citations + references)
+
+Keep in mind that this feature requires an external database or heuristic method to resolve the short case name before extracting reference citations a second time.
+
 
 Cleaning Input Text
 -------------------

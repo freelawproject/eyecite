@@ -3,6 +3,8 @@ from typing import List, Optional, Tuple
 from unittest import TestCase
 
 from eyecite import get_citations
+from eyecite.find import extract_reference_citations
+from eyecite.helpers import filter_citations
 from eyecite.models import FullCitation, Resource
 from eyecite.resolve import resolve_citations
 
@@ -30,6 +32,57 @@ class ResolveTest(TestCase):
             format_resolution(actual_resolution_dict),
             format_resolution(expected_resolution_dict),
         )
+
+    def checkReferenceResolution(
+        self,
+        expected_indices: list[list[int]],
+        citation_text: str,
+        resolved_case_name_short: Optional[str] = None,
+    ):
+        """
+        Helper function to help test reference citations.
+
+        Args:
+            expected_indices: A list of expected indices for the resolved
+                citations.
+            citation_text: A string of citation text to process.
+            resolved_case_name_short: a case name for simulating post-resolution
+                metadata assignment to full case citations; this will also be
+                used as a flag to use a second round of reference extractions
+        Returns:
+            None
+        """
+        citations = get_citations(citation_text)
+        if resolved_case_name_short:
+            citations[0].metadata.resolved_case_name_short = (
+                resolved_case_name_short
+            )
+            citations.extend(
+                extract_reference_citations(
+                    citations[0], citation_text  # type: ignore[arg-type]
+                )
+            )
+            citations = filter_citations(citations)
+
+        # Step 2: Build a helper dict to map corrected citations to indices
+        resolution_index_map = {
+            cite.corrected_citation(): idx
+            for idx, cite in enumerate(citations)
+        }
+
+        # Step 3: Resolve citations and format the resolution
+        resolved_citations = resolve_citations(citations)
+        formatted_resolution = format_resolution(resolved_citations)
+
+        # Step 4: Map resolved citations to their indices
+        result = {
+            key: [resolution_index_map[value] for value in values]
+            for key, values in formatted_resolution.items()
+        }
+
+        # Step 5: Compare the actual results with expected indices
+        actual_indices = list(result.values())
+        self.assertEqual(expected_indices, actual_indices)
 
     def checkResolution(
         self, *expected_resolutions: Tuple[Optional[int], str]
@@ -297,3 +350,37 @@ class ResolveTest(TestCase):
             ),
             (2, "However, this should succeed, Lorem, 1 U.S., at 52."),
         )
+
+    def test_reference_resolution(self):
+        for test_tuple in (
+            ([[0, 1]], "Foo v. Bar, 1 U.S. 1 ... Foo at 2"),
+            ([[0]], "Foo at 2. .... ; Foo v. Bar, 1 U.S. 1"),
+            (
+                [[0, 1]],
+                "Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that",
+            ),
+            (
+                [[0, 2], [1]],
+                "Foo v. Bar 1 U.S. 12, 347-348; 12 U.S. 1. someting; In Foo at 2 we see that",
+            ),
+            (
+                [[0, 2], [1]],
+                "Foo v. Bar 1 U.S. 12, 347-348; In Smith, 12 U.S. 1 (1999) we saw something else. someting. In Foo at 2 we see that",
+            ),
+            # Ok resolved_case_name and order, ReferenceCitation should be resolved
+            (
+                [[0, 1], [2]],
+                "State v. Dze 3 U.S. 22; something something. In Doe at 122, something more. In State v. Doe 4 U.S. 33",
+                "Doe",
+            ),
+            # due to the reference matching more than 1 full citation, we don't
+            # resolve
+            (
+                [[0], [1]],
+                "State v. Smlth 3 U.S. 22; something something. In State v. Smith 4 U.S. 33. In Smith at 122, something more",
+                "Smith",
+            ),
+            # ambiguous resolved_case_name, ReferenceCitation should not be
+            # resolved
+        ):
+            self.checkReferenceResolution(*test_tuple)

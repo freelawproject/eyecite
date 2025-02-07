@@ -7,6 +7,7 @@ from eyecite.models import (
     FullCaseCitation,
     FullCitation,
     IdCitation,
+    ReferenceCitation,
     Resource,
     ResourceType,
     ShortCaseCitation,
@@ -79,6 +80,31 @@ def _filter_by_matching_antecedent(
             matches.append(resource)
 
     # Remove duplicates and only accept if one candidate remains
+    matches = list(set(matches))
+    return matches[0] if len(matches) == 1 else None
+
+
+def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
+    resolved_full_cites: ResolvedFullCites,
+    reference_citation: ReferenceCitation,
+) -> Optional[ResourceType]:
+    """Filter out reference citations that point to more than 1 Resource"""
+    matches: List[ResourceType] = []
+
+    match_count = 0
+    reference_values = []
+    for key in ReferenceCitation.name_fields:
+        reference_value = getattr(reference_citation.metadata, key)
+        if reference_value:
+            reference_values.append(reference_value)
+    for citation, resource in resolved_full_cites:
+        full_cite_values = list(
+            [value for value in citation.metadata.__dict__.values() if value]
+        )
+        if set(full_cite_values) & set(reference_values):
+            match_count += 1
+            matches.append(resource)
+
     matches = list(set(matches))
     return matches[0] if len(matches) == 1 else None
 
@@ -180,6 +206,29 @@ def _resolve_supra_citation(
     )
 
 
+def _resolve_reference_citation(
+    reference_citation: ReferenceCitation,
+    resolved_full_cites: ResolvedFullCites,
+) -> Optional[ResourceType]:
+    """Resolve reference citations
+
+    Try to resolve reference citations by checking whether their is only one
+    full citation that appears with either the defendant or plaintiff or
+    resolved_case_name_short or resolved_case_name
+    field of any of the previously resolved full citations.
+    """
+    if (
+        not reference_citation.metadata.defendant
+        and not reference_citation.metadata.plaintiff
+        and not reference_citation.metadata.resolved_case_name_short
+        and not reference_citation.metadata.resolved_case_name
+    ):
+        return None
+    return _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
+        resolved_full_cites, reference_citation
+    )
+
+
 def _resolve_id_citation(
     id_citation: IdCitation,
     last_resolution: ResourceType,
@@ -214,6 +263,10 @@ def resolve_citations(
         [SupraCitation, ResolvedFullCites],
         Optional[ResourceType],
     ] = _resolve_supra_citation,
+    resolve_reference_citation: Callable[
+        [ReferenceCitation, ResolvedFullCites],
+        Optional[ResourceType],
+    ] = _resolve_reference_citation,
     resolve_id_citation: Callable[
         [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
     ] = _resolve_id_citation,
@@ -285,6 +338,11 @@ def resolve_citations(
         # If the citation is a supra citation, try to resolve it
         elif isinstance(citation, SupraCitation):
             resolution = resolve_supra_citation(citation, resolved_full_cites)
+
+        elif isinstance(citation, ReferenceCitation):
+            resolution = resolve_reference_citation(
+                citation, resolved_full_cites
+            )
 
         # If the citation is an id citation, try to resolve it
         elif isinstance(citation, IdCitation):

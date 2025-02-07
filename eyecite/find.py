@@ -1,12 +1,15 @@
+import re
 from typing import List, Type, cast
 
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
+    filter_citations,
     joke_cite,
     match_on_tokens,
 )
 from eyecite.models import (
+    CaseReferenceToken,
     CitationBase,
     CitationToken,
     FullCaseCitation,
@@ -15,6 +18,7 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
+    ReferenceCitation,
     ResourceCitation,
     SectionToken,
     ShortCaseCitation,
@@ -25,6 +29,7 @@ from eyecite.models import (
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
+from eyecite.utils import DISALLOWED_NAMES
 
 
 def get_citations(
@@ -54,7 +59,7 @@ def get_citations(
         return joke_cite
 
     words, citation_tokens = tokenizer.tokenize(plain_text)
-    citations = []
+    citations: list[CitationBase] = []
 
     for i, token in citation_tokens:
         citation: CitationBase
@@ -70,6 +75,13 @@ def get_citations(
                 citation = _extract_shortform_citation(words, i)
             else:
                 citation = _extract_full_citation(words, i)
+                if citations and isinstance(citation, FullCitation):
+                    citation.is_parallel_citation(citations[-1])
+
+                # Check for reference citations that follow a full citation
+                # Using the plaintiff or defendant
+                references = extract_reference_citations(citation, plain_text)
+                citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
@@ -99,6 +111,8 @@ def get_citations(
 
         citations.append(citation)
 
+    citations = filter_citations(citations)
+
     # Remove citations with multiple reporter candidates where we couldn't
     # guess correct reporter
     if remove_ambiguous:
@@ -107,8 +121,72 @@ def get_citations(
     # Returns a list of citations ordered in the sequence that they appear in
     # the document. The ordering of this list is important for reconstructing
     # the references of the ShortCaseCitation, SupraCitation, and
-    # IdCitation objects.
+    # IdCitation and ReferenceCitation objects.
     return citations
+
+
+def extract_reference_citations(
+    citation: FullCitation,
+    plain_text: str,
+) -> List[ReferenceCitation]:
+    """Extract reference citations that follow a full citation
+
+    :param citation: the full case citation found
+    :param plain_text: the text
+    :return: Pin cite reference citations
+    """
+    if len(plain_text) <= citation.span()[-1]:
+        return []
+    if not isinstance(citation, FullCaseCitation):
+        return []
+
+    def is_valid_name(name: str) -> bool:
+        """Validate name isnt a regex issue
+
+        Excludes strings like Co., numbers or lower case strs
+
+        :param name: The name to check
+        :return: True if usable, false if not
+        """
+        return (
+            isinstance(name, str)
+            and len(name) > 2
+            and name[0].isupper()
+            and not name.endswith(".")
+            and not name.isdigit()
+            and name.lower() not in DISALLOWED_NAMES
+        )
+
+    regexes = [
+        rf"(?P<{key}>{re.escape(value)})"
+        for key in ReferenceCitation.name_fields
+        if (value := getattr(citation.metadata, key, None))
+        and is_valid_name(value)
+    ]
+    if not regexes:
+        return []
+    pin_cite_re = (
+        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
+    )
+    reference_citations = []
+    remaining_text = plain_text[citation.span()[-1] :]
+    offset = citation.span()[-1]
+    for match in re.compile(pin_cite_re).finditer(remaining_text):
+        start, end = match.span()
+        matched_text = match.group(0)
+        reference = ReferenceCitation(
+            token=CaseReferenceToken(
+                data=matched_text, start=start + offset, end=end + offset
+            ),
+            span_start=start + offset,
+            span_end=end + offset,
+            full_span_start=start + offset,
+            full_span_end=end + offset,
+            index=0,
+            metadata=match.groupdict(),
+        )
+        reference_citations.append(reference)
+    return reference_citations
 
 
 def _extract_full_citation(
@@ -170,7 +248,10 @@ def _extract_shortform_citation(
         strings_only=True,
         forward=False,
     )
+    offset = 0
     if m:
+        ante_start, ante_end = m.span()
+        offset = ante_end - ante_start
         antecedent_guess = m["antecedent"].strip()
 
     # Get pin_cite
@@ -178,6 +259,7 @@ def _extract_shortform_citation(
     pin_cite, span_end, parenthetical = extract_pin_cite(
         words, index, prefix=cite_token.groups["page"]
     )
+    span_end = span_end if span_end else 0
 
     # make ShortCaseCitation
     citation = ShortCaseCitation(
@@ -186,6 +268,8 @@ def _extract_shortform_citation(
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
+        full_span_start=cite_token.start - offset,
+        full_span_end=max([span_end, cite_token.end]),
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,

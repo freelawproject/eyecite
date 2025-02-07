@@ -4,15 +4,18 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
+from eyecite.find import extract_reference_citations
+from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation
+from eyecite.models import FullCaseCitation, FullCitation, ResourceCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
     journal_citation,
     law_citation,
+    reference_citation,
     supra_citation,
     unknown_citation,
 )
@@ -145,7 +148,7 @@ class FindTest(TestCase):
                                       'parenthetical': 'overruling foo'}),
               case_citation(page='2', reporter='S. Ct.', year=1982,
                             metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test 1 U.S. 12, 347-348',
+                                      'defendant': 'test',
                                       'court': 'ca4',
                                       'pin_cite': '358',
                                       'parenthetical': 'overruling foo'}),
@@ -453,6 +456,89 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
+            # Eyecite has issue with linebreaks when identifying defendants and
+            # previously could store defendant as only whitespace
+            ('<em>\n   rt. denied,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n',
+             [case_citation(
+                 page='1085',
+                 volume="541",
+                 reporter="U.S.",
+                 year=2004,
+                 metadata={'plaintiff': None,
+                           'defendant': None,
+                           'court': 'scotus'})],
+             {'clean': ['html', 'inline_whitespace']}),
+            # Test filtering overlapping citations - this finds four citations
+            # but should filter down to three
+            ("Miles v. Smith 1 Ga. 1; asdfasdf asd Something v. Else, 1 Miles 3; 1 Miles at 10",
+             [case_citation(page='1',
+                            volume="1",
+                            reporter="Ga.",
+                            metadata={'plaintiff': 'Miles',
+                                      'defendant': 'Smith'}),
+              case_citation(page='3',
+                            volume="1",
+                            reporter="Miles",
+                            metadata={'plaintiff': 'Something',
+                                      'defendant': 'Else'}
+                            ),
+              case_citation(volume="1", page='10', reporter='Miles',
+                            short=True,
+                            metadata={'pin_cite': '10'})]),
+            ('General Casualty cites as compelling Amick v. Liberty Mut. Ins. Co., 455 A.2d 793 (R.I. 1983). In that case ... Stats, do. See Amick at 795',
+             [case_citation(page='793',
+                            volume="455",
+                            reporter="A.2d",
+                            year=1983,
+                            metadata={'plaintiff': 'Amick',
+                                      'defendant': 'Liberty Mut. Ins. Co.',
+                                      'court': 'ri'
+                                      }),
+              reference_citation('Amick at 795', metadata={'plaintiff': 'Amick', 'pin_cite': '795'})]),
+            # Test reference citation
+            ('Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
+                                      'pin_cite': '347-348'}),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+            ('Foo v. United States 1 U.S. 12, 347-348. something something ... the United States at 1776 we see that and Foo at 62',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'United States',
+                                      'pin_cite': '347-348'}),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+            # Test that reference citation must occur after full case citation
+            ('In Foo at 62 we see that, Foo v. Bar 1 U.S. 12, 347-348. something something,',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
+                                      'pin_cite': '347-348'})]),
+            # Test reference against defendant name
+            ('In re Foo 1 Mass. 12, 347-348. something something, in Foo at 62 we see that, ',
+             [case_citation(page='12', reporter="Mass.", volume="1",
+                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'}),
+              reference_citation('Foo at 62',
+                                 metadata={'defendant': 'Foo',
+                                           "pin_cite": "62"})]),
+            # Test reference citation that contains at
+            ('In re Foo 1 Mass. 12, 347-348. something something, in at we see that',
+             [case_citation(page='12', reporter="Mass.", volume="1",
+                            metadata={'defendant': 'Foo', 'pin_cite': '347-348'})]),
+            # Test U.S. as plaintiff with reference citations
+            ('U.S. v. Boch Oldsmobile, Inc., 909 F.2d 657, 660 (1st Cir.1990); Piper Aircraft, 454 U.S. at 241',
+             [case_citation(page='657', reporter="F.2d", volume="909",
+                            metadata={'plaintiff': 'U.S.', 'defendant': 'Boch Oldsmobile, Inc.', 'pin_cite': '660'}),
+              case_citation(volume="454", page='241', reporter_found='U.S.', short=True,
+                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
+            # Test reference citation after an id citation
+            ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
+             [case_citation(page='535', year=1974, volume="417",
+                            reporter="U. S.",
+                            metadata={'plaintiff': 'Morton', 'defendant': 'Mancari', "pin_cite": "552", "court": "scotus"}),
+              id_citation('Id.,', metadata={}),
+              reference_citation('Mancari',
+                                 metadata={'defendant': 'Mancari', "pin_cite": "665"})]),
             # Test Conn. Super. Ct. regex variation.
             ('Failed to recognize 1993 Conn. Super. Ct. 5243-P',
              [case_citation(volume='1993', reporter='Conn. Super. Ct.',
@@ -658,6 +744,36 @@ class FindTest(TestCase):
                 % (edition[0], year, expected, date_in_reporter),
             )
 
+    def test_citation_filtering(self):
+        """Ensure citations with overlapping spans are correctly filtered
+
+        Imagine a scenario where a bug incorrectly identifies the following
+        .... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ...
+        this returns two reference citations Conley, Gibson and the full cite
+        this shouldn't occur but if it did we would be able to filter these
+        correcly
+        """
+        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
+        citations = [
+            case_citation(
+                volume="355",
+                page="41",
+                reporter_found="U.S.",
+                short=False,
+                span_start=26,
+                span_end=38,
+                full_span_start=8,
+                full_span_end=49,
+                metadata={"plaintiff": "Conley", "defendant": "Gibson"},
+            ),
+            reference_citation("Conley", span_start=8, span_end=14),
+            reference_citation("Conley", span_start=18, span_end=24),
+        ]
+        self.assertEqual(len(citations), 3)
+        filtered_citations = filter_citations(citations)
+        self.assertEqual(len(filtered_citations), 1)
+        self.assertEqual(type(filtered_citations[0]), FullCaseCitation)
+
     def test_disambiguate_citations(self):
         # fmt: off
         test_pairs = [
@@ -794,3 +910,34 @@ class FindTest(TestCase):
             self.assertEqual(
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
+
+    def test_reference_extraction(self):
+        """Can we extract a reference citation using resolved metadata?"""
+        texts = [
+            # In this case the reference citation got with the
+            # resolved_case_name is redundant, was already got in the regular
+            # process. Can we deduplicate?
+            """See, e.g., State v. Wingler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+            # In this case the resolved_case_name actually helps getting the
+            # reference citation
+            """See, e.g., State v. W1ngler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+        ]
+        for plain_text in texts:
+            citations = get_citations(plain_text)
+            found_cite = citations[0]
+            if isinstance(found_cite, FullCitation):
+                found_cite.metadata.resolved_case_name = "State v. Wingler"
+                references = extract_reference_citations(
+                    found_cite, plain_text
+                )
+                final_citations = filter_citations(citations + references)
+                self.assertEqual(
+                    len(final_citations), 2, "There should only be 2 citations"
+                )
+                self.assertEqual(
+                    len(references),
+                    1,
+                    "Only a reference citation should had been picked up",
+                )
