@@ -580,6 +580,59 @@ class FindTest(TestCase):
                               metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
                                         'court': 'pa'})]),
             ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
+            # Test volume nominative reporter
+            ("Ridgely's Notebook, 362",
+             [case_citation(volume=None,
+                            reporter="Ridgely's Notebook",
+                            page='362',
+                            groups={'volume_nominative': None},
+                            nominative=True
+                            )]),
+            # Test volume nominative reporter with right single quotation mark
+            ('Bayard’s Notebook, 235',
+             [case_citation(volume=None,
+                            reporter="Bayard’s Notebook",
+                            page='235',
+                            groups={'volume_nominative': None},
+                            nominative=True
+                            )]),
+            # Test citation with parallel citation in parentheses
+            ('24 Del. (1 Boyce) 1',
+             [case_citation(reporter="Del.",
+                            volume='24',
+                            page='1',
+                            groups={'volume_nominative': '1',
+                                    'reporter_nominative': 'Boyce'},
+                            nominative=True
+                            )]),
+            # Test citation with parallel citation in parentheses and year
+            ('Smith v. Henry, 18 S.C.L. (2 Bail.) 118 (1831)',
+             [case_citation(reporter="S.C.L.",
+                            volume='18',
+                            year=1831,
+                            page='118',
+                            groups={'volume_nominative': '2',
+                                    'reporter_nominative': 'Bail.'},
+                            metadata={'plaintiff': 'Smith',
+                                      'defendant': 'Henry'}
+                            )]),
+            # Test citation with P
+            ('Metzler v. Arcadian Corp.  1997 OSHD (CCH) P31,311',
+             [case_citation(reporter="OSHD (CCH)",
+                            volume='1997',
+                            page='31,311',
+                            metadata={'plaintiff': 'Metzler',
+                                      'defendant': 'Arcadian Corp.'}
+                            )]),
+            # Test another citation with P
+            ('CCH OSHD P 20,091 (1975)',
+             [case_citation(reporter="CCH OSHD",
+                            year=1975,
+                            volume=None,
+                            page='20,091'
+                            )]),
+            # Test hyphenated volume
+            ('Williams v. IRS, 2007-2 U.S. Tax Cas. (CCH) P50,568 (E.D. Mo. 2007)', [case_citation(reporter="U.S. Tax Cas. (CCH)", volume='2007-2', page='50,568', metadata={'plaintiff': 'Williams', 'defendant': 'IRS', 'court': 'moed', 'year': '2007'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")

@@ -51,6 +51,7 @@ def case_citation(
     reporter="U.S.",
     volume="1",
     short=False,
+    nominative=False,
     **kwargs,
 ):
     """Convenience function for creating mock CaseCitation objects."""
@@ -64,6 +65,10 @@ def case_citation(
         metadata.setdefault("pin_cite", page)
     groups.setdefault("volume", volume)
     groups.setdefault("page", page)
+    if nominative and not volume:
+        # We don't need volume key in groups if we are testing a citation with
+        # nominative reporter
+        del groups["volume"]
     cls = ShortCaseCitation if short else FullCaseCitation
     return resource_citation(cls, source_text, reporter, short, **kwargs)
 
