@@ -4,10 +4,12 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
+from eyecite.find import extract_reference_citations
+from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation
+from eyecite.models import FullCaseCitation, FullCitation, ResourceCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -500,6 +502,12 @@ class FindTest(TestCase):
                                       'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+            ('Foo v. United States 1 U.S. 12, 347-348. something something ... the United States at 1776 we see that and Foo at 62',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'United States',
+                                      'pin_cite': '347-348'}),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
             # Test that reference citation must occur after full case citation
             ('In Foo at 62 we see that, Foo v. Bar 1 U.S. 12, 347-348. something something,',
              [case_citation(page='12',
@@ -775,6 +783,36 @@ class FindTest(TestCase):
                 % (edition[0], year, expected, date_in_reporter),
             )
 
+    def test_citation_filtering(self):
+        """Ensure citations with overlapping spans are correctly filtered
+
+        Imagine a scenario where a bug incorrectly identifies the following
+        .... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ...
+        this returns two reference citations Conley, Gibson and the full cite
+        this shouldn't occur but if it did we would be able to filter these
+        correcly
+        """
+        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
+        citations = [
+            case_citation(
+                volume="355",
+                page="41",
+                reporter_found="U.S.",
+                short=False,
+                span_start=26,
+                span_end=38,
+                full_span_start=8,
+                full_span_end=49,
+                metadata={"plaintiff": "Conley", "defendant": "Gibson"},
+            ),
+            reference_citation("Conley", span_start=8, span_end=14),
+            reference_citation("Conley", span_start=18, span_end=24),
+        ]
+        self.assertEqual(len(citations), 3)
+        filtered_citations = filter_citations(citations)
+        self.assertEqual(len(filtered_citations), 1)
+        self.assertEqual(type(filtered_citations[0]), FullCaseCitation)
+
     def test_disambiguate_citations(self):
         # fmt: off
         test_pairs = [
@@ -911,3 +949,34 @@ class FindTest(TestCase):
             self.assertEqual(
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
+
+    def test_reference_extraction(self):
+        """Can we extract a reference citation using resolved metadata?"""
+        texts = [
+            # In this case the reference citation got with the
+            # resolved_case_name is redundant, was already got in the regular
+            # process. Can we deduplicate?
+            """See, e.g., State v. Wingler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+            # In this case the resolved_case_name actually helps getting the
+            # reference citation
+            """See, e.g., State v. W1ngler, 135 A. 2d 468 (1957);
+            [State v. Wingler at 175, citing, Minnesota ex rel.]""",
+        ]
+        for plain_text in texts:
+            citations = get_citations(plain_text)
+            found_cite = citations[0]
+            if isinstance(found_cite, FullCitation):
+                found_cite.metadata.resolved_case_name = "State v. Wingler"
+                references = extract_reference_citations(
+                    found_cite, plain_text
+                )
+                final_citations = filter_citations(citations + references)
+                self.assertEqual(
+                    len(final_citations), 2, "There should only be 2 citations"
+                )
+                self.assertEqual(
+                    len(references),
+                    1,
+                    "Only a reference citation should had been picked up",
+                )

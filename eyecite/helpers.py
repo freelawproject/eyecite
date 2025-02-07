@@ -12,6 +12,7 @@ from eyecite.models import (
     FullJournalCitation,
     FullLawCitation,
     ParagraphToken,
+    ReferenceCitation,
     ResourceCitation,
     StopWordToken,
     Token,
@@ -100,6 +101,17 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
+
+    if (
+        citation.full_span_end
+        and m["parenthetical"] is not None
+        and isinstance(citation.metadata.parenthetical, str)
+    ):
+        if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
+            offset = len(m["parenthetical"]) - len(
+                citation.metadata.parenthetical
+            )
+            citation.full_span_end = citation.full_span_end - offset
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -317,6 +329,15 @@ def disambiguate_reporters(
     ]
 
 
+def overlapping_citations(
+    full_span_1: Tuple[int, int], full_span_2: Tuple[int, int]
+) -> bool:
+    """Check if citations overlap at all"""
+    start_1, end_1 = full_span_1
+    start_2, end_2 = full_span_2
+    return max(start_1, start_2) < min(end_1, end_2)
+
+
 def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     """Filter and order citations, ensuring reference citations are in sequence
 
@@ -328,18 +349,30 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     :param citations: List of citations
     :return: Sorted and filtered citations
     """
+    citations = list(
+        {citation.span(): citation for citation in citations}.values()
+    )
     filtered_citations: List[CitationBase] = []
-    sorted_citations = sorted(citations, key=lambda citation: citation.span())
+    sorted_citations = sorted(
+        citations, key=lambda citation: citation.full_span()
+    )
     for citation in sorted_citations:
         if filtered_citations:
             last_citation = filtered_citations[-1]
-            last_span = last_citation.span()
-            current_span = citation.span()
-
-            if current_span[0] <= last_span[1]:
-                # Remove overlapping citations that can occur in edge cases
+            is_overlapping = overlapping_citations(
+                citation.full_span(), last_citation.full_span()
+            )
+            if is_overlapping and isinstance(last_citation, ReferenceCitation):
+                # Remove the overlapping reference citation
+                filtered_citations.pop(-1)
+                filtered_citations.append(citation)
                 continue
-        filtered_citations.append(citation)
+            if is_overlapping and isinstance(citation, ReferenceCitation):
+                # Skip overlapping reference citations
+                continue
+            filtered_citations.append(citation)
+        else:
+            filtered_citations.append(citation)
     return filtered_citations
 
 

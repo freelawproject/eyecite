@@ -1,11 +1,18 @@
 from bisect import bisect_left, bisect_right
 from difflib import SequenceMatcher
 from functools import partial
+from logging import getLogger
 from typing import Any, Callable, Iterable, Optional, Tuple
 
 import fast_diff_match_patch
 
-from eyecite.utils import is_balanced_html, wrap_html_tags
+from eyecite.utils import (
+    is_balanced_html,
+    maybe_balance_style_tags,
+    wrap_html_tags,
+)
+
+logger = getLogger("eyecite")
 
 
 def annotate_citations(
@@ -59,6 +66,9 @@ def annotate_citations(
     Returns:
         The annotated text.
     """
+    if unbalanced_tags not in ["unchecked", "skip", "wrap"]:
+        raise ValueError(f"Unknown option '{unbalanced_tags}")
+
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
     if source_text and source_text != plain_text:
@@ -88,13 +98,20 @@ def annotate_citations(
         # handle HTML tags
         if unbalanced_tags == "unchecked":
             pass
-        elif unbalanced_tags in ("skip", "wrap"):
-            if not is_balanced_html(span_text):
-                if unbalanced_tags == "skip":
-                    continue
+        elif not is_balanced_html(span_text):
+            if unbalanced_tags == "wrap":
                 span_text = wrap_html_tags(span_text, after, before)
-        else:
-            raise ValueError(f"Unknown option '{unbalanced_tags}")
+            else:  # "skip" case
+                original_span_text = span_text
+                start, end, span_text = maybe_balance_style_tags(
+                    start, end, plain_text
+                )
+                if not is_balanced_html(span_text):
+                    logger.error(
+                        "Citation was not annotated due to unbalanced tags %s",
+                        original_span_text,
+                    )
+                    continue
 
         if annotator is not None:
             annotated_span = annotator(before, span_text, after)

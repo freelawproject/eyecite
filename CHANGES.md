@@ -16,13 +16,24 @@ Fixes:
 
 ## Current
 
+**2.6.5 - 2025-01-28**
+
+Features:
+
+- Add ReferenceCitation model and associated logic
+
+Fixes:
+
+- Fix court string matching with whitespace
+- Fix court name issues
+
+## Past
+
 **2.6.4 - 2024-06-03**
 
 Fixes:
 
 - Bump eyecite to for InvalidError/hyperscan bug
-
-## Past
 
 **2.6.3 - 2024-04-09**
 
