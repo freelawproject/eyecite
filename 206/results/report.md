@@ -29,13 +29,13 @@ There were 111 gains and 0 losses.
 |  2060699   |        Beckler at 775       |        |
 |  2999939   |       18 U.S.C.
 § 3553      |        |
+|  2999939   |       18 U.S.C. § 3553      |        |
+|  2999939   |       18
+U.S.C. § 924       |        |
 |  2999939   |       18 U.S.C.
 § 2113      |        |
 |  2999939   |       18 U.S.C.
 § 924       |        |
-|  2999939   |       18 U.S.C. § 3553      |        |
-|  2999939   |       18
-U.S.C. § 924       |        |
 |  3419420   |            supra            |        |
 |  2277838   | Tex. Tax Code Ann. §§ 42.01 |        |
 |  3542084   |         200 S.W. 286        |        |
@@ -43,31 +43,31 @@ U.S.C. § 924       |        |
 |  1771039   |            supra            |        |
 |  2257892   |      38 Cal.Rptr.2d 908     |        |
 |   270119   |            supra.           |        |
-|  1897124   |            supra.           |        |
 |  1897124   |            supra            |        |
-|  1537257   |            supra            |        |
+|  1897124   |            supra.           |        |
 |  1537257   |      9 U.S.C. Section 1     |        |
+|  1537257   |            supra            |        |
 |  1950193   |            supra,           |        |
 |  1814863   |            supra.           |        |
 |  1814863   |        36 La.Ann. 264       |        |
-|  1814863   |            supra;           |        |
 |  1814863   |            supra,           |        |
-|  2206425   |      303 Ill. Dec. 715      |        |
+|  1814863   |            supra;           |        |
 |  2206425   |    358 Ill.App.3d at 727    |        |
 |  2206425   |       228 Ill.Dec. 179      |        |
+|  2206425   |      303 Ill. Dec. 715      |        |
 |  1183603   |        32 L.E.2d 411        |        |
 |  1183603   |            Supra,           |        |
 |  2042257   |            supra            |        |
 |  2357843   |            supra            |        |
-|  2414924   |       Brzonkala at 834      |        |
-|  2414924   |        Boerne at 2170       |        |
-|  2414924   |            supra.           |        |
-|  2414924   |       Robinson at 1210      |        |
 |  2414924   |       Robinson at 1211      |        |
-|  2414924   |            supra,           |        |
+|  2414924   |        Boerne at 2170       |        |
 |  2414924   |       Brzonkala at 887      |        |
 |  2414924   |        Brzonkala at 3       |        |
 |  2414924   |       Brzonkala at 874      |        |
+|  2414924   |       Brzonkala at 834      |        |
+|  2414924   |       Robinson at 1210      |        |
+|  2414924   |            supra.           |        |
+|  2414924   |            supra,           |        |
 
 
 </details>
@@ -83,6 +83,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/206/results/d5e013a1b965f4171cff4ccc848ce10860592880.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/206/results/8a0a6e2f9ce4bbd04337380d8b5d5e03d0fd08cd.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/206/results/6e7ec514cc8f104e66801d5003b54e603a9334e4.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/206/results/output.csv)
