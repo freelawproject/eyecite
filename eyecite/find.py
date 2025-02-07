@@ -166,7 +166,7 @@ def extract_reference_citations(
     if not regexes:
         return []
     pin_cite_re = (
-        rf"\b(?:{'|'.join(regexes)})\s+at\s+(?P<pin_cite>\d{{1,5}})\b"
+        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
     )
     reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
