@@ -502,6 +502,12 @@ class FindTest(TestCase):
                                       'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+            ('Foo v. United States 1 U.S. 12, 347-348. something something ... the United States at 1776 we see that and Foo at 62',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'United States',
+                                      'pin_cite': '347-348'}),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
             # Test that reference citation must occur after full case citation
             ('In Foo at 62 we see that, Foo v. Bar 1 U.S. 12, 347-348. something something,',
              [case_citation(page='12',

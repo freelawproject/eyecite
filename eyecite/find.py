@@ -29,6 +29,7 @@ from eyecite.models import (
 )
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
+from eyecite.utils import DISALLOWED_NAMES
 
 
 def get_citations(
@@ -156,6 +157,7 @@ def extract_reference_citations(
             and name[0].isupper()
             and not name.endswith(".")
             and not name.isdigit()
+            and name.lower() not in DISALLOWED_NAMES
         )
 
     regexes = [
