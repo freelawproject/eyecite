@@ -212,7 +212,7 @@ LAW_PIN_CITE_REGEX = rf"""
 # What case does a short cite refer to? For now, we just capture the previous
 # word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
 SHORT_CITE_ANTECEDENT_REGEX = r"""
-    (?P<antecedent>[\w\-.]+),?
+    (?P<antecedent>[A-Za-z][\w\-.]+),?
     \   # final space
 """
 
