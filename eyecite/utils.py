@@ -187,10 +187,10 @@ def dump_citations(citations, text, context_chars=30):
       * ...
     """
     out = []
-    green_fmt = "\x1B[32m"
-    blue_fmt = "\x1B[94m"
-    bold_fmt = "\x1B[1m"
-    end_fmt = "\x1B[0m"
+    green_fmt = "\x1b[32m"
+    blue_fmt = "\x1b[94m"
+    bold_fmt = "\x1b[1m"
+    end_fmt = "\x1b[0m"
     for citation in citations:
         start, end = citation.span()
         context_before = text[max(0, start - context_chars) : start]
@@ -247,6 +247,7 @@ def is_valid_name(name: str) -> bool:
         and name[0].isupper()
         and not name.endswith(".")
         and not name.isdigit()
+        and name.lower() not in DISALLOWED_NAMES
     )
 
 

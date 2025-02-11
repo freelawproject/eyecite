@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
@@ -25,6 +26,8 @@ from eyecite.regexes import (
     POST_SHORT_CITATION_REGEX,
     YEAR_REGEX,
 )
+
+logger = logging.getLogger()
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -349,30 +352,39 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     :param citations: List of citations
     :return: Sorted and filtered citations
     """
+    if not citations:
+        return citations
+
     citations = list(
         {citation.span(): citation for citation in citations}.values()
     )
-    filtered_citations: List[CitationBase] = []
     sorted_citations = sorted(
         citations, key=lambda citation: citation.full_span()
     )
-    for citation in sorted_citations:
-        if filtered_citations:
-            last_citation = filtered_citations[-1]
-            is_overlapping = overlapping_citations(
-                citation.full_span(), last_citation.full_span()
-            )
-            if is_overlapping and isinstance(last_citation, ReferenceCitation):
-                # Remove the overlapping reference citation
+    filtered_citations: List[CitationBase] = [sorted_citations[0]]
+
+    for citation in sorted_citations[1:]:
+        last_citation = filtered_citations[-1]
+        is_overlapping = overlapping_citations(
+            citation.full_span(), last_citation.full_span()
+        )
+        if is_overlapping:
+            # In cases overlap, prefer anything to a reference citation
+            if isinstance(last_citation, ReferenceCitation):
                 filtered_citations.pop(-1)
                 filtered_citations.append(citation)
                 continue
-            if is_overlapping and isinstance(citation, ReferenceCitation):
-                # Skip overlapping reference citations
+            if isinstance(citation, ReferenceCitation):
                 continue
-            filtered_citations.append(citation)
-        else:
-            filtered_citations.append(citation)
+
+            logger.error(
+                "Unknown overlap case. Last cite: %s. Current: %s",
+                last_citation,
+                citation,
+            )
+
+        filtered_citations.append(citation)
+
     return filtered_citations
 
 

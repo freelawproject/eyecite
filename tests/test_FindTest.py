@@ -742,7 +742,6 @@ class FindTest(TestCase):
         this shouldn't occur but if it did we would be able to filter these
         correcly
         """
-        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
         citations = [
             case_citation(
                 volume="355",
@@ -756,7 +755,7 @@ class FindTest(TestCase):
                 metadata={"plaintiff": "Conley", "defendant": "Gibson"},
             ),
             reference_citation("Conley", span_start=8, span_end=14),
-            reference_citation("Conley", span_start=18, span_end=24),
+            reference_citation("Gibson", span_start=18, span_end=24),
         ]
         self.assertEqual(len(citations), 3)
         filtered_citations = filter_citations(citations)
@@ -900,7 +899,6 @@ class FindTest(TestCase):
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
 
-
     def test_reference_extraction(self):
         """Can we extract a reference citation using resolved metadata?"""
         texts = [
@@ -917,20 +915,17 @@ class FindTest(TestCase):
         for plain_text in texts:
             citations = get_citations(plain_text)
             found_cite = citations[0]
-            if isinstance(found_cite, FullCitation):
-                found_cite.metadata.resolved_case_name = "State v. Wingler"
-                references = extract_reference_citations(
-                    found_cite, plain_text
-                )
-                final_citations = filter_citations(citations + references)
-                self.assertEqual(
-                    len(final_citations), 2, "There should only be 2 citations"
-                )
-                self.assertEqual(
-                    len(references),
-                    1,
-                    "Only a reference citation should had been picked up",
-                )
+            found_cite.metadata.resolved_case_name = "State v. Wingler"
+            references = extract_reference_citations(found_cite, plain_text)
+            final_citations = filter_citations(citations + references)
+            self.assertEqual(
+                len(final_citations), 2, "There should only be 2 citations"
+            )
+            self.assertEqual(
+                len(references),
+                1,
+                "Only a reference citation should had been picked up",
+            )
 
     def test_reference_extraction_from_markup(self):
         """Can we extract references from markup text?"""
@@ -964,4 +959,3 @@ class FindTest(TestCase):
             [ref.matched_text().strip(",.") for ref in filtered_references],
             ["Bae", "Halper", "Bae", "Bae", "Halper"],
         )
-

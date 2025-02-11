@@ -32,7 +32,6 @@ from eyecite.models import (
 from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
-from eyecite.utils import DISALLOWED_NAMES
 
 
 def get_citations(
@@ -142,23 +141,6 @@ def extract_reference_citations(
         return []
     if not isinstance(citation, FullCaseCitation):
         return []
-
-    def is_valid_name(name: str) -> bool:
-        """Validate name isnt a regex issue
-
-        Excludes strings like Co., numbers or lower case strs
-
-        :param name: The name to check
-        :return: True if usable, false if not
-        """
-        return (
-            isinstance(name, str)
-            and len(name) > 2
-            and name[0].isupper()
-            and not name.endswith(".")
-            and not name.isdigit()
-            and name.lower() not in DISALLOWED_NAMES
-        )
 
     regexes = [
         rf"(?P<{key}>{re.escape(value)})"
