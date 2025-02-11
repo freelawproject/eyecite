@@ -4,7 +4,10 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
-from eyecite.find import extract_reference_citations
+from eyecite.find import (
+    extract_reference_citations,
+    find_reference_citations_from_markup,
+)
 from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
@@ -739,7 +742,6 @@ class FindTest(TestCase):
         this shouldn't occur but if it did we would be able to filter these
         correcly
         """
-        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
         citations = [
             case_citation(
                 volume="355",
@@ -753,7 +755,7 @@ class FindTest(TestCase):
                 metadata={"plaintiff": "Conley", "defendant": "Gibson"},
             ),
             reference_citation("Conley", span_start=8, span_end=14),
-            reference_citation("Conley", span_start=18, span_end=24),
+            reference_citation("Gibson", span_start=18, span_end=24),
         ]
         self.assertEqual(len(citations), 3)
         filtered_citations = filter_citations(citations)
@@ -913,17 +915,47 @@ class FindTest(TestCase):
         for plain_text in texts:
             citations = get_citations(plain_text)
             found_cite = citations[0]
-            if isinstance(found_cite, FullCitation):
-                found_cite.metadata.resolved_case_name = "State v. Wingler"
-                references = extract_reference_citations(
-                    found_cite, plain_text
-                )
-                final_citations = filter_citations(citations + references)
-                self.assertEqual(
-                    len(final_citations), 2, "There should only be 2 citations"
-                )
-                self.assertEqual(
-                    len(references),
-                    1,
-                    "Only a reference citation should had been picked up",
-                )
+            found_cite.metadata.resolved_case_name = "State v. Wingler"
+            references = extract_reference_citations(found_cite, plain_text)
+            final_citations = filter_citations(citations + references)
+            self.assertEqual(
+                len(final_citations), 2, "There should only be 2 citations"
+            )
+            self.assertEqual(
+                len(references),
+                1,
+                "Only a reference citation should had been picked up",
+            )
+
+    def test_reference_extraction_from_markup(self):
+        """Can we extract references from markup text?"""
+        # https://www.courtlistener.com/api/rest/v4/opinions/1985850/
+        markup_text = """
+        <i>citing, </i><i>U.S. v. Halper,</i> 490 <i>U.S.</i> 435, 446, 109 <i>
+        S.Ct.</i> 1892, 1901, 104 <i>L.Ed.</i>2d 487 (1989).
+        ; and see, <i>Bae v. Shalala,</i> 44 <i>F.</i>3d 489 (7th Cir.1995).
+        <p>In <i>Bae,</i> the 7th Circuit Court further interpreted
+        the holding of <i>Halper.</i> In <i>Bae,</i> the court... by the
+        <i>ex post facto</i> clause of the U.S. Constitution...</p>
+        <p>In <i>Bae,</i> the circuit court rejected the defendant's
+        argument that since debarment served both remedial <i>and</i>
+        punitive goals it must be characterized as punishment. Bae's argument
+        evidently relied on the <i>Halper</i> court's use of the word \"solely\"
+        in the discussion leading to its holding. The circuit court's
+        interpretation was much more pragmatic: \"A civil sanction that can
+        fairly be said solely to serve remedial goals will not fail under
+        <i>ex post facto</i> scrutiny simply because it is consistent with
+        punitive goals as well.\" 44 <i>F.</i>3d at 493.</p>"""
+
+        plain_text = clean_text(markup_text, ["html", "all_whitespace"])
+        citations = get_citations(plain_text)
+        references = find_reference_citations_from_markup(
+            markup_text, plain_text, citations
+        )
+        filtered_references = filter_citations(references)
+        # Tests both for the order and exact counts. Note that there is one
+        # "Bae" in the text that should not be picked up: "Bae's argument"...
+        self.assertListEqual(
+            [ref.matched_text().strip(",.") for ref in filtered_references],
+            ["Bae", "Halper", "Bae", "Bae", "Halper"],
+        )
