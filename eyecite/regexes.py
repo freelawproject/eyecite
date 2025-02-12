@@ -265,6 +265,17 @@ POST_FULL_CITATION_REGEX = rf"""
     )
 """
 
+# These full case citations usually appear after the same full case citation
+# has appeared at least once.
+# For example "Nobelman at 332, 113 S.Ct. 2106"
+PRE_FULL_CITATION_REGEX = rf"""
+    (?P<antecedent>[A-Z][a-z\-.]+)\ ?,?             # single word antecedent
+    {PIN_CITE_REGEX}
+    # `PIN_CITE_REGEX` uses a positive lookahead for end characters, but we 
+    # must also capture them to calculate spans
+    ,?\ ?     
+"""
+
 
 # Post short-form citation regex:
 # Capture pin cite and parenthetical after a short, id, or supra citation.

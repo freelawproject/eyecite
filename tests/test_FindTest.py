@@ -6,7 +6,6 @@ from unittest import TestCase
 from eyecite import clean_text, get_citations
 from eyecite.find import (
     extract_reference_citations,
-    find_reference_citations_from_markup,
 )
 from eyecite.helpers import filter_citations
 
@@ -14,7 +13,6 @@ from eyecite.helpers import filter_citations
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
 from eyecite.models import (
     FullCaseCitation,
-    FullCitation,
     ReferenceCitation,
     ResourceCitation,
 )
@@ -953,15 +951,12 @@ class FindTest(TestCase):
         punitive goals as well.\" 44 <i>F.</i>3d at 493.</p>"""
 
         plain_text = clean_text(markup_text, ["html", "all_whitespace"])
-        citations = get_citations(plain_text)
-        references = find_reference_citations_from_markup(
-            markup_text, plain_text, citations
-        )
-        filtered_references = filter_citations(references)
+        citations = get_citations(plain_text, markup_text=markup_text)
+        references = [c for c in citations if isinstance(c, ReferenceCitation)]
         # Tests both for the order and exact counts. Note that there is one
         # "Bae" in the text that should not be picked up: "Bae's argument"...
         self.assertListEqual(
-            [ref.matched_text().strip(",.") for ref in filtered_references],
+            [ref.matched_text().strip(",.") for ref in references],
             ["Bae", "Halper", "Bae", "Bae", "Halper"],
         )
 
@@ -977,20 +972,13 @@ class FindTest(TestCase):
             """,
             """ was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>508 U.S. 324, 113 S.Ct. 2106, 124 L.Ed.2d 228 (1993). That plan 
             residence.” <em>Nobelman </em>at 332, 113 S.Ct. 2106. Section 1123(b)(5) codifies the
-            """
+            """,
         ]
         for markup_text in texts:
             plain_text = clean_text(markup_text, ["html", "all_whitespace"])
             citations = get_citations(plain_text)
-            references = find_reference_citations_from_markup(
-                markup_text, plain_text, citations
-            )
-            filtered_citations = filter_citations(citations + references)
             self.assertFalse(
                 any(
-                    [
-                        isinstance(cite, ReferenceCitation)
-                        for cite in filtered_citations
-                    ]
+                    [isinstance(cite, ReferenceCitation) for cite in citations]
                 )
             )

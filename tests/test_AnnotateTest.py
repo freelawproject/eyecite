@@ -115,18 +115,13 @@ class AnnotateTest(TestCase):
                 "<em>Nobelman </em>at 332, 113 S.Ct. 2106. Section 1123(b)(5) "
                 "codifies the <em>Nobelman </em>decision in individual debtor "
                 "chapter 11 cases.",
-                " partially secured by a debtor’s principal residence was not"
-                " con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>"
-                "<a href='something'>508 U.S. 324</a>, <a href='something'>"
-                "113 S.Ct. 2106</a>, <a href='something'>124 L.Ed.2d 228</a>"
-                " (1993). That plan proposed to bifurcate the claim and..."
-                " pay the unsecured... only by a lien on the debtor’s"
-                " principal residence.” <a href='something'><em>Nobelman </em>"
-                "at 332</a>, <a href='something'>113 S.Ct. 2106</a>. Section"
-                " 1123(b)(5) codifies the <em>Nobelman </em>decision in"
-                " individual debtor chapter 11 cases.",
+                " partially secured by a debtor’s principal residence was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em><a href='something'>508 U.S. 324</a>, <a href='something'>113 S.Ct. 2106</a>, <a href='something'>124 L.Ed.2d 228</a> (1993). That plan proposed to bifurcate the claim and... pay the unsecured... only by a lien on the debtor’s principal residence.” <em>Nobelman </em>at 332, <a href='something'>113 S.Ct. 2106</a>. Section 1123(b)(5) codifies the <em><a href='something'>Nobelman </a></em>decision in individual debtor chapter 11 cases.",
                 ["html", "all_whitespace"],
-                {"annotate_anchors": True, "unbalanced_tags": "skip"},
+                {
+                    "annotate_anchors": True,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
             ),
             # solvable unbalanced <i> tag
             # from https://www.courtlistener.com/api/rest/v4/opinions/2841253/
@@ -144,7 +139,11 @@ class AnnotateTest(TestCase):
                 " (citing <a href='something'><i>Howsam</i> at 84</a>, <a"
                 " href='something'>123 S. Ct. at 592</a>)",
                 ["html", "all_whitespace"],
-                {"annotate_anchors": True, "unbalanced_tags": "skip"},
+                {
+                    "annotate_anchors": True,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
             ),
             # The next 2 examples could be resolved if we increased the
             # character tolerance or admitted the full case name instead of
@@ -170,7 +169,11 @@ class AnnotateTest(TestCase):
                 " Tall Oaks, Inc. (In re Hatch), </em> at 748."
                 "</p>",
                 ["html", "all_whitespace"],
-                {"annotate_anchors": True, "unbalanced_tags": "skip"},
+                {
+                    "annotate_anchors": True,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
             ),
             (
                 # https://www.courtlistener.com/api/rest/v4/opinions/1985850/
@@ -188,7 +191,11 @@ class AnnotateTest(TestCase):
                 " href='something'>135 <i>A.</i>2d 468</a>, <i>citing,"
                 " </i><i>Minnesota ex rel.</i>",
                 ["html", "all_whitespace"],
-                {"annotate_anchors": True, "unbalanced_tags": "skip"},
+                {
+                    "annotate_anchors": True,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
             ),
         )
         for source_text, expected, clean_steps, *annotate_kwargs in test_pairs:
@@ -198,8 +205,12 @@ class AnnotateTest(TestCase):
                 clean_steps=clean_steps,
                 annotate_args=annotate_kwargs,
             ):
+                get_citations_args = {}
+                if annotate_kwargs.pop("use_markup", False):
+                    get_citations_args = {"markup_text": source_text}
+
                 plain_text = clean_text(source_text, clean_steps)
-                cites = get_citations(plain_text)
+                cites = get_citations(plain_text, **get_citations_args)
                 annotations = [
                     (c.span(), f"<{i}>", f"</{i}>")
                     for i, c in enumerate(cites)
