@@ -91,22 +91,20 @@ def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
     """Filter out reference citations that point to more than 1 Resource"""
     matches: List[ResourceType] = []
 
-    for full_citation, resource in resolved_full_cites:
-        if not isinstance(full_citation, FullCaseCitation):
-            continue
+    match_count = 0
+    reference_values = []
+    for key in ReferenceCitation.name_fields:
+        reference_value = getattr(reference_citation.metadata, key)
+        if reference_value:
+            reference_values.append(reference_value)
+    for citation, resource in resolved_full_cites:
+        full_cite_values = list(
+            [value for value in citation.metadata.__dict__.values() if value]
+        )
+        if set(full_cite_values) & set(reference_values):
+            match_count += 1
+            matches.append(resource)
 
-        for key in ReferenceCitation.name_fields:
-            reference_value = getattr(reference_citation.metadata, key)
-            full_case_value = getattr(full_citation.metadata, key)
-            if (
-                reference_value
-                and full_case_value
-                and reference_value in full_case_value
-            ):
-                matches.append(resource)
-                break
-
-    # Remove duplicates and only accept if one candidate remains
     matches = list(set(matches))
     return matches[0] if len(matches) == 1 else None
 

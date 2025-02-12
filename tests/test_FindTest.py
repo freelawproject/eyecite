@@ -9,7 +9,7 @@ from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import ResourceCitation
+from eyecite.models import FullCaseCitation, FullCitation, ResourceCitation
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -730,6 +730,36 @@ class FindTest(TestCase):
                 % (edition[0], year, expected, date_in_reporter),
             )
 
+    def test_citation_filtering(self):
+        """Ensure citations with overlapping spans are correctly filtered
+
+        Imagine a scenario where a bug incorrectly identifies the following
+        .... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ...
+        this returns two reference citations Conley, Gibson and the full cite
+        this shouldn't occur but if it did we would be able to filter these
+        correcly
+        """
+        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
+        citations = [
+            case_citation(
+                volume="355",
+                page="41",
+                reporter_found="U.S.",
+                short=False,
+                span_start=26,
+                span_end=38,
+                full_span_start=8,
+                full_span_end=49,
+                metadata={"plaintiff": "Conley", "defendant": "Gibson"},
+            ),
+            reference_citation("Conley", span_start=8, span_end=14),
+            reference_citation("Conley", span_start=18, span_end=24),
+        ]
+        self.assertEqual(len(citations), 3)
+        filtered_citations = filter_citations(citations)
+        self.assertEqual(len(filtered_citations), 1)
+        self.assertEqual(type(filtered_citations[0]), FullCaseCitation)
+
     def test_disambiguate_citations(self):
         # fmt: off
         test_pairs = [
@@ -882,14 +912,18 @@ class FindTest(TestCase):
         ]
         for plain_text in texts:
             citations = get_citations(plain_text)
-            citations[0].metadata.resolved_case_name = "State v. Wingler"
-            references = extract_reference_citations(citations[0], plain_text)
-            final_citations = filter_citations(citations + references)
-            self.assertEqual(
-                len(final_citations), 2, "There should only be 2 citations"
-            )
-            self.assertEqual(
-                len(references),
-                1,
-                "Only a reference citation should had been picked up",
-            )
+            found_cite = citations[0]
+            if isinstance(found_cite, FullCitation):
+                found_cite.metadata.resolved_case_name = "State v. Wingler"
+                references = extract_reference_citations(
+                    found_cite, plain_text
+                )
+                final_citations = filter_citations(citations + references)
+                self.assertEqual(
+                    len(final_citations), 2, "There should only be 2 citations"
+                )
+                self.assertEqual(
+                    len(references),
+                    1,
+                    "Only a reference citation should had been picked up",
+                )

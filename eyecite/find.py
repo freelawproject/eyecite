@@ -166,7 +166,7 @@ def extract_reference_citations(
     if not regexes:
         return []
     pin_cite_re = (
-        rf"\b(?:{'|'.join(regexes)})\s+at\s+(?P<pin_cite>\d{{1,5}})\b"
+        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
     )
     reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
@@ -248,7 +248,10 @@ def _extract_shortform_citation(
         strings_only=True,
         forward=False,
     )
+    offset = 0
     if m:
+        ante_start, ante_end = m.span()
+        offset = ante_end - ante_start
         antecedent_guess = m["antecedent"].strip()
 
     # Get pin_cite
@@ -256,6 +259,7 @@ def _extract_shortform_citation(
     pin_cite, span_end, parenthetical = extract_pin_cite(
         words, index, prefix=cite_token.groups["page"]
     )
+    span_end = span_end if span_end else 0
 
     # make ShortCaseCitation
     citation = ShortCaseCitation(
@@ -264,6 +268,8 @@ def _extract_shortform_citation(
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
+        full_span_start=cite_token.start - offset,
+        full_span_end=max([span_end, cite_token.end]),
         metadata={
             "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
