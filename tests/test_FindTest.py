@@ -12,7 +12,12 @@ from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import FullCaseCitation, FullCitation, ResourceCitation
+from eyecite.models import (
+    FullCaseCitation,
+    FullCitation,
+    ReferenceCitation,
+    ResourceCitation,
+)
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -899,7 +904,7 @@ class FindTest(TestCase):
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
 
-    def test_reference_extraction(self):
+    def test_reference_extraction_using_resolved_names(self):
         """Can we extract a reference citation using resolved metadata?"""
         texts = [
             # In this case the reference citation got with the
@@ -959,3 +964,30 @@ class FindTest(TestCase):
             [ref.matched_text().strip(",.") for ref in filtered_references],
             ["Bae", "Halper", "Bae", "Bae", "Halper"],
         )
+
+    def test_reference_filtering(self):
+        """Can we filter out ReferenceCitation that overlap other citations?"""
+        texts = [
+            # https://www.courtlistener.com/api/rest/v4/opinions/9435339/
+            # There should be no ReferenceCitations
+            """decided <em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007), which discussed ...
+            apellate court’s core competency. <em>Twombly, </em>550 U. S., at 557. Evaluating...
+            In <em>Twombly</em>, supra, at 553-554, the Court found it necessary...
+            Another, in <em>Twombly, supra</em>, at 553-554, the Court found it necessary...
+            """
+        ]
+        for markup_text in texts:
+            plain_text = clean_text(markup_text, ["html", "all_whitespace"])
+            citations = get_citations(plain_text)
+            references = find_reference_citations_from_markup(
+                markup_text, plain_text, citations
+            )
+            filtered_citations = filter_citations(citations + references)
+            self.assertFalse(
+                any(
+                    [
+                        isinstance(cite, ReferenceCitation)
+                        for cite in filtered_citations
+                    ]
+                )
+            )
