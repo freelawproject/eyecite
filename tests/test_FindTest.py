@@ -974,6 +974,9 @@ class FindTest(TestCase):
             apellate court’s core competency. <em>Twombly, </em>550 U. S., at 557. Evaluating...
             In <em>Twombly</em>, supra, at 553-554, the Court found it necessary...
             Another, in <em>Twombly, supra</em>, at 553-554, the Court found it necessary...
+            """,
+            """ was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>508 U.S. 324, 113 S.Ct. 2106, 124 L.Ed.2d 228 (1993). That plan 
+            residence.” <em>Nobelman </em>at 332, 113 S.Ct. 2106. Section 1123(b)(5) codifies the
             """
         ]
         for markup_text in texts:
