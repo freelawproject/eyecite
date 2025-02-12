@@ -38,6 +38,7 @@ def get_citations(
     plain_text: str,
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
+    markup_text: str = "",
 ) -> List[CitationBase]:
     """This is eyecite's main workhorse function. Given a string of text
     (e.g., a judicial opinion or other legal document), return a list of
@@ -53,6 +54,9 @@ def get_citations(
         tokenizer: An instance of a Tokenizer object. See `eyecite.tokenizers`
             for information about available tokenizers. Uses the
             `eyecite.tokenizers.AhocorasickTokenizer` by default.
+        markup_text: if the source text has markup (XML or HTML mostly), pass
+            it to extract ReferenceCitations that may be detectable via
+            markup style tags
 
     Returns:
         A list of `eyecite.models.CitationBase` objects
@@ -82,7 +86,9 @@ def get_citations(
 
                 # Check for reference citations that follow a full citation
                 # Using the plaintiff or defendant
-                references = extract_reference_citations(citation, plain_text)
+                references = extract_reference_citations(
+                    citation, plain_text, markup_text
+                )
                 citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
@@ -128,14 +134,16 @@ def get_citations(
 
 
 def extract_reference_citations(
-    citation: FullCitation,
-    plain_text: str,
+    citation: FullCitation, plain_text: str, markup_text: str = ""
 ) -> List[ReferenceCitation]:
     """Extract reference citations that follow a full citation
 
     :param citation: the full case citation found
     :param plain_text: the text
-    :return: Pin cite reference citations
+    :param markup_text: optional argument for source text with XML style tags
+        that may help extracting name-only ReferenceCitations
+
+    :return: Reference citations
     """
     if len(plain_text) <= citation.span()[-1]:
         return []
@@ -171,6 +179,14 @@ def extract_reference_citations(
             metadata=match.groupdict(),
         )
         reference_citations.append(reference)
+
+    if markup_text:
+        reference_citations.extend(
+            find_reference_citations_from_markup(
+                markup_text, plain_text, [citation]
+            )
+        )
+
     return reference_citations
 
 
@@ -379,7 +395,7 @@ def find_reference_citations_from_markup(
         # Include punctuation and spaces surrounding the party name.
         # See related test for real data example where this happens
         # It is also important to include those characters to preserve
-        # valid HTML when creation `html_with_citations`
+        # valid HTML when creating `html_with_citations`
         regex = rf"<({tags})>\s*({'|'.join(regexes)})[:;.,\s]*</({tags})>"
         start_in_markup = plain_to_markup.update(
             citation.span()[0], bisect_right
