@@ -50,13 +50,27 @@ class Benchmark(object):
                 or row["html_columbia"]
                 or row["html_anon_2020"]
                 or row["html"]
-                or row["plain_text"]
             )
+            if text:
+                opinion_text_is_marked_up = True
+            else:
+                text = row["plain_text"]
+                opinion_text_is_marked_up = False
+
+            plain_text = clean_text(text, ["html", "inline_whitespace"])
             found_citations = get_citations(
-                clean_text(text, ["html", "inline_whitespace"])
+                plain_text,
+                markup_text=text if opinion_text_is_marked_up else "",
             )
+
             # Get the citation text string from the cite object
-            cites = [cite.token.data for cite in found_citations if cite.token]
+            cites = []
+            for cite in found_citations:
+                if cite.token:
+                    cites.append(
+                        plain_text[cite.full_span()[0] : cite.full_span()[1]]
+                    )
+
             count += len(cites)
             output = {
                 "id": row["id"],
