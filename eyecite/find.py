@@ -1,6 +1,6 @@
 import re
 from bisect import bisect_left, bisect_right
-from typing import List, Type, cast
+from typing import List, Optional, Type, cast
 
 from eyecite.annotate import SpanUpdater
 from eyecite.helpers import (
@@ -67,6 +67,12 @@ def get_citations(
     words, citation_tokens = tokenizer.tokenize(plain_text)
     citations: list[CitationBase] = []
 
+    if markup_text:
+        plain_to_markup = SpanUpdater(plain_text, markup_text)
+        markup_to_plain = SpanUpdater(markup_text, plain_text)
+    else:
+        plain_to_markup, markup_to_plain = None, None
+
     for i, token in citation_tokens:
         citation: CitationBase
         token_type = type(token)
@@ -87,7 +93,11 @@ def get_citations(
                 # Check for reference citations that follow a full citation
                 # Using the plaintiff or defendant
                 references = extract_reference_citations(
-                    citation, plain_text, markup_text
+                    citation,
+                    plain_text,
+                    markup_text,
+                    plain_to_markup,
+                    markup_to_plain,
                 )
                 citations.extend(references)
 
@@ -134,7 +144,11 @@ def get_citations(
 
 
 def extract_reference_citations(
-    citation: FullCitation, plain_text: str, markup_text: str = ""
+    citation: FullCitation,
+    plain_text: str,
+    markup_text: str = "",
+    plain_to_markup: Optional[SpanUpdater] = None,
+    markup_to_plain: Optional[SpanUpdater] = None,
 ) -> List[ReferenceCitation]:
     """Extract reference citations that follow a full citation
 
@@ -142,6 +156,9 @@ def extract_reference_citations(
     :param plain_text: the text
     :param markup_text: optional argument for source text with XML style tags
         that may help extracting name-only ReferenceCitations
+    :param plain_to_markup: a SpanUpdater from plain or clean text to
+        marked up text
+    :param markup_to_plain: a SpanUpdater from marked up text to plain text
 
     :return: Reference citations
     """
@@ -150,6 +167,33 @@ def extract_reference_citations(
     if not isinstance(citation, FullCaseCitation):
         return []
 
+    reference_citations = extract_pincited_reference_citations(
+        citation, plain_text
+    )
+
+    if markup_text:
+        reference_citations.extend(
+            find_reference_citations_from_markup(
+                markup_text,
+                plain_text,
+                [citation],
+                plain_to_markup,
+                markup_to_plain,
+            )
+        )
+
+    return reference_citations
+
+
+def extract_pincited_reference_citations(
+    citation: FullCaseCitation, plain_text: str
+) -> List[ReferenceCitation]:
+    """Extract reference citations with the name-pincite pattern
+
+    :param citation: the full case citation found
+    :param plain_text: the text
+    :return: a list of ReferenceCitations
+    """
     regexes = [
         rf"(?P<{key}>{re.escape(value)})"
         for key in ReferenceCitation.name_fields
@@ -179,13 +223,6 @@ def extract_reference_citations(
             metadata=match.groupdict(),
         )
         reference_citations.append(reference)
-
-    if markup_text:
-        reference_citations.extend(
-            find_reference_citations_from_markup(
-                markup_text, plain_text, [citation]
-            )
-        )
 
     return reference_citations
 
@@ -355,7 +392,11 @@ def _extract_id_citation(
 
 
 def find_reference_citations_from_markup(
-    markup_text: str, plain_text: str, citations: list
+    markup_text: str,
+    plain_text: str,
+    citations: list,
+    plain_to_markup: Optional[SpanUpdater] = None,
+    markup_to_plain: Optional[SpanUpdater] = None,
 ) -> list[ReferenceCitation]:
     """Use HTML/XML style tags and parties names to find ReferenceCitations
 
@@ -366,15 +407,25 @@ def find_reference_citations_from_markup(
     Depending on the input FullCaseCitations, the References may be repeated
     so it's important to apply `eyecite.helpers.filter_citations` once
 
+    Creating the SpanUpdaters for each full citation will be too slow,
+    re-use them if possible
+
     :param markup_text: HTML or XML source
     :param plain_text: cleaned text
     :param citations: list of citations found over plain text. The full cites
         will be used to access parties names metadata
+    :param plain_to_markup: a SpanUpdater from plain or clean text to
+        marked up text
+    :param markup_to_plain: a SpanUpdater from marked up text to plain text
+
     :return: a list of ReferenceCitations
     """
+    if not markup_to_plain:
+        markup_to_plain = SpanUpdater(markup_text, plain_text)
+    if not plain_to_markup:
+        plain_to_markup = SpanUpdater(plain_text, markup_text)
+
     references = []
-    markup_to_plain = SpanUpdater(markup_text, plain_text)
-    plain_to_markup = SpanUpdater(plain_text, markup_text)
     tags = "|".join(["em", "i"])
 
     for citation in citations:
