@@ -4,9 +4,7 @@ from datetime import datetime
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
-from eyecite.find import (
-    extract_reference_citations,
-)
+from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
@@ -964,19 +962,34 @@ class FindTest(TestCase):
         """Can we filter out ReferenceCitation that overlap other citations?"""
         texts = [
             # https://www.courtlistener.com/api/rest/v4/opinions/9435339/
-            # There should be no ReferenceCitations
-            """decided <em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007), which discussed ...
-            apellate court’s core competency. <em>Twombly, </em>550 U. S., at 557. Evaluating...
-            In <em>Twombly</em>, supra, at 553-554, the Court found it necessary...
-            Another, in <em>Twombly, supra</em>, at 553-554, the Court found it necessary...
+            # Test no overlap with supra citations
+            """<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),
+            which discussed... apellate court’s core competency.
+             <em>Twombly, </em>550 U. S., at 557. Evaluating...
+            In <em>Twombly</em>, supra, at 553-554, the Court found...
+            Another, in <em>Twombly, supra</em>, at 553-554, the Court found
             """,
-            """ was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>508 U.S. 324, 113 S.Ct. 2106, 124 L.Ed.2d 228 (1993). That plan 
-            residence.” <em>Nobelman </em>at 332, 113 S.Ct. 2106. Section 1123(b)(5) codifies the
+            # From the previous source; test no overlap with single-name
+            # full case citation
+            """
+            <em>Johnson </em>v. <em>Jones, </em>515 U. S. 304, 309 (1995)
+             something... with,” <em>Swint </em>v. <em>Chambers County Comm’n,
+             </em>514 U. S. 35, 51 (1995), and “directly implicated by,”
+             <em>Hartman, supra, </em>at 257, n. 5, the qualified-immunity
+             defense.</p>\n<p id=\"b773-6\">Respondent counters that our
+             holding in <em>Johnson, </em>515 U. S. 304, confirms
+            """,
+            # https://www.courtlistener.com/opinion/8524158/in-re-cahill/
+            # Test no overlap with single-name-and-pincite full case citation
+            """ was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>
+            508 U.S. 324, 113 S.Ct. 2106, 124 L.Ed.2d 228 (1993). That plan
+             residence.” <em>Nobelman </em>at 332, 113 S.Ct. 2106.
+             Section 1123(b)(5) codifies the
             """,
         ]
         for markup_text in texts:
             plain_text = clean_text(markup_text, ["html", "all_whitespace"])
-            citations = get_citations(plain_text)
+            citations = get_citations(plain_text, markup_text=markup_text)
             self.assertFalse(
                 any(
                     [isinstance(cite, ReferenceCitation) for cite in citations]

@@ -185,7 +185,7 @@ def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.antecedent_guess = m["antecedent"]
     match_length = m.span()[1] - m.span()[0]
-    citation.full_span_start = citation.span()[1] - match_length
+    citation.full_span_start = citation.span()[0] - match_length
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:

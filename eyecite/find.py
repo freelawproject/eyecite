@@ -253,10 +253,10 @@ def _extract_shortform_citation(
 
     if m:
         ante_start, ante_end = m.span()
-        antecedent_lenght = ante_end - ante_start
+        antecedent_length = ante_end - ante_start
         antecedent_guess = m["antecedent"].strip()
     else:
-        antecedent_lenght = 0
+        antecedent_length = 0
 
     # Get pin_cite
     cite_token = cast(CitationToken, words[index])
@@ -272,7 +272,7 @@ def _extract_shortform_citation(
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
-        full_span_start=cite_token.start - antecedent_lenght,
+        full_span_start=cite_token.start - antecedent_length,
         full_span_end=max([span_end, cite_token.end]),
         metadata={
             "antecedent_guess": antecedent_guess,
@@ -313,16 +313,16 @@ def _extract_supra_citation(
     if m:
         antecedent_guess = m["antecedent"]
         volume = m["volume"]
-        antecedent_lenght = m.span()[1] - m.span()[0]
+        antecedent_length = m.span()[1] - m.span()[0]
     else:
-        antecedent_lenght = 0
+        antecedent_length = 0
 
     supra_token = cast(SupraToken, words[index])
     # Return SupraCitation
     return SupraCitation(
         supra_token,
         index,
-        full_span_start=supra_token.start - antecedent_lenght,
+        full_span_start=supra_token.start - antecedent_length,
         full_span_end=span_end or supra_token.end,
         span_end=span_end,
         metadata={
