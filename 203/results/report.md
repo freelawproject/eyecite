@@ -4,65 +4,68 @@
 
 Gains and Losses
 ---------
-There were 0 gains and 370 losses.
+There were 9151 gains and 9351 losses.
 
 <details>
 <summary>Click here to see details.</summary>
 
-|     id     |  Gain  |      Loss      |
-| ---------- | ------ | -------------- |
-|  4746031   |        | Llamas-Villa,  |
-|  4746031   |        |     Buie       |
-|  4746031   |        |     Pena       |
-|  4799679   |        |     Akins      |
-|  4799679   |        |    Graham,     |
-|  4799679   |        |    Graham.     |
-|  4799679   |        |    Graham.     |
-|  4799679   |        |    Graham      |
-|  5066102   |        |  Fredericks    |
-|  5071459   |        |     Burks      |
-|  5071459   |        |    Greene      |
-|  5112424   |        |   Overmyer.    |
-|  5112424   |        |    Jones.      |
-|  5112424   |        |     Jones      |
-|  5112424   |        |    Jones,      |
-|  5123092   |        |    Atwood      |
-|  5123092   |        |     Atwood     |
-|  2046752   |        |        .       |
-|  2046752   |        |        ,       |
-|  5160500   |        |    Sibley      |
-|  5165179   |        |  Rodriguez,    |
-|  5165179   |        |   Rodriguez    |
-|  5165179   |        |  McKinstrey,   |
-|  5165179   |        |   Rodriguez,   |
-|  5167616   |        |     Toney      |
-|  5618955   |        |   Widincamp    |
-|  5656104   |        |    Malouf.     |
-|  5656104   |        |    Malouf      |
-|  5750897   |        |    Preston     |
-|  1996784   |        |     Caplin     |
-|  2014564   |        |    Hanreddy    |
-|  2060699   |        |   Frohlich,    |
-|  1917661   |        |    Hebert,     |
-|  1917661   |        |    Doucet,     |
-|  3419420   |        |   Cunningham   |
-|  3419420   |        |     Best       |
-|  3419420   |        |     Martin     |
-|  2303811   |        |     Campos     |
-|  2303811   |        |  Vanderweele,  |
-|  2303811   |        |  Vanderweele   |
-|  2303811   |        |  Butzberger,   |
-|  2303811   |        |     Miller     |
-|  2303811   |        |    Campos.     |
-|  2303811   |        |    Lovett,     |
-|  2303811   |        |  Butzberger.   |
-|  2303811   |        |     Campos     |
-|  2303811   |        |   Butzberger   |
-|  2303811   |        |    Campos,     |
-|  2303811   |        |     Lovett     |
-|  2387663   |        |     Murray     |
-|  1662392   |        |   Jergnigan    |
-|  1771039   |        |        ,       |
+There were 398 changes so we are only displaying the first 50. You can review the 
+entire list by downloading the output.csv file linked above.
+
+|     id     |                Gain                |                                                                                                                                                                                     Loss                                                                                                                                                                                     |
+| ---------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|  4622083   |            807 F.2d 177            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                   Dean v. Commissioner , T.C. Memo 1976-379 ; Kennedy v. Commissioner , T.C. Memo 1970-58 , affd. per curiam 451 F.2d 1023 (3d Cir. 1971)                                                                                                                    |
+|  4622083   |         T.C. Memo 1980-310         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |            876 F.2d 893            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |            86 T.C. 589             |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                                             Commissioner , supra                                                                                                                                                                             |
+|  4622083   |           451 F.2d 1023            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                         Wojciechowski v. Commissioner Docket No. 21290-88 United States Tax Court T.C. Memo 1991-239                                                                                                                                         |
+|  4622083   |         T.C. Memo 1979-468         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                 Lewia v. Commissioner , 165 U.S. App. D.C. 282 , 506 F.2d 1321 , 75-1 U.S. Tax Cas. (CCH) P9145 (D.C. Cir. 1974) , affg. T.C. Memo 1972-168                                                                                                                  |
+|  4622083   |                                    |                                                                                                      Commissioner v. Stidger , 386 U.S. 287 , 18 L. Ed. 2d 53 , 87 S. Ct. 1065 (1967) ; Peurifoy v. Commissioner , 358 U.S. 59 , 3 L. Ed. 2d 30 , 79 S. Ct. 104 (1958)                                                                                                       |
+|  4622083   |                                    |                                                                                                                                                      Coombs v. Commissioner , 608 F.2d 1269 , 1275-1276 (9th Cir. 1979)                                                                                                                                                      |
+|  4622083   |                                    |                                                                                                                                                Peurifoy v. Commissioner , 358 U.S. 59 , 3 L. Ed. 2d 30 , 79 S. Ct. 104 (1958)                                                                                                                                                |
+|  4622083   |                                    |                                                                                                                                                                Lewia v. Commissioner , 165 U.S. App. D.C. 282                                                                                                                                                                |
+|  4622083   |                                    |                                                                                   Kennedy v. Commissioner , T.C. Memo 1980-310 ; White v. Commissioner , T.C. Memo 1979-468 ; Bowman v. Commissioner , T.C. Memo 1979-432 , affd. without published opinion 624 F.2d 1109 (8th Cir. 1980)                                                                                    |
+|  4622083   |                                    |                                                                                                           White v. Commissioner , T.C. Memo 1979-468 ; Bowman v. Commissioner , T.C. Memo 1979-432 , affd. without published opinion 624 F.2d 1109 (8th Cir. 1980)                                                                                                           |
+|  4622083   |         T.C. Memo 1976-379         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                  Barone v. Commissioner , 85 T.C. 462 (1985) , affd. without published opinion 807 F.2d 177 (9th Cir. 1986)                                                                                                                                  |
+|  4622083   |                                    |                                                                                                                                                           Folkman v. United States , 615 F.2d 493 (9th Cir. 1980)                                                                                                                                                            |
+|  4622083   |            438 F.2d 905            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                          Harrington v. Commissioner , 93 T.C. 297 , 303-304 (1989)                                                                                                                                                           |
+|  4622083   |         T.C. Memo 1979-432         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |           506 F.2d 1321            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |            74 T.C. 578             |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |         T.C. Memo 1989-495         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |            358 U.S. 59             |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                               Lewia v. Commissioner , 165 U.S. App. D.C. 282 , 506 F.2d 1321 , 75-1 U.S. Tax Cas. (CCH) P9145 (D.C. Cir. 1974)                                                                                                                               |
+|  4622083   |            54 T.C. 742             |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                              Sislik v. Commissioner , T.C. Memo 1989-495 (on appeal, D.C. Cir. March 26, 1990)                                                                                                                                               |
+|  4622083   |                                    |                                                                                                                                         Commissioner v. Stidger , 386 U.S. 287 , 291 n. 11, 18 L. Ed. 2d 53 , 87 S. Ct. 1065 (1967)                                                                                                                                          |
+|  4622083   |           629 F.2d 1071            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |           608 F.2d 1269            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |          18 L. Ed. 2d 53           |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |         T.C. Memo 1970-58          |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                                Swicegood v. Commissioner , T.C. Memo 1989-467                                                                                                                                                                |
+|  4622083   |            931 F.2d 132            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                        Andrews v. Commissioner , 931 F.2d 132 at 138 (1st Cir. 1991)                                                                                                                                                         |
+|  4622083   |                                    |                                                                                                                                                Commissioner v. Flowers , 326 U.S. 465 , 90 L. Ed. 203 , 66 S. Ct. 250 (1946)                                                                                                                                                 |
+|  4622083   |        79 S. Ct. 104 (1958)        |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                        Markey v. Commissioner , 490 F.2d 1249 , 1254 (6th Cir. 1974)                                                                                                                                                         |
+|  4622083   |         T.C. Memo 1974-212         |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                        Ellwein v. United States , 778 F.2d 506 , 509 (8th Cir. 1985)                                                                                                                                                         |
+|  4622083   |                                    |                                                                                                                                 Bowman v. Commissioner , T.C. Memo 1979-432 , affd. without published opinion 624 F.2d 1109 (8th Cir. 1980)                                                                                                                                  |
+|  4622083   |                                    |                                                                                                                                                           Rosenspan v. United States , 438 F.2d 905 (2d Cir. 1971)                                                                                                                                                           |
+|  4622083   |                                    |                                                                                                                                              Golsen v. Commissioner , 54 T.C. 742 (1970) , affd. 445 F.2d 985 (10th Cir. 1971)                                                                                                                                               |
+|  4622083   |            445 F.2d 985            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                               Commissioner v. Stidger , 386 U.S. 287 , 18 L. Ed. 2d 53 , 87 S. Ct. 1065 (1967)                                                                                                                                               |
+|  4622083   |       87 S. Ct. 1065 (1967)        |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |           90 L. Ed. 203            |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |                                    |                                                                                                                                                                 Golsen v. Commissioner , 54 T.C. 742 (1970)                                                                                                                                                                  |
+|  4622083   |               supra                |                                                                                                                                                                                                                                                                                                                                                                              |
+|  4622083   |           490 F.2d 1249            |                                                                                                                                                                                                                                                                                                                                                                              |
 
 
 </details>
@@ -78,6 +81,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/203/results/8981703e7cc27067adcb39f66346dc62248974cf.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/203/results/60405f1a1ad9a51ed6fe488ce507c7837eb99246.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/203/results/bb9ca00f64c5aa47d0eb85a16e38bc03a6bf0b61.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/203/results/output.csv)
