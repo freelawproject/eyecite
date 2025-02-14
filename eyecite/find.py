@@ -442,6 +442,8 @@ def find_reference_citations_from_markup(
             regexes.append(
                 r"(?P<{}>{})".format(key, value.replace(" ", r"\s+"))
             )
+        if not regexes:
+            continue
 
         # Include punctuation and spaces surrounding the party name, in order
         # to be contiguous to the style tags.
