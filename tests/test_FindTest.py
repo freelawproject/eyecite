@@ -9,7 +9,11 @@ from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
-from eyecite.models import FullCaseCitation, FullCitation, ResourceCitation
+from eyecite.models import (
+    FullCaseCitation,
+    ReferenceCitation,
+    ResourceCitation,
+)
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -743,7 +747,6 @@ class FindTest(TestCase):
         this shouldn't occur but if it did we would be able to filter these
         correcly
         """
-        ".... at Conley v. Gibson, 355 Mass. 41, 42 (1999) ..."
         citations = [
             case_citation(
                 volume="355",
@@ -757,7 +760,7 @@ class FindTest(TestCase):
                 metadata={"plaintiff": "Conley", "defendant": "Gibson"},
             ),
             reference_citation("Conley", span_start=8, span_end=14),
-            reference_citation("Conley", span_start=18, span_end=24),
+            reference_citation("Gibson", span_start=18, span_end=24),
         ]
         self.assertEqual(len(citations), 3)
         filtered_citations = filter_citations(citations)
@@ -901,7 +904,7 @@ class FindTest(TestCase):
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
 
-    def test_reference_extraction(self):
+    def test_reference_extraction_using_resolved_names(self):
         """Can we extract a reference citation using resolved metadata?"""
         texts = [
             # In this case the reference citation got with the
@@ -917,17 +920,82 @@ class FindTest(TestCase):
         for plain_text in texts:
             citations = get_citations(plain_text)
             found_cite = citations[0]
-            if isinstance(found_cite, FullCitation):
-                found_cite.metadata.resolved_case_name = "State v. Wingler"
-                references = extract_reference_citations(
-                    found_cite, plain_text
+            found_cite.metadata.resolved_case_name = "State v. Wingler"
+            references = extract_reference_citations(found_cite, plain_text)
+            final_citations = filter_citations(citations + references)
+            self.assertEqual(
+                len(final_citations), 2, "There should only be 2 citations"
+            )
+            self.assertEqual(
+                len(references),
+                1,
+                "Only a reference citation should had been picked up",
+            )
+
+    def test_reference_extraction_from_markup(self):
+        """Can we extract references from markup text?"""
+        # https://www.courtlistener.com/api/rest/v4/opinions/1985850/
+        markup_text = """
+        <i>citing, </i><i>U.S. v. Halper,</i> 490 <i>U.S.</i> 435, 446, 109 <i>
+        S.Ct.</i> 1892, 1901, 104 <i>L.Ed.</i>2d 487 (1989).
+        ; and see, <i>Bae v. Shalala,</i> 44 <i>F.</i>3d 489 (7th Cir.1995).
+        <p>In <i>Bae,</i> the 7th Circuit Court further interpreted
+        the holding of <i>Halper.</i> In <i>Bae,</i> the court... by the
+        <i>ex post facto</i> clause of the U.S. Constitution...</p>
+        <p>In <i>Bae,</i> the circuit court rejected the defendant's
+        argument that since debarment served both remedial <i>and</i>
+        punitive goals it must be characterized as punishment. Bae's argument
+        evidently relied on the <i>Halper</i> court's use of the word \"solely\"
+        in the discussion leading to its holding. The circuit court's
+        interpretation was much more pragmatic: \"A civil sanction that can
+        fairly be said solely to serve remedial goals will not fail under
+        <i>ex post facto</i> scrutiny simply because it is consistent with
+        punitive goals as well.\" 44 <i>F.</i>3d at 493.</p>"""
+
+        plain_text = clean_text(markup_text, ["html", "all_whitespace"])
+        citations = get_citations(plain_text, markup_text=markup_text)
+        references = [c for c in citations if isinstance(c, ReferenceCitation)]
+        # Tests both for the order and exact counts. Note that there is one
+        # "Bae" in the text that should not be picked up: "Bae's argument"...
+        self.assertListEqual(
+            [ref.matched_text().strip(",.") for ref in references],
+            ["Bae", "Halper", "Bae", "Bae", "Halper"],
+        )
+
+    def test_reference_filtering(self):
+        """Can we filter out ReferenceCitation that overlap other citations?"""
+        texts = [
+            # https://www.courtlistener.com/api/rest/v4/opinions/9435339/
+            # Test no overlap with supra citations
+            """<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),
+            which discussed... apellate court’s core competency.
+             <em>Twombly, </em>550 U. S., at 557. Evaluating...
+            In <em>Twombly</em>, supra, at 553-554, the Court found...
+            Another, in <em>Twombly, supra</em>, at 553-554, the Court found
+            """,
+            # From the previous source; test no overlap with single-name
+            # full case citation
+            """
+            <em>Johnson </em>v. <em>Jones, </em>515 U. S. 304, 309 (1995)
+             something... with,” <em>Swint </em>v. <em>Chambers County Comm’n,
+             </em>514 U. S. 35, 51 (1995), and “directly implicated by,”
+             <em>Hartman, supra, </em>at 257, n. 5, the qualified-immunity
+             defense.</p>\n<p id=\"b773-6\">Respondent counters that our
+             holding in <em>Johnson, </em>515 U. S. 304, confirms
+            """,
+            # https://www.courtlistener.com/opinion/8524158/in-re-cahill/
+            # Test no overlap with single-name-and-pincite full case citation
+            """ was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>
+            508 U.S. 324, 113 S.Ct. 2106, 124 L.Ed.2d 228 (1993). That plan
+             residence.” <em>Nobelman </em>at 332, 113 S.Ct. 2106.
+             Section 1123(b)(5) codifies the
+            """,
+        ]
+        for markup_text in texts:
+            plain_text = clean_text(markup_text, ["html", "all_whitespace"])
+            citations = get_citations(plain_text, markup_text=markup_text)
+            self.assertFalse(
+                any(
+                    [isinstance(cite, ReferenceCitation) for cite in citations]
                 )
-                final_citations = filter_citations(citations + references)
-                self.assertEqual(
-                    len(final_citations), 2, "There should only be 2 citations"
-                )
-                self.assertEqual(
-                    len(references),
-                    1,
-                    "Only a reference citation should had been picked up",
-                )
+            )
