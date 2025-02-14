@@ -446,6 +446,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
     Example:
     ```
     Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    Peña at 222, 515 U.S. 200
     ```
     """
 
@@ -456,6 +457,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         extra: Optional[str] = None
+        antecedent_guess: Optional[str] = None
         # May be populated after citation resolution
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
@@ -463,10 +465,16 @@ class FullCaseCitation(CaseCitation, FullCitation):
     def add_metadata(self, words: "Tokens"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_defendant, add_post_citation
+        from eyecite.helpers import (
+            add_defendant,
+            add_post_citation,
+            add_pre_citation,
+        )
 
         add_post_citation(self, words)
         add_defendant(self, words)
+        add_pre_citation(self, words)
+
         self.guess_court()
         super().add_metadata(words)
 
