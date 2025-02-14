@@ -120,7 +120,7 @@ class FindTest(TestCase):
             # can we handle variations with parenthesis
             ('1 So.2d at 1',
              [case_citation(volume="1", reporter="So.2d", page="1", short=True,
-                 metadata={'pin_cite': '1'})]),
+              metadata={'pin_cite': '1'})]),
             # Test with court and extra information
             ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [case_citation(page='12', year=1982,
