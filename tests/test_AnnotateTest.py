@@ -115,7 +115,7 @@ class AnnotateTest(TestCase):
                 "<em>Nobelman </em>at 332, 113 S.Ct. 2106. Section 1123(b)(5) "
                 "codifies the <em>Nobelman </em>decision in individual debtor "
                 "chapter 11 cases.",
-                " partially secured by a debtor’s principal residence was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em><a href='something'>508 U.S. 324</a>, <a href='something'>113 S.Ct. 2106</a>, <a href='something'>124 L.Ed.2d 228</a> (1993). That plan proposed to bifurcate the claim and... pay the unsecured... only by a lien on the debtor’s principal residence.” <em>Nobelman </em>at 332, <a href='something'>113 S.Ct. 2106</a>. Section 1123(b)(5) codifies the <em><a href='something'>Nobelman </a></em>decision in individual debtor chapter 11 cases.",
+                " partially secured by a debtor’s principal residence was not con-firmable. <em>Nobelman v. Am. Sav. Bank, </em><a href='something'>508 U.S. 324</a>, <a href='something'>113 S.Ct. 2106</a>, <a href='something'>124 L.Ed.2d 228</a> (1993). That plan proposed to bifurcate the claim and... pay the unsecured... only by a lien on the debtor’s principal residence.” <em>Nobelman </em>at 332, <a href='something'>113 S.Ct. 2106</a>. Section 1123(b)(5) codifies the <em><a href='something'>Nobelman</a> </em>decision in individual debtor chapter 11 cases.",
                 ["html", "all_whitespace"],
                 {
                     "annotate_anchors": True,

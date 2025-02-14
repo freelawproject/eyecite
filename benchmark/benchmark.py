@@ -4,6 +4,7 @@ import csv
 import datetime
 import json
 import os
+import re
 import sys
 from io import StringIO
 from pathlib import Path
@@ -52,6 +53,8 @@ class Benchmark(object):
                 or row["html"]
             )
             if text:
+                # Remove XML encodings from xml_harvard
+                text = re.sub(r"^<\?xml.*?\?>", "", text, count=1)
                 opinion_text_is_marked_up = True
             else:
                 text = row["plain_text"]

@@ -438,26 +438,40 @@ def find_reference_citations_from_markup(
                 continue
             if not is_valid_name(value):
                 continue
-            value = re.sub(r"\s+", re.escape(" "), re.escape(value))
+            value = re.sub(r"\s+", re.escape(" "), re.escape(value.strip()))
             regexes.append(
                 r"(?P<{}>{})".format(key, value.replace(" ", r"\s+"))
             )
 
-        # Include punctuation and spaces surrounding the party name.
+        # Include punctuation and spaces surrounding the party name, in order
+        # to be contiguous to the style tags.
         # See related test for real data example where this happens
-        # It is also important to include those characters to preserve
-        # valid HTML when creating `html_with_citations`
-        regex = rf"<({tags})>\s*({'|'.join(regexes)})[:;.,\s]*</({tags})>"
+        # It may also be important to include those characters to preserve
+        # valid HTML when annotating HTML (ex: `html_with_citations`). See
+        # `utils.maybe_balance_style tags` for reference; it has some tolerance
+        # which may be enough for these citations
+        regex = rf"<(?:{tags})>\s*({'|'.join(regexes)})[:;.,\s]*</(?:{tags})>"
         start_in_markup = plain_to_markup.update(
             citation.span()[0], bisect_right
         )
         for match in re.finditer(regex, markup_text[start_in_markup:]):
-            start_in_plain = markup_to_plain.update(
+            full_start_in_plain = markup_to_plain.update(
                 start_in_markup + match.start(), bisect_left
             )
-            end_in_plain = markup_to_plain.update(
+            full_end_in_plain = markup_to_plain.update(
                 start_in_markup + match.end(), bisect_right
             )
+
+            # the first group [match.group(0)] is the whole match,
+            # with whitespace and punctuation. the second group, match.group(1)
+            # is the only capturing and named group
+            start_in_plain = markup_to_plain.update(
+                start_in_markup + match.start(1), bisect_left
+            )
+            end_in_plain = markup_to_plain.update(
+                start_in_markup + match.end(1), bisect_right
+            )
+
             reference = ReferenceCitation(
                 token=CaseReferenceToken(
                     data=plain_text[start_in_plain:end_in_plain],
@@ -466,6 +480,8 @@ def find_reference_citations_from_markup(
                 ),
                 span_start=start_in_plain,
                 span_end=end_in_plain,
+                full_span_start=full_start_in_plain,
+                full_span_end=full_end_in_plain,
                 index=0,
                 metadata=match.groupdict(),
             )
