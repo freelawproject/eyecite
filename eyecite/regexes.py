@@ -1,5 +1,4 @@
 # *** Helpers for building regexes: ***
-import regex as re
 
 
 def space_boundaries_re(regex):
