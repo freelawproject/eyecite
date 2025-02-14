@@ -67,12 +67,7 @@ class Benchmark(object):
             )
 
             # Get the citation text string from the cite object
-            cites = []
-            for cite in found_citations:
-                if cite.token:
-                    cites.append(
-                        plain_text[cite.full_span()[0] : cite.full_span()[1]]
-                    )
+            cites = [cite.token.data for cite in found_citations if cite.token]
 
             count += len(cites)
             output = {
