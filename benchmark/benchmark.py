@@ -4,6 +4,7 @@ import csv
 import datetime
 import json
 import os
+import re
 import sys
 from io import StringIO
 from pathlib import Path
@@ -50,13 +51,24 @@ class Benchmark(object):
                 or row["html_columbia"]
                 or row["html_anon_2020"]
                 or row["html"]
-                or row["plain_text"]
             )
+            if text:
+                # Remove XML encodings from xml_harvard
+                text = re.sub(r"^<\?xml.*?\?>", "", text, count=1)
+                opinion_text_is_marked_up = True
+            else:
+                text = row["plain_text"]
+                opinion_text_is_marked_up = False
+
+            plain_text = clean_text(text, ["html", "inline_whitespace"])
             found_citations = get_citations(
-                clean_text(text, ["html", "inline_whitespace"])
+                plain_text,
+                markup_text=text if opinion_text_is_marked_up else "",
             )
+
             # Get the citation text string from the cite object
             cites = [cite.token.data for cite in found_citations if cite.token]
+
             count += len(cites)
             output = {
                 "id": row["id"],
