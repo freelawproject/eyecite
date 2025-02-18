@@ -17,6 +17,25 @@ Fixes:
 
 ## Current
 
+**2.6.6 - 2025-02-18**
+
+Features:
+
+- Added a new optional argument `markup_text` to `get_citations`. Passing this
+argument makes eyecite use a new extractor `find_reference_citations_from_markup`
+which uses HTML/XML style tags to find references. [#203](https://github.com/freelawproject/eyecite/pull/203).
+- Updated the benchmark to use the new argument to `get_citations`. See #203.
+- Added antecedent_guess to FullCaseCitation.Metadata via `PRE_FULL_CITATION_REGEX`. See #203.
+- Add workflow to check for new entries in CHANGES.md file [#217](https://github.com/freelawproject/eyecite/pull/217)
+
+Fixes:
+- Fixed variant regexes for ShortCites [#214](https://github.com/freelawproject/eyecite/pull/214).
+- Added an optional space to antecedent regexes [#211](https://github.com/freelawproject/eyecite/pull/211).
+- Corrected full span calculations. See [#205](https://github.com/freelawproject/eyecite/pull/205) and #203.
+
+
+## Past
+
 **2.6.5 - 2025-01-28**
 
 Features:
@@ -27,8 +46,6 @@ Fixes:
 
 - Fix court string matching with whitespace
 - Fix court name issues
-
-## Past
 
 **2.6.4 - 2024-06-03**
 

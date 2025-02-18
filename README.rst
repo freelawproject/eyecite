@@ -6,6 +6,7 @@ eyecite is an open source tool for extracting legal citations from text. It is u
 eyecite recognizes a wide variety of citations commonly appearing in American legal decisions, including:
 
 * full case: ``Bush v. Gore, 531 U.S. 98, 99-100 (2000)``
+* reference: ``In`` *Gore*, ``the Supreme Court...``
 * short case: ``531 U.S., at 99``
 * statutory: ``Mass. Gen. Laws ch. 1, § 2``
 * law journal: ``1 Minn. L. Rev. 1``
@@ -112,33 +113,34 @@ eyecite's full API is documented `here <https://freelawproject.github.io/eyecite
 Extracting Citations
 --------------------
 
-:code:`get_citations()`, the main executable function, takes three parameters.
+:code:`get_citations()`, the main executable function, takes four parameters.
 
 1. :code:`plain_text` ==> str: The text to parse. Should be cleaned first.
 2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations
    that might refer to more than one reporter and can't be narrowed down by date.
 3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
+4. :code:`markup_text` ==> str, default :code:`''`: optional XML or HTML source text that will be used to extract ReferenceCitations via :code:`find_reference_citations_from_markup`
+
 
 Resolving Reference Citations
 -----------------------------
 
 Eyecite now supports a two-step process for extracting and resolving reference citations. This feature improves handling of citations that reference previously mentioned cases without explicitly repeating the full case name or citation.
 
-Reference citations, such as “Theatre Enterprises at 552”, can be difficult to extract accurately if a judge is citing to `Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954)` they lack a full case name. To address this, Eyecite allows for an initial citation extraction, followed by a secondary reference resolution step. If you have an external database (e.g., CourtListener) that provides resolved case names, you can use this feature to enhance citation finding.
+Reference citations, such as “Theatre Enterprises at 552”, can be difficult to extract accurately if a judge is citing to `Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954)` they lack a full case name. To address this, Eyecite allows for an initial citation extraction, followed by a secondary reference resolution step. If you have an external database (e.g., CourtListener) that provides resolved case names, you can use this feature to enhance citation finding.::
 
-from eyecite import get_citations
-from eyecite.find import extract_reference_citations
-from eyecite.helpers import filter_citations
+    from eyecite import get_citations
+    from eyecite.find import extract_reference_citations
+    from eyecite.helpers import filter_citations
 
-plain_text = (
-    "quoting Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954); "
-    "alterations in original). Thus, the District Court understood that allegations of "
-    "parallel business conduct, taken alone, do not state a claim under § 1; "
-    "plaintiffs must allege additional facts that “ten[d] to exclude independent "
-    "self-interested conduct as an As Theatre Enterprises at 552 held, parallel"
-)
+    plain_text = (
+        "quoting Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954); "
+        "alterations in original. Thus, the District Court understood that allegations of "
+        "parallel business conduct, taken alone, do not state a claim under § 1; "
+        "plaintiffs must allege additional facts that “ten to exclude independent "
+        "self-interested conduct as an As Theatre Enterprises at 552 held, parallel"
+        )
 
-::
 
     from eyecite import get_citations
     from eyecite.find import extract_reference_citations
@@ -240,7 +242,7 @@ Wrapping HTML Tags
 Note that the above example includes mismatched HTML tags: "<a>1 U.S.</i> 12</a>".
 To specify handling for unbalanced tags, use the :code:`unbalanced_tags` parameter:
 
-* :code:`unbalanced_tags="skip"`: annotations that would result in unbalanced tags will not be inserted.
+* :code:`unbalanced_tags="skip"`: annotations that would result in unbalanced tags will not be inserted. A simple correction for style tags is attempted. This is a common case when finding ReferenceCitations or IdCitations. See :code:`utils.maybe_balance_style_tags`
 * :code:`unbalanced_tags="wrap"`: unbalanced tags will be wrapped, resulting in :code:`<a>1 U.S.</a></i><a> 12</a>`
 
 Important: :code:`unbalanced_tags="wrap"` uses a simple regular expression and will only work for HTML where
