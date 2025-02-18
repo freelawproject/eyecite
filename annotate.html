@@ -29,11 +29,18 @@
 <pre><code class="python">from bisect import bisect_left, bisect_right
 from difflib import SequenceMatcher
 from functools import partial
+from logging import getLogger
 from typing import Any, Callable, Iterable, Optional, Tuple
 
 import fast_diff_match_patch
 
-from eyecite.utils import is_balanced_html, wrap_html_tags
+from eyecite.utils import (
+    is_balanced_html,
+    maybe_balance_style_tags,
+    wrap_html_tags,
+)
+
+logger = getLogger(&#34;eyecite&#34;)
 
 
 def annotate_citations(
@@ -87,6 +94,9 @@ def annotate_citations(
     Returns:
         The annotated text.
     &#34;&#34;&#34;
+    if unbalanced_tags not in [&#34;unchecked&#34;, &#34;skip&#34;, &#34;wrap&#34;]:
+        raise ValueError(f&#34;Unknown option &#39;{unbalanced_tags}&#34;)
+
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
     if source_text and source_text != plain_text:
@@ -116,13 +126,20 @@ def annotate_citations(
         # handle HTML tags
         if unbalanced_tags == &#34;unchecked&#34;:
             pass
-        elif unbalanced_tags in (&#34;skip&#34;, &#34;wrap&#34;):
-            if not is_balanced_html(span_text):
-                if unbalanced_tags == &#34;skip&#34;:
-                    continue
+        elif not is_balanced_html(span_text):
+            if unbalanced_tags == &#34;wrap&#34;:
                 span_text = wrap_html_tags(span_text, after, before)
-        else:
-            raise ValueError(f&#34;Unknown option &#39;{unbalanced_tags}&#34;)
+            else:  # &#34;skip&#34; case
+                original_span_text = span_text
+                start, end, span_text = maybe_balance_style_tags(
+                    start, end, plain_text
+                )
+                if not is_balanced_html(span_text):
+                    logger.error(
+                        &#34;Citation was not annotated due to unbalanced tags %s&#34;,
+                        original_span_text,
+                    )
+                    continue
 
         if annotator is not None:
             annotated_span = annotator(before, span_text, after)
@@ -362,6 +379,9 @@ citation_text, and after_text together for each annotation.</dd>
     Returns:
         The annotated text.
     &#34;&#34;&#34;
+    if unbalanced_tags not in [&#34;unchecked&#34;, &#34;skip&#34;, &#34;wrap&#34;]:
+        raise ValueError(f&#34;Unknown option &#39;{unbalanced_tags}&#34;)
+
     # set up offset_updater if we have to move annotations to source_text
     offset_updater = None
     if source_text and source_text != plain_text:
@@ -391,13 +411,20 @@ citation_text, and after_text together for each annotation.</dd>
         # handle HTML tags
         if unbalanced_tags == &#34;unchecked&#34;:
             pass
-        elif unbalanced_tags in (&#34;skip&#34;, &#34;wrap&#34;):
-            if not is_balanced_html(span_text):
-                if unbalanced_tags == &#34;skip&#34;:
-                    continue
+        elif not is_balanced_html(span_text):
+            if unbalanced_tags == &#34;wrap&#34;:
                 span_text = wrap_html_tags(span_text, after, before)
-        else:
-            raise ValueError(f&#34;Unknown option &#39;{unbalanced_tags}&#34;)
+            else:  # &#34;skip&#34; case
+                original_span_text = span_text
+                start, end, span_text = maybe_balance_style_tags(
+                    start, end, plain_text
+                )
+                if not is_balanced_html(span_text):
+                    logger.error(
+                        &#34;Citation was not annotated due to unbalanced tags %s&#34;,
+                        original_span_text,
+                    )
+                    continue
 
         if annotator is not None:
             annotated_span = annotator(before, span_text, after)

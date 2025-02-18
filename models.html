@@ -474,6 +474,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
     Example:
     ```
     Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    Peña at 222, 515 U.S. 200
     ```
     &#34;&#34;&#34;
 
@@ -484,14 +485,24 @@ class FullCaseCitation(CaseCitation, FullCitation):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         extra: Optional[str] = None
+        antecedent_guess: Optional[str] = None
+        # May be populated after citation resolution
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
 
     def add_metadata(self, words: &#34;Tokens&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_defendant, add_post_citation
+        from eyecite.helpers import (
+            add_defendant,
+            add_post_citation,
+            add_pre_citation,
+        )
 
         add_post_citation(self, words)
         add_defendant(self, words)
+        add_pre_citation(self, words)
+
         self.guess_court()
         super().add_metadata(words)
 
@@ -632,6 +643,15 @@ class ReferenceCitation(CitationBase):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         pin_cite: Optional[str] = None
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
+
+    name_fields = [
+        &#34;plaintiff&#34;,
+        &#34;defendant&#34;,
+        &#34;resolved_case_name_short&#34;,
+        &#34;resolved_case_name&#34;,
+    ]
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
@@ -1490,6 +1510,7 @@ class Edition:
 i.e., the kind of citation that marks the first time a document is cited.</p>
 <p>Example:</p>
 <pre><code>Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+Peña at 222, 515 U.S. 200
 </code></pre></div>
 <details class="source">
 <summary>
@@ -1503,6 +1524,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
     Example:
     ```
     Adarand Constructors, Inc. v. Peña, 515 U.S. 200, 240
+    Peña at 222, 515 U.S. 200
     ```
     &#34;&#34;&#34;
 
@@ -1513,14 +1535,24 @@ class FullCaseCitation(CaseCitation, FullCitation):
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
         extra: Optional[str] = None
+        antecedent_guess: Optional[str] = None
+        # May be populated after citation resolution
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
 
     def add_metadata(self, words: &#34;Tokens&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_defendant, add_post_citation
+        from eyecite.helpers import (
+            add_defendant,
+            add_post_citation,
+            add_pre_citation,
+        )
 
         add_post_citation(self, words)
         add_defendant(self, words)
+        add_pre_citation(self, words)
+
         self.guess_court()
         super().add_metadata(words)
 
@@ -2022,12 +2054,28 @@ class ReferenceCitation(CitationBase):
 
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
-        pin_cite: Optional[str] = None</code></pre>
+        pin_cite: Optional[str] = None
+        resolved_case_name_short: Optional[str] = None
+        resolved_case_name: Optional[str] = None
+
+    name_fields = [
+        &#34;plaintiff&#34;,
+        &#34;defendant&#34;,
+        &#34;resolved_case_name_short&#34;,
+        &#34;resolved_case_name&#34;,
+    ]</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></li>
 </ul>
+<h3>Class variables</h3>
+<dl>
+<dt id="eyecite.models.ReferenceCitation.name_fields"><code class="name">var <span class="ident">name_fields</span></code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a></b></code>:
@@ -3066,6 +3114,9 @@ class UnknownCitation(CitationBase):
 </li>
 <li>
 <h4><code><a title="eyecite.models.ReferenceCitation" href="#eyecite.models.ReferenceCitation">ReferenceCitation</a></code></h4>
+<ul class="">
+<li><code><a title="eyecite.models.ReferenceCitation.name_fields" href="#eyecite.models.ReferenceCitation.name_fields">name_fields</a></code></li>
+</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.Reporter" href="#eyecite.models.Reporter">Reporter</a></code></h4>
