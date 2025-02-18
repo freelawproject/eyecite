@@ -236,12 +236,12 @@ POST_FULL_CITATION_REGEX = rf"""
             (?P<extra>[^(]*)
         )
         # content within year paren:
-        \((?:
+        [\(\[](?:
             # court and year:
             (?P<court>[^)]+)\ {YEAR_REGEX}|
             # just year:
             {YEAR_REGEX}
-        )\)
+        )[\)\]]
         # optional parenthetical comment:
         {PARENTHETICAL_REGEX}
     |  # handle a pin cite with no valid year paren:
