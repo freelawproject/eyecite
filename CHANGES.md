@@ -5,17 +5,26 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- Cleanup plaintiff/defendant names with parentheses/whitespace
-- Update regexes to allow for square brackets common in NY and California
+- None
 
 Changes:
-- Update regexes, helpers and tests.py
+- None
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
 
 
 ## Current
+
+**2.6.7 - 2025-02-18**
+
+Features:
+
+- Update regexes to allow for square brackets common in NY and California [#219](https://github.com/freelawproject/eyecite/pull/219)
+- Cleanup plaintiff/defendant names with parentheses/whitespace. See #219
+- Update regexes, helpers and tests.py
+
+## Past
 
 **2.6.6 - 2025-02-18**
 
@@ -33,8 +42,6 @@ Fixes:
 - Added an optional space to antecedent regexes [#211](https://github.com/freelawproject/eyecite/pull/211).
 - Corrected full span calculations. See [#205](https://github.com/freelawproject/eyecite/pull/205) and #203.
 
-
-## Past
 
 **2.6.5 - 2025-01-28**
 
