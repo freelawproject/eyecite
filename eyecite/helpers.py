@@ -143,7 +143,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
             if word.groups["stop_word"] == "v" and index > 0:
                 citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
-                ).strip()
+                ).strip("( ")
                 offset += len(citation.metadata.plaintiff) + 1
             else:
                 # We don't want to include stop words such as
@@ -159,7 +159,7 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         citation.full_span_start = citation.span()[0] - offset
         defendant = "".join(
             str(w) for w in words[start_index : citation.index]
-        ).strip(", ")
+        ).strip(", ()")
         if defendant.strip():
             citation.metadata.defendant = defendant
 
