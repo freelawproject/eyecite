@@ -6,7 +6,7 @@ eyecite is an open source tool for extracting legal citations from text. It is u
 eyecite recognizes a wide variety of citations commonly appearing in American legal decisions, including:
 
 * full case: ``Bush v. Gore, 531 U.S. 98, 99-100 (2000)``
-* reference: ``In Gore, the Supreme Court...``
+* reference: ``In`` *Gore*, ``the Supreme Court...``
 * short case: ``531 U.S., at 99``
 * statutory: ``Mass. Gen. Laws ch. 1, § 2``
 * law journal: ``1 Minn. L. Rev. 1``
@@ -113,14 +113,14 @@ eyecite's full API is documented `here <https://freelawproject.github.io/eyecite
 Extracting Citations
 --------------------
 
-:code:`get_citations()`, the main executable function, takes three parameters.
+:code:`get_citations()`, the main executable function, takes four parameters.
 
 1. :code:`plain_text` ==> str: The text to parse. Should be cleaned first.
 2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations
    that might refer to more than one reporter and can't be narrowed down by date.
 3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
+4. :code:`markup_text`==> str, default :code:`''``: optional XML or HTML source text that will be used to extract ReferenceCitations via :code:`find_reference_citations_from_markup`
 
-:code:`find_reference_citations_from_markup`, optional extractor that takes advantage of XML or HTML style tags to extract find_reference_citations_from_markup
 
 Resolving Reference Citations
 -----------------------------
