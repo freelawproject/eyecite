@@ -8,7 +8,7 @@ Features:
 - None
 
 Changes:
-- None
+- Add workflow to check for new entries in CHANGES.md file
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
