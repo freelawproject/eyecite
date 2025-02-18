@@ -5,10 +5,11 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- None
+- Cleanup plaintiff/defendant names with parentheses/whitespace
+- Update regexes to allow for square brackets common in NY and California
 
 Changes:
-- None
+- Update regexes, helpers and tests.py
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
