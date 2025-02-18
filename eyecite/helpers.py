@@ -1,3 +1,4 @@
+import logging
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
@@ -23,8 +24,11 @@ from eyecite.regexes import (
     POST_JOURNAL_CITATION_REGEX,
     POST_LAW_CITATION_REGEX,
     POST_SHORT_CITATION_REGEX,
+    PRE_FULL_CITATION_REGEX,
     YEAR_REGEX,
 )
+
+logger = logging.getLogger()
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -158,6 +162,30 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         ).strip(", ")
         if defendant.strip():
             citation.metadata.defendant = defendant
+
+
+def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
+    """Scan backwards to find a (PartyName - Pincite) component
+
+    Do not try if plaintiff or defendant has already been found
+    """
+    if citation.metadata.plaintiff or citation.metadata.defendant:
+        return
+
+    m = match_on_tokens(
+        words,
+        citation.index - 1,
+        PRE_FULL_CITATION_REGEX,
+        forward=False,
+        strings_only=True,
+    )
+    if not m:
+        return
+
+    citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
+    citation.metadata.antecedent_guess = m["antecedent"]
+    match_length = m.span()[1] - m.span()[0]
+    citation.full_span_start = citation.span()[0] - match_length
 
 
 def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
@@ -307,7 +335,10 @@ def match_on_tokens(
 
         # check for max length
         if len(text) >= MAX_MATCH_CHARS:
-            text = text[:MAX_MATCH_CHARS]
+            if forward:
+                text = text[:MAX_MATCH_CHARS]
+            else:
+                text = text[-MAX_MATCH_CHARS:]
             break
 
     m = re.search(regex, text, flags=flags)
@@ -349,30 +380,44 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     :param citations: List of citations
     :return: Sorted and filtered citations
     """
+    if not citations:
+        return citations
+
     citations = list(
         {citation.span(): citation for citation in citations}.values()
     )
-    filtered_citations: List[CitationBase] = []
     sorted_citations = sorted(
         citations, key=lambda citation: citation.full_span()
     )
-    for citation in sorted_citations:
-        if filtered_citations:
-            last_citation = filtered_citations[-1]
-            is_overlapping = overlapping_citations(
-                citation.full_span(), last_citation.full_span()
-            )
-            if is_overlapping and isinstance(last_citation, ReferenceCitation):
-                # Remove the overlapping reference citation
+    filtered_citations: List[CitationBase] = [sorted_citations[0]]
+
+    for citation in sorted_citations[1:]:
+        last_citation = filtered_citations[-1]
+        is_overlapping = overlapping_citations(
+            citation.full_span(), last_citation.full_span()
+        )
+        if is_overlapping:
+            # In cases overlap, prefer anything to a reference citation
+            if isinstance(last_citation, ReferenceCitation):
                 filtered_citations.pop(-1)
                 filtered_citations.append(citation)
                 continue
-            if is_overlapping and isinstance(citation, ReferenceCitation):
-                # Skip overlapping reference citations
+            if isinstance(citation, ReferenceCitation):
                 continue
-            filtered_citations.append(citation)
-        else:
-            filtered_citations.append(citation)
+
+            # Known overlap case are parallel full citations
+            if not (
+                isinstance(citation, FullCaseCitation)
+                and isinstance(last_citation, FullCaseCitation)
+            ):
+                logger.error(
+                    "Unknown overlap case. Last cite: %s. Current: %s",
+                    last_citation,
+                    citation,
+                )
+
+        filtered_citations.append(citation)
+
     return filtered_citations
 
 

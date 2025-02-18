@@ -1,5 +1,4 @@
 # *** Helpers for building regexes: ***
-import regex as re
 
 
 def space_boundaries_re(regex):
@@ -21,22 +20,7 @@ def short_cite_re(regex):
     """Convert a full citation regex into a short citation regex.
     Currently this just means we turn '(?P<reporter>...),? (?P<page>...'
     to '(?P<reporter>...),? at (?P<page>...'"""
-    return re.sub(
-        r"""
-            # reporter group:
-            (
-                \(\?P<reporter>[^)]+\)
-            )
-            (?:,\?)?\  # comma and space
-            # page group:
-            (
-                \(\?P<page>
-            )
-        """,
-        r"\1,? at \2",
-        regex,
-        flags=re.VERBOSE,
-    )
+    return regex.replace("(?P<page>", "at (?P<page>")
 
 
 # *** Tokenizer regexes: ***
@@ -212,7 +196,7 @@ LAW_PIN_CITE_REGEX = rf"""
 # What case does a short cite refer to? For now, we just capture the previous
 # word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
 SHORT_CITE_ANTECEDENT_REGEX = r"""
-    (?P<antecedent>[A-Za-z][\w\-.]+),?
+    (?P<antecedent>[A-Za-z][\w\-.]+)\ ?,?
     \   # final space
 """
 
@@ -224,9 +208,9 @@ SHORT_CITE_ANTECEDENT_REGEX = r"""
 # and the word before it (to store as antecedent).
 SUPRA_ANTECEDENT_REGEX = r"""
     (?:
-        (?P<antecedent>[\w\-.]+),?\ (?P<volume>\d+)|
+        (?P<antecedent>[\w\-.]+)\ ?,?\ (?P<volume>\d+)|
         (?P<volume>\d+)|
-        (?P<antecedent>[\w\-.]+),?
+        (?P<antecedent>[\w\-.]+)\ ?,?
     )
     \   # final space
 """
@@ -263,6 +247,20 @@ POST_FULL_CITATION_REGEX = rf"""
     |  # handle a pin cite with no valid year paren:
         {PIN_CITE_REGEX}
     )
+"""
+
+# These full case citations usually appear after the same full case citation
+# has appeared at least once.
+# Example with pincite: "Nobelman at 332, 113 S.Ct. 2106"
+# Example without pincite: "Johnson, 515 U. S. 304"
+PRE_FULL_CITATION_REGEX = rf"""
+    # single word antecedent
+    (?P<antecedent>[A-Z][a-z\-.]+)\ ?,?
+    # optional pincite
+    {PIN_CITE_REGEX}?
+    # `PIN_CITE_REGEX` uses a positive lookahead for end characters, but we
+    # must also capture them to calculate spans
+    ,?\ ?
 """
 
 
