@@ -8,13 +8,18 @@ Features:
 - None
 
 Changes:
-- Name loggers with `__name__` and demote errors to warnings
+- None
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
 
 
 ## Current
+
+**2.6.8 - 2025-02-19**
+
+Fixes:
+- Properly name loggers and demote errors to warnings [#222](https://github.com/freelawproject/eyecite/pull/222)
 
 **2.6.7 - 2025-02-18**
 
