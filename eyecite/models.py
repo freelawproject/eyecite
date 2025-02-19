@@ -73,6 +73,7 @@ class CitationBase:
     span_end: Optional[int] = None
     full_span_start: Optional[int] = None
     full_span_end: Optional[int] = None
+    pin_cite_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
 
@@ -180,6 +181,17 @@ class CitationBase:
                 else self.token.start
             ),
             self.span_end if self.span_end is not None else self.token.end,
+        )
+
+    def span_with_pincite(self):
+        """Start and stop offsets in source text for pincites."""
+        return (
+            (
+                self.span_start
+                if self.span_start is not None
+                else self.token.start
+            ),
+            self.pin_cite_end if self.pin_cite_end is not None else self.token.end,
         )
 
     def full_span(self) -> Tuple[int, int]:
