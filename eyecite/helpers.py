@@ -28,7 +28,7 @@ from eyecite.regexes import (
     YEAR_REGEX,
 )
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 
@@ -410,7 +410,7 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
                 isinstance(citation, FullCaseCitation)
                 and isinstance(last_citation, FullCaseCitation)
             ):
-                logger.error(
+                logger.warning(
                     "Unknown overlap case. Last cite: %s. Current: %s",
                     last_citation,
                     citation,

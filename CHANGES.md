@@ -8,7 +8,7 @@ Features:
 - None
 
 Changes:
-- None
+- Name loggers with `__name__` and demote errors to warnings
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.

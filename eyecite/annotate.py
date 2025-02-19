@@ -12,7 +12,7 @@ from eyecite.utils import (
     wrap_html_tags,
 )
 
-logger = getLogger("eyecite")
+logger = getLogger(__name__)
 
 
 def annotate_citations(
@@ -107,7 +107,7 @@ def annotate_citations(
                     start, end, plain_text
                 )
                 if not is_balanced_html(span_text):
-                    logger.error(
+                    logger.warning(
                         "Citation was not annotated due to unbalanced tags %s",
                         original_span_text,
                     )
