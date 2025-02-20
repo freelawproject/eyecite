@@ -188,27 +188,33 @@ class CitationBase:
     def span_with_pincite(self) -> Tuple[int, int]:
         """Start and stop offsets in source text for pin cites."""
         start = min(
-            filter(
-                None,
-                [
-                    self.metadata.pin_cite_span_start,
-                    self.span_start,
-                    self.token.start,
-                ],
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_start,
+                        self.span_start,
+                        self.token.start,
+                    ],
+                )
             ),
             default=self.token.start,
         )
+
         end = max(
-            filter(
-                None,
-                [
-                    self.metadata.pin_cite_span_end,
-                    self.token.end,
-                    self.span_end,
-                ],
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_end,
+                        self.token.end,
+                        self.span_end,
+                    ],
+                )
             ),
             default=self.token.end,
         )
+
         return (start, end)
 
     def full_span(self) -> Tuple[int, int]:
