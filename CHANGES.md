@@ -5,6 +5,20 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+- 
+
+Changes:
+- 
+
+Fixes:
+- 
+
+
+## Current
+
+**2.6.9 - 2025-02-20**
+
+Features:
 - Adds helper function span_with_pincite() to get full citation with pin cite
 
 Changes:
@@ -13,8 +27,7 @@ Changes:
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
 
-
-## Current
+## Past
 
 **2.6.8 - 2025-02-19**
 
@@ -28,8 +41,6 @@ Features:
 - Update regexes to allow for square brackets common in NY and California [#219](https://github.com/freelawproject/eyecite/pull/219)
 - Cleanup plaintiff/defendant names with parentheses/whitespace. See #219
 - Update regexes, helpers and tests.py
-
-## Past
 
 **2.6.6 - 2025-02-18**
 
