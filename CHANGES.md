@@ -8,7 +8,7 @@ Features:
 - Adds helper function span_with_pincite() to get full citation with pin cite
 
 Changes:
-- None
+- Add page correction to `corrected_citation`, for 'NY Slip Op' and 'Misc 3d'
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.

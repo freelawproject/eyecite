@@ -221,3 +221,35 @@ class ModelsTest(TestCase):
             full_case_citation.corrected_citation_full(),
             "Bank v. Vinson, 477 U.S. 57, 60 (scotus 1986)",
         )
+
+    def test_page_correction(self):
+        """Can we correct pages on citation.corrected_citation()?"""
+        tests = [
+            (
+                "2024 N.Y. Slip Op. 51192(U)",
+                "2024 NY Slip Op 51192(U)",
+                "51192(U)",
+            ),
+            ("2024 NYSlipOp 51192[U]", "2024 NY Slip Op 51192(U)", "51192(U)"),
+            ("11 Misc 3d 134[A]", "11 Misc. 3d 134(A)", "134(A)"),
+            ("83 Misc.3d 126(A)", "83 Misc. 3d 126(A)", "126(A)"),
+            # cases where no page correction should happen
+            ("11 U.S. 11[2]", "11 U.S. 11", "11"),
+            (
+                "Tex. Civ. Prac. & Rem. Code Ann. § 171.023",
+                "Tex. Code Ann. § 171.023",
+                None,
+            ),
+        ]
+        for citation, corrected_citation, corrected_page in tests:
+            cite = get_citations(citation)[0]
+            self.assertEqual(
+                cite.corrected_citation(),
+                corrected_citation,
+                "Page correction not working",
+            )
+            self.assertEqual(
+                cite.corrected_page(),
+                corrected_page,
+                "Standalone page correction not working",
+            )

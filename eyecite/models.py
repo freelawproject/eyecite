@@ -15,7 +15,7 @@ from typing import (
     cast,
 )
 
-from eyecite.utils import hash_sha256
+from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
 
 ResourceType = Hashable
 
@@ -308,12 +308,36 @@ class ResourceCitation(CitationBase):
         )
 
     def corrected_citation(self):
-        """Return citation with corrected reporter."""
+        """Return citation with corrected reporter and standardized page"""
+        corrected = self.matched_text()
         if self.edition_guess:
-            return self.matched_text().replace(
-                self.groups["reporter"], self.edition_guess.short_name
+            corrected = corrected.replace(
+                self.groups.get("reporter"), self.edition_guess.short_name
             )
-        return self.matched_text()
+
+        corrected_page = self.corrected_page()
+        if corrected_page and corrected_page != self.groups["page"]:
+            corrected = corrected.replace(self.groups["page"], corrected_page)
+
+        return corrected
+
+    def corrected_page(self):
+        """Can we standardize a page value?"""
+        page = self.groups.get("page")
+        if page is None:
+            return
+
+        standard_reporter = ""
+        if reporter := self.groups.get("reporter"):
+            if self.edition_guess:
+                standard_reporter = self.edition_guess.short_name
+            if {
+                reporter,
+                standard_reporter,
+            } & REPORTERS_THAT_NEED_PAGE_CORRECTION:
+                return page.replace("[U]", "(U)").replace("[A]", "(A)")
+
+        return page
 
     def guess_edition(self):
         """Set edition_guess."""
