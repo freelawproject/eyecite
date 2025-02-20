@@ -43,7 +43,7 @@ from typing import (
     cast,
 )
 
-from eyecite.utils import hash_sha256
+from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
 
 ResourceType = Hashable
 
@@ -336,12 +336,36 @@ class ResourceCitation(CitationBase):
         )
 
     def corrected_citation(self):
-        &#34;&#34;&#34;Return citation with corrected reporter.&#34;&#34;&#34;
+        &#34;&#34;&#34;Return citation with corrected reporter and standardized page&#34;&#34;&#34;
+        corrected = self.matched_text()
         if self.edition_guess:
-            return self.matched_text().replace(
-                self.groups[&#34;reporter&#34;], self.edition_guess.short_name
+            corrected = corrected.replace(
+                self.groups.get(&#34;reporter&#34;), self.edition_guess.short_name
             )
-        return self.matched_text()
+
+        corrected_page = self.corrected_page()
+        if corrected_page and corrected_page != self.groups[&#34;page&#34;]:
+            corrected = corrected.replace(self.groups[&#34;page&#34;], corrected_page)
+
+        return corrected
+
+    def corrected_page(self):
+        &#34;&#34;&#34;Can we standardize a page value?&#34;&#34;&#34;
+        page = self.groups.get(&#34;page&#34;)
+        if page is None:
+            return
+
+        standard_reporter = &#34;&#34;
+        if reporter := self.groups.get(&#34;reporter&#34;):
+            if self.edition_guess:
+                standard_reporter = self.edition_guess.short_name
+            if {
+                reporter,
+                standard_reporter,
+            } &amp; REPORTERS_THAT_NEED_PAGE_CORRECTION:
+                return page.replace(&#34;[U]&#34;, &#34;(U)&#34;).replace(&#34;[A]&#34;, &#34;(A)&#34;)
+
+        return page
 
     def guess_edition(self):
         &#34;&#34;&#34;Set edition_guess.&#34;&#34;&#34;
@@ -977,6 +1001,7 @@ class CaseCitation(ResourceCitation):
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -1733,6 +1758,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -1841,6 +1867,7 @@ Returns: None</p></div>
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -1901,6 +1928,7 @@ class FullJournalCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -1973,6 +2001,7 @@ class FullLawCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -2389,12 +2418,36 @@ class ResourceCitation(CitationBase):
         )
 
     def corrected_citation(self):
-        &#34;&#34;&#34;Return citation with corrected reporter.&#34;&#34;&#34;
+        &#34;&#34;&#34;Return citation with corrected reporter and standardized page&#34;&#34;&#34;
+        corrected = self.matched_text()
         if self.edition_guess:
-            return self.matched_text().replace(
-                self.groups[&#34;reporter&#34;], self.edition_guess.short_name
+            corrected = corrected.replace(
+                self.groups.get(&#34;reporter&#34;), self.edition_guess.short_name
             )
-        return self.matched_text()
+
+        corrected_page = self.corrected_page()
+        if corrected_page and corrected_page != self.groups[&#34;page&#34;]:
+            corrected = corrected.replace(self.groups[&#34;page&#34;], corrected_page)
+
+        return corrected
+
+    def corrected_page(self):
+        &#34;&#34;&#34;Can we standardize a page value?&#34;&#34;&#34;
+        page = self.groups.get(&#34;page&#34;)
+        if page is None:
+            return
+
+        standard_reporter = &#34;&#34;
+        if reporter := self.groups.get(&#34;reporter&#34;):
+            if self.edition_guess:
+                standard_reporter = self.edition_guess.short_name
+            if {
+                reporter,
+                standard_reporter,
+            } &amp; REPORTERS_THAT_NEED_PAGE_CORRECTION:
+                return page.replace(&#34;[U]&#34;, &#34;(U)&#34;).replace(&#34;[A]&#34;, &#34;(A)&#34;)
+
+        return page
 
     def guess_edition(self):
         &#34;&#34;&#34;Set edition_guess.&#34;&#34;&#34;
@@ -2462,18 +2515,52 @@ class ResourceCitation(CitationBase):
 <span>def <span class="ident">corrected_citation</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return citation with corrected reporter.</p></div>
+<div class="desc"><p>Return citation with corrected reporter and standardized page</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def corrected_citation(self):
-    &#34;&#34;&#34;Return citation with corrected reporter.&#34;&#34;&#34;
+    &#34;&#34;&#34;Return citation with corrected reporter and standardized page&#34;&#34;&#34;
+    corrected = self.matched_text()
     if self.edition_guess:
-        return self.matched_text().replace(
-            self.groups[&#34;reporter&#34;], self.edition_guess.short_name
+        corrected = corrected.replace(
+            self.groups.get(&#34;reporter&#34;), self.edition_guess.short_name
         )
-    return self.matched_text()</code></pre>
+
+    corrected_page = self.corrected_page()
+    if corrected_page and corrected_page != self.groups[&#34;page&#34;]:
+        corrected = corrected.replace(self.groups[&#34;page&#34;], corrected_page)
+
+    return corrected</code></pre>
+</details>
+</dd>
+<dt id="eyecite.models.ResourceCitation.corrected_page"><code class="name flex">
+<span>def <span class="ident">corrected_page</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Can we standardize a page value?</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def corrected_page(self):
+    &#34;&#34;&#34;Can we standardize a page value?&#34;&#34;&#34;
+    page = self.groups.get(&#34;page&#34;)
+    if page is None:
+        return
+
+    standard_reporter = &#34;&#34;
+    if reporter := self.groups.get(&#34;reporter&#34;):
+        if self.edition_guess:
+            standard_reporter = self.edition_guess.short_name
+        if {
+            reporter,
+            standard_reporter,
+        } &amp; REPORTERS_THAT_NEED_PAGE_CORRECTION:
+            return page.replace(&#34;[U]&#34;, &#34;(U)&#34;).replace(&#34;[A]&#34;, &#34;(A)&#34;)
+
+    return page</code></pre>
 </details>
 </dd>
 <dt id="eyecite.models.ResourceCitation.corrected_reporter"><code class="name flex">
@@ -2650,6 +2737,7 @@ class ShortCaseCitation(CaseCitation):
 <li><code><a title="eyecite.models.CaseCitation.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
@@ -3258,6 +3346,7 @@ class UnknownCitation(CitationBase):
 <li><code><a title="eyecite.models.ResourceCitation.add_metadata" href="#eyecite.models.ResourceCitation.add_metadata">add_metadata</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.all_editions" href="#eyecite.models.ResourceCitation.all_editions">all_editions</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_citation" href="#eyecite.models.ResourceCitation.corrected_citation">corrected_citation</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.corrected_page" href="#eyecite.models.ResourceCitation.corrected_page">corrected_page</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.corrected_reporter" href="#eyecite.models.ResourceCitation.corrected_reporter">corrected_reporter</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.edition_guess" href="#eyecite.models.ResourceCitation.edition_guess">edition_guess</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.exact_editions" href="#eyecite.models.ResourceCitation.exact_editions">exact_editions</a></code></li>
