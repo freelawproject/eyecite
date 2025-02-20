@@ -48,6 +48,7 @@ class UtilsTest(TestCase):
             * page='2'
           * metadata
             * pin_cite='3-4'
+            * pin_cite_span_end=31
             * year='1999'
             * court='scotus'
             * plaintiff='Foo'
