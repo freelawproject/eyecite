@@ -4,6 +4,8 @@ import re
 
 from lxml import etree
 
+REPORTERS_THAT_NEED_PAGE_CORRECTION = {"NY Slip Op", "Misc. 3d"}
+
 # Names not allowed to be reference citations
 # this is partially taken from juriscraper
 DISALLOWED_NAMES = [
