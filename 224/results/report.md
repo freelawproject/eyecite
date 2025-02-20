@@ -26,6 +26,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/224/results/cbea4f35c0aa12510890eeee32ca6af723991dd1.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/224/results/5b2e4fefb98e4b15b1ddd505b5f7eb596098ba89.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/224/results/11f85057a3fb2657bb9bcf1abdad7025c46f65b7.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/224/results/output.csv)
