@@ -174,6 +174,9 @@ class CitationBase:
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         parenthetical: Optional[str] = None
+        pin_cite: Optional[str] = None
+        pin_cite_span_start: Optional[int] = None
+        pin_cite_span_end: Optional[int] = None
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -209,6 +212,38 @@ class CitationBase:
             ),
             self.span_end if self.span_end is not None else self.token.end,
         )
+
+    def span_with_pincite(self) -&gt; Tuple[int, int]:
+        &#34;&#34;&#34;Start and stop offsets in source text for pin cites.&#34;&#34;&#34;
+        start = min(
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_start,
+                        self.span_start,
+                        self.token.start,
+                    ],
+                )
+            ),
+            default=self.token.start,
+        )
+
+        end = max(
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_end,
+                        self.token.end,
+                        self.span_end,
+                    ],
+                )
+            ),
+            default=self.token.end,
+        )
+
+        return (start, end)
 
     def full_span(self) -&gt; Tuple[int, int]:
         &#34;&#34;&#34;Span indices that fully cover the citation
@@ -279,7 +314,6 @@ class ResourceCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
-        pin_cite: Optional[str] = None
         year: Optional[str] = None
 
     def add_metadata(self, words: &#34;Tokens&#34;):
@@ -579,7 +613,6 @@ class SupraCitation(CitationBase):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         antecedent_guess: Optional[str] = None
-        pin_cite: Optional[str] = None
         volume: Optional[str] = None
 
     def formatted(self):
@@ -615,7 +648,7 @@ class IdCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
-        pin_cite: Optional[str] = None
+        pass
 
     def formatted(self):
         &#34;&#34;&#34;Return formatted version of extracted cite.&#34;&#34;&#34;
@@ -642,7 +675,6 @@ class ReferenceCitation(CitationBase):
 
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
-        pin_cite: Optional[str] = None
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
@@ -951,6 +983,7 @@ class CaseCitation(ResourceCitation):
 <li><code><a title="eyecite.models.ResourceCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1088,6 +1121,9 @@ class CitationBase:
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         parenthetical: Optional[str] = None
+        pin_cite: Optional[str] = None
+        pin_cite_span_start: Optional[int] = None
+        pin_cite_span_end: Optional[int] = None
 
     def corrected_citation(self):
         &#34;&#34;&#34;Return citation with any variations normalized.&#34;&#34;&#34;
@@ -1123,6 +1159,38 @@ class CitationBase:
             ),
             self.span_end if self.span_end is not None else self.token.end,
         )
+
+    def span_with_pincite(self) -&gt; Tuple[int, int]:
+        &#34;&#34;&#34;Start and stop offsets in source text for pin cites.&#34;&#34;&#34;
+        start = min(
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_start,
+                        self.span_start,
+                        self.token.start,
+                    ],
+                )
+            ),
+            default=self.token.start,
+        )
+
+        end = max(
+            list(
+                filter(
+                    lambda v: v is not None,
+                    [
+                        self.metadata.pin_cite_span_end,
+                        self.token.end,
+                        self.span_end,
+                    ],
+                )
+            ),
+            default=self.token.end,
+        )
+
+        return (start, end)
 
     def full_span(self) -&gt; Tuple[int, int]:
         &#34;&#34;&#34;Span indices that fully cover the citation
@@ -1311,6 +1379,48 @@ plaintiff, defendant, post citation, &hellip;)</p>
         ),
         self.span_end if self.span_end is not None else self.token.end,
     )</code></pre>
+</details>
+</dd>
+<dt id="eyecite.models.CitationBase.span_with_pincite"><code class="name flex">
+<span>def <span class="ident">span_with_pincite</span></span>(<span>self) ‑> Tuple[int, int]</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Start and stop offsets in source text for pin cites.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def span_with_pincite(self) -&gt; Tuple[int, int]:
+    &#34;&#34;&#34;Start and stop offsets in source text for pin cites.&#34;&#34;&#34;
+    start = min(
+        list(
+            filter(
+                lambda v: v is not None,
+                [
+                    self.metadata.pin_cite_span_start,
+                    self.span_start,
+                    self.token.start,
+                ],
+            )
+        ),
+        default=self.token.start,
+    )
+
+    end = max(
+        list(
+            filter(
+                lambda v: v is not None,
+                [
+                    self.metadata.pin_cite_span_end,
+                    self.token.end,
+                    self.span_end,
+                ],
+            )
+        ),
+        default=self.token.end,
+    )
+
+    return (start, end)</code></pre>
 </details>
 </dd>
 </dl>
@@ -1630,6 +1740,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
 <li><code><a title="eyecite.models.CaseCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 <li><code><b><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></b></code>:
@@ -1736,6 +1847,7 @@ Returns: None</p></div>
 <li><code><a title="eyecite.models.ResourceCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.ResourceCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.ResourceCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1796,6 +1908,7 @@ class FullJournalCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1867,6 +1980,7 @@ class FullLawCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.FullCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -1905,7 +2019,7 @@ class IdCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
-        pin_cite: Optional[str] = None
+        pass
 
     def formatted(self):
         &#34;&#34;&#34;Return formatted version of extracted cite.&#34;&#34;&#34;
@@ -1949,6 +2063,7 @@ class IdCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2054,7 +2169,6 @@ class ReferenceCitation(CitationBase):
 
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
-        pin_cite: Optional[str] = None
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
@@ -2087,6 +2201,7 @@ class ReferenceCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2252,7 +2367,6 @@ class ResourceCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
-        pin_cite: Optional[str] = None
         year: Optional[str] = None
 
     def add_metadata(self, words: &#34;Tokens&#34;):
@@ -2415,6 +2529,7 @@ class ResourceCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2542,6 +2657,7 @@ class ShortCaseCitation(CaseCitation):
 <li><code><a title="eyecite.models.CaseCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CaseCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CaseCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -2622,7 +2738,6 @@ class SupraCitation(CitationBase):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         antecedent_guess: Optional[str] = None
-        pin_cite: Optional[str] = None
         volume: Optional[str] = None
 
     def formatted(self):
@@ -2679,6 +2794,7 @@ class SupraCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -3014,6 +3130,7 @@ class UnknownCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
 </ul>
@@ -3060,6 +3177,7 @@ class UnknownCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span_end" href="#eyecite.models.CitationBase.span_end">span_end</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.span_start" href="#eyecite.models.CitationBase.span_start">span_start</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.token" href="#eyecite.models.CitationBase.token">token</a></code></li>
 </ul>
 </li>
