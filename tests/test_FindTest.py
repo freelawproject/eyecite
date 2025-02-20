@@ -44,6 +44,9 @@ class FindTest(TestCase):
 
     def run_test_pairs(self, test_pairs, message, tokenizers=None):
         def get_comparison_attrs(cite):
+            # Remove pin_cite start and end from metadata for this test
+            cite.metadata.pin_cite_span_start = None
+            cite.metadata.pin_cite_span_end = None
             out = {
                 "groups": cite.groups,
                 "metadata": cite.metadata,

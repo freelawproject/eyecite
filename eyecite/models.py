@@ -73,8 +73,6 @@ class CitationBase:
     span_end: Optional[int] = None
     full_span_start: Optional[int] = None
     full_span_end: Optional[int] = None
-    pin_cite_start: Optional[int] = None
-    pin_cite_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
 
@@ -148,6 +146,9 @@ class CitationBase:
         """Define fields on self.metadata."""
 
         parenthetical: Optional[str] = None
+        pin_cite: Optional[str] = None
+        pin_cite_span_start: Optional[int] = None
+        pin_cite_span_end: Optional[int] = None
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -184,22 +185,29 @@ class CitationBase:
             self.span_end if self.span_end is not None else self.token.end,
         )
 
-    def span_with_pincite(self):
+    def span_with_pincite(self) -> Tuple[int, int]:
         """Start and stop offsets in source text for pin cites."""
-        start = (
-            self.span_start
-            if self.span_start is not None
-            else self.token.start
-        )
         start = min(
             filter(
-                None, [self.pin_cite_start, self.span_start, self.token.start]
+                None,
+                [
+                    self.metadata.pin_cite_span_start,
+                    self.span_start,
+                    self.token.start,
+                ],
             ),
             default=self.token.start,
         )
         end = max(
-            filter(None, [self.pin_cite_end, self.token.end, self.span_end]),
-            default=None,
+            filter(
+                None,
+                [
+                    self.metadata.pin_cite_span_end,
+                    self.token.end,
+                    self.span_end,
+                ],
+            ),
+            default=self.token.end,
         )
         return (start, end)
 
@@ -272,7 +280,6 @@ class ResourceCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        pin_cite: Optional[str] = None
         year: Optional[str] = None
 
     def add_metadata(self, words: "Tokens"):
@@ -572,7 +579,6 @@ class SupraCitation(CitationBase):
         """Define fields on self.metadata."""
 
         antecedent_guess: Optional[str] = None
-        pin_cite: Optional[str] = None
         volume: Optional[str] = None
 
     def formatted(self):
@@ -608,7 +614,7 @@ class IdCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        pin_cite: Optional[str] = None
+        pass
 
     def formatted(self):
         """Return formatted version of extracted cite."""
@@ -635,7 +641,6 @@ class ReferenceCitation(CitationBase):
 
         plaintiff: Optional[str] = None
         defendant: Optional[str] = None
-        pin_cite: Optional[str] = None
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 

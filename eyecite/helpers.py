@@ -104,7 +104,9 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     citation.full_span_end = citation.span()[1] + m.end()
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     if m["pin_cite"]:
-        citation.pin_cite_end = citation.span()[1] + len(m["pin_cite"])
+        citation.metadata.pin_cite_span_end = citation.span()[1] + len(
+            m["pin_cite"]
+        )
 
     citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
@@ -188,7 +190,9 @@ def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
     if m["pin_cite"]:
         # if a pin cite occurs before the citation mark it down
         start, end = m.span()
-        citation.pin_cite_start = citation.span()[0] - (end - start)
+        citation.metadata.pin_cite_span_start = citation.span()[0] - (
+            end - start
+        )
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.antecedent_guess = m["antecedent"]
