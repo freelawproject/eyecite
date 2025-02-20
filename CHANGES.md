@@ -5,16 +5,41 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+- None
+
+Changes:
+- None
+
+Fixes:
+- None
+
+
+## Current
+
+**2.6.10 - 2025-02-20**
+
+Features:
+- Adds support to correct citation page
+
+Changes:
+- None
+
+Fixes:
+- None
+
+## Past
+
+**2.6.9 - 2025-02-20**
+
+Features:
 - Adds helper function span_with_pincite() to get full citation with pin cite
 
 Changes:
-- Add page correction to `corrected_citation`, for 'NY Slip Op' and 'Misc 3d'
+- None
 
 Fixes:
 - Strengthens error handling during the loading of the cached Hyperscan database. This ensures that an invalid cache triggers a rebuild.
 
-
-## Current
 
 **2.6.8 - 2025-02-19**
 
@@ -29,7 +54,6 @@ Features:
 - Cleanup plaintiff/defendant names with parentheses/whitespace. See #219
 - Update regexes, helpers and tests.py
 
-## Past
 
 **2.6.6 - 2025-02-18**
 
