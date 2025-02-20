@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- None
+- Adds helper function span_with_pincite() to get full citation with pin cite
 
 Changes:
 - None

@@ -240,3 +240,49 @@ class AnnotateTest(TestCase):
             cleaned_text, [((902, 915), "~FOO~", "~BAR~")], opinion_text
         )
         self.assertIn("~FOO~539\n  U. S. 306~BAR~", annotated_text)
+
+    def test_span_with_pincite(self):
+        test_pairs = [
+            # full case citaiton pin cite
+            (
+                "foo, Foo v. Bar, 550 U. S. 500, at 554-555, and so on ",
+                ["550 U. S. 500, at 554-555"],
+            ),
+            # short case citaiton pin cite
+            (
+                "foo, Twombly, 550 U. S., at 554-555. ",
+                ["550 U. S., at 554-555"],
+            ),
+            # id pin cite span
+            (
+                "Twombly, 550 U. S., at 554-555. ... etitive entry,’ ” id., at 551, beca",
+                ["550 U. S., at 554-555", "id., at 551"],
+            ),
+            # reference citation pin cite span
+            (
+                "compelling Amick v. Liberty Mut. Ins. Co., 455 A.2d 793 (R.I. 1983). In that case ... Stats, do. See Amick at 795",
+                ["455 A.2d 793", "Amick at 795"],
+            ),
+            # capture supra pin cite span in html
+            (
+                "Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007), which discussed... apellate court’s core competency <em>Twombly, </em>550 U. S., at 557. Evaluating... In <em>Twombly</em>, supra, at 553-554, the ",
+                ["550 U. S. 544", "550 U. S., at 557", "supra, at 553-554"],
+            ),
+            # can we wrap the full pincite that appears before
+            # https://www.courtlistener.com/opinion/8524158/in-re-cahill/
+            (
+                "principal residence.” Nobelman at 332, 113 S.Ct. 2106",
+                ["Nobelman at 332, 113 S.Ct. 2106"],
+            ),
+        ]
+        for source_text, expected in test_pairs:
+            plain_text = clean_text(source_text, ["all_whitespace", "html"])
+            citation = get_citations(plain_text)
+            for citation in citation:
+                start, end = citation.span_with_pincite()
+                pin_cite_span = plain_text[start:end]
+                self.assertEqual(
+                    pin_cite_span,
+                    expected.pop(0),
+                    msg="Failed to extract pin cite span",
+                )
