@@ -1,7 +1,9 @@
+import re
 from pathlib import Path
 from unittest import TestCase
 
 from eyecite import annotate_citations, clean_text, get_citations
+from eyecite.utils import maybe_balance_style_tags
 
 
 class AnnotateTest(TestCase):
@@ -229,6 +231,14 @@ class AnnotateTest(TestCase):
                     **annotate_kwargs,
                 )
                 self.assertEqual(annotated, expected)
+
+    def test_tag_balancing(self):
+        """Test trickier tag balancing cases"""
+        string = "Something; In <em>Nobelman </em> at 332, 113 S.Ct. 2106 (2010); Something else"
+        span_text = "Nobelman </em> at 332, 113 S.Ct. 2106 (2010)"
+        start, end = re.search(re.escape(span_text), string).span()
+        _, _, balanced = maybe_balance_style_tags(start, end, string)
+        self.assertTrue(balanced.startswith("<em>"))
 
     def test_long_diff(self):
         """Does diffing work across a long text with many changes?"""

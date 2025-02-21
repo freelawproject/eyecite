@@ -16,16 +16,15 @@ Fixes:
 
 ## Current
 
+**2.6.11 - 2025-02-20**
+
+Fixes:
+- Add regex escapig to `utils.maybe_balance_style_tags`
+
 **2.6.10 - 2025-02-20**
 
 Features:
 - Adds support to correct citation page
-
-Changes:
-- None
-
-Fixes:
-- None
 
 ## Past
 
