@@ -630,6 +630,20 @@ class FindTest(TestCase):
                               metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
                                         'court': 'pa'})]),
             ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
+            # Test with Thomson in case name (bad citation match due defendant same as nominative reporter)
+            ('Shapiro v. Thompson, 394 U. S. 618',
+             [case_citation(volume='394', reporter='U. S.', page='618',
+                            metadata={'plaintiff': 'Shapiro',
+                                      'defendant': 'Thompson',
+                                      'court': 'scotus'}
+                            )]),
+            # Test other nominative in case name
+            ('Foo v. Cooke, 1 U. S. 1',
+             [case_citation(volume='1', reporter='U. S.', page='1',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Cooke',
+                                      'court': 'scotus'}
+                            )]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
