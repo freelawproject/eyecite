@@ -288,7 +288,7 @@ def maybe_balance_style_tags(
                 end + len(closing_tag) + tolerance, len(plain_text)
             )
             if end_match := re.search(
-                rf"{span_text}\s*{closing_tag}",
+                rf"{re.escape(span_text)}\s*{re.escape(closing_tag)}",
                 plain_text[start:extended_end],
                 flags=re.MULTILINE,
             ):
@@ -298,7 +298,7 @@ def maybe_balance_style_tags(
             # look for opening tag before the start
             extended_start = min(start - len(opening_tag) - tolerance, 0)
             if start_match := re.search(
-                rf"{opening_tag}\s*{span_text}",
+                rf"{re.escape(opening_tag)}\s*{re.escape(span_text)}",
                 plain_text[extended_start:end],
                 flags=re.MULTILINE,
             ):
