@@ -299,9 +299,8 @@ class Tokenizer:
         # returned end offset. Also return text between matches.
         citation_tokens = []
         all_tokens: Tokens = []
-        tokens = [t for t in self.extract_tokens(text) if t is not None]
         tokens = sorted(
-            tokens, key=lambda m: (m.start, -m.end)
+            self.extract_tokens(text), key=lambda m: (m.start, -m.end)
         )
         last_token = None
         offset = 0
