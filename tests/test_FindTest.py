@@ -635,7 +635,7 @@ class FindTest(TestCase):
                               metadata={'defendant': 'Goldsmith Seeds',
                                         'plaintiff': 'Farms',
                                         'court': 'scotus'})],
-             {'clean':['all_whitespace']}),
+             {'clean': ['all_whitespace']}),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
