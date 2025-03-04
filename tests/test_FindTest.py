@@ -630,6 +630,12 @@ class FindTest(TestCase):
                               metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
                                         'court': 'pa'})]),
             ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
+            ('Shady Grove Farms \xa0v Goldsmith Seeds 1 U.S. 1 (1981)', [
+                case_citation(year=1981,
+                              metadata={'defendant': 'Goldsmith Seeds',
+                                        'plaintiff': 'Farms',
+                                        'court': 'scotus'})],
+             {'clean':['all_whitespace']}),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
