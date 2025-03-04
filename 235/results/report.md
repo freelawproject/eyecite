@@ -32,16 +32,16 @@ There were 95 gains and 0 losses.
 |  3073392   |      §§     |        |
 |  2014564   |      (§     |        |
 |  2060699   |      §§     |        |
-|  6322259   |      §§     |        |
 |  6322259   |     [§]     |        |
+|  6322259   |      §§     |        |
 |  2303811   |      §§     |        |
 |   755368   |      (§     |        |
-|  3149869   |      §§     |        |
 |  3149869   |      (§     |        |
+|  3149869   |      §§     |        |
 |  1744543   |      §§     |        |
-|  2257892   |      §§     |        |
-|  2257892   |      (§     |        |
 |  2257892   |     (§§     |        |
+|  2257892   |      (§     |        |
+|  2257892   |      §§     |        |
 |  1897124   |      §§     |        |
 |  1137818   |      (§     |        |
 |  1537257   |      §§     |        |
@@ -55,11 +55,11 @@ There were 95 gains and 0 losses.
 |  2427861   |      §§     |        |
 |  1431414   |      (§     |        |
 |  1431414   |      §§     |        |
-|  2829354   |      §§     |        |
 |  2829354   |  §15.50(a). |        |
+|  2829354   |      §§     |        |
 |    1613    |      “§     |        |
-|   775078   |  violate§§  |        |
 |   775078   |      §§     |        |
+|   775078   |  violate§§  |        |
 |  1308185   |      §§     |        |
 |  2803607   |      §§     |        |
 |  6593646   |      §§     |        |
@@ -78,6 +78,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/235/results/f54ca300c957d1ea9bb853bb8054b10926a140ce.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/235/results/4184933b124a042cd53681fe0c589a47ea403680.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/235/results/929b68f2949df08704e583dbbc9bbafe505b6193.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/235/results/output.csv)
