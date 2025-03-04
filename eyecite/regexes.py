@@ -52,7 +52,7 @@ PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX}|_+)"
 
 # Regex to match punctuation around volume numbers and stopwords.
 # This could potentially be more precise.
-PUNCTUATION_REGEX = r"[^\sa-zA-Z0-9]*"
+PUNCTUATION_REGEX = r"[^\sa-zA-Z0-9]{,3}"
 
 # Regex for IdToken
 ID_REGEX = space_boundaries_re(r"id\.,?|ibid\.")
@@ -79,7 +79,7 @@ STOP_WORD_REGEX = space_boundaries_re(
 )
 
 # Regex for SectionToken
-SECTION_REGEX = r"(\S*§\S*)"
+SECTION_REGEX = space_boundaries_re(r"([\w\.\,\-]*§[\w\.\,\-]*)")
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
