@@ -299,8 +299,9 @@ class Tokenizer:
         # returned end offset. Also return text between matches.
         citation_tokens = []
         all_tokens: Tokens = []
+        tokens = [t for t in self.extract_tokens(text) if t is not None]
         tokens = sorted(
-            self.extract_tokens(text), key=lambda m: (m.start, -m.end)
+            tokens, key=lambda m: (m.start, -m.end)
         )
         last_token = None
         offset = 0
@@ -466,6 +467,9 @@ class HyperscanTokenizer(Tokenizer):
                 start = byte_to_str_offset[start]
                 end = byte_to_str_offset[end]
                 m = extractor.compiled_regex.match(text[start:end])
+                if not m:
+                    # skip if re-run regex fails to detect match
+                    continue
                 yield extractor.get_token(m, offset=start)
 
     @property
