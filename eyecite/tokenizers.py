@@ -466,6 +466,9 @@ class HyperscanTokenizer(Tokenizer):
                 start = byte_to_str_offset[start]
                 end = byte_to_str_offset[end]
                 m = extractor.compiled_regex.match(text[start:end])
+                if not m:
+                    # skip if re-run regex fails to detect match
+                    continue
                 yield extractor.get_token(m, offset=start)
 
     @property

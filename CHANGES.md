@@ -8,10 +8,11 @@ Features:
 - None
 
 Changes:
-- None
+- Modifies section regex and puctuation regex
 
 Fixes:
-- None
+- Fixes github action
+- Fixed an issue in `extract_tokens()` where regex re-run could fail on certain Hyperscan matches.  
 
 
 ## Current
