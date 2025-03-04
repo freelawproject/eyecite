@@ -78,7 +78,9 @@ def all_whitespace(text: str) -> str:
     Returns:
         Text with collapsed whitespace characters.
     """
-    WHITESPACE_REGEX = r"[ \t\n\r\f\v\u00A0\u2002\u2003\u2009\u200B\u202F\u205F]+"
+    WHITESPACE_REGEX = (
+        r"[ \t\n\r\f\v\u00A0\u2002\u2003\u2009\u200B\u202F\u205F]+"
+    )
     return re.sub(WHITESPACE_REGEX, " ", text)
 
 
