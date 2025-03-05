@@ -25,7 +25,6 @@ from eyecite.regexes import (
     POST_LAW_CITATION_REGEX,
     POST_SHORT_CITATION_REGEX,
     PRE_FULL_CITATION_REGEX,
-    PRE_FULL_CITATION_YEAR_REGEX,
     YEAR_REGEX,
 )
 
@@ -100,8 +99,6 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         POST_FULL_CITATION_REGEX,
     )
     if not m:
-        # Provide a full span end to ensure parallel citation check functions
-        citation.full_span_end = citation.span()[1]
         return
 
     citation.full_span_end = citation.span()[1] + m.end()
@@ -111,12 +108,7 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
             m["pin_cite"]
         )
 
-    extra = (m["extra"] or "").strip() or None
-    if extra:
-        # Hard stop at semicolons
-        extra = extra.split(";", 1)[0]
-
-    citation.metadata.extra = extra
+    citation.metadata.extra = (m["extra"] or "").strip() or None
     citation.metadata.parenthetical = process_parenthetical(m["parenthetical"])
 
     if (
@@ -172,17 +164,9 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         citation.full_span_start = citation.span()[0] - offset
         defendant = "".join(
             str(w) for w in words[start_index : citation.index]
-        )
+        ).strip(", ()")
         if defendant.strip():
-            # If defendant ends in (2009) assume California Style
-            # Vaughn v. Dame Construction Co. (1990) 223 Cal.App.3d 144 etc
-            match = re.search(PRE_FULL_CITATION_YEAR_REGEX, defendant.strip())
-            if match:
-                citation.metadata.defendant = match.group("defendant")
-                citation.metadata.year = match.group("year")
-                citation.year = int(citation.metadata.year)
-            else:
-                citation.metadata.defendant = defendant.strip(", ()")
+            citation.metadata.defendant = defendant
 
 
 def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:

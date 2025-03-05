@@ -263,7 +263,6 @@ PRE_FULL_CITATION_REGEX = rf"""
     ,?\ ?
 """
 
-PRE_FULL_CITATION_YEAR_REGEX = r"(?P<defendant>.*)\s+\((?P<year>\d{4})\)$"
 
 # Post short-form citation regex:
 # Capture pin cite and parenthetical after a short, id, or supra citation.
