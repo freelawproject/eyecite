@@ -878,6 +878,55 @@ class FindTest(TestCase):
         ]
         self.run_test_pairs(test_pairs, "Disambiguation")
 
+    def test_nominative_reporter_overlaps(self):
+        """Can we parse a full citation where a name looks like a nominative
+        reporter?"""
+        pairs = [
+            (
+                "In re Cooke, 93 Wn. App. 526, 529",
+                case_citation(volume="93", reporter="Wn. App.", page="526"),
+            ),
+            (
+                "Shapiro v. Thompson, 394 U. S. 618",
+                case_citation(volume="394", reporter="U. S.", page="618"),
+            ),
+            (
+                "MacArdell v. Olcott, 82 N.E. 161",
+                case_citation(volume="82", reporter="N.E.", page="161"),
+            ),
+            (
+                "Connecticut v. Holmes, 221 A.3d 407",
+                case_citation(volume="221", reporter="A.3d", page="407"),
+            ),
+            (
+                "Kern v Taney, 11 Pa. D. & C.5th 558 [2010])",
+                case_citation(
+                    volume="11", reporter="Pa. D. & C.5th", page="558"
+                ),
+            ),
+            (
+                "Ellenburg v. Chase, 2004 MT 66",
+                case_citation(volume="2004", reporter="MT", page="66"),
+            ),
+            (
+                "Gilmer, 500 U.S. at 25;",
+                case_citation(
+                    volume="500", reporter="U. S.", page="25", short=True
+                ),
+            ),
+            (
+                "Bison Bee, 778 F. 13 App’x at 73.",
+                case_citation(volume="778", reporter="F.", page="13"),
+            ),
+        ]
+        for cite_string, cite_object in pairs:
+            parsed_cite = get_citations(cite_string)[0]
+            self.assertEqual(
+                parsed_cite,
+                cite_object,
+                f"Nominative reporters getting in the way of parsing: {parsed_cite}",
+            )
+
     def test_custom_tokenizer(self):
         extractors = []
         for e in EXTRACTORS:
