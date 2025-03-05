@@ -5,10 +5,10 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- Add support for california style of year after case name
+- None
 
 Changes:
-- Merge year acorss parallel cites
+- None
 
 Fixes:
 - None
