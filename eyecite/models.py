@@ -369,7 +369,7 @@ class FullCitation(ResourceCitation):
         """
         is_parallel = (
             self.full_span_start == preceding.full_span_start
-            and self.full_span_end == preceding.full_span_end
+            and self.full_span_end >= preceding.full_span_end  # type: ignore
             and isinstance(preceding, FullCaseCitation)
         )
         if is_parallel:
@@ -378,6 +378,8 @@ class FullCitation(ResourceCitation):
             # parallel one.
             self.metadata.defendant = preceding.metadata.defendant
             self.metadata.plaintiff = preceding.metadata.plaintiff
+            self.metadata.year = preceding.metadata.year
+            self.year = preceding.year  # type: ignore
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
