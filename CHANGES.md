@@ -5,13 +5,14 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- None
+- Adds support for years preceding citations
 
 Changes:
-- None
+- Simplifies is parallel logic
+- moves is parallel citation to full case citation 
 
 Fixes:
-- None
+- Fixes run on extra regex captures by capping at semicolons
 
 
 ## Current
