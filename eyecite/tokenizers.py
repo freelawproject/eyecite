@@ -55,6 +55,46 @@ from eyecite.regexes import (
 EXTRACTORS = []
 EDITIONS_LOOKUP = defaultdict(list)
 
+NOMINATIVE_REPORTER_NAMES = {
+    "Thompson",
+    "Cooke",
+    "Holmes",
+    "Olcott",
+    "Chase",
+    "Gilmer",
+    "Bee",
+    "Deady",
+    "Taney",
+}
+
+
+def token_is_from_nominative_reporter(token: Token) -> bool:
+    """Returns true if the token is a citation from a nominative reporter
+
+    Cleaner way to do this would be via an attribute or named group from
+    reporters-db. However; this tagging is currently not complete, so we can
+    use a list of the most problematic names `NOMINATIVE_REPORTER_NAMES`
+
+    ```
+    volume_nominative = token.groups.get("volume_nominative", False)
+    reporter_nominative = token.groups.get("reporter_nominative", False)
+    token.exact_editions[0].reporter.name
+    return volume_nominative is None or volume_nominative
+        or reporter_nominative is None or reporter_nominative
+    ```
+
+    :param token: the token
+    :return: True if the token has a `volume_nominative` group, even if there
+        was no match; False if it didn't have the group
+    """
+    if not isinstance(token, CitationToken):
+        return False
+    if token.exact_editions:
+        name = token.exact_editions[0].reporter.short_name
+    else:
+        name = token.variation_editions[0].reporter.short_name
+    return name in NOMINATIVE_REPORTER_NAMES
+
 
 def _populate_reporter_extractors():
     """Populate EXTRACTORS and EDITIONS_LOOKUP."""
@@ -313,8 +353,19 @@ class Tokenizer:
                 if merged:
                     continue
             if offset > token.start:
-                # skip overlaps
-                continue
+                if (
+                    last_token
+                    and isinstance(token, CitationToken)
+                    and token_is_from_nominative_reporter(last_token)
+                ):
+                    # if a token has overlapping matches between a nominative
+                    # reporter and another type of case citation, prefer the
+                    # other case citation. See #221 and #174
+                    citation_tokens.pop(-1)
+                    all_tokens.pop(-1)
+                else:
+                    # skip overlaps
+                    continue
             if offset < token.start:
                 # capture plain text before each match
                 self.append_text(all_tokens, text[offset : token.start])
@@ -326,6 +377,7 @@ class Tokenizer:
         # capture plain text after final match
         if offset < len(text):
             self.append_text(all_tokens, text[offset:])
+
         return all_tokens, citation_tokens
 
     def get_extractors(self, text: str):

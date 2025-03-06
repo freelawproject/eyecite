@@ -11,7 +11,8 @@ Changes:
 - None
 
 Fixes:
-- None
+- Prefer the other full citation on overlap with nominative reporter 
+  citations #237
 
 
 ## Current
