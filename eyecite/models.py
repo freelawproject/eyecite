@@ -359,26 +359,6 @@ class FullCitation(ResourceCitation):
     """Abstract base class indicating that a citation fully identifies a
     resource."""
 
-    def is_parallel_citation(self, preceding: CitationBase):
-        """Check if preceding citation is parallel
-
-        Args:
-            preceding (): The previous citation found
-
-        Returns: None
-        """
-        is_parallel = (
-            self.full_span_start == preceding.full_span_start
-            and self.full_span_end == preceding.full_span_end
-            and isinstance(preceding, FullCaseCitation)
-        )
-        if is_parallel:
-            # if parallel get plaintiff/defendant data from
-            # the earlier citation, since it won't be on the
-            # parallel one.
-            self.metadata.defendant = preceding.metadata.defendant
-            self.metadata.plaintiff = preceding.metadata.plaintiff
-
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullLawCitation(FullCitation):
@@ -507,6 +487,24 @@ class FullCaseCitation(CaseCitation, FullCitation):
     Peña at 222, 515 U.S. 200
     ```
     """
+
+    def is_parallel_citation(self, preceding: CaseCitation):
+        """Check if preceding citation is parallel
+
+        Args:
+            preceding (): The previous citation found
+
+        Returns: None
+        """
+        if self.full_span_start == preceding.full_span_start:
+            # if parallel get plaintiff/defendant data from
+            # the earlier citation, since it won't be on the
+            # parallel one.
+            self.metadata.defendant = preceding.metadata.defendant
+            self.metadata.plaintiff = preceding.metadata.plaintiff
+            # California style may have a year prior to citation; merge as well
+            self.metadata.year = preceding.metadata.year
+            self.year = preceding.year
 
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CaseCitation.Metadata):
