@@ -13,7 +13,8 @@ Changes:
 Fixes:
 - Prefer the other full citation on overlap with nominative reporter 
   citations #237
-
+- Update `maybe_balance_style_tags` to account for party names and intro words
+  inside the style tag #231
 
 ## Current
 
