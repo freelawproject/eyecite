@@ -369,7 +369,6 @@ class FullCitation(ResourceCitation):
         """
         is_parallel = (
             self.full_span_start == preceding.full_span_start
-            and self.full_span_end == preceding.full_span_end
             and isinstance(preceding, FullCaseCitation)
         )
         if is_parallel:
@@ -378,6 +377,15 @@ class FullCitation(ResourceCitation):
             # parallel one.
             self.metadata.defendant = preceding.metadata.defendant
             self.metadata.plaintiff = preceding.metadata.plaintiff
+
+            # how we can merge parentheticals across parallel citations
+            paren = preceding.metadata.parenthetical or self.metadata.parenthetical
+            full_span_end = max(filter(None, [preceding.full_span_end, self.full_span_end]))
+            if paren is not None:
+                preceding.metadata.parenthetical = paren
+                self.metadata.parenthetical = paren
+                self.full_span_end = full_span_end
+                preceding.full_span_end = full_span_end
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)

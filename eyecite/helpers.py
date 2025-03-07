@@ -87,6 +87,30 @@ def get_year(word: str) -> Optional[int]:
     return year
 
 
+def cali_square_parens(citation, words):
+    """Find california parentheticals
+
+    They have a
+    Args:
+        citation ():
+        words ():
+
+    Returns:
+
+    """
+    remainder = words[citation.index - 1 :]
+    offset = sum([len(str(word)) for word in words])
+    text = "".join(
+        ["CITE" if isinstance(w, CitationToken) else str(w) for w in remainder]
+    )
+    offset -= len(text)
+    pattern = r"^\[CITE(?:, CITE)?\] [\[(](?P<parenthetical>[^\[\]]+)[\])].*"
+    m = re.search(pattern, text[:300])
+    if m:
+        return m.groupdict().get("parenthetical"), m.end() + offset
+    return None, None
+
+
 def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
     """Add to a citation object any additional information found after the base
     citation, including court, year, and possibly page range.
@@ -98,7 +122,13 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.index + 1,
         POST_FULL_CITATION_REGEX,
     )
+
     if not m:
+
+        parenthetical, span_end = cali_square_parens(citation, words)
+        if parenthetical:
+            citation.metadata.parenthetical = parenthetical
+            citation.full_span_end = span_end
         return
 
     citation.full_span_end = citation.span()[1] + m.end()

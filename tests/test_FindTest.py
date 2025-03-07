@@ -734,6 +734,65 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Journal citation extraction")
 
+    def test_california_parentheticals(self):
+        test_pairs = (
+            (
+                """and this conclusion is supported by People v. Beach (1983) 147 Cal.App.3d 612 [195 Cal.Rptr. 381] (relocation away from home community asunreasonable condition of probation).""",
+                [
+                    case_citation(
+                        volume="147",
+                        reporter="Cal.App.3d",
+                        page="612",
+                        metadata={
+                            "plaintiff": "People",
+                            "defendant": "Beach (1983",
+                            "parenthetical": "relocation away from home community asunreasonable condition of probation",
+                        },
+                    ),
+                    case_citation(
+                        volume="195",
+                        reporter="Cal.Rptr.",
+                        page="381",
+                        metadata={
+                            "plaintiff": "People",
+                            "defendant": "Beach (1983",
+                            "parenthetical": "relocation away from home community asunreasonable condition of probation",
+                        },
+                    ),
+                ],
+            ),
+            (
+                """See Foo v. Bar (2020) 1 U.S. 1 at 2 [1 U.S. 5, 1 U.S. 10] [employment rights of tenured school teacher on reappointment after emergency layoff].""",
+                [
+                    case_citation(
+                        metadata={
+                            "plaintiff": "Foo",
+                            "defendant": "Bar (2020",
+                            "pin_cite": "at 2",
+                            "parenthetical": "employment rights of tenured school teacher on reappointment after emergency layoff",
+                        }
+                    ),
+                    case_citation(
+                        page="5",
+                        metadata={
+                            "plaintiff": "Foo",
+                            "defendant": "Bar (2020",
+                            "parenthetical": "employment rights of tenured school teacher on reappointment after emergency layoff",
+                        },
+                    ),
+                    case_citation(
+                        page="10",
+                        metadata={
+                            "plaintiff": "Foo",
+                            "defendant": "Bar (2020",
+                            "parenthetical": "employment rights of tenured school teacher on reappointment after emergency layoff",
+                        },
+                    ),
+                ],
+            ),
+        )
+        self.run_test_pairs(test_pairs, "California Parentheticals Extracted")
+
     def test_find_tc_citations(self):
         """Can we parse tax court citations properly?"""
         # fmt: off
