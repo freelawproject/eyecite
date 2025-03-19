@@ -630,7 +630,30 @@ class FindTest(TestCase):
                               metadata={'plaintiff': 'Commonwealth', 'defendant': 'Muniz',
                                         'court': 'pa'})]),
             ('Foo v. Bar,  1 F.Supp. 1 (SC 1967)', [case_citation(volume='1', reporter='F.Supp.', year=1967, page='1', metadata={'plaintiff': 'Foo', 'defendant': 'Bar', 'court': 'sc'})]),
+            ('trial court’s ruling. (See In re K.F. (2009) 1 U.S. 1 ', [
+                case_citation(
+                 year=2009, metadata={'defendant': 'K.F.', "year": "2009"})]
+             ),
+            ('(See In re K.F. (2009) 1 U.S. 1, 4 [92 Cal.Rptr.3d 784]; Yield Dynamics, Inc. v. TEA Systems Corp. (2007) 154 Cal.App.4th 547, 558 [66 Cal.Rptr.3d 1].)”', [
+                case_citation(
+                    year=2009,
+                    metadata={'defendant': 'K.F.', "year": "2009", 'pin_cite': '4'}
+                ),
+                case_citation(
+                    year=2009, volume='92', reporter='Cal.Rptr.3d', page='784',
+                    metadata={'defendant': 'K.F.', "year": "2009"}
+                ),
+                case_citation(
+                    year=2007, volume='154', reporter='Cal.App.4th', page='547',
+                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007", "pin_cite": "558"}
+                ),
+                case_citation(
+                    year=2007, volume='66', reporter='Cal.Rptr.3d', page='1',
+                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
+                ),
+            ])
         )
+
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
 
