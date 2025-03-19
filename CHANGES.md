@@ -5,10 +5,13 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- None
+- Introduced `Document` object to encapsulate plain text, markup text, span updates, tokens, and citation strings.
+- Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
+- Should enable more complex html parsing.
 
 Changes:
-- None
+- Moved text cleaning logic into `get_citations` for simpler call with markup
+- 
 
 Fixes:
 - Prefer the other full citation on overlap with nominative reporter 
