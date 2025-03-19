@@ -5,7 +5,7 @@ from unittest import TestCase
 from eyecite import get_citations
 from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
-from eyecite.models import FullCitation, Resource
+from eyecite.models import Document, FullCitation, Resource
 from eyecite.resolve import resolve_citations
 
 
@@ -52,6 +52,10 @@ class ResolveTest(TestCase):
         Returns:
             None
         """
+
+        document = Document(
+            plain_text=citation_text,
+        )
         citations = get_citations(citation_text)
         if resolved_case_name_short:
             citations[0].metadata.resolved_case_name_short = (
@@ -59,7 +63,7 @@ class ResolveTest(TestCase):
             )
             citations.extend(
                 extract_reference_citations(
-                    citations[0], citation_text  # type: ignore[arg-type]
+                    citations[0], document  # type: ignore[arg-type]
                 )
             )
             citations = filter_citations(citations)

@@ -3,13 +3,14 @@ from copy import copy
 from datetime import datetime
 from unittest import TestCase
 
-from eyecite import clean_text, get_citations
+from eyecite import get_citations
 from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
 
 # by default tests use a cache for speed
 # call tests with `EYECITE_CACHE_DIR= python ...` to disable cache
 from eyecite.models import (
+    Document,
     FullCaseCitation,
     ReferenceCitation,
     ResourceCitation,
@@ -60,15 +61,17 @@ class FindTest(TestCase):
             tokenizers = tested_tokenizers
         for q, expected_cites, *kwargs in test_pairs:
             kwargs = kwargs[0] if kwargs else {}
-            clean_steps = kwargs.pop("clean", [])
-            clean_q = clean_text(q, clean_steps)
+            clean_steps = kwargs.get("clean_steps", [])
             for tokenizer in tokenizers:
                 with self.subTest(
                     message, tokenizer=type(tokenizer).__name__, q=q
                 ):
-                    cites_found = get_citations(
-                        clean_q, tokenizer=tokenizer, **kwargs
-                    )
+                    if "html" in clean_steps:
+                        kwargs["markup_text"] = q
+                    else:
+                        kwargs["plain_text"] = q
+
+                    cites_found = get_citations(tokenizer=tokenizer, **kwargs)
                     self.assertEqual(
                         [type(i) for i in cites_found],
                         [type(i) for i in expected_cites],
@@ -93,11 +96,11 @@ class FindTest(TestCase):
             # Basic test with a line break
             ('1 U.S.\n1',
              [case_citation()],
-             {'clean': ['all_whitespace']}),
+             {'clean_steps': ['all_whitespace']}),
             # Basic test with a line break within a reporter
             ('1 U.\nS. 1',
              [case_citation(reporter_found='U. S.')],
-             {'clean': ['all_whitespace']}),
+             {'clean_steps': ['all_whitespace']}),
             # Basic test of non-case name before citation (should not be found)
             ('lissner test 1 U.S. 1',
              [case_citation()]),
@@ -259,7 +262,7 @@ class FindTest(TestCase):
              [supra_citation("supra,",
                              metadata={'pin_cite': 'at 2',
                                        'antecedent_guess': 'asdf'})],
-             {'clean': ['all_whitespace']}),
+             {'clean_steps': ['all_whitespace']}),
             # Test short form citation with a page range
             ('before asdf, 1 U. S., at 20-25',
              [case_citation(page='20', reporter_found='U. S.', short=True,
@@ -383,7 +386,7 @@ class FindTest(TestCase):
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [id_citation('Ibid.')],
-             {'clean': ['html', 'inline_whitespace']}),
+             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test Id. citation
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(page='12',
@@ -399,15 +402,15 @@ class FindTest(TestCase):
                                       'defendant': 'bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
-             {'clean': ['all_whitespace']}),
+             {'clean_steps': ['all_whitespace']}),
             # Test italicized Id. citation
             ('<p>before asdf. <i>Id.,</i> at 123.</p> <p>foo bar</p>',
              [id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
-             {'clean': ['html', 'inline_whitespace']}),
+             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test italicized Id. citation with another HTML tag in the way
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
              [id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
-             {'clean': ['html', 'inline_whitespace']}),
+             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
             ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(page='12',
@@ -517,7 +520,7 @@ class FindTest(TestCase):
                  metadata={'plaintiff': None,
                            'defendant': None,
                            'court': 'scotus'})],
-             {'clean': ['html', 'inline_whitespace']}),
+             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test filtering overlapping citations - this finds four citations
             # but should filter down to three
             ("Miles v. Smith 1 Ga. 1; asdfasdf asd Something v. Else, 1 Miles 3; 1 Miles at 10",
@@ -1012,7 +1015,10 @@ class FindTest(TestCase):
             citations = get_citations(plain_text)
             found_cite = citations[0]
             found_cite.metadata.resolved_case_name = "State v. Wingler"
-            references = extract_reference_citations(found_cite, plain_text)
+            document = Document(plain_text=plain_text, markup_text="")
+            references = extract_reference_citations(
+                citation=found_cite, document=document
+            )
             final_citations = filter_citations(citations + references)
             self.assertEqual(
                 len(final_citations), 2, "There should only be 2 citations"
@@ -1043,8 +1049,9 @@ class FindTest(TestCase):
         <i>ex post facto</i> scrutiny simply because it is consistent with
         punitive goals as well.\" 44 <i>F.</i>3d at 493.</p>"""
 
-        plain_text = clean_text(markup_text, ["html", "all_whitespace"])
-        citations = get_citations(plain_text, markup_text=markup_text)
+        citations = get_citations(
+            markup_text=markup_text, clean_steps=["html", "all_whitespace"]
+        )
         references = [c for c in citations if isinstance(c, ReferenceCitation)]
         # Tests both for the order and exact counts. Note that there is one
         # "Bae" in the text that should not be picked up: "Bae's argument"...
@@ -1083,8 +1090,9 @@ class FindTest(TestCase):
             """,
         ]
         for markup_text in texts:
-            plain_text = clean_text(markup_text, ["html", "all_whitespace"])
-            citations = get_citations(plain_text, markup_text=markup_text)
+            citations = get_citations(
+                markup_text=markup_text, clean_steps=["html", "all_whitespace"]
+            )
             self.assertFalse(
                 any(
                     [isinstance(cite, ReferenceCitation) for cite in citations]

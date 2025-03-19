@@ -7,6 +7,7 @@ from typing import (
     Callable,
     Dict,
     Hashable,
+    Iterable,
     List,
     Optional,
     Sequence,
@@ -15,6 +16,8 @@ from typing import (
     cast,
 )
 
+from eyecite import clean_text
+from eyecite.annotate import SpanUpdater
 from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
 
 ResourceType = Hashable
@@ -861,3 +864,40 @@ class Resource(ResourceType):
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
+
+
+@dataclass(eq=False, unsafe_hash=False)
+class Document:
+    plain_text: str = ""
+    markup_text: Optional[str] = ""
+    citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
+    words: Tokens = field(default_factory=list)
+    plain_to_markup: Optional[SpanUpdater] = field(default=None, init=False)
+    markup_to_plain: Optional[SpanUpdater] = field(default=None, init=False)
+    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
+        default_factory=list
+    )
+
+    def __post_init__(self):
+        if self.plain_text and self.clean_steps:
+            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+
+        if self.markup_text != "":
+            if "html" not in self.clean_steps:
+                raise (
+                    "`html` is a required cleanup step for markup text",
+                    self.markup_text,
+                )
+
+            self.plain_text = clean_text(self.markup_text, self.clean_steps)
+
+            self.plain_to_markup = SpanUpdater(
+                self.plain_text, self.markup_text
+            )
+            self.markup_to_plain = SpanUpdater(
+                self.markup_text, self.plain_text
+            )
+
+    def tokenize(self, tokenizer):
+        # Tokenize the document and store the results in the document object
+        self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)
