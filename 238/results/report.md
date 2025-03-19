@@ -12,9 +12,9 @@ There were 0 gains and 6 losses.
 |     id     |  Gain  |   Loss   |
 | ---------- | ------ | -------- |
 |  2257892   |        |  Misura  |
-|  2020059   |        | Holloway |
 |  2020059   |        |  Rogers  |
 |  2020059   |        |  Davis   |
+|  2020059   |        | Holloway |
 |  2123399   |        |   Rose   |
 |  3692222   |        |   Huson  |
 
@@ -32,6 +32,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/238/results/19cbefcb5bdb4971b4655a168296ed2c23b43cae.json)
-[Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/238/results/e99ccdd28a9bd09ac4e46024a1dec8bdd830abe4.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/238/results/b74cd732184e4010912f5aadbc6ca7a0c8d9903d.json)
+[Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/238/results/3746397e03f181d1627501dd3cb6b0bea00f60d6.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/238/results/output.csv)
