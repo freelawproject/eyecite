@@ -234,11 +234,36 @@ class AnnotateTest(TestCase):
 
     def test_tag_balancing(self):
         """Test trickier tag balancing cases"""
-        string = "Something; In <em>Nobelman </em> at 332, 113 S.Ct. 2106 (2010); Something else"
-        span_text = "Nobelman </em> at 332, 113 S.Ct. 2106 (2010)"
-        start, end = re.search(re.escape(span_text), string).span()
-        _, _, balanced = maybe_balance_style_tags(start, end, string)
-        self.assertTrue(balanced.startswith("<em>"))
+        pairs = [
+            (
+                "Something; In <em>Nobelman </em> at 332, 113 S.Ct. 2106 (2010); Something else",
+                "Nobelman </em> at 332, 113 S.Ct. 2106 (2010)",
+            ),
+            (
+                "it established in  <i>State v. Wingler</i> something",
+                "Wingler</i>",
+            ),
+            ("something <em>See id.</em> at 642", "id.</em> at 642"),
+            ("something <i>AT&T, supra</i> something", "supra</i>"),
+        ]
+        for full_string, span_text in pairs:
+            start, end = re.search(re.escape(span_text), full_string).span()
+            _, _, balanced = maybe_balance_style_tags(start, end, full_string)
+            self.assertTrue(
+                re.search("^<(i|em)>", balanced),
+                f"{balanced} is not the expected output",
+            )
+
+        # test that we don't get style tags beyond the inmediate neighboring
+        # one
+        counter_examples = [
+            ("<em>see</em><em>id</em>", "id</em>", "<em>id</em>"),
+            ("<em>id.</em>.<em>See</em>", "<em>id.", "<em>id.</em>"),
+        ]
+        for full_string, span, expected_balanced in counter_examples:
+            start, end = re.search(re.escape(span), full_string).span()
+            _, _, balanced = maybe_balance_style_tags(start, end, full_string)
+            self.assertEqual(balanced, expected_balanced)
 
     def test_long_diff(self):
         """Does diffing work across a long text with many changes?"""
