@@ -654,7 +654,6 @@ class FindTest(TestCase):
             ])
         )
 
-        # d this conclusion is supported by People v. Beach (1983) 147 Cal.App.3d 612 [195 Cal.Rptr. 381] (relocation away from home community as
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
 

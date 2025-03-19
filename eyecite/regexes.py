@@ -316,4 +316,4 @@ POST_JOURNAL_CITATION_REGEX = rf"""
 """
 
 # A simple regex to check if year precedes citation
-DEFENDNAT_YEAR_REGEX = r"(?P<defendant>.*)\s\((?P<year>\d{4})\)$"
+DEFENDANT_YEAR_REGEX = r"(?P<defendant>.*)\s\((?P<year>\d{4})\)$"
