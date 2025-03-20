@@ -87,8 +87,13 @@ def get_citations(
                 citation = _extract_shortform_citation(document.words, i)
             else:
                 citation = _extract_full_citation(document.words, i)
-                if citations and isinstance(citation, FullCitation):
-                    citation.is_parallel_citation(citations[-1])
+                if (
+                    citations
+                    and isinstance(citation, FullCaseCitation)
+                    and isinstance(citations[-1], FullCaseCitation)
+                ):
+                    pre = cast(FullCaseCitation, citations[-1])  # type: ignore
+                    citation.is_parallel_citation(pre)
 
             # Check for reference citations that follow a full citation
             # Using the plaintiff or defendant

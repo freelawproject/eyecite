@@ -20,6 +20,7 @@ from eyecite.models import (
     Tokens,
 )
 from eyecite.regexes import (
+    DEFENDANT_YEAR_REGEX,
     POST_FULL_CITATION_REGEX,
     POST_JOURNAL_CITATION_REGEX,
     POST_LAW_CITATION_REGEX,
@@ -164,8 +165,14 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
         citation.full_span_start = citation.span()[0] - offset
         defendant = "".join(
             str(w) for w in words[start_index : citation.index]
-        ).strip(", ()")
+        ).strip(", (")
         if defendant.strip():
+            # Check if year follows defendant before citation
+            match = re.search(DEFENDANT_YEAR_REGEX, defendant)
+            if match:
+                defendant, year = match.groups()
+                citation.year = int(year)
+                citation.metadata.year = year
             citation.metadata.defendant = defendant
 
 

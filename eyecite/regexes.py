@@ -233,7 +233,7 @@ POST_FULL_CITATION_REGEX = rf"""
             # pin cite with comma and extra:
             {PIN_CITE_REGEX}?
             ,?\ ?
-            (?P<extra>[^(]*)
+            (?P<extra>[^(;]*)
         )
         # content within year paren:
         [\(\[](?:
@@ -314,3 +314,6 @@ POST_JOURNAL_CITATION_REGEX = rf"""
     \ ?
     {PARENTHETICAL_REGEX}
 """
+
+# A simple regex to check if year precedes citation
+DEFENDANT_YEAR_REGEX = r"(?P<defendant>.*)\s\((?P<year>\d{4})\)$"

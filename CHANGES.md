@@ -8,15 +8,19 @@ Features:
 - Introduced `Document` object to encapsulate plain text, markup text, span updates, tokens, and citation strings.
 - Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
 - Should enable more complex html parsing.
+- Adds support for years preceding citations
 
 Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
-- 
+- Simplifies is parallel logic
+- moves is parallel citation to full case citation 
 
 Fixes:
+- Fixes run on extra regex captures by capping at semicolons
 - Prefer the other full citation on overlap with nominative reporter 
   citations #237
-
+- Update `maybe_balance_style_tags` to account for party names and intro words
+  inside the style tag #231
 
 ## Current
 
