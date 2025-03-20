@@ -389,13 +389,9 @@ def find_reference_citations_from_markup(
     Creating the SpanUpdaters for each full citation will be too slow,
     re-use them if possible
 
-    :param markup_text: HTML or XML source
-    :param plain_text: cleaned text
+    :param document: Document object we are parsing
     :param citations: list of citations found over plain text. The full cites
         will be used to access parties names metadata
-    :param plain_to_markup: a SpanUpdater from plain or clean text to
-        marked up text
-    :param markup_to_plain: a SpanUpdater from marked up text to plain text
 
     :return: a list of ReferenceCitations
     """
