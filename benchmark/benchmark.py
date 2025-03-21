@@ -8,10 +8,11 @@ import re
 import sys
 from io import StringIO
 from pathlib import Path
+from typing import Any, Dict
 
 from matplotlib import pyplot as plt  # type: ignore
 
-from eyecite import clean_text, get_citations
+from eyecite import get_citations
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -45,26 +46,24 @@ class Benchmark(object):
         now = datetime.datetime.now()
         data = []
         for row in csv_data:
-            text = (
+            text: str = (
                 row["xml_harvard"]
                 or row["html_lawbox"]
                 or row["html_columbia"]
                 or row["html_anon_2020"]
                 or row["html"]
             )
+            params: Dict[str, Any] = {
+                "clean_steps": ["html", "inline_whitespace"]
+            }
             if text:
                 # Remove XML encodings from xml_harvard
                 text = re.sub(r"^<\?xml.*?\?>", "", text, count=1)
-                opinion_text_is_marked_up = True
+                params["markup_text"] = text or ""
             else:
-                text = row["plain_text"]
-                opinion_text_is_marked_up = False
+                params["markup_text"] = row["plain_text"]
 
-            plain_text = clean_text(text, ["html", "inline_whitespace"])
-            found_citations = get_citations(
-                plain_text,
-                markup_text=text if opinion_text_is_marked_up else "",
-            )
+            found_citations = get_citations(**params)
 
             # Get the citation text string from the cite object
             cites = [cite.token.data for cite in found_citations if cite.token]

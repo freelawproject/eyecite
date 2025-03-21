@@ -1,8 +1,7 @@
 import re
 from bisect import bisect_left, bisect_right
-from typing import List, Optional, Type, cast
+from typing import Callable, Iterable, List, Optional, Type, Union, cast
 
-from eyecite.annotate import SpanUpdater
 from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
@@ -14,6 +13,7 @@ from eyecite.models import (
     CaseReferenceToken,
     CitationBase,
     CitationToken,
+    Document,
     FullCaseCitation,
     FullCitation,
     FullJournalCitation,
@@ -35,15 +35,16 @@ from eyecite.utils import is_valid_name
 
 
 def get_citations(
-    plain_text: str,
+    plain_text: str = "",
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
     markup_text: str = "",
+    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = None,
 ) -> List[CitationBase]:
     """This is eyecite's main workhorse function. Given a string of text
-    (e.g., a judicial opinion or other legal document), return a list of
+    (e.g., a judicial opinion or other legal doc), return a list of
     `eyecite.models.CitationBase` objects representing the citations found
-    in the document.
+    in the doc.
 
     Args:
         plain_text: The text to parse. You may wish to use the
@@ -57,6 +58,7 @@ def get_citations(
         markup_text: if the source text has markup (XML or HTML mostly), pass
             it to extract ReferenceCitations that may be detectable via
             markup style tags
+        clean_steps: Cleanup steps and methods
 
     Returns:
         A list of `eyecite.models.CitationBase` objects
@@ -64,16 +66,14 @@ def get_citations(
     if plain_text == "eyecite":
         return joke_cite
 
-    words, citation_tokens = tokenizer.tokenize(plain_text)
+    document = Document(
+        plain_text=plain_text,
+        markup_text=markup_text,
+        clean_steps=clean_steps,
+    )
+    document.tokenize(tokenizer=tokenizer)
     citations: list[CitationBase] = []
-
-    if markup_text:
-        plain_to_markup = SpanUpdater(plain_text, markup_text)
-        markup_to_plain = SpanUpdater(markup_text, plain_text)
-    else:
-        plain_to_markup, markup_to_plain = None, None
-
-    for i, token in citation_tokens:
+    for i, token in document.citation_tokens:
         citation: CitationBase
         token_type = type(token)
 
@@ -84,9 +84,9 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = _extract_shortform_citation(words, i)
+                citation = _extract_shortform_citation(document.words, i)
             else:
-                citation = _extract_full_citation(words, i)
+                citation = _extract_full_citation(document.words, i)
                 if (
                     citations
                     and isinstance(citation, FullCaseCitation)
@@ -97,13 +97,7 @@ def get_citations(
 
                 # Check for reference citations that follow a full citation
                 # Using the plaintiff or defendant
-                references = extract_reference_citations(
-                    citation,
-                    plain_text,
-                    markup_text,
-                    plain_to_markup,
-                    markup_to_plain,
-                )
+                references = extract_reference_citations(citation, document)
                 citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
@@ -111,14 +105,14 @@ def get_citations(
         # immediately prior, but for safety we will leave that resolution up
         # to the user.
         elif token_type is IdToken:
-            citation = _extract_id_citation(words, i)
+            citation = _extract_id_citation(document.words, i)
 
         # CASE 3: Token is a "supra" reference.
         # In this case, we're not sure yet what the citation's antecedent is.
         # It could be any of the previous citations above. Thus, like an Id.
         # citation, for safety we won't resolve this reference yet.
         elif token_type is SupraToken:
-            citation = _extract_supra_citation(words, i)
+            citation = _extract_supra_citation(document.words, i)
 
         # CASE 4: Token is a section marker.
         # In this case, it's likely that this is a reference to a citation,
@@ -142,48 +136,36 @@ def get_citations(
         citations = disambiguate_reporters(citations)
 
     # Returns a list of citations ordered in the sequence that they appear in
-    # the document. The ordering of this list is important for reconstructing
+    # the doc. The ordering of this list is important for reconstructing
     # the references of the ShortCaseCitation, SupraCitation, and
     # IdCitation and ReferenceCitation objects.
     return citations
 
 
 def extract_reference_citations(
-    citation: FullCitation,
-    plain_text: str,
-    markup_text: str = "",
-    plain_to_markup: Optional[SpanUpdater] = None,
-    markup_to_plain: Optional[SpanUpdater] = None,
+    citation: ResourceCitation, document: Document
 ) -> List[ReferenceCitation]:
     """Extract reference citations that follow a full citation
 
     :param citation: the full case citation found
-    :param plain_text: the text
-    :param markup_text: optional argument for source text with XML style tags
-        that may help extracting name-only ReferenceCitations
-    :param plain_to_markup: a SpanUpdater from plain or clean text to
-        marked up text
-    :param markup_to_plain: a SpanUpdater from marked up text to plain text
+    :param document: document object to parse
 
     :return: Reference citations
     """
-    if len(plain_text) <= citation.span()[-1]:
+    if len(document.plain_text) <= citation.span()[-1]:
         return []
     if not isinstance(citation, FullCaseCitation):
         return []
 
     reference_citations = extract_pincited_reference_citations(
-        citation, plain_text
+        citation, document.plain_text
     )
 
-    if markup_text:
+    if document.markup_text:
         reference_citations.extend(
             find_reference_citations_from_markup(
-                markup_text,
-                plain_text,
+                document,
                 [citation],
-                plain_to_markup,
-                markup_to_plain,
             )
         )
 
@@ -397,11 +379,8 @@ def _extract_id_citation(
 
 
 def find_reference_citations_from_markup(
-    markup_text: str,
-    plain_text: str,
+    document: Document,
     citations: list,
-    plain_to_markup: Optional[SpanUpdater] = None,
-    markup_to_plain: Optional[SpanUpdater] = None,
 ) -> list[ReferenceCitation]:
     """Use HTML/XML style tags and parties names to find ReferenceCitations
 
@@ -415,21 +394,12 @@ def find_reference_citations_from_markup(
     Creating the SpanUpdaters for each full citation will be too slow,
     re-use them if possible
 
-    :param markup_text: HTML or XML source
-    :param plain_text: cleaned text
+    :param document: Document object we are parsing
     :param citations: list of citations found over plain text. The full cites
         will be used to access parties names metadata
-    :param plain_to_markup: a SpanUpdater from plain or clean text to
-        marked up text
-    :param markup_to_plain: a SpanUpdater from marked up text to plain text
 
     :return: a list of ReferenceCitations
     """
-    if not markup_to_plain:
-        markup_to_plain = SpanUpdater(markup_text, plain_text)
-    if not plain_to_markup:
-        plain_to_markup = SpanUpdater(plain_text, markup_text)
-
     references = []
     tags = "|".join(["em", "i"])
 
@@ -458,30 +428,39 @@ def find_reference_citations_from_markup(
         # `utils.maybe_balance_style tags` for reference; it has some tolerance
         # which may be enough for these citations
         regex = rf"<(?:{tags})>\s*({'|'.join(regexes)})[:;.,\s]*</(?:{tags})>"
-        start_in_markup = plain_to_markup.update(
+
+        if (
+            not document.plain_to_markup
+            or not document.markup_to_plain
+            or not document.markup_text
+        ):
+            # ensure we have markup text
+            return []
+        start_in_markup = document.plain_to_markup.update(
             citation.span()[0], bisect_right
         )
-        for match in re.finditer(regex, markup_text[start_in_markup:]):
-            full_start_in_plain = markup_to_plain.update(
+        for match in re.finditer(
+            regex, document.markup_text[start_in_markup:]
+        ):
+            full_start_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.start(), bisect_left
             )
-            full_end_in_plain = markup_to_plain.update(
+            full_end_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.end(), bisect_right
             )
 
             # the first group [match.group(0)] is the whole match,
             # with whitespace and punctuation. the second group, match.group(1)
             # is the only capturing and named group
-            start_in_plain = markup_to_plain.update(
+            start_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.start(1), bisect_left
             )
-            end_in_plain = markup_to_plain.update(
+            end_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.end(1), bisect_right
             )
-
             reference = ReferenceCitation(
                 token=CaseReferenceToken(
-                    data=plain_text[start_in_plain:end_in_plain],
+                    data=document.plain_text[start_in_plain:end_in_plain],
                     start=start_in_plain,
                     end=end_in_plain,
                 ),

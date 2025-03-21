@@ -5,9 +5,13 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+- Introduced `Document` object to encapsulate plain text, markup text, span updates, tokens, and citation strings.
+- Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
+- Should enable more complex html parsing.
 - Adds support for years preceding citations
 
 Changes:
+- Moved text cleaning logic into `get_citations` for simpler call with markup
 - Simplifies is parallel logic
 - moves is parallel citation to full case citation 
 

@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest import TestCase
 
 from eyecite import annotate_citations, clean_text, get_citations
+from eyecite.models import Document
 from eyecite.utils import maybe_balance_style_tags
 
 
@@ -207,12 +208,18 @@ class AnnotateTest(TestCase):
                 clean_steps=clean_steps,
                 annotate_args=annotate_kwargs,
             ):
-                get_citations_args = {}
                 if annotate_kwargs.pop("use_markup", False):
                     get_citations_args = {"markup_text": source_text}
+                else:
+                    get_citations_args = {"plain_text": source_text}
 
-                plain_text = clean_text(source_text, clean_steps)
-                cites = get_citations(plain_text, **get_citations_args)
+                document = Document(
+                    **get_citations_args, clean_steps=clean_steps
+                )
+
+                cites = get_citations(
+                    **get_citations_args, clean_steps=clean_steps
+                )
                 annotations = [
                     (c.span(), f"<{i}>", f"</{i}>")
                     for i, c in enumerate(cites)
@@ -225,7 +232,7 @@ class AnnotateTest(TestCase):
                     ]
 
                 annotated = annotate_citations(
-                    plain_text,
+                    document.plain_text,
                     annotations,
                     source_text=source_text,
                     **annotate_kwargs,
