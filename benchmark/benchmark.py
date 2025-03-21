@@ -52,19 +52,15 @@ class Benchmark(object):
                 or row["html_anon_2020"]
                 or row["html"]
             )
+            params = {"clean_steps": ["html", "inline_whitespace"]}
             if text:
                 # Remove XML encodings from xml_harvard
                 text = re.sub(r"^<\?xml.*?\?>", "", text, count=1)
-                opinion_text_is_marked_up = True
+                params['markup_text'] = text or ""
             else:
-                text = row["plain_text"]
-                opinion_text_is_marked_up = False
+                params['markup_text'] = row['plain_text']
 
-            plain_text = clean_text(text, ["html", "inline_whitespace"])
-            found_citations = get_citations(
-                plain_text,
-                markup_text=text if opinion_text_is_marked_up else "",
-            )
+            found_citations = get_citations(**params)
 
             # Get the citation text string from the cite object
             cites = [cite.token.data for cite in found_citations if cite.token]
