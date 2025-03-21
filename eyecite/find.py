@@ -95,10 +95,10 @@ def get_citations(
                     pre = cast(FullCaseCitation, citations[-1])  # type: ignore
                     citation.is_parallel_citation(pre)
 
-            # Check for reference citations that follow a full citation
-            # Using the plaintiff or defendant
-            references = extract_reference_citations(citation, document)
-            citations.extend(references)
+                # Check for reference citations that follow a full citation
+                # Using the plaintiff or defendant
+                references = extract_reference_citations(citation, document)
+                citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
         # In this case, the citation should simply be to the item cited
