@@ -132,7 +132,9 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.metadata.court = get_court_by_paren(m["court"])
 
 
-def update_plaintiff_from_markup(document, citation, offset) -> None:
+def update_text_from_markup(
+    document: Document, citation: CaseCitation, start: int, short=False
+) -> None:
     """Update plaintiff if in Markup
 
     Check if the plaintiff is inside a markup tag and complete the tag text
@@ -144,21 +146,24 @@ def update_plaintiff_from_markup(document, citation, offset) -> None:
     Returns: None
 
     """
-    if document.plain_to_markup is None:
-        raise ValueError("document.plain_to_markup must not be None")
+    if (
+        document.plain_to_markup is None
+        or document.markup_text is None
+        or document.markup_to_plain is None
+    ):
+        raise ValueError("document must contain markup")
 
-    start = citation.span()[0] - offset
-    end = start + len(citation.metadata.plaintiff)
+    if short:
+        end = start + len(citation.metadata.antecedent_guess)
+    else:
+        end = start + len(citation.metadata.plaintiff)
 
     markup_start = document.plain_to_markup.update(start, bisect_right)
     markup_end = document.plain_to_markup.update(end, bisect_right)
 
-    # Parse the markup with lxml.
     doc = html.fromstring(document.markup_text)
-    # Find all <em> and <i> elements.
-    elements = doc.xpath("//em | //i")
 
-    for elem in elements:
+    for elem in doc.xpath("//em | //i"):
         # Serialize the element back to a string.
         tag_html = html.tostring(elem, encoding="unicode")
         tag_start = document.markup_text.find(tag_html)
@@ -166,12 +171,14 @@ def update_plaintiff_from_markup(document, citation, offset) -> None:
             continue
         tag_end = tag_start + len(tag_html)
         # If the target text is fully inside this tag,
-        # update the plaintiff metadata.
+        # update the metadata.
         if tag_start <= markup_start and markup_end <= tag_end:
             start = document.markup_to_plain.update(tag_start, bisect_right)
-            citation.metadata.plaintiff = document.plain_text[
-                start:end
-            ].strip()
+            text = document.plain_text[start:end].strip()
+            if short:
+                citation.metadata.antecedent_guess = text
+            else:
+                citation.metadata.plaintiff = text
             break
 
 
@@ -200,7 +207,8 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 offset += len(citation.metadata.plaintiff) + 1
 
                 if document.markup_text:
-                    update_plaintiff_from_markup(document, citation, offset)
+                    start = citation.span()[0] - offset
+                    update_text_from_markup(document, citation, start)
 
             else:
                 # We don't want to include stop words such as
@@ -227,7 +235,7 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
             citation.metadata.defendant = defendant
 
 
-def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
+def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
     """Scan backwards to find a (PartyName - Pincite) component
 
     Do not try if plaintiff or defendant has already been found
@@ -236,7 +244,7 @@ def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
         return
 
     m = match_on_tokens(
-        words,
+        document.words,
         citation.index - 1,
         PRE_FULL_CITATION_REGEX,
         forward=False,
@@ -254,6 +262,10 @@ def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.antecedent_guess = m["antecedent"]
+
+    if document.markup_text:
+        update_text_from_markup(document, citation, m.span()[0], short=True)
+
     match_length = m.span()[1] - m.span()[0]
     citation.full_span_start = citation.span()[0] - match_length
 

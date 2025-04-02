@@ -532,7 +532,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
 
         add_post_citation(self, document.words)
         add_defendant(self, document)
-        add_pre_citation(self, document.words)
+        add_pre_citation(self, document)
 
         self.guess_court()
         super().add_metadata(document)

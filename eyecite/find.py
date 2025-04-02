@@ -8,6 +8,7 @@ from eyecite.helpers import (
     filter_citations,
     joke_cite,
     match_on_tokens,
+    update_text_from_markup,
 )
 from eyecite.models import (
     CaseReferenceToken,
@@ -84,7 +85,7 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = _extract_shortform_citation(document.words, i)
+                citation = _extract_shortform_citation(document, i)
             else:
                 citation = _extract_full_citation(document, i)
                 if (
@@ -255,7 +256,7 @@ def _extract_full_citation(
 
 
 def _extract_shortform_citation(
-    words: Tokens,
+    document: Document,
     index: int,
 ) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
@@ -268,7 +269,7 @@ def _extract_shortform_citation(
     # get antecedent word
     antecedent_guess = None
     m = match_on_tokens(
-        words,
+        document.words,
         index - 1,
         SHORT_CITE_ANTECEDENT_REGEX,
         strings_only=True,
@@ -283,9 +284,9 @@ def _extract_shortform_citation(
         antecedent_length = 0
 
     # Get pin_cite
-    cite_token = cast(CitationToken, words[index])
+    cite_token = cast(CitationToken, document.words[index])
     pin_cite, span_end, parenthetical = extract_pin_cite(
-        words, index, prefix=cite_token.groups["page"]
+        document.words, index, prefix=cite_token.groups["page"]
     )
     span_end = span_end if span_end else 0
 
@@ -304,6 +305,9 @@ def _extract_shortform_citation(
             "parenthetical": parenthetical,
         },
     )
+    if antecedent_guess and document.markup_text:
+        # If text is markup and has an antecedent guess
+        update_text_from_markup(document, citation, m.span()[0], short=True)
 
     # add metadata
     citation.guess_edition()

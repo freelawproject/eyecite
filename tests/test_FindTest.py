@@ -1122,7 +1122,7 @@ class FindTest(TestCase):
                 )
             )
 
-    def test_unbalanced_case_names(self) -> None:
+    def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
         # Can we identify full case names in markup text
         test_pairs = (
             # Case Name unbalanced across two tags
@@ -1163,7 +1163,7 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
-            # corporation name
+            # corporation name threew ords
             (
                 "<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),",
                 [
@@ -1279,6 +1279,19 @@ class FindTest(TestCase):
                         "Smart Nobelman",
                         metadata={"plaintiff": "Smart Nobelman"},
                     ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # add antecedent guess to check
+            (
+                "the court in <em>Smith Johnson</em>, 1 U. S., at 2",
+                [
+                    case_citation(
+                        page="2",
+                        reporter_found="U. S.",
+                        short=True,
+                        metadata={"antecedent_guess": "Smith Johnson"},
+                    )
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
