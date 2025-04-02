@@ -9,6 +9,7 @@ Features:
 - Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
 - Should enable more complex html parsing.
 - Adds support for years preceding citations
+- Improve markup plaintiff extraction
 
 Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
