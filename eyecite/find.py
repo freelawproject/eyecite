@@ -86,7 +86,7 @@ def get_citations(
             if citation_token.short:
                 citation = _extract_shortform_citation(document.words, i)
             else:
-                citation = _extract_full_citation(document.words, i)
+                citation = _extract_full_citation(document, i)
                 if (
                     citations
                     and isinstance(citation, FullCaseCitation)
@@ -215,7 +215,7 @@ def extract_pincited_reference_citations(
 
 
 def _extract_full_citation(
-    words: Tokens,
+    document: Document,
     index: int,
 ) -> FullCitation:
     """Given a list of words and the index of a citation, return
@@ -225,7 +225,7 @@ def _extract_full_citation(
     # one or more of the sources in reporters_db (e.g. reporters, laws,
     # journals). Get the set of all sources that matched, preferring exact
     # matches to variations:
-    token = cast(CitationToken, words[index])
+    token = cast(CitationToken, document.words[index])
     cite_sources = set(
         e.reporter.source
         for e in (token.exact_editions or token.variation_editions)
@@ -249,7 +249,7 @@ def _extract_full_citation(
         exact_editions=token.exact_editions,
         variation_editions=token.variation_editions,
     )
-    citation.add_metadata(words)
+    citation.add_metadata(document)
 
     return citation
 
@@ -413,10 +413,10 @@ def find_reference_citations_from_markup(
                 continue
             if not is_valid_name(value):
                 continue
-            value = re.sub(r"\s+", re.escape(" "), re.escape(value.strip()))
-            regexes.append(
-                r"(?P<{}>{})".format(key, value.replace(" ", r"\s+"))
+            regex_value = r"\s+".join(
+                re.escape(token) for token in value.strip().split()
             )
+            regexes.append(r"(?P<{}>{})".format(key, regex_value))
         if not regexes:
             continue
 

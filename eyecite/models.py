@@ -291,7 +291,7 @@ class ResourceCitation(CitationBase):
 
         year: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         self.guess_edition()
 
@@ -375,13 +375,13 @@ class FullLawCitation(FullCitation):
         day: Optional[str] = None
         month: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_law_metadata
 
-        add_law_metadata(self, words)
-        super().add_metadata(words)
+        add_law_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return citation with any variations normalized, including extracted
@@ -404,13 +404,13 @@ class FullLawCitation(FullCitation):
 class FullJournalCitation(FullCitation):
     """Citation to a source from `reporters_db/journals.json`."""
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_journal_metadata
 
-        add_journal_metadata(self, words)
-        super().add_metadata(words)
+        add_journal_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return citation with any variations normalized, including extracted
@@ -521,7 +521,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import (
@@ -530,12 +530,12 @@ class FullCaseCitation(CaseCitation, FullCitation):
             add_pre_citation,
         )
 
-        add_post_citation(self, words)
-        add_defendant(self, words)
-        add_pre_citation(self, words)
+        add_post_citation(self, document.words)
+        add_defendant(self, document)
+        add_pre_citation(self, document.words)
 
         self.guess_court()
-        super().add_metadata(words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return formatted version of extracted cite."""

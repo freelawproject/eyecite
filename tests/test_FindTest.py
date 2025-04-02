@@ -1121,3 +1121,194 @@ class FindTest(TestCase):
                     [isinstance(cite, ReferenceCitation) for cite in citations]
                 )
             )
+
+    def test_unbalanced_case_names(self) -> None:
+        # Can we identify full case names in markup text
+        test_pairs = (
+            # Case Name unbalanced across two tags
+            (
+                (
+                    "and more and more <em>Jin Fuey Moy</em><em>v. United States,</em>\n"
+                    "            254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract from one tag and ignore the other
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # corporation name
+            (
+                "<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),",
+                [
+                    case_citation(
+                        volume="550",
+                        reporter="U. S.",
+                        page="544",
+                        year=2007,
+                        metadata={
+                            "plaintiff": "Bell Atlantic Corp.",
+                            "defendant": "Twombly",
+                            "year": "2007",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # two word plaintiff
+            (
+                "con-firmable. <em>United States v. Am. Sav. Bank, </em> 508 U.S. 324 (1993). That plan "
+                "proposed to bifurcate the claim and",
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        year=1993,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract reference citation full name
+            (
+                (
+                    ". <em>Jin Fuey Moy</em> <em>v. United States,</em> 254 U.S. 189. Petitioner contends.  "
+                    "Regardless in <em>Jin Fuey Moy</em> the court ruled"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    ),
+                    reference_citation(
+                        "Jin Fuey Moy", metadata={"plaintiff": "Jin Fuey Moy"}
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract out with whitespace across two tags
+            (
+                (
+                    '<p id="b453-6">\n'
+                    "  The supreme court of Connecticut, in\n"
+                    "  <em>\n"
+                    "   Beardsley\n"
+                    "  </em>\n"
+                    "  v.\n"
+                    "  <em>\n"
+                    "   Hartford,\n"
+                    "  </em>\n"
+                    "  50 Conn. 529, 541-542, after quoting the maxim of the common law;\n"
+                    "  <em>\n"
+                    "   cessante ratione legis-, cessat ipsa lex,\n"
+                    "  </em>"
+                ),
+                [
+                    case_citation(
+                        volume="50",
+                        reporter="Conn.",
+                        page="529",
+                        metadata={
+                            "plaintiff": "Beardsley",
+                            "defendant": "Hartford",
+                            "pin_cite": "541-542",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # identify reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Smart Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the <em>Smart Nobelman </em>decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Smart Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Smart Nobelman",
+                        metadata={"plaintiff": "Smart Nobelman"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Identify pincite reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the  a lien on the debtor’s principal residence.” "
+                    "<em>Nobelman </em>at 332, decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Nobelman",
+                        metadata={"plaintiff": "Nobelman", "pin_cite": "332"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+        )
+        self.run_test_pairs(test_pairs, "Citation extraction")

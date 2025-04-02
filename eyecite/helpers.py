@@ -1,14 +1,17 @@
 import logging
+from bisect import bisect_right
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
 import regex as re
+from bs4 import BeautifulSoup
 from courts_db import courts
 
 from eyecite.models import (
     CaseCitation,
     CitationBase,
     CitationToken,
+    Document,
     FullCaseCitation,
     FullJournalCitation,
     FullLawCitation,
@@ -129,13 +132,50 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.metadata.court = get_court_by_paren(m["court"])
 
 
-def add_defendant(citation: CaseCitation, words: Tokens) -> None:
+def update_plaintiff_from_markup(document, citation, offset) -> None:
+    """Update plaintiff if in Markup
+
+    Check if the plaintiff is inside a markup tag and complete the tag text
+    Args:
+        document: An object containing the document's plain text; markup text
+        citation: An object representing a citation
+        offset: An integer offset used to adjust the citation's span
+
+    Returns: None
+
+    """
+    if document.plain_to_markup is None:
+        raise ValueError("document.plain_to_markup must not be None")
+
+    start = citation.span()[0] - offset
+    end = start + len(citation.metadata.plaintiff)
+
+    m_start = document.plain_to_markup.update(start, bisect_right)
+    m_end = document.plain_to_markup.update(end, bisect_right)
+
+    soup = BeautifulSoup(document.markup_text, "html.parser")
+    for tag in soup.find_all(["em", "i"]):
+        # Convert the tag back to a string.
+        tag_html = str(tag)
+        tag_start = document.markup_text.find(tag_html)
+        if tag_start == -1:
+            continue
+        tag_end = tag_start + len(tag_html)
+        # If the target text is entirely within the tag boundaries, return it.
+        if tag_start <= m_start and m_end <= tag_end:
+            t_start = document.markup_to_plain.update(tag_start, bisect_right)
+            citation.metadata.plaintiff = document.plain_text[t_start:end]
+            break
+
+
+def add_defendant(citation: CaseCitation, document: Document) -> None:
     """Scan backwards from reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
     future, this could be improved.
     """
     # To turn word indexing into char indexing,
     # useful for span, account for shift
+    words = document.words
     offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
@@ -151,6 +191,10 @@ def add_defendant(citation: CaseCitation, words: Tokens) -> None:
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip("( ")
                 offset += len(citation.metadata.plaintiff) + 1
+
+                if document.markup_text:
+                    update_plaintiff_from_markup(document, citation, offset)
+
             else:
                 # We don't want to include stop words such as
                 # 'citing' in the span
