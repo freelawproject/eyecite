@@ -4,8 +4,8 @@ from datetime import date
 from typing import List, Optional, Tuple, cast
 
 import regex as re
-from bs4 import BeautifulSoup
 from courts_db import courts
+from lxml import html
 
 from eyecite.models import (
     CaseCitation,
@@ -150,21 +150,28 @@ def update_plaintiff_from_markup(document, citation, offset) -> None:
     start = citation.span()[0] - offset
     end = start + len(citation.metadata.plaintiff)
 
-    m_start = document.plain_to_markup.update(start, bisect_right)
-    m_end = document.plain_to_markup.update(end, bisect_right)
+    markup_start = document.plain_to_markup.update(start, bisect_right)
+    markup_end = document.plain_to_markup.update(end, bisect_right)
 
-    soup = BeautifulSoup(document.markup_text, "html.parser")
-    for tag in soup.find_all(["em", "i"]):
-        # Convert the tag back to a string.
-        tag_html = str(tag)
+    # Parse the markup with lxml.
+    doc = html.fromstring(document.markup_text)
+    # Find all <em> and <i> elements.
+    elements = doc.xpath("//em | //i")
+
+    for elem in elements:
+        # Serialize the element back to a string.
+        tag_html = html.tostring(elem, encoding="unicode")
         tag_start = document.markup_text.find(tag_html)
         if tag_start == -1:
             continue
         tag_end = tag_start + len(tag_html)
-        # If the target text is entirely within the tag boundaries, return it.
-        if tag_start <= m_start and m_end <= tag_end:
-            t_start = document.markup_to_plain.update(tag_start, bisect_right)
-            citation.metadata.plaintiff = document.plain_text[t_start:end]
+        # If the target text is fully inside this tag,
+        # update the plaintiff metadata.
+        if tag_start <= markup_start and markup_end <= tag_end:
+            start = document.markup_to_plain.update(tag_start, bisect_right)
+            citation.metadata.plaintiff = document.plain_text[
+                start:end
+            ].strip()
             break
 
 
