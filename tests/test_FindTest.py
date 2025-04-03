@@ -1534,6 +1534,5 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
-
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
