@@ -1386,5 +1386,75 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # remove the See at the start and handle the inner span
+            (
+                """
+                <i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670;  
+                """,
+                [
+                    case_citation(
+                        page="670",
+                        reporter="S.W.2d",
+                        volume="793",
+                        short=False,
+                        metadata={
+                            "plaintiff": "DeSantis",
+                            "defendant": "Wackenhut Corp.",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # remove the See at the start and handle the inner span
+            (
+                """
+                </span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting); 
+                """,
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Strawberry Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """
+                </span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting)); 
+                """,
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
+
+
+#  </span>§ 3.1 (2d ed. 1977), <i>cited in Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting);
+# <i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670, 681–82
+# (Tex. 1990); <i>Miller Paper Co. v. Roberts Paper Co.</i>,<i> </i>901 S.W.2d
+# 593, 599–600 (Tex. App.—Amarillo 1995, no writ) (stating that non-solicitation
+# covenants prevent the employee from soliciting customers of the employer and
+# effectively restrict competition); <i>see also Guy Carpenter &amp; Co. v. <span class="SpellE">Provenzale</span></i>, 334 F.3d 459, 464–65 (5th Cir. 2003)
+# (applying Texas law and stating that non-solicitation covenants restrain trade
+# and competition and are governed by the Act);

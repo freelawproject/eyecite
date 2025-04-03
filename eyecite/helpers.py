@@ -28,6 +28,7 @@ from eyecite.regexes import (
     POST_LAW_CITATION_REGEX,
     POST_SHORT_CITATION_REGEX,
     PRE_FULL_CITATION_REGEX,
+    STOP_WORDS,
     YEAR_REGEX,
 )
 
@@ -163,28 +164,15 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                     and document.plain_to_markup
                     and document.markup_to_plain
                 ):
-                    # if we have markup we may want to add to the start of it.
-                    markup_start = document.plain_to_markup.update(
-                        stop_word.start - 2, bisect_right
+                    updated_start, cleaned_text = extract_full_text_from_markup(
+                        document,
+                        stop_word.start - 2,
+                        citation.metadata.plaintiff,
+                        source_end=stop_word.start - 1,
                     )
-                    filtered_results = [
-                        r
-                        for r in document.emphasis_tags
-                        if r[1] <= markup_start < r[2]
-                    ]
-
-                    if filtered_results:
-                        new_start = filtered_results[0][1]
-                        p_start = document.markup_to_plain.update(
-                            new_start, bisect_right
-                        )
-                        full_tag = document.plain_text[
-                            p_start : stop_word.start - 1
-                        ].strip(" (")
-                        if citation.metadata.plaintiff != full_tag:
-                            citation.metadata.plaintiff = full_tag
-                            citation.full_span_start = p_start
-
+                    if cleaned_text:
+                        citation.full_span_start = updated_start
+                        citation.metadata.plaintiff = cleaned_text
             else:
                 # We don't want to include stop words such as
                 # 'citing' in the span
@@ -215,29 +203,10 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 and document.plain_to_markup
                 and document.markup_to_plain
             ):
-                # if we have markup - we may want to trim the end of defendant
-                markup_start = document.plain_to_markup.update(
-                    stop_word.start + 3, bisect_right
-                )
-                filtered_results = [
-                    r
-                    for r in document.emphasis_tags
-                    if r[1] <= markup_start < r[2]
-                ]
-                if filtered_results:
-                    defendant_end = document.markup_to_plain.update(
-                        filtered_results[0][2], bisect_right
-                    )
-                    defendant_start = (
-                        stop_word.start
-                        + len(stop_word.groups["stop_word"])
-                        + 1
-                    )
-                    defendant = document.plain_text[
-                        defendant_start:defendant_end
-                    ]
-                    if citation.metadata.defendant != defendant.strip(" ,"):
-                        citation.metadata.defendant = defendant.strip(" ,")
+
+                new_text = update_defendant_markup(document, stop_word)
+                if citation.metadata.defendant != new_text:
+                    citation.metadata.defendant = new_text
 
 
 def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
@@ -503,6 +472,87 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
 
     return filtered_citations
 
+
+def extract_full_text_from_markup(
+    document: Document,
+    base_offset: int,
+    default_text: str,
+    source_end: Optional[int] = None,
+) -> Tuple[int, str]:
+    """
+    Use markup to identify if the plaintiff/antecedent guess is incomplete.
+
+    Parameters:
+        document: The Document instance.
+        base_offset: The plain text offset to convert
+        default_text: The current text stored for this field.
+        source_end: Optional plain text end index to use when extracting text.
+                    If provided, full text is extracted as:
+                        document.plain_text[plain_text_start:source_end]
+
+    Returns: New start and updated text
+    """
+
+    # Convert plain text offset to a markup offset. and bail if no markup
+    if not document.plain_to_markup or not document.markup_to_plain:
+        return base_offset, default_text
+
+    markup_start = document.plain_to_markup.update(base_offset, bisect_right)
+    filtered_results = [
+        r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
+    ]
+    if not filtered_results:
+        # Not inside an emphasis/i tag
+        return base_offset, default_text
+
+    # Use the first and only matching emphasis tag.
+    new_start = filtered_results[0][1]
+    plain_text_start = document.markup_to_plain.update(new_start, bisect_right)
+
+    # If a source_end is provided, extract text from plain_text.
+    if source_end is not None:
+        # ie plaintiff
+        full_text = document.plain_text[plain_text_start:source_end]
+    else:
+        # Otherwise, antecedent guess does not need to be split
+        full_text = filtered_results[0][0]
+
+    # Remove leading stop words and adjust the full span start
+    pattern = re.compile(
+        r"^(?:" + "|".join(map(re.escape, STOP_WORDS)) + r")\b\s*",
+        re.IGNORECASE,
+    )
+    cleaned_text = pattern.sub("", full_text.strip(" ("))
+    # If cleaning removed some characters, adjust the start accordingly
+    if full_text != cleaned_text:
+        removed = len(full_text) - len(cleaned_text)
+        plain_text_start += removed
+
+    return plain_text_start, cleaned_text
+
+def update_defendant_markup(document, stop_word):
+    # if we have markup - we may want to trim the end of defendant
+    markup_start = document.plain_to_markup.update(
+        stop_word.start + 3, bisect_right
+    )
+    filtered_results = [
+        r
+        for r in document.emphasis_tags
+        if r[1] <= markup_start < r[2]
+    ]
+    if filtered_results:
+        defendant_end = document.markup_to_plain.update(
+            filtered_results[0][2], bisect_right
+        )
+        defendant_start = (
+                stop_word.start
+                + len(stop_word.groups["stop_word"])
+                + 1
+        )
+        defendant = document.plain_text[
+                    defendant_start:defendant_end
+                    ].strip(" ,")
+        return defendant
 
 joke_cite: List[CitationBase] = [
     FullCaseCitation(

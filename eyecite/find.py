@@ -8,6 +8,7 @@ from eyecite.helpers import (
     filter_citations,
     joke_cite,
     match_on_tokens,
+    extract_full_text_from_markup,
 )
 from eyecite.models import (
     CaseReferenceToken,
@@ -29,7 +30,10 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
+from eyecite.regexes import (
+    SHORT_CITE_ANTECEDENT_REGEX,
+    SUPRA_ANTECEDENT_REGEX,
+)
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 
@@ -304,15 +308,21 @@ def _extract_shortform_citation(
             "parenthetical": parenthetical,
         },
     )
-    if antecedent_guess and document.markup_text:
+    if (
+        antecedent_guess
+        and document.markup_text
+        and citation.full_span_start is not None
+    ):
         # If text is markup and has an antecedent guess
         # look if an emphasis tag wraps around the text  if so
         # use that tag text
-        filtered_results = [
-            r for r in document.emphasis_tags if r[1] <= m.span()[0] < r[2]
-        ]
-        if filtered_results:
-            citation.metadata.antecedent_guess = filtered_results[0][0]
+        updated_start, cleaned_text = extract_full_text_from_markup(
+            document,
+            citation.full_span_start,
+            antecedent_guess,
+        )
+        citation.full_span_start = updated_start
+        citation.metadata.antecedent_guess = cleaned_text
 
     # add metadata
     citation.guess_edition()
