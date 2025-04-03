@@ -17,8 +17,8 @@ entire list by downloading the output.csv file linked above.
 |  5329531   |                   |           German Savings Bank           |
 |  1917661   |                   |                  Vanner                 |
 |  1662392   |                   |                  Belton                 |
-|  1783747   |                   |        Parish of East Baton Rouge       |
 |  1783747   |                   |                Potters II               |
+|  1783747   |                   |        Parish of East Baton Rouge       |
 |  1537257   |                   |                St. Cloud                |
 |  1717506   |                   |                Blue Bell                |
 |  2631184   |                   |    Hilltop Terrace Homeowner's Ass'n    |
@@ -49,6 +49,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/46f23e24d23c3ddaf6b78a8a05cc639d22b3a9f9.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/6962e505fef919b214f368e7abe71f804acafd4b.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
