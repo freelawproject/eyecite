@@ -4,11 +4,11 @@ from typing import Callable, Iterable, List, Optional, Type, Union, cast
 
 from eyecite.helpers import (
     disambiguate_reporters,
+    extract_full_text_from_markup,
     extract_pin_cite,
     filter_citations,
     joke_cite,
     match_on_tokens,
-    extract_full_text_from_markup,
 )
 from eyecite.models import (
     CaseReferenceToken,
@@ -30,10 +30,7 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import (
-    SHORT_CITE_ANTECEDENT_REGEX,
-    SUPRA_ANTECEDENT_REGEX,
-)
+from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 

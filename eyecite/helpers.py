@@ -164,11 +164,13 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                     and document.plain_to_markup
                     and document.markup_to_plain
                 ):
-                    updated_start, cleaned_text = extract_full_text_from_markup(
-                        document,
-                        stop_word.start - 2,
-                        citation.metadata.plaintiff,
-                        source_end=stop_word.start - 1,
+                    updated_start, cleaned_text = (
+                        extract_full_text_from_markup(
+                            document,
+                            stop_word.start - 2,
+                            citation.metadata.plaintiff,
+                            source_end=stop_word.start - 1,
+                        )
                     )
                     if cleaned_text:
                         citation.full_span_start = updated_start
@@ -530,29 +532,27 @@ def extract_full_text_from_markup(
 
     return plain_text_start, cleaned_text
 
+
 def update_defendant_markup(document, stop_word):
     # if we have markup - we may want to trim the end of defendant
     markup_start = document.plain_to_markup.update(
         stop_word.start + 3, bisect_right
     )
     filtered_results = [
-        r
-        for r in document.emphasis_tags
-        if r[1] <= markup_start < r[2]
+        r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
     ]
     if filtered_results:
         defendant_end = document.markup_to_plain.update(
             filtered_results[0][2], bisect_right
         )
         defendant_start = (
-                stop_word.start
-                + len(stop_word.groups["stop_word"])
-                + 1
+            stop_word.start + len(stop_word.groups["stop_word"]) + 1
         )
-        defendant = document.plain_text[
-                    defendant_start:defendant_end
-                    ].strip(" ,")
+        defendant = document.plain_text[defendant_start:defendant_end].strip(
+            " ,"
+        )
         return defendant
+
 
 joke_cite: List[CitationBase] = [
     FullCaseCitation(

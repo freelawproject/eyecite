@@ -1386,11 +1386,9 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
-            # remove the See at the start and handle the inner span
+            # remove the See at the start and handle other tags
             (
-                """
-                <i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670;  
-                """,
+                """<i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670;""",
                 [
                     case_citation(
                         page="670",
@@ -1405,11 +1403,9 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
-            # remove the See at the start and handle the inner span
+            # Antecedent guess
             (
-                """
-                </span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting); 
-                """,
+                """</span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting);""",
                 [
                     unknown_citation("§"),
                     case_citation(
@@ -1426,10 +1422,9 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # Stop word inside tag
             (
-                """
-                </span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting)); 
-                """,
+                """</span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting));""",
                 [
                     unknown_citation("§"),
                     case_citation(
@@ -1441,6 +1436,25 @@ class FindTest(TestCase):
                             "antecedent_guess": "Hill",
                             "pin_cite": "176",
                             "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Handle embedded pagnation
+            (
+                """<i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">*528</span> 342 U. S. 36, 41;""",
+                [
+                    case_citation(
+                        page="36",
+                        volume="342",
+                        reporter="U. S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Carignan",
+                            "pin_cite": "41",
+                            "court": "scotus",
                         },
                     ),
                 ],
