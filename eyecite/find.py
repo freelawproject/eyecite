@@ -8,7 +8,6 @@ from eyecite.helpers import (
     filter_citations,
     joke_cite,
     match_on_tokens,
-    update_text_from_markup,
 )
 from eyecite.models import (
     CaseReferenceToken,
@@ -307,7 +306,13 @@ def _extract_shortform_citation(
     )
     if antecedent_guess and document.markup_text:
         # If text is markup and has an antecedent guess
-        update_text_from_markup(document, citation, m.span()[0], short=True)
+        # look if an emphasis tag wraps around the text  if so
+        # use that tag text
+        filtered_results = [
+            r for r in document.emphasis_tags if r[1] <= m.span()[0] < r[2]
+        ]
+        if filtered_results:
+            citation.metadata.antecedent_guess = filtered_results[0][0]
 
     # add metadata
     citation.guess_edition()

@@ -5,7 +5,6 @@ from typing import List, Optional, Tuple, cast
 
 import regex as re
 from courts_db import courts
-from lxml import html
 
 from eyecite.models import (
     CaseCitation,
@@ -132,56 +131,6 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.metadata.court = get_court_by_paren(m["court"])
 
 
-def update_text_from_markup(
-    document: Document, citation: CaseCitation, start: int, short=False
-) -> None:
-    """Update plaintiff if in Markup
-
-    Check if the plaintiff is inside a markup tag and complete the tag text
-    Args:
-        document: An object containing the document's plain text; markup text
-        citation: An object representing a citation
-        offset: An integer offset used to adjust the citation's span
-
-    Returns: None
-
-    """
-    if (
-        document.plain_to_markup is None
-        or document.markup_text is None
-        or document.markup_to_plain is None
-    ):
-        raise ValueError("document must contain markup")
-
-    if short:
-        end = start + len(citation.metadata.antecedent_guess)
-    else:
-        end = start + len(citation.metadata.plaintiff)
-
-    markup_start = document.plain_to_markup.update(start, bisect_right)
-    markup_end = document.plain_to_markup.update(end, bisect_right)
-
-    doc = html.fromstring(document.markup_text)
-
-    for elem in doc.xpath("//em | //i"):
-        # Serialize the element back to a string.
-        tag_html = html.tostring(elem, encoding="unicode")
-        tag_start = document.markup_text.find(tag_html)
-        if tag_start == -1:
-            continue
-        tag_end = tag_start + len(tag_html)
-        # If the target text is fully inside this tag,
-        # update the metadata.
-        if tag_start <= markup_start and markup_end <= tag_end:
-            start = document.markup_to_plain.update(tag_start, bisect_right)
-            text = document.plain_text[start:end].strip()
-            if short:
-                citation.metadata.antecedent_guess = text
-            else:
-                citation.metadata.plaintiff = text
-            break
-
-
 def add_defendant(citation: CaseCitation, document: Document) -> None:
     """Scan backwards from reporter until you find v., in re,
     etc. If no known stop-token is found, no defendant name is stored.  In the
@@ -193,6 +142,8 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
     offset = 0
     start_index = None
     back_seek = citation.index - BACKWARD_SEEK
+    stop_word = None
+
     for index in range(citation.index - 1, max(back_seek, -1), -1):
         word = words[index]
         offset += len(word)
@@ -200,15 +151,39 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
             # Skip it
             continue
         if isinstance(word, StopWordToken):
+            stop_word = word
             if word.groups["stop_word"] == "v" and index > 0:
                 citation.metadata.plaintiff = "".join(
                     str(w) for w in words[max(index - 2, 0) : index]
                 ).strip("( ")
                 offset += len(citation.metadata.plaintiff) + 1
 
-                if document.markup_text:
-                    start = citation.span()[0] - offset
-                    update_text_from_markup(document, citation, start)
+                if (
+                    document.markup_text
+                    and document.plain_to_markup
+                    and document.markup_to_plain
+                ):
+                    # if we have markup we may want to add to the start of it.
+                    markup_start = document.plain_to_markup.update(
+                        stop_word.start - 2, bisect_right
+                    )
+                    filtered_results = [
+                        r
+                        for r in document.emphasis_tags
+                        if r[1] <= markup_start < r[2]
+                    ]
+
+                    if filtered_results:
+                        new_start = filtered_results[0][1]
+                        p_start = document.markup_to_plain.update(
+                            new_start, bisect_right
+                        )
+                        full_tag = document.plain_text[
+                            p_start : stop_word.start - 1
+                        ].strip(" (")
+                        if citation.metadata.plaintiff != full_tag:
+                            citation.metadata.plaintiff = full_tag
+                            citation.full_span_start = p_start
 
             else:
                 # We don't want to include stop words such as
@@ -220,8 +195,10 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
         if word.endswith(";"):
             # String citation
             break
-    if start_index:
-        citation.full_span_start = citation.span()[0] - offset
+    if start_index and stop_word:
+        if not citation.full_span_start:
+            # set the full span start
+            citation.full_span_start = citation.span()[0] - offset
         defendant = "".join(
             str(w) for w in words[start_index : citation.index]
         ).strip(", (")
@@ -233,6 +210,34 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 citation.year = int(year)
                 citation.metadata.year = year
             citation.metadata.defendant = defendant
+            if (
+                document.markup_text
+                and document.plain_to_markup
+                and document.markup_to_plain
+            ):
+                # if we have markup - we may want to trim the end of defendant
+                markup_start = document.plain_to_markup.update(
+                    stop_word.start + 3, bisect_right
+                )
+                filtered_results = [
+                    r
+                    for r in document.emphasis_tags
+                    if r[1] <= markup_start < r[2]
+                ]
+                if filtered_results:
+                    defendant_end = document.markup_to_plain.update(
+                        filtered_results[0][2], bisect_right
+                    )
+                    defendant_start = (
+                        stop_word.start
+                        + len(stop_word.groups["stop_word"])
+                        + 1
+                    )
+                    defendant = document.plain_text[
+                        defendant_start:defendant_end
+                    ]
+                    if citation.metadata.defendant != defendant.strip(" ,"):
+                        citation.metadata.defendant = defendant.strip(" ,")
 
 
 def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
@@ -262,10 +267,6 @@ def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
 
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.antecedent_guess = m["antecedent"]
-
-    if document.markup_text:
-        update_text_from_markup(document, citation, m.span()[0], short=True)
-
     match_length = m.span()[1] - m.span()[0]
     citation.full_span_start = citation.span()[0] - match_length
 

@@ -1163,6 +1163,25 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # split across tags with v. in defendant
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy</em> <em>v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
             # corporation name threew ords
             (
                 "<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),",
@@ -1292,6 +1311,50 @@ class FindTest(TestCase):
                         short=True,
                         metadata={"antecedent_guess": "Smith Johnson"},
                     )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States</i> v. <i>Hodgson,</i> ___ Iowa ___, 44 N.J. 151, 207 A. 2d 542;",
+                [
+                    case_citation(
+                        page="151",
+                        volume="44",
+                        reporter="N.J.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                    case_citation(
+                        page="542",
+                        volume="207",
+                        reporter="A. 2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States ex rel. Russo v. New Jersey</i>, 351 F.2d 429 something something",
+                [
+                    case_citation(
+                        page="429",
+                        volume="351",
+                        reporter="F.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States ex rel. Russo",
+                            "defendant": "New Jersey",
+                        },
+                    ),
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),

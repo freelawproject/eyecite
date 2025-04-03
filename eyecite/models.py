@@ -875,6 +875,7 @@ class Document:
     clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
         default_factory=list
     )
+    emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
 
     def __post_init__(self):
         if self.plain_text and self.clean_steps:
@@ -895,6 +896,17 @@ class Document:
             self.markup_to_plain = SpanUpdater(
                 self.markup_text, self.plain_text
             )
+
+            self.identify_emphasis_tags()
+
+    def identify_emphasis_tags(self):
+        pattern = re.compile(
+            r"<(em|i)[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL
+        )
+        self.emphasis_tags = [
+            (m.group(2).strip(), m.start(), m.end())
+            for m in pattern.finditer(self.markup_text)
+        ]
 
     def tokenize(self, tokenizer):
         # Tokenize the document and store the results in the document object
