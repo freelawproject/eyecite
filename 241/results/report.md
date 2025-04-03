@@ -24,11 +24,11 @@ entire list by downloading the output.csv file linked above.
 |  1717506   |                   |                Blue Bell                |
 |  2631184   |                   |    Hilltop Terrace Homeowner's Ass'n    |
 |  2357843   |                   | State ex rel. Utility Consumers Council |
-|  2414924   |                   |          City of Boerne at 2170         |
 |  2414924   |                   |              City of Boerne             |
+|  2414924   |                   |          City of Boerne at 2170         |
 |  2414924   |   Boerne at 2170  |                                         |
-|  2496102   |       Dixon       |                                         |
 |  2496102   |      Waltreus     |                                         |
+|  2496102   |       Dixon       |                                         |
 |  2427861   |       Harris      |                                         |
 |  1431414   |                   |      Memphis Development Foundation     |
 |  2925642   |        Cass       |                                         |
@@ -55,6 +55,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/c21ea37f8e9a9af44cd0e8842c294eeeb5d89a5c.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/8eaf5fba099acc2d8dfc66cf46a39eb70391f18c.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
