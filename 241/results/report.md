@@ -4,7 +4,7 @@
 
 Gains and Losses
 ---------
-There were 12 gains and 15 losses.
+There were 9 gains and 15 losses.
 
 <details>
 <summary>Click here to see details.</summary>
@@ -22,24 +22,21 @@ entire list by downloading the output.csv file linked above.
 |  1783747   |                   |        Parish of East Baton Rouge       |
 |  1537257   |                   |                St. Cloud                |
 |  1717506   |                   |                Blue Bell                |
+|  1814863   |        Foy        |                                         |
+|  1183603   |       Raine       |                                         |
+|  1183603   |        Wade       |                                         |
 |  2631184   |                   |    Hilltop Terrace Homeowner's Ass'n    |
 |  2357843   |                   | State ex rel. Utility Consumers Council |
+|  2414924   |                   |          City of Boerne at 2170         |
 |  2414924   |                   |              City of Boerne             |
 |  2414924   |   Boerne at 2170  |                                         |
-|  2414924   |                   |          City of Boerne at 2170         |
 |  1431414   |                   |      Memphis Development Foundation     |
-|  2829354   |        Hill       |                                         |
-|  2829354   |        Hill       |                                         |
-|  2829354   |      DeSantis     |                                         |
 |  2925642   |        Cass       |                                         |
-|  2925642   |      Trevino      |                                         |
 |   203607   |                   |         Fustaguio do Nascimento         |
 |  1433305   |                   |                 Grayson                 |
-|  2411681   |        Aini       |                                         |
-|  7228206   |        Hawk       |                                         |
-|  7228206   |      Schadler     |                                         |
 |   901384   | Setliff I at ¶ 19 |                                         |
 |  1439070   |    Loup-Miller    |                                         |
+|  6596585   |      Beckwith     |                                         |
 |  6776333   |                   |                  Susser                 |
 
 
@@ -56,6 +53,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/f463db17f6b694a6a84f76181847b765fb9d0ab0.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/3b6c2d07a543b93e8a150a8c86272a62c70808fc.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
