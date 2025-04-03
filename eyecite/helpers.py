@@ -533,17 +533,19 @@ def extract_full_text_from_markup(
     return plain_text_start, cleaned_text
 
 
-def update_defendant_markup(document, stop_word):
+def update_defendant_markup(
+    document: Document, stop_word: StopWordToken
+) -> Optional[str]:
     """Update defendant using markup tags
 
     Args:
-        document ():
-        stop_word ():
+        document: The document object
+        stop_word: The stop word used in parsing
 
-    Returns:
-
+    Returns: New defendant text if any
     """
-
+    if not document.plain_to_markup or not document.markup_to_plain:
+        return None
     def_start = stop_word.start + len(stop_word.groups["stop_word"]) + 2
     markup_start = document.plain_to_markup.update(def_start, bisect_right)
     filtered_results = [
@@ -555,6 +557,7 @@ def update_defendant_markup(document, stop_word):
         )
         defendant = document.plain_text[def_start:defendant_end].strip(" ,")
         return defendant
+    return None
 
 
 joke_cite: List[CitationBase] = [
