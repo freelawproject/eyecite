@@ -23,12 +23,12 @@ entire list by downloading the output.csv file linked above.
 |  1537257   |                   |                St. Cloud                |
 |  1717506   |                   |                Blue Bell                |
 |  1814863   |        Foy        |                                         |
-|  1183603   |        Wade       |                                         |
 |  1183603   |       Raine       |                                         |
+|  1183603   |        Wade       |                                         |
 |  2631184   |                   |    Hilltop Terrace Homeowner's Ass'n    |
 |  2357843   |                   | State ex rel. Utility Consumers Council |
-|  2414924   |                   |          City of Boerne at 2170         |
 |  2414924   |   Boerne at 2170  |                                         |
+|  2414924   |                   |          City of Boerne at 2170         |
 |  2414924   |                   |              City of Boerne             |
 |  1431414   |                   |      Memphis Development Foundation     |
 |  2925642   |        Cass       |                                         |
@@ -53,6 +53,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/b447857f37ac507f9d557d84f18bb0a97690d26c.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/edf651ef4e7f81eb495ef8a8621e6d6c0d772d67.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
