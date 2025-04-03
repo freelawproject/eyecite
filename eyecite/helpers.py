@@ -546,8 +546,13 @@ def update_defendant_markup(
     """
     if not document.plain_to_markup or not document.markup_to_plain:
         return None
-    def_start = stop_word.start + len(stop_word.groups["stop_word"]) + 2
-    markup_start = document.plain_to_markup.update(def_start, bisect_right)
+
+    # add 3 char to account for the star pagination whitespace
+    # <i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">
+    # *528</span> 342 U. S. 36, 41
+    markup_start = document.plain_to_markup.update(
+        stop_word.start + 3, bisect_right
+    )
     filtered_results = [
         r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
     ]
@@ -555,8 +560,10 @@ def update_defendant_markup(
         defendant_end = document.markup_to_plain.update(
             filtered_results[0][2], bisect_right
         )
-        defendant = document.plain_text[def_start:defendant_end].strip(" ,")
-        return defendant
+        defendant_start = (
+            stop_word.start + len(stop_word.groups["stop_word"]) + 1
+        )
+        return document.plain_text[defendant_start:defendant_end].strip(" ,")
     return None
 
 

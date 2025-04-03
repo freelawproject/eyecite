@@ -1514,5 +1514,26 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            (
+                """<em>
+   In re Dixon,
+  </em>
+  41 Cal.2d 756 (1953).""",
+                [
+                    case_citation(
+                        page="756",
+                        volume="41",
+                        reporter="Cal.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Dixon",
+                            "year": "1953",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
