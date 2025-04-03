@@ -206,7 +206,9 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 and document.plain_to_markup
                 and document.markup_to_plain
             ):
-                new_defendant = update_defendant_markup(document, stop_word).strip()
+                new_defendant = update_defendant_markup(
+                    document, stop_word
+                ).strip()
                 if (
                     citation.metadata.defendant != new_defendant
                     and new_defendant != ""
@@ -535,7 +537,7 @@ def extract_full_text_from_markup(
 
 def update_defendant_markup(
     document: Document, stop_word: StopWordToken
-) -> Optional[str]:
+) -> str:
     """Update defendant using markup tags
 
     Args:

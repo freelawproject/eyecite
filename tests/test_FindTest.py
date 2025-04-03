@@ -1583,4 +1583,3 @@ class FindTest(TestCase):
             ),
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
-
