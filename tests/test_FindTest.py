@@ -1314,6 +1314,25 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # make sure not to overwrite good data if this method doesnt work
+            (
+                "Judge Regan (dissenting) in <i>Thrift Funds Canal,</i> Inc. v. Foy, 242 So.2d 253, 257 (La.App. 4 Cir. 1970), calls",
+                [
+                    case_citation(
+                        page="253",
+                        reporter="So.2d",
+                        volume="242",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Inc.",
+                            "defendant": "Foy",
+                            "pin_cite": "257",
+                            "year": "1970",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
             # tricky scotus fake cites if junk is inbetween remove it
             (
                 " <i>United States</i> v. <i>Hodgson,</i> ___ Iowa ___, 44 N.J. 151, 207 A. 2d 542;",
@@ -1473,6 +1492,23 @@ class FindTest(TestCase):
                             "plaintiff": "Our Lady of the Lake Hosp.",
                             "defendant": "Vanner",
                             "pin_cite": "464",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """<em>Cf. Akins v. State, </em>104 So.3d 1173 (Fla. 1st DCA 2012)""",
+                [
+                    case_citation(
+                        page="1173",
+                        volume="104",
+                        reporter="So.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Akins",
+                            "defendant": "State",
+                            "year": "2012",
                         },
                     ),
                 ],
