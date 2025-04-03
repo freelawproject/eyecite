@@ -206,12 +206,12 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 and document.plain_to_markup
                 and document.markup_to_plain
             ):
-                new_text = update_defendant_markup(document, stop_word)
+                new_defendant = update_defendant_markup(document, stop_word).strip()
                 if (
-                    citation.metadata.defendant != new_text
-                    and new_text is not None
+                    citation.metadata.defendant != new_defendant
+                    and new_defendant != ""
                 ):
-                    citation.metadata.defendant = new_text
+                    citation.metadata.defendant = new_defendant
 
 
 def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
@@ -545,7 +545,7 @@ def update_defendant_markup(
     Returns: New defendant text if any
     """
     if not document.plain_to_markup or not document.markup_to_plain:
-        return None
+        return ""
 
     # add 3 char to account for the star pagination whitespace
     # <i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">
@@ -560,11 +560,12 @@ def update_defendant_markup(
         defendant_end = document.markup_to_plain.update(
             filtered_results[0][2], bisect_right
         )
+
         defendant_start = (
             stop_word.start + len(stop_word.groups["stop_word"]) + 1
         )
         return document.plain_text[defendant_start:defendant_end].strip(" ,")
-    return None
+    return ""
 
 
 joke_cite: List[CitationBase] = [

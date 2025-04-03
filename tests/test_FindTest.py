@@ -1534,5 +1534,53 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # can we remove see also
+            (
+                """<em>see also Cass v. Stephens</em>,\r\n156 S.W.3d 38""",
+                [
+                    case_citation(
+                        page="38",
+                        volume="156",
+                        reporter="S.W.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Cass",
+                            "defendant": "Stephens",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # technically this is incorrect in determing plaintiff/defendant but we have no way to deal with that
+            (
+                """ <i>See </i><i>Loup-Miller Const. Co. v. City and County of Denver,</i> 676 P.2d 1170 (Colo.1984) .... <i>See </i><i>Loup-Miller,</i> 676 P.2d 1170 and so on <i>Loup-Miller</i>""",
+                [
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Loup-Miller Const. Co.",
+                            "defendant": "City and County of Denver",
+                        },
+                    ),
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "defendant": "Loup-Miller",
+                        },
+                    ),
+                    reference_citation(
+                        "Loup-Miller",
+                        metadata={"defendant": "Loup-Miller"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
+

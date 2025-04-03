@@ -70,6 +70,7 @@ STOP_WORDS = (
     "aff'd",
     "affirmed",
     "remanded",
+    "see also",
     "see",
     "granted",
     "dismissed",
