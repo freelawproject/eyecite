@@ -1460,5 +1460,23 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # Better support Louisiana with proper extraction of defendant
+            (
+                """objection. <i>Our Lady of the Lake Hosp. v. Vanner,</i> 95-0754, p. 3 (La.App. 1 Cir. 12/15/95), 669 So.2d 463, 464;""",
+                [
+                    case_citation(
+                        page="463",
+                        volume="669",
+                        reporter="So.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Our Lady of the Lake Hosp.",
+                            "defendant": "Vanner",
+                            "pin_cite": "464",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
