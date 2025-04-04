@@ -201,11 +201,7 @@ def add_defendant(citation: CaseCitation, document: Document) -> None:
                 citation.year = int(year)
                 citation.metadata.year = year
             citation.metadata.defendant = defendant
-            if (
-                document.markup_text
-                and document.plain_to_markup
-                and document.markup_to_plain
-            ):
+            if document.markup_text:
                 new_defendant = update_defendant_markup(
                     document, stop_word
                 ).strip()
@@ -499,10 +495,7 @@ def extract_full_text_from_markup(
     """
 
     # Convert plain text offset to a markup offset. and bail if no markup
-    if not document.plain_to_markup or not document.markup_to_plain:
-        return base_offset, tag_text
-
-    markup_start = document.plain_to_markup.update(base_offset, bisect_right)
+    markup_start = document.plain_to_markup.update(base_offset, bisect_right)  # type: ignore # noqa
     filtered_results = [
         r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
     ]
@@ -511,7 +504,7 @@ def extract_full_text_from_markup(
         return base_offset, tag_text
 
     new_start = filtered_results[0][1]
-    plain_text_start = document.markup_to_plain.update(new_start, bisect_right)
+    plain_text_start = document.markup_to_plain.update(new_start, bisect_right)  # type: ignore # noqa
 
     # If a plain_text_end is provided, extract text from plain_text.
     if plain_text_end is not None:
@@ -546,20 +539,17 @@ def update_defendant_markup(
 
     Returns: New defendant text if any
     """
-    if not document.plain_to_markup or not document.markup_to_plain:
-        return ""
-
     # add 3 char to account for the star pagination whitespace
     # <i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">
     # *528</span> 342 U. S. 36, 41
-    markup_start = document.plain_to_markup.update(
+    markup_start = document.plain_to_markup.update( # type: ignore # noqa
         stop_word.start + 3, bisect_right
     )
     filtered_results = [
         r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
     ]
     if filtered_results:
-        defendant_end = document.markup_to_plain.update(
+        defendant_end = document.markup_to_plain.update( # type: ignore # noqa
             filtered_results[0][2], bisect_right
         )
 
