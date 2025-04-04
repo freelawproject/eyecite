@@ -15,6 +15,7 @@ Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
 - Simplifies is parallel logic
 - moves is parallel citation to full case citation 
+- remove add defendant for separate html and plain text processing 
 
 Fixes:
 - Fixes run on extra regex captures by capping at semicolons
