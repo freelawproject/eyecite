@@ -171,15 +171,6 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             title_starting_index = index - 1
             pre_cite_year = str(word)[1:5]
             continue
-        if str(word).startswith("("):
-            start_index = index
-            candidate_case_name = "".join(
-                str(w) for w in words[start_index:title_starting_index]
-            )
-            # Break case name search if a word (not year) begins with a
-            # parenthesis
-            break
-
         if (
             str(word).endswith(";")
             or str(word).endswith("”")
@@ -191,17 +182,30 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             )
             # Break if a word ends with a semicolon, or quotes
             break
+        if str(word).startswith("("):
+            start_index = index
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            # Break case name search if a word (not year) begins with a
+            # parenthesis
+            break
         if (
             v_token is not None
             and not str(word)[0].isupper()
             and str(word).strip()
+            and str(word) not in ["of", "the", "an", "and"]
         ):
             start_index = index + 2
             candidate_case_name = "".join(
                 str(w) for w in words[start_index:title_starting_index]
             )
-            # Break if no v token has been found, and we run into a lower case
-            # word
+            candidate_case_name = re.sub(
+                r"^(of|the|an|and)\s+",
+                "",
+                candidate_case_name,
+            )
+
             break
         if isinstance(word, StopWordToken) and word.groups["stop_word"] == "v":
             v_token = word
@@ -213,6 +217,20 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             # the word before the v to the end of the title
             # We will use this if we dont find a stop word later
             continue
+        elif (
+            v_token is not None
+            and str(word)[0].isupper()
+            and len(str(word)) > 4
+            and str(word).endswith(".")
+        ):
+            # I dont have a good solution here but it the sentence befoer the
+            # citation ends in a capitlized word,
+            # we should just bail if its longer than three characters
+            start_index = index + 2
+            candidate_case_name = "".join(
+                [str(w) for w in words[start_index:title_starting_index]]
+            )
+            break
         elif isinstance(word, StopWordToken):
             start_index = index + 2
             candidate_case_name = "".join(
@@ -224,7 +242,9 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             v_token is None
             and not str(word)[0].isupper()
             and str(word).strip()
-            and str(word[0]).isalpha()
+            and str(word)[0].isalpha()
+            and str(word) not in ["of", "the", "an", "and"]
+            and len(str(word)) > 2
         ):
             start_index = index + 2
             candidate_case_name = "".join(
@@ -241,10 +261,17 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             # But - lets be cautious and throw it away if it has numbers.
             # This is trying to balance between, someone parsing just a
             # single citation vs extracting from entire texts.
+            # if we get to the end - ensure the last word isnt lower cased
             candidate_case_name = "".join(
                 [str(w) for w in words[index:title_starting_index]]
             )
             start_index = 0
+            candidate_case_name = re.sub(
+                r"^(of|the|an|and)",
+                "",
+                candidate_case_name,
+                flags=re.IGNORECASE,
+            )
             if re.search(r"\b\d+\b", candidate_case_name):
                 candidate_case_name = None
 
@@ -367,7 +394,15 @@ def find_case_name_in_html(
                 case_name, start = convert_html_to_plain_text_and_loc(
                     document, plaintiff_tags
                 )
-                plaintiff, defendant = case_name.split(" v. ")
+                pattern = r"\s+vs?\.?\s+"
+                splits = re.split(
+                    pattern, case_name, maxsplit=1, flags=re.IGNORECASE
+                )
+                if len(splits) == 2:
+                    plaintiff, defendant = splits
+                else:
+                    plaintiff, defendant = "", case_name
+
             else:
                 plaintiff, start = convert_html_to_plain_text_and_loc(
                     document, plaintiff_tags

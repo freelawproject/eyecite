@@ -467,6 +467,32 @@ class FindTest(TestCase):
                                       'defendant': 'Rogers',
                                       'year': '1984'})]
              ),
+            #
+            ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
+             [case_citation(volume='398', reporter='P. 2d', page='251',
+                            metadata={'plaintiff': 'Bean',
+                                      'defendant': 'State, — Nev. —'})]
+             ),
+            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
+            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
+            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+
+            # Capitlized to end before quote
+            ('Per Curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+
             # Square brackets around year and court
             ('Mavrovich v Vanderpool, 427 F Supp 2d 1084 [D Kan 2006]',
              [case_citation(volume='427', reporter='F Supp 2d', page='1084',
