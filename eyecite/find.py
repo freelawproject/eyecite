@@ -4,9 +4,10 @@ from typing import Callable, Iterable, List, Optional, Type, Union, cast
 
 from eyecite.helpers import (
     disambiguate_reporters,
-    extract_full_text_from_markup,
     extract_pin_cite,
     filter_citations,
+    find_case_name,
+    find_case_name_in_html,
     joke_cite,
     match_on_tokens,
 )
@@ -30,7 +31,7 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
+from eyecite.regexes import SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 
@@ -266,60 +267,29 @@ def _extract_shortform_citation(
     Shortform 2: 515 U.S., at 241
     Shortform 3: Adarand at 241, 515 U.S.
     """
-    # get antecedent word
-    antecedent_guess = None
-    m = match_on_tokens(
-        document.words,
-        index - 1,
-        SHORT_CITE_ANTECEDENT_REGEX,
-        strings_only=True,
-        forward=False,
-    )
 
-    if m:
-        ante_start, ante_end = m.span()
-        antecedent_length = ante_end - ante_start
-        antecedent_guess = m["antecedent"].strip()
-    else:
-        antecedent_length = 0
-
-    # Get pin_cite
     cite_token = cast(CitationToken, document.words[index])
     pin_cite, span_end, parenthetical = extract_pin_cite(
         document.words, index, prefix=cite_token.groups["page"]
     )
     span_end = span_end if span_end else 0
-
-    # make ShortCaseCitation
     citation = ShortCaseCitation(
         cite_token,
         index,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
-        full_span_start=cite_token.start - antecedent_length,
         full_span_end=max([span_end, cite_token.end]),
         metadata={
-            "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
             "parenthetical": parenthetical,
         },
     )
-    if (
-        antecedent_guess
-        and document.markup_text
-        and citation.full_span_start is not None
-    ):
-        # If text is markup and has an antecedent guess
-        # look if an emphasis tag wraps around the text  if so
-        # use that tag text
-        updated_start, cleaned_text = extract_full_text_from_markup(
-            document,
-            citation.full_span_start,
-            antecedent_guess,
-        )
-        citation.full_span_start = updated_start
-        citation.metadata.antecedent_guess = cleaned_text
+
+    if document.markup_text:
+        find_case_name_in_html(citation, document, short=True)
+    else:
+        find_case_name(citation, document, short=True)
 
     # add metadata
     citation.guess_edition()

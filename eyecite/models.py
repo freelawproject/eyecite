@@ -525,15 +525,20 @@ class FullCaseCitation(CaseCitation, FullCitation):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import (
-            add_defendant,
             add_post_citation,
             add_pre_citation,
+            find_case_name,
+            find_case_name_in_html,
         )
 
         add_post_citation(self, document.words)
-        add_defendant(self, document)
-        add_pre_citation(self, document)
 
+        if document.markup_text:
+            find_case_name_in_html(self, document)
+        else:
+            find_case_name(self, document)
+
+        add_pre_citation(self, document)
         self.guess_court()
         super().add_metadata(document)
 
