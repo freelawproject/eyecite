@@ -17,8 +17,8 @@ entire list by downloading the output.csv file linked above.
 |  5329531   |                |           German Savings Bank           |
 |  1917661   |                |                  Vanner                 |
 |  1662392   |                |                  Belton                 |
-|  1783747   |                |                Potters II               |
 |  1783747   |                |        Parish of East Baton Rouge       |
+|  1783747   |                |                Potters II               |
 |  1537257   |                |                St. Cloud                |
 |  1717506   |                |                Blue Bell                |
 |  2631184   |                |    Hilltop Terrace Homeowner's Ass'n    |
@@ -29,8 +29,8 @@ entire list by downloading the output.csv file linked above.
 |  1431414   |                |      Memphis Development Foundation     |
 |   203607   |                |         Fustaguio do Nascimento         |
 |  1433305   |                |                 Grayson                 |
-|   901384   |                |                 Setliff I               |
 |   901384   |                |                Setliff I                |
+|   901384   |                |                 Setliff I               |
 |  6596585   |    Beckwith    |                                         |
 |  6776333   |                |                  Susser                 |
 
@@ -48,6 +48,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/cc7cd1d594328588fa81d2da199b256896eae2d1.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/e193ee56e5e1fc5cc1eba8426689457cd0275b3e.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
