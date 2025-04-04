@@ -542,14 +542,14 @@ def update_defendant_markup(
     # add 3 char to account for the star pagination whitespace
     # <i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">
     # *528</span> 342 U. S. 36, 41
-    markup_start = document.plain_to_markup.update( # type: ignore # noqa
+    markup_start = document.plain_to_markup.update(  # type: ignore # noqa
         stop_word.start + 3, bisect_right
     )
     filtered_results = [
         r for r in document.emphasis_tags if r[1] <= markup_start < r[2]
     ]
     if filtered_results:
-        defendant_end = document.markup_to_plain.update( # type: ignore # noqa
+        defendant_end = document.markup_to_plain.update(  # type: ignore # noqa
             filtered_results[0][2], bisect_right
         )
 
