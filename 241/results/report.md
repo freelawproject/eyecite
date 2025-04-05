@@ -24,9 +24,9 @@ entire list by downloading the output.csv file linked above.
 |  1537257   |                |                  St. Cloud                   |
 |  1717506   |                |                  Blue Bell                   |
 |  2357843   |                |   State ex rel. Utility Consumers Council    |
+|  2414924   |                |            City of Boerne at 2170            |
 |  2414924   | Boerne at 2170 |                                              |
 |  2414924   |                |                City of Boerne                |
-|  2414924   |                |            City of Boerne at 2170            |
 |  2410732   |                |                   Williams                   |
 |  1431414   |                |        Memphis Development Foundation        |
 |   280035   |     Reece      |                                              |
@@ -55,6 +55,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/870d358ba35f298bd749f72d2c8d1d353445a7d7.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/2f893f99f167f198979acc0d19241add25bc59d1.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
