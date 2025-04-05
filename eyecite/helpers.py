@@ -290,7 +290,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
 
         defendant = strip_stop_words(defendant)
 
-        clean_def =  defendant.strip(", ").strip()
+        clean_def = defendant.strip(", ").strip()
         if clean_def:
             if short is False and clean_def:
                 citation.metadata.defendant = clean_def

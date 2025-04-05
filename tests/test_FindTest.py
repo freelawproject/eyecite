@@ -1566,21 +1566,22 @@ class FindTest(TestCase):
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
             # can we extract out the citation if its not wrapped in html but in html
-            ("dentification. Stovall v. Denno, 388 U.S. 293, ",
-             [
-                 case_citation(
-                     page="293",
-                     volume="388",
-                     reporter="U.S.",
-                     short=False,
-                     metadata={
-                         "plaintiff": "Stovall",
-                         "defendant": "Denno",
-                     },
-                 ),
-             ],
-             {"clean_steps": ["html", "all_whitespace"]},
-             ),
+            (
+                "dentification. Stovall v. Denno, 388 U.S. 293, ",
+                [
+                    case_citation(
+                        page="293",
+                        volume="388",
+                        reporter="U.S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Stovall",
+                            "defendant": "Denno",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
             # can we remove see also
             (
                 """<em>see also Cass v. Stephens</em>,\r\n156 S.W.3d 38""",

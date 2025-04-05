@@ -538,7 +538,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
         else:
             find_case_name(self, document)
 
-        if self.metadata.defendant == None:
+        if self.metadata.defendant is None:
             find_case_name(self, document)
 
         add_pre_citation(self, document)
