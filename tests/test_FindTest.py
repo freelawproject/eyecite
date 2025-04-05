@@ -1338,7 +1338,9 @@ class FindTest(TestCase):
                         volume="242",
                         short=False,
                         metadata={
-                            "antecedent_guess": "Foy",
+                            "plaintiff": "Thrift Funds Canal, Inc.",
+                            "defendant": "Foy",
+                            "pin_cite": "257",
                             "year": "1970",
                         },
                     )
@@ -1356,8 +1358,6 @@ class FindTest(TestCase):
                         reporter="U.S.",
                         year=2004,
                         metadata={
-                            "plaintiff": None,
-                            "defendant": None,
                             "court": "scotus",
                         },
                     )
@@ -1565,6 +1565,22 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            # can we extract out the citation if its not wrapped in html but in html
+            ("dentification. Stovall v. Denno, 388 U.S. 293, ",
+             [
+                 case_citation(
+                     page="293",
+                     volume="388",
+                     reporter="U.S.",
+                     short=False,
+                     metadata={
+                         "plaintiff": "Stovall",
+                         "defendant": "Denno",
+                     },
+                 ),
+             ],
+             {"clean_steps": ["html", "all_whitespace"]},
+             ),
             # can we remove see also
             (
                 """<em>see also Cass v. Stephens</em>,\r\n156 S.W.3d 38""",

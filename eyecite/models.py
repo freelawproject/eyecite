@@ -538,6 +538,9 @@ class FullCaseCitation(CaseCitation, FullCitation):
         else:
             find_case_name(self, document)
 
+        if self.metadata.defendant == None:
+            find_case_name(self, document)
+
         add_pre_citation(self, document)
         self.guess_court()
         super().add_metadata(document)

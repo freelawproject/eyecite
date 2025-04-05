@@ -289,22 +289,25 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             defendant = candidate_case_name
 
         defendant = strip_stop_words(defendant)
-        if short is False:
-            citation.metadata.defendant = defendant.strip(", ").strip()
-        else:
-            citation.metadata.antecedent_guess = (
-                defendant.strip(" ").strip(",").strip("(")
-            )
 
-        offset = (
-            len(
-                "".join(
-                    str(w) for w in words[start_index : citation.index - 1]
+        clean_def =  defendant.strip(", ").strip()
+        if clean_def:
+            if short is False and clean_def:
+                citation.metadata.defendant = clean_def
+            else:
+                citation.metadata.antecedent_guess = (
+                    defendant.strip(" ").strip(",").strip("(")
                 )
+
+            offset = (
+                len(
+                    "".join(
+                        str(w) for w in words[start_index : citation.index - 1]
+                    )
+                )
+                + 1
             )
-            + 1
-        )
-        citation.full_span_start = citation.span()[0] - offset
+            citation.full_span_start = citation.span()[0] - offset
 
         if pre_cite_year:
             # found pre citation year, store it
