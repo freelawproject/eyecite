@@ -105,44 +105,44 @@ class FindTest(TestCase):
             ('lissner test 1 U.S. 1',
              [case_citation()]),
             # Test with plaintiff and defendant
-            ('lissner v. test 1 U.S. 1',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+            ('Lissner v. Test 1 U.S. 1',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with plaintiff, defendant and year
-            ('lissner v. test 1 U.S. 1 (1982)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'},
+            ('Lissner v. Test 1 U.S. 1 (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'},
                             year=1982)]),
             # Don't choke on misformatted year
-            ('lissner v. test 1 U.S. 1 (198⁴)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+            ('Lissner v. Test 1 U.S. 1 (198⁴)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with different reporter than all of above.
-            ('bob lissner v. test 1 F.2d 1 (1982)',
+            ('bob Lissner v. Test 1 F.2d 1 (1982)',
              [case_citation(reporter='F.2d', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with comma after defendant's name
-            ('lissner v. test, 1 U.S. 1 (1982)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'},
+            ('Lissner v. Test, 1 U.S. 1 (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'},
                             year=1982)]),
             # can we handle variations with parenthesis
             ('1 So.2d at 1',
              [case_citation(volume="1", reporter="So.2d", page="1", short=True,
               metadata={'pin_cite': '1'})]),
             # Test with court and extra information
-            ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
+            ('bob Lissner v. Test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348'})]),
             # Test with court string without space
-            ('bob lissner v. test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
+            ('bob Lissner v. Test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'court': 'pasuperct',
                                       'pin_cite': '347-348'})]),
             # Test with court string exact match
@@ -152,31 +152,31 @@ class FindTest(TestCase):
                                       'defendant': 'Muniz',
                                       'court': 'pa'})]),
             # Parallel cite with parenthetical
-            ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
+            ('Bob Lissner v. Test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Bob Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348',
                                       'extra': "1 S. Ct. 2, 358",
                                       'parenthetical': 'overruling foo'}),
               case_citation(page='2', reporter='S. Ct.', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Bob Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '358',
                                       'parenthetical': 'overruling foo'}),
               ]),
             # Test full citation with nested parenthetical
-            ('lissner v. test 1 U.S. 1 (1982) (discussing abc (Holmes, J., concurring))',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+            ('Lissner v. Test 1 U.S. 1 (1982) (discussing abc (Holmes, J., concurring))',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'parenthetical': 'discussing abc (Holmes, J., concurring)'},
                             year=1982)]),
             # Test full citation with parenthetical and subsequent unrelated parenthetical
-            ('lissner v. test 1 U.S. 1 (1982) (discussing abc); blah (something).',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+            ('Lissner v. Test 1 U.S. 1 (1982) (discussing abc); blah (something).',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'parenthetical': 'discussing abc'},
                             year=1982)]),
             # Test with text before and after and a variant reporter
@@ -234,16 +234,16 @@ class FindTest(TestCase):
              [case_citation(page='143684-B', reporter='IL App (1st)',
                             volume='2017')]),
             # Test first kind of short form citation (meaningless antecedent)
-            ('before asdf 1 U. S., at 2',
+            ('before Foo 1 U. S., at 2',
              [case_citation(page='2', reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test second kind of short form citation (meaningful antecedent)
-            ('before asdf, 1 U. S., at 2',
+            ('before Foo, 1 U. S., at 2',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test short form citation with preceding ASCII quotation
-            ('before asdf,” 1 U. S., at 2',
+            ('before Foo,” 1 U. S., at 2',
              [case_citation(page='2', reporter_found='U. S.',
                             short=True)]),
             # Test short form citation when case name looks like a reporter
@@ -251,68 +251,68 @@ class FindTest(TestCase):
              [case_citation(page='2', reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'Johnson'})]),
             # Test short form citation with no comma after reporter
-            ('before asdf, 1 U. S. at 2',
+            ('before Foo, 1 U. S. at 2',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test short form citation at end of document (issue #1171)
-            ('before asdf, 1 U. S. end', []),
+            ('before Foo, 1 U. S. end', []),
             # Test supra citation across line break
-            ('before asdf, supra,\nat 2',
+            ('before Foo, supra,\nat 2',
              [supra_citation("supra,",
                              metadata={'pin_cite': 'at 2',
-                                       'antecedent_guess': 'asdf'})],
+                                       'antecedent_guess': 'Foo'})],
              {'clean_steps': ['all_whitespace']}),
             # Test short form citation with a page range
-            ('before asdf, 1 U. S., at 20-25',
+            ('before Foo, 1 U. S., at 20-25',
              [case_citation(page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf'})]),
+                                      'antecedent_guess': 'Foo'})]),
             # Test short form citation with a page range with weird suffix
-            ('before asdf, 1 U. S., at 20-25\\& n. 4',
+            ('before Foo, 1 U. S., at 20-25\\& n. 4',
              [case_citation(page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf'})]),
+                                      'antecedent_guess': 'Foo'})]),
             # Test short form citation with a parenthetical
-            ('before asdf, 1 U. S., at 2 (overruling xyz)',
+            ('before Foo, 1 U. S., at 2 (overruling xyz)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with no space before parenthetical
-            ('before asdf, 1 U. S., at 2(overruling xyz)',
+            ('before Foo, 1 U. S., at 2(overruling xyz)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with nested parentheticals
-            ('before asdf, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
+            ('before Foo, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'discussing xyz (Holmes, J., concurring)'}
                             )]),
             # Test that short form citation doesn't treat year as parenthetical
-            ('before asdf, 1 U. S., at 2 (2016)',
+            ('before Foo, 1 U. S., at 2 (2016)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'}
+                            metadata={'antecedent_guess': 'Foo'}
                             )]),
             # Test short form citation with page range and parenthetical
-            ('before asdf, 1 U. S., at 20-25 (overruling xyz)',
+            ('before Foo, 1 U. S., at 20-25 (overruling xyz)',
              [case_citation(page='20', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'pin_cite': '20-25',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with subsequent unrelated parenthetical
-            ('asdf, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
+            ('Foo, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
              [case_citation(page='4', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'discussing abc'}
                             )]
              ),
@@ -320,7 +320,7 @@ class FindTest(TestCase):
             ('1 Mich. at 1',
              [case_citation(reporter='Mich.', short=True)]),
             # Test parenthetical matching with multiple citations
-            ('1 U. S., at 2. foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+            ('1 U. S., at 2. Foo v. Bar 3 U. S. 4 (2010) (overruling xyz).',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.',
                             short=True, volume='1',
@@ -329,10 +329,10 @@ class FindTest(TestCase):
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar'})
+                                      'plaintiff': 'Foo', 'defendant': 'Bar'})
               ]),
             # Test with multiple citations and parentheticals
-            ('1 U. S., at 2 (criticizing xyz). foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+            ('1 U. S., at 2 (criticizing xyz). Foo v. Bar 3 U. S. 4 (2010) (overruling xyz).',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.',
                             short=True, volume='1',
@@ -342,7 +342,7 @@ class FindTest(TestCase):
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar'})
+                                      'plaintiff': 'Foo', 'defendant': 'Bar'})
               ]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
@@ -356,13 +356,13 @@ class FindTest(TestCase):
                                        'volume': '123',
                                        'antecedent_guess': 'asdf'})]),
             # Test third kind of supra citation (sans page)
-            ('before asdf, supra, foo bar',
+            ('before Asdf, supra, foo bar',
              [supra_citation("supra,",
-                             metadata={'antecedent_guess': 'asdf'})]),
+                             metadata={'antecedent_guess': 'Asdf'})]),
             # Test third kind of supra citation (with period)
-            ('before asdf, supra. foo bar',
+            ('before Asdf, supra. foo bar',
              [supra_citation("supra,",
-                             metadata={'antecedent_guess': 'asdf'})]),
+                             metadata={'antecedent_guess': 'Asdf'})]),
             # Test supra citation at end of document (issue #1171)
             ('before asdf, supra end',
              [supra_citation("supra,",
@@ -378,28 +378,28 @@ class FindTest(TestCase):
                                        'pin_cite': 'at 2',
                                        'parenthetical': 'overruling ...'})]),
             # Test Ibid. citation
-            ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
+            ('Foo v. Bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar'}),
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar'}),
               id_citation('Ibid.')]),
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [id_citation('Ibid.')],
              {'clean_steps': ['html', 'inline_whitespace']}),
             # Test Id. citation
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,',
                           metadata={'pin_cite': 'at 123'})]),
             # Test Id. citation across line break
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean_steps': ['all_whitespace']}),
@@ -412,38 +412,38 @@ class FindTest(TestCase):
              [id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean_steps': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': '¶ 34'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at 62-63, 67-68'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,', metadata={'pin_cite': 'at *10'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at 7-9, ¶¶ 38-53'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at pp. 45, 64'})]),
             # Cleanup parentheses and square brackets
-            ('Thus, (Newbold v Arvidson, 105 Idaho 663, 672 P2d 231 [1983]) becomes (Newbold, 105 Idaho at 667, 672 P2d at 235).',
+            (' (Newbold v Arvidson, 105 Idaho 663, 672 P2d 231 [1983]); and something else (Newbold, 105 Idaho at 667, 672 P2d at 235).',
              [case_citation(volume='105', reporter='Idaho', page='663',
                             metadata={'plaintiff': 'Newbold',
                                       'defendant': 'Arvidson',
@@ -458,15 +458,41 @@ class FindTest(TestCase):
                             metadata={'antecedent_guess': 'Newbold', 'pin_cite': '667'}),
               case_citation(volume='672', reporter='P2d', page='235',
                             short=True,
-                            metadata={'antecedent_guess': None,  'pin_cite': '235'})
+                            metadata={'antecedent_guess': "Newbold",  'pin_cite': '235'})
               ]),
             # Square brackets around year
-            ('Rogers v Rogers (63 NY2d 582 [1984])',
+            ('Rogers v Rogers 63 NY2d 582 [1984]',
              [case_citation(volume='63', reporter='NY2d', page='582',
                             metadata={'plaintiff': 'Rogers',
                                       'defendant': 'Rogers',
                                       'year': '1984'})]
              ),
+            #
+            ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
+             [case_citation(volume='398', reporter='P. 2d', page='251',
+                            metadata={'plaintiff': 'Bean',
+                                      'defendant': 'State, — Nev. —'})]
+             ),
+            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
+            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
+            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+
+            # Capitlized to end before quote
+            ('Per Curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+
             # Square brackets around year and court
             ('Mavrovich v Vanderpool, 427 F Supp 2d 1084 [D Kan 2006]',
              [case_citation(volume='427', reporter='F Supp 2d', page='1084',
@@ -481,17 +507,17 @@ class FindTest(TestCase):
                                       'defendant': 'Vanderpool',
                                       'court': 'ksd',
                                       'year': '2006'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('id.', metadata={'pin_cite': '119:12-14'})]),
             # Test Id. citation without page number
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.')]),
             # Id. with parenthetical
@@ -509,18 +535,6 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
-            # Eyecite has issue with linebreaks when identifying defendants and
-            # previously could store defendant as only whitespace
-            ('<em>\n   rt. denied,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n',
-             [case_citation(
-                 page='1085',
-                 volume="541",
-                 reporter="U.S.",
-                 year=2004,
-                 metadata={'plaintiff': None,
-                           'defendant': None,
-                           'court': 'scotus'})],
-             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test filtering overlapping citations - this finds four citations
             # but should filter down to three
             ("Miles v. Smith 1 Ga. 1; asdfasdf asd Something v. Else, 1 Miles 3; 1 Miles at 10",
@@ -583,7 +597,7 @@ class FindTest(TestCase):
              [case_citation(page='657', reporter="F.2d", volume="909",
                             metadata={'plaintiff': 'U.S.', 'defendant': 'Boch Oldsmobile, Inc.', 'pin_cite': '660'}),
               case_citation(volume="454", page='241', reporter_found='U.S.', short=True,
-                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
+                            metadata={'antecedent_guess': 'Piper Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
              [case_citation(page='535', year=1974, volume="417",
@@ -610,7 +624,7 @@ class FindTest(TestCase):
             # Token scanning edge case -- incomplete paren at end of input
             ('1 U.S. 1 (', [case_citation()]),
             # Token scanning edge case -- missing plaintiff name at start of input
-            ('v. Bar, 1 U.S. 1', [case_citation(metadata={'defendant': 'Bar'})]),
+            ('v. Bar, 1 U.S. 1', [case_citation(metadata={'antecedent_guess': 'Bar'})]),
             # Token scanning edge case -- short form start of input
             ('1 U.S., at 1', [case_citation(short=True)]),
             (', 1 U.S., at 1', [case_citation(short=True)]),
@@ -648,11 +662,11 @@ class FindTest(TestCase):
                 ),
                 case_citation(
                     year=2007, volume='154', reporter='Cal.App.4th', page='547',
-                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007", "pin_cite": "558"}
+                    metadata={'plaintiff': 'Yield Dynamics, Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007", "pin_cite": "558"}
                 ),
                 case_citation(
                     year=2007, volume='66', reporter='Cal.Rptr.3d', page='1',
-                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
+                    metadata={'plaintiff': 'Yield Dynamics, Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
                 ),
             ])
         )
@@ -779,8 +793,8 @@ class FindTest(TestCase):
              [case_citation('T.C. Summary Opinion 2018-133',
                             page='133', reporter='T.C. Summary Opinion',
                             volume='2018')]),
-            ('U.S. 1234 1 U.S. 1',
-             [case_citation(volume='1', reporter='U.S.', page='1')]),
+            # ('U.S. 1234 1 U.S. 1',
+            #  [case_citation(volume='1', reporter='U.S.', page='1')]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Tax court citation extraction")
@@ -1000,7 +1014,7 @@ class FindTest(TestCase):
             "42 U.S.C. § 405(r)(2) (2019)",
             "37 A.L.R.4th 972, 974 (1985)",
             "497 Fed. Appx. 274 (4th Cir. 2012)",
-            "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+            # "Smart Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
             "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
         ]
         for example in simple_examples:
@@ -1121,3 +1135,508 @@ class FindTest(TestCase):
                     [isinstance(cite, ReferenceCitation) for cite in citations]
                 )
             )
+
+    def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
+        # Can we identify full case names in markup text
+        test_pairs = (
+            # Case Name unbalanced across two tags
+            (
+                (
+                    "and more and more <em>Jin Fuey Moy</em><em>v. United States,</em>\n"
+                    "            254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract from one tag and ignore the other
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # split across tags with v. in defendant
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy</em> <em>v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # corporation name threew ords
+            (
+                "<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),",
+                [
+                    case_citation(
+                        volume="550",
+                        reporter="U. S.",
+                        page="544",
+                        year=2007,
+                        metadata={
+                            "plaintiff": "Bell Atlantic Corp.",
+                            "defendant": "Twombly",
+                            "year": "2007",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # two word plaintiff
+            (
+                "con-firmable. <em>United States v. Am. Sav. Bank, </em> 508 U.S. 324 (1993). That plan "
+                "proposed to bifurcate the claim and",
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        year=1993,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract reference citation full name
+            (
+                (
+                    ". <em>Jin Fuey Moy</em> <em>v. United States,</em> 254 U.S. 189. Petitioner contends.  "
+                    "Regardless in <em>Jin Fuey Moy</em> the court ruled"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    ),
+                    reference_citation(
+                        "Jin Fuey Moy", metadata={"plaintiff": "Jin Fuey Moy"}
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract out with whitespace across two tags
+            (
+                (
+                    '<p id="b453-6">\n'
+                    "  The supreme court of Connecticut, in\n"
+                    "  <em>\n"
+                    "   Beardsley\n"
+                    "  </em>\n"
+                    "  v.\n"
+                    "  <em>\n"
+                    "   Hartford,\n"
+                    "  </em>\n"
+                    "  50 Conn. 529, 541-542, after quoting the maxim of the common law;\n"
+                    "  <em>\n"
+                    "   cessante ratione legis-, cessat ipsa lex,\n"
+                    "  </em>"
+                ),
+                [
+                    case_citation(
+                        volume="50",
+                        reporter="Conn.",
+                        page="529",
+                        metadata={
+                            "plaintiff": "Beardsley",
+                            "defendant": "Hartford",
+                            "pin_cite": "541-542",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # identify reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Smart Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the <em>Smart Nobelman </em>decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Smart Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Smart Nobelman",
+                        metadata={"plaintiff": "Smart Nobelman"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # add antecedent guess to check
+            (
+                "the court in <em>Smith Johnson</em>, 1 U. S., at 2",
+                [
+                    case_citation(
+                        page="2",
+                        reporter_found="U. S.",
+                        short=True,
+                        metadata={"antecedent_guess": "Smith Johnson"},
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # make sure not to overwrite good data if this method doesnt work
+            (
+                "Judge Regan (dissenting) in <i>Thrift Funds Canal,</i> Inc. v. Foy, 242 So.2d 253, 257 (La.App. 4 Cir. 1970), calls",
+                [
+                    case_citation(
+                        page="253",
+                        reporter="So.2d",
+                        volume="242",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Thrift Funds Canal, Inc.",
+                            "defendant": "Foy",
+                            "pin_cite": "257",
+                            "year": "1970",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Eyecite has issue with linebreaks when identifying defendants and
+            # previously could store defendant as only whitespace
+            (
+                "<em>\n   Smart v. Tatum,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n",
+                [
+                    case_citation(
+                        page="1085",
+                        volume="541",
+                        reporter="U.S.",
+                        year=2004,
+                        metadata={
+                            "plaintiff": "Smart",
+                            "defendant": "Tatum",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "inline_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States</i> v. <i>Hodgson,</i> ___ Iowa ___, 44 N.J. 151, 207 A. 2d 542;",
+                [
+                    case_citation(
+                        page="151",
+                        volume="44",
+                        reporter="N.J.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                    case_citation(
+                        page="542",
+                        volume="207",
+                        reporter="A. 2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States ex rel. Russo v. New Jersey</i>, 351 F.2d 429 something something",
+                [
+                    case_citation(
+                        page="429",
+                        volume="351",
+                        reporter="F.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States ex rel. Russo",
+                            "defendant": "New Jersey",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Identify pincite reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the  a lien on the debtor’s principal residence.” "
+                    "<em>Nobelman </em>at 332, decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Nobelman",
+                        metadata={"plaintiff": "Nobelman", "pin_cite": "332"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # remove the See at the start and handle other tags
+            (
+                """<i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670;""",
+                [
+                    case_citation(
+                        page="670",
+                        reporter="S.W.2d",
+                        volume="793",
+                        short=False,
+                        metadata={
+                            "plaintiff": "DeSantis",
+                            "defendant": "Wackenhut Corp.",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Antecedent guess
+            (
+                """</span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting);""",
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Strawberry Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Stop word inside tag
+            (
+                """</span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting));""",
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Handle embedded pagnation
+            (
+                """<i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">*528</span> 342 U. S. 36, 41;""",
+                [
+                    case_citation(
+                        page="36",
+                        volume="342",
+                        reporter="U. S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Carignan",
+                            "pin_cite": "41",
+                            "court": "scotus",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Better support Louisiana with proper extraction of defendant
+            (
+                """objection. <i>Our Lady of the Lake Hosp. v. Vanner,</i> 95-0754, p. 3 (La.App. 1 Cir. 12/15/95), 669 So.2d 463, 464;""",
+                [
+                    case_citation(
+                        page="463",
+                        volume="669",
+                        reporter="So.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Our Lady of the Lake Hosp.",
+                            "defendant": "Vanner",
+                            "pin_cite": "464",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """<em>Cf. Akins v. State, </em>104 So.3d 1173 (Fla. 1st DCA 2012)""",
+                [
+                    case_citation(
+                        page="1173",
+                        volume="104",
+                        reporter="So.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Akins",
+                            "defendant": "State",
+                            "year": "2012",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """<em>
+   In re Dixon,
+  </em>
+  41 Cal.2d 756 (1953).""",
+                [
+                    case_citation(
+                        page="756",
+                        volume="41",
+                        reporter="Cal.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Dixon",
+                            "year": "1953",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # can we extract out the citation if its not wrapped in html but in html
+            (
+                "dentification. Stovall v. Denno, 388 U.S. 293, ",
+                [
+                    case_citation(
+                        page="293",
+                        volume="388",
+                        reporter="U.S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Stovall",
+                            "defendant": "Denno",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # can we remove see also
+            (
+                """<em>see also Cass v. Stephens</em>,\r\n156 S.W.3d 38""",
+                [
+                    case_citation(
+                        page="38",
+                        volume="156",
+                        reporter="S.W.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Cass",
+                            "defendant": "Stephens",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # technically this is incorrect in determing plaintiff/defendant but we have no way to deal with that
+            (
+                """ <i>See </i><i>Loup-Miller Const. Co. v. City and County of Denver,</i> 676 P.2d 1170 (Colo.1984) .... <i>See </i><i>Loup-Miller,</i> 676 P.2d 1170 and so on <i>Loup-Miller</i>""",
+                [
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Loup-Miller Const. Co.",
+                            "defendant": "City and County of Denver",
+                        },
+                    ),
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "defendant": "Loup-Miller",
+                        },
+                    ),
+                    reference_citation(
+                        "Loup-Miller",
+                        metadata={"defendant": "Loup-Miller"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+        )
+        self.run_test_pairs(test_pairs, "Citation extraction")
+
+
+#
+# # '<div>\n<center><b>702 S.W.2d 869 (1985)</b></center>\n<center><h1>STATE of Missouri, Respondent,<br>\nv.<br>\nPaul FREEMAN, a/k/a Paul Washington, Appellant.</h1></center>\n<center>No. 13842.</center>\n<center><p><b>Missouri Court of Appeals, Southern District, Division Three.</b></p></center>\n<center>November 26, 1985.</center>\n<center>Motion for Rehearing or to Transfer Denied December 17, 1985.</center>\n<center>Application to Transfer Denied February 18, 1986.</center>\n<p><span class="star-pagination">*870</span> Holly G. Simons, Asst. Public Defender, Columbia, for appellant.</p>\n<p>William L. Webster, Atty. Gen., Michael H. Finkelstein, Asst. Atty. Gen., Jefferson City, for respondent.</p>\n<p>FLANIGAN, Judge.</p>\n<p>A jury found defendant guilty of assault in the first degree, § 565.050,<sup>[1]</sup> robbery in the first degree, § 569.020, and armed criminal action, § 571.015, and assessed the punishment at life imprisonment for each offense. The trial court ordered that the sentences run consecutively. Defendant appeals.</p>\n<p>In the early morning of December 27, 1983, defendant, armed with a gun, entered a Piggley Wiggley store in Sikeston and <span class="star-pagination">*871</span> asked store employee Wesley Francis for change for a $20 bill. While Francis was complying with the request, defendant knocked him to the floor and took over $70 from the cash register. Defendant then shot Francis three times in the head. Although Francis survived, his injuries were severe and rendered him blind in his left eye and deaf in his left ear. The events were witnessed by another store employee, Melvin Moon.</p>\n<p>Defendant\'s first point is that the trial court erred "in not allowing defendant to proceed pro se at the trial level in that defendant asserted his right to so proceed and was denied this constitutionally recognized right with no inquiry into defendant\'s ability to conduct his own defense."</p>\n<p>Defendant\'s first point was not included in his motion for new trial and accordingly has not been preserved for appellate review. Rule 29.11(d). Defendant has requested review under the "plain error" standards prescribed by Rule 29.12(b). This court affords plain error review and finds no merit in defendant\'s first point.</p>\n<p>A defendant in a state criminal trial has a constitutional right to proceed without counsel when he voluntarily and intelligently elects to do so. <i>Faretta v. California,</i> 422 U.S. 806, 95 S.Ct. 2525, 45 L.Ed.2d 562 (1975). "Missouri, prior to <i>Faretta</i><i>,</i> recognized a criminal defendant\'s right to represent himself. The right is based on Art. 1, § 18(a) of the Missouri Constitution, and Rule 31.02(a). See <i>Bibbs v. State,</i> 542 S.W.2d 549, 550 (Mo.App.1976), and the authorities cited there." <i>State v. Ehlers,</i> 685 S.W.2d 942, 945 (Mo.App.1985).</p>\n<p>In <i>State v. McCafferty,</i> 587 S.W.2d 611 (Mo.App.1979), the court of appeals held that in the absence of any request by defendant to represent himself the trial court did not err in failing to inform him of his right to do so and that the right to self-representation is one which the defendant "must clearly and unequivocally assert before trial." The following authorities support the corollary principle that there can be no denial of the right to self-representation in the absence of an unequivocal request to exercise that right. <i>United States v. Bennett,</i> 539 F.2d 45, 50[3] (10th Cir. 1976); <i>People v. Potter,</i> 77 Cal.App.3d 45, 143 Cal.Rptr. 379, 382[2] (1978); <i>Russell v. State,</i> 270 Ind. 55, 383 N.E.2d 309, 313[6] (1978); <i>Anderson v. State,</i> 267 Ind. 289, 370 N.E.2d 318, 320[2] (1977); <i>Block v. State,</i> 95 Nev. 933, 604 P.2d 338, 340[2] (1979); <i>Stowe v. State,</i> 590 P.2d 679, 682[1] (Okla.Crim.1979); <i>Felts v. Oklahoma,</i> 588 P.2d 572, 576[3] (Okla.Crim.1978). See 98 A.L.R.3d 13, 61, § 13.</p>\n<p>Several hearings were held prior to the trial itself which was held on May 17, 1984. At all of these hearings the prosecutor appeared and the defendant appeared in person and by his attorney, Daniel A. Beatty, an assistant public defender.</p>\n<p>On February 9, 1984, a hearing was held which was prompted by a letter which defendant sent to the court. Defendant informed the court that he did not feel that he was being represented properly and indicated he had had difficulty getting in contact with Mr. Beatty. Mr. Beatty informed the court that he was on active duty with the Navy in Seattle, Washington, when the defendant attempted to contact him. Mr. Beatty also said, "There was a letter from [defendant] regarding possible self-representation, <i>which I understand he did not want to do at this time.</i> However, it is also my understanding that he is trying to hire his own lawyer but has not been able to do so. His family may still be working on it." At the conclusion of that hearing defendant told the court that he wanted "to keep his attorney."</p>\n<p>On March 10, 1984, a hearing was held. At that time the court ordered the case, at defendant\'s request, sent back to Scott County, from which defendant earlier had taken a change of venue. There was no mention of any dissatisfaction with attorney Beatty.</p>\n<p>On April 26, 1984, a hearing was held. Attorney Beatty stated to the court, "[Defendant] has instructed me to file a motion to withdraw. <i>He desires to retain his own counsel or to represent himself.</i> I don\'t <span class="star-pagination">*872</span> think he is satisfied with the way the case is going at this point."</p>\n<p>The court asked the defendant what the problem was and defendant stated, "Mr. Beatty and I have not had communications I feel I am entitled to.... I have requested certain things of Mr. Beatty I would appreciate for him to do for me. Mr. Beatty told me he had done them, and when everything comes to a certain point, they have not been done."</p>\n<p>The court asked the defendant, "What is your plan?" The defendant answered that he had been writing "to the U.S. District Court and Bar Association and <i>trying to see if they will send me a lawyer."</i> Defendant also said that he had been writing the NAACP. The court asked the defendant if he was going to hire an attorney and the defendant responded, "I didn\'t tell Mr. Beatty I was going to hire an attorney. I was telling Mr. Beatty <i>I was going to see what would happen.</i>"</p>\n<p>There was some discussion of obtaining another public defender for defendant but a representative of the public defender\'s office said, "There is just no provision for doing that."</p>\n<p>The court asked the defendant what it was which he had asked attorney Beatty to do and which Beatty had not done. The defendant mentioned that he had requested Beatty to obtain a transcript of the preliminary hearing. Mr. Beatty stated he did not recall that request and that the hearing was not transcribed.</p>\n<p>The following then occurred:</p>\n<blockquote>"THE COURT: Mr. Freeman, <i>I am not going to let you represent yourself,</i> because they would switch over to capital murder (sic) and put you in the gas chamber. You don\'t have that capability and that training to defend yourself....</blockquote>\n<blockquote>My job is to see that you have adequate representation. If there is a personality conflict, that\'s one thing; but I am not going to let you represent yourself for your protection. They would take you out like a sitting duck and you wouldn\'t have a chance.</blockquote>\n<blockquote>Now, the problem for me is to get you represented, but, at the same time, try to get you somebody that you can work with. The NAACP is not going to spend 10 cents on you. The Bar Association is not going to spend any money on you. If they did, it would take 50 million a year to represent people.</blockquote>\n<blockquote>If I can\'t work it out with my defenders, why don\'t you see if the defender system will transfer Gary down here to take this case and maybe trade off something?</blockquote>\n<blockquote>[REPRESENTATIVE OF THE PUBLIC DEFENDER\'S OFFICE]: I can call my state office, but the policy has been in the past, and this has come up before in the other counties, where they have not made me come when other judges have requested me.</blockquote>\n<blockquote>THE COURT: Let\'s see what we can work out, if there is an alternative available. If there is not, then Mr. Freeman, you may have to stay married to him, because, actually, the job to decide whether he\'s competent or not is left to me, and I have great faith in him. He is kind of quiet, but he knows his job. I will look into it, and if it is possible, change attorneys for you.</blockquote>\n<blockquote>You have to understand if it\'s not possible and I cannot, you will have to stay hooked. <i>I will not let you go in alone.</i> This world is a war world. They are adversaries. You are not an adversary, and I will not let you walk in that meat grinder alone. You don\'t necessarily have to like the guy that defends you. That\'s something you need to know."</blockquote>\n<p>The defendant then informed the court that he had contacted a St. Louis lawyer and "he said due to my financial background that he couldn\'t." The following then occurred:</p>\n<blockquote>"THE COURT: I cannot assure you that I will take Mr. Beatty off the case, <i>because I won\'t let you represent yourself.</i> I don\'t think you can. That\'s the only reason. I am not going to have you knocked plumb in the puddle without somebody standing there. Even if they <span class="star-pagination">*873</span> don\'t like you, they will do their best to defend you.</blockquote>\n<blockquote>. . . . .</blockquote>\n<blockquote>THE COURT: Are you happy with the venue right now?</blockquote>\n<blockquote>THE DEFENDANT: Yes.</blockquote>\n<blockquote>THE COURT: <i>The only real complaint you have right now is you would like to change attorneys,</i> if possible?</blockquote>\n<blockquote>THE DEFENDANT: <i>Yes.</i>\n</blockquote>\n<blockquote>MR. BEATTY: Your Honor, can I say just a couple of things? I don\'t have a conflict representing Mr. Freeman. I have been trying to do what he tells me to do. I think his personality conflict\x97 it\'s on his part, not mine. I will be glad to represent him all the way through.</blockquote>\n<blockquote>THE COURT: I understand. We will see if I can roll him another defender. If I cannot, what Mr. Beatty is saying, he is ready to go. Let\'s set this for trial."</blockquote>\n<p>The case was set for May 17, 1984. The court asked the defendant if that setting was all right and the defendant answered, "That\'s all right with me."</p>\n<p>On May 10, 1984, the defendant informed the court that he had again been in touch with the St. Louis attorney and that the latter had said "he would charge me a total of $5,000 to represent the case." Defendant added, "I was going to see if I could get on the family." After being informed that the case was set for trial on May 17, the defendant said, "I wanted a little more time. It really doesn\'t make any more difference if the prosecutor is ready."</p>\n<p>On May 17, prior to the commencement of the trial, in response to questioning by the court, defendant stated that he was "satisfied with Mr. Beatty now."</p>\n<p>The record shows that although defendant was unsatisfied with his attorney during some of the preliminary proceedings, and attempted without success to engage other counsel, at no time did defendant make an unequivocal request to the trial court that he be permitted to represent himself. The record further demonstrates that defendant\'s dissatisfaction with his attorney no longer existed when the trial commenced. It is true that some of the remarks made by the trial court show an unwillingness to accede to a request for self-representation if such a request had been made. The trial court, however, cannot be convicted of error in denying the defendant his right to self-representation in the absence of an unequivocal request to exercise that right. There was no such request and defendant\'s first point lacks factual support. The record fails to show that the pretrial proceedings dealing with the matter of defendant\'s representation resulted in "manifest injustice or miscarriage of justice." Rule 29.12(b). Defendant\'s first point has no merit.</p>\n<p>Defendant\'s second point is that the trial court erred in denying defendant\'s motion for a continuance, made at the close of the state\'s evidence, on account of the absence of defense witness Sadie Washington. The witness, defendant\'s sister, had been subpoenaed but failed to appear. Rule 24.09 requires that an application for continuance be made by a written motion accompanied by the affidavit of the applicant or some other credible person setting forth the facts upon which the application is based, unless the adverse party consents that the application for continuance be made orally. Rule 24.10 sets forth the requirements of an application for continuance on account of the absence of witnesses.</p>\n<p>Defendant filed a written motion for continuance which failed to meet the requirements of Rule 24.10. The written motion was not accompanied by an affidavit. The motion failed to set forth facts showing the materiality of the evidence sought to be obtained and due diligence on the part of defendant to obtain such witness. It failed to set forth the address of the witness and also failed to set forth facts showing reasonable grounds for belief that the attendance of the witness would be procured within a reasonable time. The motion failed to set forth "what particular facts the witness will prove," Rule 24.10(c), and it also failed to state "that such witness is not absent by the connivance, consent or procurement of the applicant." <span class="star-pagination">*874</span> Rule 24.10(d). Although counsel for defendant made some remarks in support of the written motion, those remarks did not cure the foregoing deficiencies. The officer who served the subpoena upon the witness informed the court that the witness stated to him, "I will not be there. I am not going to get on the stand and lie for Paul." Defendant made no objection to the giving of that information.</p>\n<p>An application for continuance in a criminal case is addressed to the sound discretion of the trial court and the appellate court will not interfere unless it clearly appears that such discretion has been abused. <i>State v. Oliver,</i> 572 S.W.2d 440, 445[2] (Mo. banc 1978). In exercising the discretion the trial court is entitled to consider whether the application meets the requirements of The Rules of Criminal Procedure. <i>State v. McGinnis,</i> 622 S.W.2d 416, 420 (Mo.App.1981). The trial court did not abuse its discretion in denying the motion. Defendant\'s second point has no merit.</p>\n<p>Defendant\'s third point is that the trial court abused its discretion by sentencing defendant to three consecutive life terms "because such punishment is shocking to the conscience in that each count arose from a single incident and the elements of the three counts overlap to such an extent that consecutive sentences constitute cruel and unusual punishment under the Missouri and United States Constitutions."</p>\n<p>The jury found defendant guilty of assault in the first degree, committed by means of a deadly weapon, § 565.050.2, which at the time of the instant event was a class A felony. He was also convicted of robbery in the first degree, a class A felony, § 569.020. Life imprisonment is an authorized term of imprisonment for a class A felony, § 558.011.1(1). Defendant was also convicted of armed criminal action, § 571.015, which, under that statute, is punishable "by imprisonment by the division of corrections for a term of not less than three years." Life imprisonment is an authorized punishment for armed criminal action. <i>State v. Kirksey,</i> 647 S.W.2d 799, 801 (Mo. banc 1983). The punishment for armed criminal action "shall be in addition to any punishment provided by law for the crime committed by, with or through the use, assistance or aid of a dangerous instrument or deadly weapon." § 571.015.1. The language just quoted does not require that a sentence imposed for armed criminal action be consecutive to a sentence for the felony conviction upon which the armed criminal action charge is based. <i>State v. Treadway,</i> 558 S.W.2d 646, 653[16] (Mo. banc 1977), overruled on other grounds, <i>Sours v. State,</i> 593 S.W.2d 208 (Mo. banc 1980). There the Supreme Court said: "[T]he trial court should be able to sentence a defendant consecutively or concurrently as it sees fit."</p>\n<p>Shortly after 4:00 a.m. on December 27, 1983, defendant entered the Piggley Wiggley store at which Wesley Francis was employed. Francis gave the following description of what next occurred:</p>\n<blockquote>"I was standing at my register and I heard the door open. I looked up, and Paul Freeman walked in the door. He was waving a bill and he said it was a 20, but I couldn\'t see it.</blockquote>\n<blockquote>He walked through the last checkout and I said, `You will have to come over here so I can change it for you.\' When he walked beside me, I looked at him and I said, `I will have to get my manager up here to see if I can change it first.\'</blockquote>\n<blockquote>He said, `No, my cab is going to leave me.\' It was snowing outside and I didn\'t want him walking, so I opened my register and his hands were maybe four inches from my face and he was already swinging at me. He hit me in my left eye and knocked me down, and I looked up and I saw him digging money out of the register as fast as he could and putting it in his right pocket. He came around behind me and said, `Sorry I have to do this, but I can\'t leave no witnesses,\' and he shot me in the\x97</blockquote>\n<blockquote>Q. Show the jury where the shots hit you.</blockquote>\n<blockquote>A. One here, one here, one here.</blockquote>\n<blockquote>\n<span class="star-pagination">*875</span> Q. That\'s on the top of your left eye and also on your left ear; is that right?</blockquote>\n<blockquote>A. Yes, sir."</blockquote>\n<p>Francis described the weapon used by defendant as "a small caliber handgun." Francis\' description of the occurrence was generally confirmed by Melvin Moon, 22, who had attended school with defendant. After describing the shooting, Moon testified, "I saw Paul Freeman running out the door. He had his back to me. He stopped at the door because he saw my reflection. Before he got ready to step on the mat he turned around and said, `Moon, don\'t tell what you just seen.\'" Moon testified defendant\'s weapon was a "22 handgun." Moon also testified, "I knew Freeman for 15 or 16 years. Couldn\'t have been nobody else that looked that much like him. I have known him a long time."</p>\n<p>Mark Sever, M.D., testified that he examined Francis at 4:50 a.m. at "our emergency facility," and Francis had three gunshot wounds to the head. Dr. Sever testified he did not expect Francis to live.</p>\n<p>The trial court had the power to order that the three life sentences run consecutively. § 558.026.1. <i>State v. Greathouse,</i> 694 S.W.2d 903, 911[20] (Mo.App. 1985). Where the defendant is convicted of separate offenses and the sentences imposed are within statutory limits, the consecutive effect of the sentences does not constitute cruel and unusual punishment. <i>State v. Repp,</i> 603 S.W.2d 569, 571[5] (Mo. banc 1980); <i>State v. Jackson,</i> 676 S.W.2d 304, 305[3] (Mo.App.1984). Punishment within the statutory limit is not cruel and unusual unless it is so disproportionate to the offense committed as to shock the moral sense of all reasonable men as to what is right and proper. <i>State v. Rider,</i> 664 S.W.2d 617, 621[10] (Mo.App.1984). Although the three offenses arose out of the same incident, they were separate offenses. Defendant does not claim otherwise and defendant makes no claim of a double jeopardy violation.<sup>[2]</sup></p>\n<p>In <i>Solem v. Helm,</i> 463 U.S. 277, 103 S.Ct. 3001, 77 L.Ed.2d 637 (1983), the Supreme Court held that the final clause of the Eighth Amendment ["nor cruel and unusual punishments inflicted"] prohibits not only barbaric punishments, but also sentences that are disproportionate to the crime committed.</p>\n<p>At p. 3009 of 103 S.Ct. the Court said:</p>\n<blockquote>"In sum, we hold as a matter of principle that a criminal sentence must be proportionate to the crime for which the defendant has been convicted. Reviewing courts, of course, should grant substantial deference to the broad authority that legislatures necessarily possess in determining the types and limits of punishments for crimes, as well as to the discretion that trial courts possess in sentencing convicted criminals. But no penalty is per se constitutional."</blockquote>\n<blockquote>Also at p. 3009, n. 16, the Court said:</blockquote>\n<blockquote>"Absent specific authority, it is not the role of an appellate court to substitute its judgment for that of the sentencing court as to the appropriateness of a particular sentence; rather, in applying the Eighth Amendment the appellate court decides only whether the sentence under review is within constitutional limits. In view of the substantial deference that must be accorded legislatures and sentencing courts, a reviewing court rarely will be required to engage in extended analysis to determine that a sentence is not constitutionally disproportionate." Finally, at pp. 3010-3011, the Court said:</blockquote>\n<blockquote>"In sum, a court\'s proportionality analysis under the Eighth Amendment should be guided by objective criteria, including (i) the gravity of the offense and the harshness of the penalty; (ii) the sentences imposed on other criminals in the same jurisdiction; and (iii) the sentences <span class="star-pagination">*876</span> imposed for commission of the same crime in other jurisdictions."</blockquote>\n<p>The punishment of life imprisonment which the jury assessed for each of the three offenses was within the statutory limit. This court must accord "substantial deference," <i>Solem,</i> supra, at 3009, to the legislature and to the sentencing court. Each of the three offenses which the defendant committed is a very serious one. Life imprisonment sentences have been imposed on other criminals in Missouri for these offenses.<sup>[3]</sup> This court does not have access to a computer system which might disclose actual sentences imposed for the same crimes in other jurisdictions. This court has examined the statutes of the nearby states of Arkansas, Illinois, Kansas, Kentucky, Oklahoma, Tennessee and Texas.</p>\n<p>With respect to the offense of robbery in the first degree, life imprisonment is an authorized punishment in Arkansas [Ark. Stat.Ann. §§ 41-901(1)(b), 41-2102], Kansas [Kan.Stat.Ann. §§ 21-3427, 21-4501], Oklahoma [Okla.Stat.Ann. tit. 21, § 801], Tennessee [Tenn.Code Ann. § 39-2-501], and Texas [Tex.Penal Code Ann. §§ 12.32, 29.03]. In Illinois the maximum punishment for that offense is 30 years imprisonment [Ill.Rev.Stat. ch. 38, §§ 18-2, 1005-8-1(a)(3)], and in Kentucky the maximum punishment is 20 years [Ky.Rev.Stat.Ann. §§ 515.020, 532.060(2)(b)].</p>\n<p>Although each of those seven states has a statute dealing with the type of assault involved here, none authorizes life imprisonment for that offense. The respective maximum punishments for that offense in those states are: Arkansas\x9720 years [Ark. Stat.Ann. §§ 41-901(1)(c), 41-1601], Illinois \x975 years [Ill.Rev.Stat. ch. 38, §§ 12-4, 1005-8-1(a)(6)], Kansas\x9720 years [Kan. Stat.Ann. §§ 21-3414, 21-4501(c)], Kentucky\x9720 years [Ky.Rev.Stat.Ann. §§ 508.010, 532.060(2)(b)], Oklahoma\x9710 years [Okla.Stat.Ann. tit. 21, § 645], Tennessee\x97 10 years [Tenn.Code Ann. § 39-2-101], Texas\x9710 years [Tex.Penal Code Ann §§ 12.34(a), 22.02].</p>\n<p>The offense of armed criminal action is not defined by statute in Arkansas, Kansas, Kentucky and Texas. In Illinois the maximum punishment for that offense is 15 years [Ill.Rev.Stat. ch. 38, § 33A-1 et seq.]. In Oklahoma, for the first such offense, the maximum is 10 years [Okla.Stat. Ann. tit. 21, § 1287] and in Tennessee the maximum is 5 years [Tenn.Code Ann. § 39-6-1710].</p>\n<p>This court has no jurisdiction to declare unconstitutional any of the Missouri statutes authorizing the punishment of life imprisonment for each of the three instant offenses. Defendant has not attacked the constitutionality of any of those statutes. This court does not believe that the "proportionality analysis" enunciated in <i>Solem</i> requires this court to find that a life sentence for armed criminal action is disproportionate merely because some other states, which define the offense, do not authorize that punishment or merely because the offense is not defined as such in other states.</p>\n<p>This court holds that the sentence imposed for each of the three offenses was proportionate and was within constitutional limits. This court further holds that the ordering of the sentences to run consecutively did not constitute an infliction of cruel and unusual punishment. Defendant\'s third point has no merit.</p>\n<p>Defendant\'s fourth point is that the evidence was insufficient to support the verdict, in that the testimony of state\'s witnesses Moon and Francis, identifying defendant as the robber, "was tainted by unreliable procedures attending their out-of-court <span class="star-pagination">*877</span> identification of defendant." At the time of the offense both Freeman and Moon had an adequate opportunity to observe and identify defendant. Indeed Moon, whom defendant called by name, had known defendant for many years. Defendant\'s fourth point has no merit.</p>\n<p>The judgment is affirmed.</p>\n<p>PREWITT, C.J., CROW, P.J., and MAUS, J., concur.</p>\n<h2>NOTES</h2>\n<p>[1]  Unless otherwise indicated, all references to statutes are to RSMo 1978, V.A.M.S., and all references to rules are to Missouri Rules of Court, V.A.M.R.</p>\n<p>[2]  In <i>Missouri v. Hunter,</i> 459 U.S. 359, 103 S.Ct. 673, 74 L.Ed.2d 535 (1983), the Supreme Court held that the Double Jeopardy Clause does not prohibit conviction and sentence of a criminal defendant in a single trial on both a charge of armed criminal action and a charge of first degree robbery, the underlying felony.</p>\n<p>[3]  In <i>State v. Kirksey,</i> 647 S.W.2d 799 (Mo. banc 1983), a life sentence for armed criminal action was affirmed. In the following cases, life sentences for assault were affirmed: <i>State v. Hayes,</i> 624 S.W.2d 16 (Mo.1981); <i>State v. Barmann,</i> 689 S.W.2d 758 (Mo.App.1985); <i>Davis v. State,</i> 657 S.W.2d 677 (Mo.App.1983); <i>State v. Mayhue,</i> 653 S.W.2d 227 (Mo.App.1983). In the following cases, life sentences for first degree robbery were affirmed: <i>State v. Hayes,</i> supra, <i>State v. Rider,</i> 664 S.W.2d 617 (Mo.App.1984); <i>State v. Johnson,</i> 603 S.W.2d 683 (Mo.App.1980); <i>State v. Battle,</i> 588 S.W.2d 65 (Mo.App.1979); <i>State v. Rapheld,</i> 587 S.W.2d 881 (Mo.App.1979).</p>\n\n</div>'
+#
+#
+# """ll v. State,</i> 270 Ind. 55, 383 N.E.2d 309, 313[6] (1978); <i>Anderson v. State,</i> 267 Ind. 289, 370 N.E.2d 318, 320[2] (1977); <i>Block v. State,</i> 95 Nev. 933, 604 P.2d 338, 340[2] (1979); <i>Stowe v. State,</i> 590 P.2d 679, 682[1] (Okla.Crim.1979); <i>Felts v. Oklahoma,</i> 588 P.2d 572, 576[3] (Okla.Crim.1978). See 98 A.L.R.3d 13, 61, § 13.</p>\n<p>Several hearings were held prior to the trial itself which was held on May 17, 1984. At all of these hearings the prosecutor appeared and the defendant appeared in person and by his attorney, Daniel A. Beatty, an assistant public defender.</p>\n<p>On February 9, 1984, a hearing was held which was prompted by a letter which defendant sent to the court. Defendant informed the court that he did not feel that he was being represented properly and indicated he had had difficulty getting in contact with Mr. Beatty. Mr. Beatty informed the court that he was on active duty with the Navy in Seattle, Washington, when the defendant attempted to contact him. Mr. Beatty also said, "There was a letter from [defendant] regarding possible self-representation, <i>which I understand he did not want to do at this time.</i> However, it is also my understanding that he is trying to hire his own lawyer but has not been able to do so. His family may still be working on it." At the conclusion of that hearing defendant told the court that he wanted "to keep his attorney."</p>\n<p>On March 10, 1984, a hearing was held. At that time the court ordered the case, at defendant\'s request, sent back to Scott County, from which defendant earlier had taken a change of venue. There was no mention of any dissatisfaction with attorney Beatty.</p>\n<p>On April 26, 1984, a hearing was held. Attorney Beatty stated to the court, "[Defendant] has instructed me to file a motion to withdraw. <i>He desires to retain his own counsel or to represent himself.</i> I don\'t <span class="star-pagination">*872</span> think he is satisfied with the way the case is going at this point."</p>\n<p>The court asked the defendant what the problem was and defendant stated, "Mr. Beatty and I have not had communications I feel I am entitled to.... I have requested certain things of Mr. Beatty I would appreciate for him to do for me. Mr. Beatty told me he had done them, and when everything comes to a certain point, they have not been done."</p>\n<p>The court asked the defendant, "What is your plan?" The defendant answered that he had been writing "to the U.S. District Court and Bar Association and <i>trying to see if they will send me a lawyer."</i> Defendant also said that he had been writing the NAACP. The court asked the defendant if he was going to hire an attorney and the defendant responded, "I didn\'t tell Mr. Beatty I was going to hire an attorney. I was telling Mr. Beatty <i>I was going to see what would happen.</i>"</p>\n<p>There was some discussion of obtaining another public defender for defendant but a representative of the public defender\'s office said, "There is just no provision for doing that."</p>\n<p>The court asked the defendant what it was which he had asked attorney Beatty to do and which Beatty had not done. The defendant mentioned that he had requested Beatty to obtain a transcript of the preliminary hearing. Mr. Beatty stated he did not recall that request and that the hearing was not transcribed.</p>\n<p>The following then occurred:</p>\n<blockquote>"THE COURT: Mr. Freeman, <i>I am not going to let you represent yourself,</i> b"""

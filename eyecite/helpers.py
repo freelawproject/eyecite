@@ -1,4 +1,5 @@
 import logging
+from bisect import bisect_right
 from datetime import date
 from typing import List, Optional, Tuple, cast
 
@@ -9,6 +10,7 @@ from eyecite.models import (
     CaseCitation,
     CitationBase,
     CitationToken,
+    Document,
     FullCaseCitation,
     FullJournalCitation,
     FullLawCitation,
@@ -20,12 +22,12 @@ from eyecite.models import (
     Tokens,
 )
 from eyecite.regexes import (
-    DEFENDANT_YEAR_REGEX,
     POST_FULL_CITATION_REGEX,
     POST_JOURNAL_CITATION_REGEX,
     POST_LAW_CITATION_REGEX,
     POST_SHORT_CITATION_REGEX,
     PRE_FULL_CITATION_REGEX,
+    STOP_WORD_REGEX,
     YEAR_REGEX,
 )
 
@@ -129,54 +131,378 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.metadata.court = get_court_by_paren(m["court"])
 
 
-def add_defendant(citation: CaseCitation, words: Tokens) -> None:
-    """Scan backwards from reporter until you find v., in re,
-    etc. If no known stop-token is found, no defendant name is stored.  In the
-    future, this could be improved.
+def find_case_name(citation: CaseCitation, document: Document, short=False):
+    """Find case title in plain text
+
+    This function attempts to improve the ability to gather case names,
+    specifically plaintiff full names by using a few heuristics
+
+    Stop at obvious words, characters or patterns. But also allow the pattern
+    to continue when smart.
+    Args:
+        citation (): Citation object
+        document (): Document Object
+        short (): Is this a short case citation or not
+
+    Returns:
+
     """
-    # To turn word indexing into char indexing,
-    # useful for span, account for shift
-    offset = 0
-    start_index = None
+    words = document.words
     back_seek = citation.index - BACKWARD_SEEK
+    offset = 0
+    v_token = None
+    start_index = None
+    candidate_case_name = None
+    pre_cite_year = None
+    title_starting_index = citation.index - 1
+
     for index in range(citation.index - 1, max(back_seek, -1), -1):
         word = words[index]
         offset += len(word)
+
         if word == ",":
             # Skip it
             continue
-        if isinstance(word, StopWordToken):
-            if word.groups["stop_word"] == "v" and index > 0:
-                citation.metadata.plaintiff = "".join(
-                    str(w) for w in words[max(index - 2, 0) : index]
-                ).strip("( ")
-                offset += len(citation.metadata.plaintiff) + 1
+        if isinstance(word, CitationToken):
+            title_starting_index = index - 1
+            continue
+        if re.match(r"\(\d{4}\)", str(word)):
+            # Identify year before citation but after title
+            title_starting_index = index - 1
+            pre_cite_year = str(word)[1:5]
+            continue
+        if (
+            str(word).endswith(";")
+            or str(word).endswith("”")
+            or str(word).endswith('"')
+        ):
+            start_index = index + 2
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            # Break if a word ends with a semicolon, or quotes
+            break
+        if str(word).startswith("("):
+            start_index = index
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            # Break case name search if a word (not year) begins with a
+            # parenthesis
+            break
+        if (
+            v_token is not None
+            and not str(word)[0].isupper()
+            and str(word).strip()
+            and str(word) not in ["of", "the", "an", "and"]
+        ):
+            start_index = index + 2
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            candidate_case_name = re.sub(
+                r"^(of|the|an|and)\s+",
+                "",
+                candidate_case_name,
+            )
+
+            break
+        if isinstance(word, StopWordToken) and word.groups["stop_word"] == "v":
+            v_token = word
+            start_index = index - 2
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            # if we come across the v-token stop store the case name using
+            # the word before the v to the end of the title
+            # We will use this if we dont find a stop word later
+            continue
+        elif (
+            v_token is not None
+            and str(word)[0].isupper()
+            and len(str(word)) > 4
+            and str(word).endswith(".")
+        ):
+            # I dont have a good solution here but it the sentence befoer the
+            # citation ends in a capitlized word,
+            # we should just bail if its longer than three characters
+            start_index = index + 2
+            candidate_case_name = "".join(
+                [str(w) for w in words[start_index:title_starting_index]]
+            )
+            break
+        elif isinstance(word, StopWordToken):
+            start_index = index + 2
+            candidate_case_name = "".join(
+                [str(w) for w in words[start_index:title_starting_index]]
+            )
+            # If we come across a stop word before or after a v token break
+            break
+        if (
+            v_token is None
+            and not str(word)[0].isupper()
+            and str(word).strip()
+            and str(word)[0].isalpha()
+            and str(word) not in ["of", "the", "an", "and"]
+            and len(str(word)) > 2
+        ):
+            start_index = index + 2
+            candidate_case_name = "".join(
+                str(w) for w in words[start_index:title_starting_index]
+            )
+            # If no v token has been found and a lower case word is found
+            # break and use all upper case words found previously
+            # ie. as `seen in Miranda, 1 U.S. 1 (1990)`
+            break
+        if index == 0:
+            # If we finish running thru the list without breaking
+            # we would still be identifying capitlized words without any
+            # reason to break.  Use entire string for case title
+            # But - lets be cautious and throw it away if it has numbers.
+            # This is trying to balance between, someone parsing just a
+            # single citation vs extracting from entire texts.
+            # if we get to the end - ensure the last word isnt lower cased
+            candidate_case_name = "".join(
+                [str(w) for w in words[index:title_starting_index]]
+            )
+            start_index = 0
+            candidate_case_name = re.sub(
+                r"^(of|the|an|and)",
+                "",
+                candidate_case_name,
+                flags=re.IGNORECASE,
+            )
+            if re.search(r"\b\d+\b", candidate_case_name):
+                candidate_case_name = None
+
+    if candidate_case_name:
+        if v_token:
+            splits = re.split(r"\s+v\.?\s+", candidate_case_name, maxsplit=1)
+            if len(splits) == 2:
+                plaintiff, defendant = splits
             else:
-                # We don't want to include stop words such as
-                # 'citing' in the span
-                offset -= len(word)
+                plaintiff, defendant = "", splits[0]
+            citation.metadata.plaintiff = (
+                plaintiff.strip(", ").strip().strip("(")
+            )
+        else:
+            defendant = candidate_case_name
 
-            start_index = index + 1
+        defendant = strip_stop_words(defendant)
+
+        clean_def = defendant.strip(", ").strip()
+        if clean_def:
+            if short is False and clean_def:
+                citation.metadata.defendant = clean_def
+            else:
+                citation.metadata.antecedent_guess = (
+                    defendant.strip(" ").strip(",").strip("(")
+                )
+
+            offset = (
+                len(
+                    "".join(
+                        str(w) for w in words[start_index : citation.index - 1]
+                    )
+                )
+                + 1
+            )
+            citation.full_span_start = citation.span()[0] - offset
+
+        if pre_cite_year:
+            # found pre citation year, store it
+            citation.metadata.year = pre_cite_year
+            citation.year = int(pre_cite_year)
+
+
+def find_html_tags_at_position(
+    document: Document, position: int
+) -> List[Tuple[str, int, int]]:
+    """Find emphasis tags at particular positions
+
+    Args:
+        position (): the position to find in html
+        document (): the document processing
+
+    Returns: HTML tags if any
+
+    """
+    markup_loc = document.plain_to_markup.update(  # type: ignore
+        position,
+        bisect_right,
+    )
+    tags = [r for r in document.emphasis_tags if r[1] <= markup_loc < r[2]]
+    if len(tags) != 1:
+        return []
+    return tags
+
+
+def find_case_name_in_html(
+    citation: CaseCitation, document: Document, short: bool = False
+):
+    """Add case name from HTML
+
+    Args:
+        citation ():
+        document ():
+        short ():
+
+    Returns:
+
+    """
+    words = document.words
+    back_seek = citation.index - BACKWARD_SEEK
+    for index in range(citation.index - 1, max(back_seek, -1), -1):
+        word = words[index]
+        if short is True:
+            # Identify the html tags immediately preceding a short citation
+            if str(word).strip(", ") == "":
+                continue
+
+            offset = len(
+                "".join([str(w) for w in words[index : citation.index]])
+            )
+            loc = words[citation.index].start - offset  # type: ignore
+
+            results = find_html_tags_at_position(document, loc)
+            if results:
+                antecedent_guess, start = convert_html_to_plain_text_and_loc(
+                    document, results
+                )
+                citation.metadata.antecedent_guess = strip_stop_words(
+                    antecedent_guess
+                )
+                citation.full_span_start = start
             break
-        if word.endswith(";"):
-            # String citation
-            break
-    if start_index:
-        citation.full_span_start = citation.span()[0] - offset
-        defendant = "".join(
-            str(w) for w in words[start_index : citation.index]
-        ).strip(", (")
-        if defendant.strip():
-            # Check if year follows defendant before citation
-            match = re.search(DEFENDANT_YEAR_REGEX, defendant)
-            if match:
-                defendant, year = match.groups()
-                citation.year = int(year)
-                citation.metadata.year = year
-            citation.metadata.defendant = defendant
+
+        if isinstance(word, StopWordToken) and word.groups["stop_word"] == "v":
+            # Identify tags on either side of the v stop word token
+            # and parse out plaintiff and defendant if separate or same tags
+            left_shift = len(
+                "".join([str(w) for w in words[index - 2 : index]])
+            )
+            loc = word.start - left_shift
+
+            plaintiff_tags = find_html_tags_at_position(document, loc)
+            right_shift = len(
+                "".join([str(w) for w in words[index : index + 2]])
+            )
+            r_loc = word.start + right_shift
+            defendant_tags = find_html_tags_at_position(document, r_loc)
+
+            if len(plaintiff_tags) != 1 or len(defendant_tags) != 1:
+                return None
+
+            if plaintiff_tags == defendant_tags:
+                case_name, start = convert_html_to_plain_text_and_loc(
+                    document, plaintiff_tags
+                )
+                pattern = r"\s+vs?\.?\s+"
+                splits = re.split(
+                    pattern, case_name, maxsplit=1, flags=re.IGNORECASE
+                )
+                if len(splits) == 2:
+                    plaintiff, defendant = splits
+                else:
+                    plaintiff, defendant = "", case_name
+
+            else:
+                plaintiff, start = convert_html_to_plain_text_and_loc(
+                    document, plaintiff_tags
+                )
+                defendant, _ = convert_html_to_plain_text_and_loc(
+                    document, defendant_tags
+                )
+            clean_plaintiff = strip_stop_words(plaintiff)
+
+            citation.metadata.plaintiff = clean_plaintiff.strip().strip(",")
+            citation.metadata.defendant = (
+                strip_stop_words(defendant).strip().strip(",")
+            )
+
+            # Update full span start accordingly
+            if len(clean_plaintiff) != len(plaintiff):
+                shift = len(plaintiff) - len(clean_plaintiff)
+                start += shift
+
+            citation.full_span_start = start
+            return
+
+        elif isinstance(word, StopWordToken):
+            # stopped at a stop word, work forward to possible title
+            # this should be at least two words (including whitespace)
+            # but with html could be more.
+            # shift = index + 2
+            shift = 3
+            while True:
+                if words[index + shift] == " ":
+                    shift += 1
+                else:
+                    break
+            right_offset = len(
+                "".join([str(w) for w in words[index : index + shift]])
+            )
+            loc = word.start + right_offset - 1
+            # find a character in the word
+            filtered_tags = find_html_tags_at_position(document, loc)
+            if len(filtered_tags) != 1:
+                return None
+
+            defendant, start = convert_html_to_plain_text_and_loc(
+                document, filtered_tags
+            )
+
+            citation.metadata.defendant = strip_stop_words(defendant).strip(
+                ", "
+            )
+            citation.full_span_start = start
+            return
 
 
-def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
+def strip_stop_words(text: str) -> str:
+    """Strip stop words from the text
+
+    Args:
+        text (): the text to strip
+
+    Returns: clean text
+
+    """
+    return re.sub(  # type: ignore
+        STOP_WORD_REGEX,
+        "",
+        text.strip(", "),
+        flags=re.IGNORECASE,
+    )
+
+
+def convert_html_to_plain_text_and_loc(
+    document: Document, results: List[Tuple[str, int, int]]
+) -> Tuple:
+    """A helper function to convert emphasis tags to plain text and location
+
+    Args:
+        document (): The document to process
+        results (): The empahsis tags
+
+    Returns: The text of the plain text and the location it starts
+    """
+    markup_location = results[0]
+
+    start = document.markup_to_plain.update(  # type: ignore
+        markup_location[1],
+        bisect_right,
+    )
+    end = document.markup_to_plain.update(  # type: ignore
+        markup_location[2],
+        bisect_right,
+    )
+    case_name = document.plain_text[start:end]
+    # print("------->", case_name, start, markup_location)
+    return (case_name, start)
+
+
+def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
     """Scan backwards to find a (PartyName - Pincite) component
 
     Do not try if plaintiff or defendant has already been found
@@ -185,7 +511,7 @@ def add_pre_citation(citation: FullCaseCitation, words: Tokens) -> None:
         return
 
     m = match_on_tokens(
-        words,
+        document.words,
         citation.index - 1,
         PRE_FULL_CITATION_REGEX,
         forward=False,

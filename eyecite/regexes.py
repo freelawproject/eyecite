@@ -63,6 +63,7 @@ SUPRA_REGEX = space_boundaries_re(strip_punctuation_re("supra"))
 # Regex for StopWordToken
 STOP_WORDS = (
     "v",
+    "in re",
     "re",
     "parte",
     "denied",
@@ -70,9 +71,11 @@ STOP_WORDS = (
     "aff'd",
     "affirmed",
     "remanded",
+    "see also",
     "see",
     "granted",
     "dismissed",
+    "Cf",
 )
 STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf'(?P<stop_word>{"|".join(STOP_WORDS)})')

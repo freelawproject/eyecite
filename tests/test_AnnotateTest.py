@@ -313,8 +313,8 @@ class AnnotateTest(TestCase):
             # can we wrap the full pincite that appears before
             # https://www.courtlistener.com/opinion/8524158/in-re-cahill/
             (
-                "principal residence.” Nobelman at 332, 113 S.Ct. 2106",
-                ["Nobelman at 332, 113 S.Ct. 2106"],
+                "principal residence.” Nobelman 1 U.S. 1 at 332, 113 S.Ct. 2106",
+                ["1 U.S. 1 at 332", "113 S.Ct. 2106"],
             ),
         ]
         for source_text, expected in test_pairs:
