@@ -413,11 +413,12 @@ def find_case_name_in_html(
                 defendant, _ = convert_html_to_plain_text_and_loc(
                     document, defendant_tags
                 )
-
             clean_plaintiff = strip_stop_words(plaintiff)
 
-            citation.metadata.plaintiff = clean_plaintiff
-            citation.metadata.defendant = strip_stop_words(defendant)
+            citation.metadata.plaintiff = clean_plaintiff.strip().strip(",")
+            citation.metadata.defendant = (
+                strip_stop_words(defendant).strip().strip(",")
+            )
 
             # Update full span start accordingly
             if len(clean_plaintiff) != len(plaintiff):
@@ -431,9 +432,10 @@ def find_case_name_in_html(
             # stopped at a stop word, work forward to possible title
             # this should be at least two words (including whitespace)
             # but with html could be more.
-            shift = index + 2
+            # shift = index + 2
+            shift = 3
             while True:
-                if words[shift] == " ":
+                if words[index + shift] == " ":
                     shift += 1
                 else:
                     break
@@ -443,14 +445,16 @@ def find_case_name_in_html(
             loc = word.start + right_offset - 1
             # find a character in the word
             filtered_tags = find_html_tags_at_position(document, loc)
-
             if len(filtered_tags) != 1:
                 return None
 
             defendant, start = convert_html_to_plain_text_and_loc(
                 document, filtered_tags
             )
-            citation.metadata.defendant = strip_stop_words(defendant)
+
+            citation.metadata.defendant = strip_stop_words(defendant).strip(
+                ", "
+            )
             citation.full_span_start = start
             return
 
@@ -484,6 +488,7 @@ def convert_html_to_plain_text_and_loc(
     Returns: The text of the plain text and the location it starts
     """
     markup_location = results[0]
+
     start = document.markup_to_plain.update(  # type: ignore
         markup_location[1],
         bisect_right,
@@ -493,6 +498,7 @@ def convert_html_to_plain_text_and_loc(
         bisect_right,
     )
     case_name = document.plain_text[start:end]
+    # print("------->", case_name, start, markup_location)
     return (case_name, start)
 
 
