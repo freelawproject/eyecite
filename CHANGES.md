@@ -11,7 +11,7 @@ Changes:
 -
 
 Fixes:
--
+- Fixes court detection with court/date parenthetical contains the month and day, e.g., `(C.D. Cal. Feb. 9, 2015)` #242
 
 ## Current
 
