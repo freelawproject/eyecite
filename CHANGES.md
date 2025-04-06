@@ -21,6 +21,7 @@ Fixes:
   citations #237
 - Update `maybe_balance_style_tags` to account for party names and intro words
   inside the style tag #231
+- Fixes court detection with court/date parenthetical contains the month and day, e.g., `(C.D. Cal. Feb. 9, 2015)` #242
 
 ## Current
 
