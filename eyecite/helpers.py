@@ -498,7 +498,6 @@ def convert_html_to_plain_text_and_loc(
         bisect_right,
     )
     case_name = document.plain_text[start:end]
-    # print("------->", case_name, start, markup_location)
     return (case_name, start)
 
 
