@@ -434,7 +434,7 @@ def find_case_name_in_html(
                 )
             clean_plaintiff = strip_stop_words(plaintiff)
 
-            citation.metadata.plaintiff = clean_plaintiff.strip().strip(",")
+            citation.metadata.plaintiff = clean_plaintiff.strip().strip(",").strip("(")
             citation.metadata.defendant = (
                 strip_stop_words(defendant).strip().strip(",")
             )
