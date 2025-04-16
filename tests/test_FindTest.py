@@ -467,7 +467,13 @@ class FindTest(TestCase):
                                       'defendant': 'Rogers',
                                       'year': '1984'})]
              ),
-            #
+            # test citation always breaks at ; even at year
+            ('(1963); Reece v. State of Washington, 310 F.2d 139 (1962)',
+             [case_citation(volume='310', reporter='F.2d', page='139',
+                            metadata={'plaintiff': 'Reece',
+                                      'defendant': 'State of Washington',
+                                      'year': '1962'})]
+             ),
             ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
              [case_citation(volume='398', reporter='P. 2d', page='251',
                             metadata={'plaintiff': 'Bean',

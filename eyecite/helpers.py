@@ -175,11 +175,6 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
         if isinstance(word, CitationToken):
             title_starting_index = index - 1
             continue
-        if re.match(r"\(\d{4}\)", word_str):
-            # Identify year before citation but after title
-            title_starting_index = index - 1
-            pre_cite_year = word_str[1:5]
-            continue
         if (
             word_str.endswith(";")
             or word_str.endswith("”")
@@ -189,8 +184,14 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             candidate_case_name = "".join(
                 str(w) for w in words[start_index:title_starting_index]
             )
-            # Break if a word ends with a semicolon, or quotes
+            # Always break if a word ends with a semicolon, or quotes
             break
+        if re.match(r"\(\d{4}\)", word_str):
+            # Identify year before citation but after title
+            title_starting_index = index - 1
+            pre_cite_year = word_str[1:5]
+            continue
+
         if word_str.startswith("(") and case_name_length > 2:
             start_index = index
             candidate_case_name = "".join(
