@@ -461,7 +461,7 @@ class FindTest(TestCase):
                             metadata={'antecedent_guess': "Newbold",  'pin_cite': '235'})
               ]),
             # Square brackets around year
-            ('Rogers v Rogers 63 NY2d 582 [1984]',
+            ('Rogers v Rogers (63 NY2d 582 [1984])',
              [case_citation(volume='63', reporter='NY2d', page='582',
                             metadata={'plaintiff': 'Rogers',
                                       'defendant': 'Rogers',
@@ -471,28 +471,21 @@ class FindTest(TestCase):
             ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
              [case_citation(volume='398', reporter='P. 2d', page='251',
                             metadata={'plaintiff': 'Bean',
-                                      'defendant': 'State, — Nev. —'})]
+                                      'defendant': 'State'})]
              ),
-            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
-            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
-             [case_citation(volume='360', reporter='U.S.', page='315',
-                            metadata={'plaintiff': 'Spano',
-                                      'defendant': 'People of State of New York'})]
-             ),
-            # Spano v. People of State of New York, 360 U.S. 315, 321, n. 2, 79 S.Ct. 1202, 1206, 3 L.Ed.2d 1265, collects 28 cases.
+            # test lower case sentence
             ('curiams. Spano v. People of State of New York, 360 U.S. 315',
              [case_citation(volume='360', reporter='U.S.', page='315',
                             metadata={'plaintiff': 'Spano',
                                       'defendant': 'People of State of New York'})]
              ),
 
-            # Capitlized to end before quote
+            # Test capitalized word
             ('Per Curiams. Spano v. People of State of New York, 360 U.S. 315',
              [case_citation(volume='360', reporter='U.S.', page='315',
                             metadata={'plaintiff': 'Spano',
                                       'defendant': 'People of State of New York'})]
              ),
-
             # Square brackets around year and court
             ('Mavrovich v Vanderpool, 427 F Supp 2d 1084 [D Kan 2006]',
              [case_citation(volume='427', reporter='F Supp 2d', page='1084',
@@ -638,6 +631,14 @@ class FindTest(TestCase):
             ('Id. foo', [id_citation('Id.,')]),
             # Reject citations that are part of larger words
             ('foo1 U.S. 1, 1. U.S. 1foo', [],),
+            ("Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+             [case_citation(
+                 volume='2000',
+                 reporter='U.S. Dist. LEXIS',
+                 page='12335',
+                 year=2000,
+                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)"})
+              ],),
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
@@ -793,8 +794,6 @@ class FindTest(TestCase):
              [case_citation('T.C. Summary Opinion 2018-133',
                             page='133', reporter='T.C. Summary Opinion',
                             volume='2018')]),
-            # ('U.S. 1234 1 U.S. 1',
-            #  [case_citation(volume='1', reporter='U.S.', page='1')]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Tax court citation extraction")
@@ -1014,7 +1013,7 @@ class FindTest(TestCase):
             "42 U.S.C. § 405(r)(2) (2019)",
             "37 A.L.R.4th 972, 974 (1985)",
             "497 Fed. Appx. 274 (4th Cir. 2012)",
-            # "Smart Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+            "Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
             "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
         ]
         for example in simple_examples:

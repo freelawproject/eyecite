@@ -87,6 +87,9 @@ SECTION_REGEX = r"(\S*§\S*)"
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
 
+# Regex for Placeholder Citations
+PLACEHOLDER_CITATIONS = r"(— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U.\s?S. ___)"
+
 
 # *** Metadata regexes: ***
 # Regexes used to scan forward or backward from a citation token. NOTE:

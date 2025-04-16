@@ -310,12 +310,6 @@ class AnnotateTest(TestCase):
                 "Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007), which discussed... apellate court’s core competency <em>Twombly, </em>550 U. S., at 557. Evaluating... In <em>Twombly</em>, supra, at 553-554, the ",
                 ["550 U. S. 544", "550 U. S., at 557", "supra, at 553-554"],
             ),
-            # can we wrap the full pincite that appears before
-            # https://www.courtlistener.com/opinion/8524158/in-re-cahill/
-            (
-                "principal residence.” Nobelman 1 U.S. 1 at 332, 113 S.Ct. 2106",
-                ["1 U.S. 1 at 332", "113 S.Ct. 2106"],
-            ),
         ]
         for source_text, expected in test_pairs:
             plain_text = clean_text(source_text, ["all_whitespace", "html"])

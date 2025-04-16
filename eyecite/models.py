@@ -805,6 +805,11 @@ class StopWordToken(Token):
 
 
 @dataclass(eq=True, unsafe_hash=True)
+class PlaceholderCitationToken(Token):
+    """Placeholder Citation Tokens."""
+
+
+@dataclass(eq=True, unsafe_hash=True)
 class CaseReferenceToken(Token):
     """Word matching plaintiff or defendant in a full case citation"""
 
