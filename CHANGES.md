@@ -21,6 +21,7 @@ Fixes:
   citations #237
 - Update `maybe_balance_style_tags` to account for party names and intro words
   inside the style tag #231
+- updated `.github/workflows/tests.yml` to use the latest ubuntu image
 
 ## Current
 
