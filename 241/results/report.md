@@ -23,9 +23,9 @@ entire list by downloading the output.csv file linked above.
 |  1537257   |                |                St. Cloud                |
 |  1717506   |                |                Blue Bell                |
 |  2357843   |                | State ex rel. Utility Consumers Council |
-|  2414924   |                |          City of Boerne at 2170         |
 |  2414924   | Boerne at 2170 |                                         |
 |  2414924   |                |              City of Boerne             |
+|  2414924   |                |          City of Boerne at 2170         |
 |  2410732   |                |                 Williams                |
 |  1431414   |                |      Memphis Development Foundation     |
 |   280035   |     Reece      |                                         |
@@ -35,8 +35,8 @@ entire list by downloading the output.csv file linked above.
 |  7124861   |                |                  Hocker                 |
 |  1433305   |                |                 Grayson                 |
 |  2411681   |                |                 Sumner I                |
-|   901384   |                |                 Setliff I               |
 |   901384   |                |                Setliff I                |
+|   901384   |                |                 Setliff I               |
 |  1440932   |                |               San Giovanni              |
 |  6596585   |    Beckwith    |                                         |
 |  6776333   |                |                  Susser                 |
@@ -55,6 +55,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/49422c4bdba19ae67293bac78ddaec41358abaad.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/d7be24d37cb7b38ecb7d2d328232fbf96468240b.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
