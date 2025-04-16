@@ -4,7 +4,7 @@
 
 Gains and Losses
 ---------
-There were 5 gains and 21 losses.
+There were 4 gains and 21 losses.
 
 <details>
 <summary>Click here to see details.</summary>
@@ -28,15 +28,14 @@ entire list by downloading the output.csv file linked above.
 |  2414924   |                |          City of Boerne at 2170         |
 |  2410732   |                |                 Williams                |
 |  1431414   |                |      Memphis Development Foundation     |
-|   280035   |     Reece      |                                         |
 |  2925642   |                |                 Buckner                 |
 |  2330285   |                |                  Terry                  |
 |   203607   |                |         Fustaguio do Nascimento         |
 |  7124861   |                |                  Hocker                 |
 |  1433305   |                |                 Grayson                 |
 |  2411681   |                |                 Sumner I                |
-|   901384   |                |                Setliff I                |
 |   901384   |                |                 Setliff I               |
+|   901384   |                |                Setliff I                |
 |  1440932   |                |               San Giovanni              |
 |  6596585   |    Beckwith    |                                         |
 |  6776333   |                |                  Susser                 |
@@ -55,6 +54,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/d7be24d37cb7b38ecb7d2d328232fbf96468240b.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/2a1fb103d9f63d34411b53de5bae133fc5fd4cb8.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/7f49660a558d319a5ca28bc9cffc462e1656b3f1.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
