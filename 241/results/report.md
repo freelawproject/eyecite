@@ -14,8 +14,8 @@ entire list by downloading the output.csv file linked above.
 
 |     id     |      Gain      |                   Loss                  |
 | ---------- | -------------- | --------------------------------------- |
-|  4746031   | 605 Wn.2d 262  |                                         |
 |  4746031   |                |              128 Wn.2d 262              |
+|  4746031   | 605 Wn.2d 262  |                                         |
 |  4759430   |                |             Mike M. Johnson             |
 |  4759430   |                |             151 Wn. App. 818            |
 |  5329531   |                |           German Savings Bank           |
@@ -41,13 +41,13 @@ entire list by downloading the output.csv file linked above.
 |  7124861   |                |                  Hocker                 |
 |  1433305   |                |                 Grayson                 |
 |  2411681   |                |                 Sumner I                |
-|   901384   |                |                 Setliff I               |
 |   901384   |                |                Setliff I                |
+|   901384   |                |                 Setliff I               |
 |  1440932   |                |               San Giovanni              |
 |  6596585   |    Beckwith    |                                         |
 |  6776333   |                |                  Susser                 |
-|  7493362   | 161 So.2d 580  |                                         |
 |  7493362   |                |              218 So.2d 580              |
+|  7493362   | 161 So.2d 580  |                                         |
 
 
 </details>
@@ -63,6 +63,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/5467e18c05646ad0982a31876670a35d0977fbaa.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/dfad03dc8bfb88c28463154387df8c3298bf8a53.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/d6ca09f251e59e6deb613af60b95fa5088cc475f.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
