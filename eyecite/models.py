@@ -535,10 +535,10 @@ class FullCaseCitation(CaseCitation, FullCitation):
 
         if document.markup_text:
             find_case_name_in_html(self, document)
-        else:
-            find_case_name(self, document)
+            if self.metadata.defendant is None:
+                find_case_name(self, document)
 
-        if self.metadata.defendant is None:
+        else:
             find_case_name(self, document)
 
         add_pre_citation(self, document)
