@@ -288,6 +288,8 @@ def _extract_shortform_citation(
 
     if document.markup_text:
         find_case_name_in_html(citation, document, short=True)
+        if citation.metadata.antecedent_guess is None:
+            find_case_name(citation, document, short=True)
     else:
         find_case_name(citation, document, short=True)
 
