@@ -1537,8 +1537,7 @@ class FindTest(TestCase):
             ),
             # handle page numbers interfering in short cases
             (
-                """immunity outlined by the Supreme Court in <em>Saucier, </em><page-number 
-                citation-index=\"1\" label=\"1029\">*1029</page-number>533 U.S. at 201, 121 S.Ct. 2151""",
+                """immunity outlined by the Supreme Court in <em>Saucier, </em><page-number citation-index=\"1\" label=\"1029\">*1029</page-number>533 U.S. at 201, 121 S.Ct. 2151""",
                 [
                     case_citation(
                         page="201",
