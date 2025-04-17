@@ -185,6 +185,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
                 str(w) for w in words[start_index:title_starting_index]
             )
             # Always break if a word ends with a semicolon, or quotes
+            # print('first break')
             break
         if re.match(r"\(\d{4}\)", word_str):
             # Identify year before citation but after title
@@ -199,6 +200,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             )
             # Break case name search if a word (not year) begins with a
             # parenthesis after the first word think (SHS) judge abbreviation
+            # print('second')
             break
         if (
             v_token is not None
@@ -215,7 +217,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
                 "",
                 candidate_case_name,
             )
-
+            # print('third')
             break
         if isinstance(word, CitationToken) or isinstance(
             word, PlaceholderCitationToken
@@ -248,6 +250,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             candidate_case_name = "".join(
                 [str(w) for w in words[start_index:title_starting_index]]
             )
+            # print("FOURTH")
             break
         elif isinstance(word, StopWordToken):
             start_index = index + 2
@@ -255,6 +258,7 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
                 [str(w) for w in words[start_index:title_starting_index]]
             )
             # If we come across a stop word before or after a v token break
+            # print("FIFHT")
             break
         if (
             v_token is None
@@ -262,7 +266,6 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             and word_str.strip()
             and word_str[0].isalpha()
             and word_str not in ["of", "the", "an", "and"]
-            and len(word_str) > 2
         ):
             start_index = index + 2
             candidate_case_name = "".join(
@@ -271,8 +274,16 @@ def find_case_name(citation: CaseCitation, document: Document, short=False):
             # If no v token has been found and a lower case word is found
             # break and use all upper case words found previously
             # ie. as `seen in Miranda, 1 U.S. 1 (1990)`
+            match = re.search(
+                r"\b([A-Z][a-zA-Z0-9]*)\b.*", candidate_case_name
+            )
+            if match:
+                candidate_case_name = candidate_case_name[match.start() :]
+            else:
+                candidate_case_name = None
             break
         if index == 0:
+            # print("seventh")
             # If we finish running thru the list without breaking
             # we would still be identifying capitalized words without any
             # reason to break.  Use entire string for case title
@@ -367,7 +378,6 @@ def find_case_name_in_html(
         short ():
 
     Returns:
-
     """
     words = document.words
     back_seek = citation.index - BACKWARD_SEEK
@@ -385,9 +395,13 @@ def find_case_name_in_html(
 
             results = find_html_tags_at_position(document, loc)
             if results:
-                antecedent_guess, start = convert_html_to_plain_text_and_loc(
-                    document, results
+                antecedent_guess, start, end = (
+                    convert_html_to_plain_text_and_loc(document, results)
                 )
+                cite_start, _ = citation.span()
+                if end > cite_start:
+                    antecedent_guess = antecedent_guess[: cite_start - end]
+
                 citation.metadata.antecedent_guess = strip_stop_words(
                     antecedent_guess
                 )
@@ -413,7 +427,7 @@ def find_case_name_in_html(
                 return None
 
             if plaintiff_tags == defendant_tags:
-                case_name, start = convert_html_to_plain_text_and_loc(
+                case_name, start, end = convert_html_to_plain_text_and_loc(
                     document, plaintiff_tags
                 )
                 pattern = r"\s+vs?\.?\s+"
@@ -426,10 +440,10 @@ def find_case_name_in_html(
                     plaintiff, defendant = "", case_name
 
             else:
-                plaintiff, start = convert_html_to_plain_text_and_loc(
+                plaintiff, start, end = convert_html_to_plain_text_and_loc(
                     document, plaintiff_tags
                 )
-                defendant, _ = convert_html_to_plain_text_and_loc(
+                defendant, _, _ = convert_html_to_plain_text_and_loc(
                     document, defendant_tags
                 )
             clean_plaintiff = strip_stop_words(plaintiff)
@@ -437,6 +451,7 @@ def find_case_name_in_html(
             citation.metadata.plaintiff = (
                 clean_plaintiff.strip().strip(",").strip("(")
             )
+
             citation.metadata.defendant = (
                 strip_stop_words(defendant).strip().strip(",")
             )
@@ -469,10 +484,12 @@ def find_case_name_in_html(
             if len(filtered_tags) != 1:
                 return None
 
-            defendant, start = convert_html_to_plain_text_and_loc(
+            defendant, start, end = convert_html_to_plain_text_and_loc(
                 document, filtered_tags
             )
-
+            cite_start, _ = citation.span()
+            if end > cite_start:
+                defendant = defendant[: cite_start - end]
             citation.metadata.defendant = strip_stop_words(defendant).strip(
                 ", "
             )
@@ -489,6 +506,8 @@ def strip_stop_words(text: str) -> str:
     Returns: clean text
 
     """
+    if ";" in text:
+        text = text.split(";")[1]
     return re.sub(  # type: ignore
         STOP_WORD_REGEX,
         "",
@@ -519,7 +538,7 @@ def convert_html_to_plain_text_and_loc(
         bisect_right,
     )
     case_name = document.plain_text[start:end]
-    return (case_name, start)
+    return (case_name, start, end)
 
 
 def add_pre_citation(citation: FullCaseCitation, document: Document) -> None:
