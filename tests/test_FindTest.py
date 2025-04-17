@@ -1692,6 +1692,21 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
+            (
+                'the trial court.â€™â€ (quoting Ohree v. Commonwealth, </pre><span class="citation no-link"><span class="volume">26</span> <span class="reporter">Va. App.</span> <span class="page">299</span>',
+                [
+                    case_citation(
+                        page="299",
+                        volume="26",
+                        reporter="Va. App.",
+                        metadata={
+                            "plaintiff": "Ohree",
+                            "defendant": "Commonwealth",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
             # technically this is incorrect in determing plaintiff/defendant but we have no way to deal with that
             (
                 """ <i>See </i><i>Loup-Miller Const. Co. v. City and County of Denver,</i> 676 P.2d 1170 (Colo.1984) .... <i>See </i><i>Loup-Miller,</i> 676 P.2d 1170 and so on <i>Loup-Miller</i>""",

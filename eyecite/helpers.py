@@ -354,7 +354,9 @@ def _process_case_name(
             plaintiff, defendant = splits
         else:
             plaintiff, defendant = "", splits[0]
-        citation.metadata.plaintiff = plaintiff.strip(", ").strip().strip("(")
+        plaintiff = plaintiff.strip(", ").strip().strip("(")
+        clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
+        citation.metadata.plaintiff = clean_plaintiff.strip(" ")
     else:
         defendant = candidate_case_name
 
