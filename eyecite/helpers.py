@@ -232,7 +232,7 @@ def _scan_for_case_boundaries(
         if word_str.startswith("(") and state["case_name_length"] > 3:
 
             state["start_index"] = index
-            if word_str[1].isalpha() and word_str[1].islower():
+            if word_str == "(" or word_str[1].isalpha() and word_str[1].islower():
                 state["start_index"] = index + 2
 
             state["candidate_case_name"] = _extract_text(
