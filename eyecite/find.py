@@ -6,6 +6,8 @@ from eyecite.helpers import (
     disambiguate_reporters,
     extract_pin_cite,
     filter_citations,
+    find_case_name,
+    find_case_name_in_html,
     joke_cite,
     match_on_tokens,
 )
@@ -29,7 +31,7 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import SHORT_CITE_ANTECEDENT_REGEX, SUPRA_ANTECEDENT_REGEX
+from eyecite.regexes import SUPRA_ANTECEDENT_REGEX
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 
@@ -84,9 +86,9 @@ def get_citations(
         if token_type is CitationToken:
             citation_token = cast(CitationToken, token)
             if citation_token.short:
-                citation = _extract_shortform_citation(document.words, i)
+                citation = _extract_shortform_citation(document, i)
             else:
-                citation = _extract_full_citation(document.words, i)
+                citation = _extract_full_citation(document, i)
                 if (
                     citations
                     and isinstance(citation, FullCaseCitation)
@@ -215,7 +217,7 @@ def extract_pincited_reference_citations(
 
 
 def _extract_full_citation(
-    words: Tokens,
+    document: Document,
     index: int,
 ) -> FullCitation:
     """Given a list of words and the index of a citation, return
@@ -225,7 +227,7 @@ def _extract_full_citation(
     # one or more of the sources in reporters_db (e.g. reporters, laws,
     # journals). Get the set of all sources that matched, preferring exact
     # matches to variations:
-    token = cast(CitationToken, words[index])
+    token = cast(CitationToken, document.words[index])
     cite_sources = set(
         e.reporter.source
         for e in (token.exact_editions or token.variation_editions)
@@ -249,13 +251,13 @@ def _extract_full_citation(
         exact_editions=token.exact_editions,
         variation_editions=token.variation_editions,
     )
-    citation.add_metadata(words)
+    citation.add_metadata(document)
 
     return citation
 
 
 def _extract_shortform_citation(
-    words: Tokens,
+    document: Document,
     index: int,
 ) -> ShortCaseCitation:
     """Given a list of words and the index of a citation, construct and return
@@ -265,45 +267,31 @@ def _extract_shortform_citation(
     Shortform 2: 515 U.S., at 241
     Shortform 3: Adarand at 241, 515 U.S.
     """
-    # get antecedent word
-    antecedent_guess = None
-    m = match_on_tokens(
-        words,
-        index - 1,
-        SHORT_CITE_ANTECEDENT_REGEX,
-        strings_only=True,
-        forward=False,
-    )
 
-    if m:
-        ante_start, ante_end = m.span()
-        antecedent_length = ante_end - ante_start
-        antecedent_guess = m["antecedent"].strip()
-    else:
-        antecedent_length = 0
-
-    # Get pin_cite
-    cite_token = cast(CitationToken, words[index])
+    cite_token = cast(CitationToken, document.words[index])
     pin_cite, span_end, parenthetical = extract_pin_cite(
-        words, index, prefix=cite_token.groups["page"]
+        document.words, index, prefix=cite_token.groups["page"]
     )
     span_end = span_end if span_end else 0
-
-    # make ShortCaseCitation
     citation = ShortCaseCitation(
         cite_token,
         index,
         exact_editions=cite_token.exact_editions,
         variation_editions=cite_token.variation_editions,
         span_end=span_end,
-        full_span_start=cite_token.start - antecedent_length,
         full_span_end=max([span_end, cite_token.end]),
         metadata={
-            "antecedent_guess": antecedent_guess,
             "pin_cite": pin_cite,
             "parenthetical": parenthetical,
         },
     )
+
+    if document.markup_text:
+        find_case_name_in_html(citation, document, short=True)
+        if citation.metadata.antecedent_guess is None:
+            find_case_name(citation, document, short=True)
+    else:
+        find_case_name(citation, document, short=True)
 
     # add metadata
     citation.guess_edition()
@@ -413,10 +401,10 @@ def find_reference_citations_from_markup(
                 continue
             if not is_valid_name(value):
                 continue
-            value = re.sub(r"\s+", re.escape(" "), re.escape(value.strip()))
-            regexes.append(
-                r"(?P<{}>{})".format(key, value.replace(" ", r"\s+"))
+            regex_value = r"\s+".join(
+                re.escape(token) for token in value.strip().split()
             )
+            regexes.append(r"(?P<{}>{})".format(key, regex_value))
         if not regexes:
             continue
 

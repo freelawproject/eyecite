@@ -63,16 +63,21 @@ SUPRA_REGEX = space_boundaries_re(strip_punctuation_re("supra"))
 # Regex for StopWordToken
 STOP_WORDS = (
     "v",
+    "in re",
     "re",
+    "quoting",
+    "e.g.",
     "parte",
     "denied",
     "citing",
     "aff'd",
     "affirmed",
     "remanded",
+    "see also",
     "see",
     "granted",
     "dismissed",
+    "Cf",
 )
 STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf'(?P<stop_word>{"|".join(STOP_WORDS)})')
@@ -83,6 +88,9 @@ SECTION_REGEX = r"(\S*§\S*)"
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
+
+# Regex for Placeholder Citations
+PLACEHOLDER_CITATIONS = r"(— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U.\s?S. ___)"
 
 
 # *** Metadata regexes: ***

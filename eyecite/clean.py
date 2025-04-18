@@ -50,6 +50,7 @@ def html(html_content: str) -> str:
             parent::style |
             parent::link |
             parent::head |
+            parent::page-number |
             parent::script)]"""
     )
     return " ".join(text)
