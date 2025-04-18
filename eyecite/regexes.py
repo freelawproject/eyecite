@@ -65,6 +65,8 @@ STOP_WORDS = (
     "v",
     "in re",
     "re",
+    "quoting",
+    "e.g.",
     "parte",
     "denied",
     "citing",

@@ -1707,7 +1707,49 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},
             ),
-            # technically this is incorrect in determing plaintiff/defendant but we have no way to deal with that
+            # Can we ignore the random (1) or (2)
+            (
+                'See id.; see also Harper v. State, </pre><span class="citation no-link">286 Ga. 216</span><pre class="inline">, 218\n(1) (686 SE2d 786) (2009)',
+                [
+                    case_citation(
+                        page="216",
+                        volume="286",
+                        reporter="Ga.",
+                        metadata={
+                            "plaintiff": "Harper",
+                            "defendant": "State",
+                        },
+                    ),
+                    case_citation(
+                        page="786",
+                        volume="686",
+                        reporter="SE2d",
+                        metadata={
+                            "plaintiff": "Harper",
+                            "defendant": "State",
+                            "extra": ")",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Can we parse ex. rel.
+            (
+                """\n\nLynch v. State ex rel. Killebrew, 179 Tenn. 339""",
+                [
+                    case_citation(
+                        page="339",
+                        volume="179",
+                        reporter="Tenn.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Lynch",
+                            "defendant": "State ex rel. Killebrew",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
             (
                 """ <i>See </i><i>Loup-Miller Const. Co. v. City and County of Denver,</i> 676 P.2d 1170 (Colo.1984) .... <i>See </i><i>Loup-Miller,</i> 676 P.2d 1170 and so on <i>Loup-Miller</i>""",
                 [

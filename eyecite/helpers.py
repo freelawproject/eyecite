@@ -229,8 +229,12 @@ def _scan_for_case_boundaries(
             continue
 
         # Break on opening parenthesis after first word
-        if word_str.startswith("(") and state["case_name_length"] > 2:
+        if word_str.startswith("(") and state["case_name_length"] > 3:
+
             state["start_index"] = index
+            if word_str[1].isalpha() and word_str[1].islower():
+                state["start_index"] = index + 2
+
             state["candidate_case_name"] = _extract_text(
                 words, state["start_index"], state["title_starting_index"]
             )
@@ -283,6 +287,9 @@ def _scan_for_case_boundaries(
 
         # Break on lowercase word w/o "v" token - start with capitalized words
         if _is_lowercase_without_v_token(word_str, state["v_token"]):
+            if word_str in ["ex", "rel."]:
+                # ignore common lower cased
+                continue
             state["start_index"] = index + 2
             state["candidate_case_name"] = _extract_text(
                 words, state["start_index"], state["title_starting_index"]
@@ -356,7 +363,8 @@ def _process_case_name(
             plaintiff, defendant = "", splits[0]
         plaintiff = plaintiff.strip(", ").strip().strip("(")
         clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
-        citation.metadata.plaintiff = clean_plaintiff.strip(" ")
+        plaintiff = strip_stop_words(clean_plaintiff)
+        citation.metadata.plaintiff = plaintiff
     else:
         defendant = candidate_case_name
 
@@ -368,9 +376,8 @@ def _process_case_name(
         if short is False:
             citation.metadata.defendant = clean_def
         else:
-            citation.metadata.antecedent_guess = (
-                defendant.strip(" ").strip(",").strip("(")
-            )
+            antecedent_guess = strip_stop_words(defendant)
+            citation.metadata.antecedent_guess = antecedent_guess
 
         # Calculate full span start
         offset = (
@@ -802,6 +809,9 @@ def strip_stop_words(text: str) -> str:
     Returns:
         Cleaned text with stop words removed
     """
+    cleaned = re.sub(STOP_WORD_REGEX, " ", text)
+    text = re.sub(r"^(?i)In\s+", "", cleaned).strip()
+    text = text.lstrip("(").rstrip(")")
     if ";" in text:
         text = text.split(";")[1]
     return (
