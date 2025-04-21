@@ -289,6 +289,8 @@ class ResourceCitation(CitationBase):
         """Define fields on self.metadata."""
 
         year: Optional[str] = None
+        month: Optional[str] = None
+        day: Optional[str] = None
 
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
