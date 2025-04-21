@@ -162,10 +162,18 @@ PARENTHETICAL_REGEX = r"""
 
 MONTH_REGEX = r"""
     (?P<month>
-        Jan\.|January|Feb\.|February|Mar\.|March|
-        Apr\.|April|May|June|July|Aug\.|August|
-        Sept\.|September|Oct\.|October|
-        Nov\.|November|Dec\.|December
+        January|Jan\.|
+        February|Feb\.|
+        March|Mar\.|
+        April|Apr\.|
+        May|
+        June|Jun\.|
+        July|Jul\.|
+        August|Aug\.|
+        September|Sept?\.|
+        October|Oct\.|
+        November|Nov\.|
+        December|Dec\.
     )
 """
 
