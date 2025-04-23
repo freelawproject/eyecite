@@ -1,6 +1,7 @@
 import logging
 from bisect import bisect_right
 from datetime import date
+from string import whitespace
 from typing import Any, Dict, List, Optional, Tuple, cast
 
 import regex as re
@@ -365,7 +366,7 @@ def _process_case_name(
             plaintiff, defendant = splits
         else:
             plaintiff, defendant = "", splits[0]
-        plaintiff = plaintiff.strip(", ").strip().strip("(")
+        plaintiff = plaintiff.strip(f"{whitespace},(")
         clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
         plaintiff = strip_stop_words(clean_plaintiff)
         citation.metadata.plaintiff = plaintiff
@@ -512,7 +513,7 @@ def find_html_tags_at_position(
 
 def find_case_name_in_html(
     citation: CaseCitation, document: Document, short: bool = False
-) -> Optional[None]:
+) -> None:
     """Extract case name info from HTML document and update citation metadata.
 
     This function analyzes the document around a citation to find and extract

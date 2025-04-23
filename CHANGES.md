@@ -10,6 +10,7 @@ Features:
 - Should enable more complex html parsing.
 - Adds support for years preceding citations
 - Improve markup plaintiff extraction
+- Adds placeholder token/regex for placeholder citations
 
 Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
