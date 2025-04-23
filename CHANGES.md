@@ -9,11 +9,14 @@ Features:
 - Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
 - Should enable more complex html parsing.
 - Adds support for years preceding citations
+- Improve markup plaintiff extraction
+- Adds placeholder token/regex for placeholder citations
 
 Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
 - Simplifies is parallel logic
 - moves is parallel citation to full case citation 
+- remove add defendant for separate html and plain text processing 
 
 Fixes:
 - Fixes run on extra regex captures by capping at semicolons

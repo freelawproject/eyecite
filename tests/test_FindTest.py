@@ -105,44 +105,44 @@ class FindTest(TestCase):
             ('lissner test 1 U.S. 1',
              [case_citation()]),
             # Test with plaintiff and defendant
-            ('lissner v. test 1 U.S. 1',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+            ('Lissner v. Test 1 U.S. 1',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with plaintiff, defendant and year
-            ('lissner v. test 1 U.S. 1 (1982)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'},
+            ('Lissner v. Test 1 U.S. 1 (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'},
                             year=1982)]),
             # Don't choke on misformatted year
-            ('lissner v. test 1 U.S. 1 (198⁴)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+            ('Lissner v. Test 1 U.S. 1 (198⁴)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with different reporter than all of above.
-            ('bob lissner v. test 1 F.2d 1 (1982)',
+            ('bob Lissner v. Test 1 F.2d 1 (1982)',
              [case_citation(reporter='F.2d', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'})]),
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
             # Test with comma after defendant's name
-            ('lissner v. test, 1 U.S. 1 (1982)',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test'},
+            ('Lissner v. Test, 1 U.S. 1 (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'},
                             year=1982)]),
             # can we handle variations with parenthesis
             ('1 So.2d at 1',
              [case_citation(volume="1", reporter="So.2d", page="1", short=True,
               metadata={'pin_cite': '1'})]),
             # Test with court and extra information
-            ('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)',
+            ('bob Lissner v. Test 1 U.S. 12, 347-348 (4th Cir. 1982)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348'})]),
             # Test with court string without space
-            ('bob lissner v. test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
+            ('bob Lissner v. Test 1 U.S. 12, 347-348 (Pa.Super. 1982)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'court': 'pasuperct',
                                       'pin_cite': '347-348'})]),
             # Test with court string exact match
@@ -152,31 +152,31 @@ class FindTest(TestCase):
                                       'defendant': 'Muniz',
                                       'court': 'pa'})]),
             # Parallel cite with parenthetical
-            ('bob lissner v. test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
+            ('Bob Lissner v. Test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Bob Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '347-348',
                                       'extra': "1 S. Ct. 2, 358",
                                       'parenthetical': 'overruling foo'}),
               case_citation(page='2', reporter='S. Ct.', year=1982,
-                            metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+                            metadata={'plaintiff': 'Bob Lissner',
+                                      'defendant': 'Test',
                                       'court': 'ca4',
                                       'pin_cite': '358',
                                       'parenthetical': 'overruling foo'}),
               ]),
             # Test full citation with nested parenthetical
-            ('lissner v. test 1 U.S. 1 (1982) (discussing abc (Holmes, J., concurring))',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+            ('Lissner v. Test 1 U.S. 1 (1982) (discussing abc (Holmes, J., concurring))',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'parenthetical': 'discussing abc (Holmes, J., concurring)'},
                             year=1982)]),
             # Test full citation with parenthetical and subsequent unrelated parenthetical
-            ('lissner v. test 1 U.S. 1 (1982) (discussing abc); blah (something).',
-             [case_citation(metadata={'plaintiff': 'lissner',
-                                      'defendant': 'test',
+            ('Lissner v. Test 1 U.S. 1 (1982) (discussing abc); blah (something).',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
                                       'parenthetical': 'discussing abc'},
                             year=1982)]),
             # Test with text before and after and a variant reporter
@@ -234,16 +234,16 @@ class FindTest(TestCase):
              [case_citation(page='143684-B', reporter='IL App (1st)',
                             volume='2017')]),
             # Test first kind of short form citation (meaningless antecedent)
-            ('before asdf 1 U. S., at 2',
+            ('before Foo 1 U. S., at 2',
              [case_citation(page='2', reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test second kind of short form citation (meaningful antecedent)
-            ('before asdf, 1 U. S., at 2',
+            ('before Foo, 1 U. S., at 2',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test short form citation with preceding ASCII quotation
-            ('before asdf,” 1 U. S., at 2',
+            ('before Foo,” 1 U. S., at 2',
              [case_citation(page='2', reporter_found='U. S.',
                             short=True)]),
             # Test short form citation when case name looks like a reporter
@@ -251,68 +251,68 @@ class FindTest(TestCase):
              [case_citation(page='2', reporter_found='U. S.', short=True,
                             metadata={'antecedent_guess': 'Johnson'})]),
             # Test short form citation with no comma after reporter
-            ('before asdf, 1 U. S. at 2',
+            ('before Foo, 1 U. S. at 2',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'})]),
+                            metadata={'antecedent_guess': 'Foo'})]),
             # Test short form citation at end of document (issue #1171)
-            ('before asdf, 1 U. S. end', []),
+            ('before Foo, 1 U. S. end', []),
             # Test supra citation across line break
-            ('before asdf, supra,\nat 2',
+            ('before Foo, supra,\nat 2',
              [supra_citation("supra,",
                              metadata={'pin_cite': 'at 2',
-                                       'antecedent_guess': 'asdf'})],
+                                       'antecedent_guess': 'Foo'})],
              {'clean_steps': ['all_whitespace']}),
             # Test short form citation with a page range
-            ('before asdf, 1 U. S., at 20-25',
+            ('before Foo, 1 U. S., at 20-25',
              [case_citation(page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf'})]),
+                                      'antecedent_guess': 'Foo'})]),
             # Test short form citation with a page range with weird suffix
-            ('before asdf, 1 U. S., at 20-25\\& n. 4',
+            ('before Foo, 1 U. S., at 20-25\\& n. 4',
              [case_citation(page='20', reporter_found='U. S.', short=True,
                             metadata={'pin_cite': '20-25',
-                                      'antecedent_guess': 'asdf'})]),
+                                      'antecedent_guess': 'Foo'})]),
             # Test short form citation with a parenthetical
-            ('before asdf, 1 U. S., at 2 (overruling xyz)',
+            ('before Foo, 1 U. S., at 2 (overruling xyz)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with no space before parenthetical
-            ('before asdf, 1 U. S., at 2(overruling xyz)',
+            ('before Foo, 1 U. S., at 2(overruling xyz)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with nested parentheticals
-            ('before asdf, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
+            ('before Foo, 1 U. S., at 2 (discussing xyz (Holmes, J., concurring))',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'discussing xyz (Holmes, J., concurring)'}
                             )]),
             # Test that short form citation doesn't treat year as parenthetical
-            ('before asdf, 1 U. S., at 2 (2016)',
+            ('before Foo, 1 U. S., at 2 (2016)',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf'}
+                            metadata={'antecedent_guess': 'Foo'}
                             )]),
             # Test short form citation with page range and parenthetical
-            ('before asdf, 1 U. S., at 20-25 (overruling xyz)',
+            ('before Foo, 1 U. S., at 20-25 (overruling xyz)',
              [case_citation(page='20', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'pin_cite': '20-25',
                                       'parenthetical': 'overruling xyz'}
                             )]),
             # Test short form citation with subsequent unrelated parenthetical
-            ('asdf, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
+            ('Foo, 1 U. S., at 4 (discussing abc). Some other nonsense (clarifying nonsense)',
              [case_citation(page='4', reporter='U.S.',
                             reporter_found='U. S.', short=True,
-                            metadata={'antecedent_guess': 'asdf',
+                            metadata={'antecedent_guess': 'Foo',
                                       'parenthetical': 'discussing abc'}
                             )]
              ),
@@ -320,7 +320,7 @@ class FindTest(TestCase):
             ('1 Mich. at 1',
              [case_citation(reporter='Mich.', short=True)]),
             # Test parenthetical matching with multiple citations
-            ('1 U. S., at 2. foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+            ('1 U. S., at 2. Foo v. Bar 3 U. S. 4 (2010) (overruling xyz).',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.',
                             short=True, volume='1',
@@ -329,10 +329,10 @@ class FindTest(TestCase):
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar'})
+                                      'plaintiff': 'Foo', 'defendant': 'Bar'})
               ]),
             # Test with multiple citations and parentheticals
-            ('1 U. S., at 2 (criticizing xyz). foo v. bar 3 U. S. 4 (2010) (overruling xyz).',
+            ('1 U. S., at 2 (criticizing xyz). Foo v. Bar 3 U. S. 4 (2010) (overruling xyz).',
              [case_citation(page='2', reporter='U.S.',
                             reporter_found='U. S.',
                             short=True, volume='1',
@@ -342,7 +342,7 @@ class FindTest(TestCase):
                             reporter_found='U. S.', short=False,
                             year=2010, volume='3',
                             metadata={'parenthetical': 'overruling xyz',
-                                      'plaintiff': 'foo', 'defendant': 'bar'})
+                                      'plaintiff': 'Foo', 'defendant': 'Bar'})
               ]),
             # Test first kind of supra citation (standard kind)
             ('before asdf, supra, at 2',
@@ -356,13 +356,13 @@ class FindTest(TestCase):
                                        'volume': '123',
                                        'antecedent_guess': 'asdf'})]),
             # Test third kind of supra citation (sans page)
-            ('before asdf, supra, foo bar',
+            ('before Asdf, supra, foo bar',
              [supra_citation("supra,",
-                             metadata={'antecedent_guess': 'asdf'})]),
+                             metadata={'antecedent_guess': 'Asdf'})]),
             # Test third kind of supra citation (with period)
-            ('before asdf, supra. foo bar',
+            ('before Asdf, supra. foo bar',
              [supra_citation("supra,",
-                             metadata={'antecedent_guess': 'asdf'})]),
+                             metadata={'antecedent_guess': 'Asdf'})]),
             # Test supra citation at end of document (issue #1171)
             ('before asdf, supra end',
              [supra_citation("supra,",
@@ -378,28 +378,28 @@ class FindTest(TestCase):
                                        'pin_cite': 'at 2',
                                        'parenthetical': 'overruling ...'})]),
             # Test Ibid. citation
-            ('foo v. bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
+            ('Foo v. Bar 1 U.S. 12. asdf. Ibid. foo bar lorem ipsum.',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar'}),
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar'}),
               id_citation('Ibid.')]),
             # Test italicized Ibid. citation
             ('<p>before asdf. <i>Ibid.</i></p> <p>foo bar lorem</p>',
              [id_citation('Ibid.')],
              {'clean_steps': ['html', 'inline_whitespace']}),
             # Test Id. citation
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id., at 123. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,',
                           metadata={'pin_cite': 'at 123'})]),
             # Test Id. citation across line break
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id.,\nat 123. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean_steps': ['all_whitespace']}),
@@ -412,38 +412,38 @@ class FindTest(TestCase):
              [id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean_steps': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': '¶ 34'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at 62-63, 67-68. f b',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at 62-63, 67-68'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id., at *10. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.,', metadata={'pin_cite': 'at *10'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at 7-9, ¶¶ 38-53. f b',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at 7-9, ¶¶ 38-53'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. at pp. 45, 64. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.', metadata={'pin_cite': 'at pp. 45, 64'})]),
             # Cleanup parentheses and square brackets
-            ('Thus, (Newbold v Arvidson, 105 Idaho 663, 672 P2d 231 [1983]) becomes (Newbold, 105 Idaho at 667, 672 P2d at 235).',
+            (' (Newbold v Arvidson, 105 Idaho 663, 672 P2d 231 [1983]); and something else (Newbold, 105 Idaho at 667, 672 P2d at 235).',
              [case_citation(volume='105', reporter='Idaho', page='663',
                             metadata={'plaintiff': 'Newbold',
                                       'defendant': 'Arvidson',
@@ -458,7 +458,7 @@ class FindTest(TestCase):
                             metadata={'antecedent_guess': 'Newbold', 'pin_cite': '667'}),
               case_citation(volume='672', reporter='P2d', page='235',
                             short=True,
-                            metadata={'antecedent_guess': None,  'pin_cite': '235'})
+                            metadata={'antecedent_guess': "Newbold",  'pin_cite': '235'})
               ]),
             # Square brackets around year
             ('Rogers v Rogers (63 NY2d 582 [1984])',
@@ -466,6 +466,31 @@ class FindTest(TestCase):
                             metadata={'plaintiff': 'Rogers',
                                       'defendant': 'Rogers',
                                       'year': '1984'})]
+             ),
+            # test citation always breaks at ; even at year
+            ('(1963); Reece v. State of Washington, 310 F.2d 139 (1962)',
+             [case_citation(volume='310', reporter='F.2d', page='139',
+                            metadata={'plaintiff': 'Reece',
+                                      'defendant': 'State of Washington',
+                                      'year': '1962'})]
+             ),
+            ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
+             [case_citation(volume='398', reporter='P. 2d', page='251',
+                            metadata={'plaintiff': 'Bean',
+                                      'defendant': 'State'})]
+             ),
+            # test lower case sentence
+            ('curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
+             ),
+
+            # Test capitalized word
+            ('Per Curiams. Spano v. People of State of New York, 360 U.S. 315',
+             [case_citation(volume='360', reporter='U.S.', page='315',
+                            metadata={'plaintiff': 'Spano',
+                                      'defendant': 'People of State of New York'})]
              ),
             # Square brackets around year and court
             ('Mavrovich v Vanderpool, 427 F Supp 2d 1084 [D Kan 2006]',
@@ -481,17 +506,17 @@ class FindTest(TestCase):
                                       'defendant': 'Vanderpool',
                                       'court': 'ksd',
                                       'year': '2006'})]),
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. id. 119:12-14. foo bar',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('id.', metadata={'pin_cite': '119:12-14'})]),
             # Test Id. citation without page number
-            ('foo v. bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
+            ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. No page number.',
              [case_citation(page='12',
-                            metadata={'plaintiff': 'foo',
-                                      'defendant': 'bar',
+                            metadata={'plaintiff': 'Foo',
+                                      'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
               id_citation('Id.')]),
             # Id. with parenthetical
@@ -509,18 +534,6 @@ class FindTest(TestCase):
              [],),
             ('lorem 111 N. W. 12th St.',
              [],),
-            # Eyecite has issue with linebreaks when identifying defendants and
-            # previously could store defendant as only whitespace
-            ('<em>\n   rt. denied,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n',
-             [case_citation(
-                 page='1085',
-                 volume="541",
-                 reporter="U.S.",
-                 year=2004,
-                 metadata={'plaintiff': None,
-                           'defendant': None,
-                           'court': 'scotus'})],
-             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test filtering overlapping citations - this finds four citations
             # but should filter down to three
             ("Miles v. Smith 1 Ga. 1; asdfasdf asd Something v. Else, 1 Miles 3; 1 Miles at 10",
@@ -583,7 +596,7 @@ class FindTest(TestCase):
              [case_citation(page='657', reporter="F.2d", volume="909",
                             metadata={'plaintiff': 'U.S.', 'defendant': 'Boch Oldsmobile, Inc.', 'pin_cite': '660'}),
               case_citation(volume="454", page='241', reporter_found='U.S.', short=True,
-                            metadata={'antecedent_guess': 'Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
+                            metadata={'antecedent_guess': 'Piper Aircraft', 'court': "scotus", 'pin_cite': "241"})]),
             # Test reference citation after an id citation
             ('we said in Morton v. Mancari, 417 U. S. 535, 552 (1974) “Literally every piece ....”. “asisovereign tribal entities . . . .” Id. In Mancari at 665',
              [case_citation(page='535', year=1974, volume="417",
@@ -610,7 +623,7 @@ class FindTest(TestCase):
             # Token scanning edge case -- incomplete paren at end of input
             ('1 U.S. 1 (', [case_citation()]),
             # Token scanning edge case -- missing plaintiff name at start of input
-            ('v. Bar, 1 U.S. 1', [case_citation(metadata={'defendant': 'Bar'})]),
+            ('v. Bar, 1 U.S. 1', [case_citation(metadata={'antecedent_guess': 'Bar'})]),
             # Token scanning edge case -- short form start of input
             ('1 U.S., at 1', [case_citation(short=True)]),
             (', 1 U.S., at 1', [case_citation(short=True)]),
@@ -624,6 +637,14 @@ class FindTest(TestCase):
             ('Id. foo', [id_citation('Id.,')]),
             # Reject citations that are part of larger words
             ('foo1 U.S. 1, 1. U.S. 1foo', [],),
+            ("Corp. v. Nature's Farm Prods., No. 99 Civ. 9404 (SHS), 2000 U.S. Dist. LEXIS 12335 (S.D.N.Y. Aug. 25, 2000)",
+             [case_citation(
+                 volume='2000',
+                 reporter='U.S. Dist. LEXIS',
+                 page='12335',
+                 year=2000,
+                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)"})
+              ],),
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
              [case_citation(metadata={'pin_cite': '2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291'})]),
@@ -648,11 +669,11 @@ class FindTest(TestCase):
                 ),
                 case_citation(
                     year=2007, volume='154', reporter='Cal.App.4th', page='547',
-                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007", "pin_cite": "558"}
+                    metadata={'plaintiff': 'Yield Dynamics, Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007", "pin_cite": "558"}
                 ),
                 case_citation(
                     year=2007, volume='66', reporter='Cal.Rptr.3d', page='1',
-                    metadata={'plaintiff': 'Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
+                    metadata={'plaintiff': 'Yield Dynamics, Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
                 ),
             ])
         )
@@ -779,8 +800,6 @@ class FindTest(TestCase):
              [case_citation('T.C. Summary Opinion 2018-133',
                             page='133', reporter='T.C. Summary Opinion',
                             volume='2018')]),
-            ('U.S. 1234 1 U.S. 1',
-             [case_citation(volume='1', reporter='U.S.', page='1')]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Tax court citation extraction")
@@ -1121,3 +1140,644 @@ class FindTest(TestCase):
                     [isinstance(cite, ReferenceCitation) for cite in citations]
                 )
             )
+
+    def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
+        # Can we identify full case names in markup text
+        test_pairs = (
+            # Case Name unbalanced across two tags
+            (
+                (
+                    "and more and more <em>Jin Fuey Moy</em><em>v. United States,</em>\n"
+                    "            254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract from one tag and ignore the other
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # split across tags with v. in defendant
+            (
+                (
+                    "<em>Overruled</em> and so on <em>Jin Fuey Moy</em> <em>v. United States,</em> "
+                    "254 U.S. 189. Petitioner contends"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # corporation name threew ords
+            (
+                "<em>Bell Atlantic Corp. </em>v. <em>Twombly, </em>550 U. S. 544 (2007),",
+                [
+                    case_citation(
+                        volume="550",
+                        reporter="U. S.",
+                        page="544",
+                        year=2007,
+                        metadata={
+                            "plaintiff": "Bell Atlantic Corp.",
+                            "defendant": "Twombly",
+                            "year": "2007",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # two word plaintiff
+            (
+                "con-firmable. <em>United States v. Am. Sav. Bank, </em> 508 U.S. 324 (1993). That plan "
+                "proposed to bifurcate the claim and",
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        year=1993,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract reference citation full name
+            (
+                (
+                    ". <em>Jin Fuey Moy</em> <em>v. United States,</em> 254 U.S. 189. Petitioner contends.  "
+                    "Regardless in <em>Jin Fuey Moy</em> the court ruled"
+                ),
+                [
+                    case_citation(
+                        volume="254",
+                        reporter="U.S.",
+                        page="189",
+                        metadata={
+                            "plaintiff": "Jin Fuey Moy",
+                            "defendant": "United States",
+                        },
+                    ),
+                    reference_citation(
+                        "Jin Fuey Moy", metadata={"plaintiff": "Jin Fuey Moy"}
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Extract out with whitespace across two tags
+            (
+                (
+                    '<p id="b453-6">\n'
+                    "  The supreme court of Connecticut, in\n"
+                    "  <em>\n"
+                    "   Beardsley\n"
+                    "  </em>\n"
+                    "  v.\n"
+                    "  <em>\n"
+                    "   Hartford,\n"
+                    "  </em>\n"
+                    "  50 Conn. 529, 541-542, after quoting the maxim of the common law;\n"
+                    "  <em>\n"
+                    "   cessante ratione legis-, cessat ipsa lex,\n"
+                    "  </em>"
+                ),
+                [
+                    case_citation(
+                        volume="50",
+                        reporter="Conn.",
+                        page="529",
+                        metadata={
+                            "plaintiff": "Beardsley",
+                            "defendant": "Hartford",
+                            "pin_cite": "541-542",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # identify reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Smart Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the <em>Smart Nobelman </em>decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Smart Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Smart Nobelman",
+                        metadata={"plaintiff": "Smart Nobelman"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # add antecedent guess to check
+            (
+                "the court in <em>Smith Johnson</em>, 1 U. S., at 2",
+                [
+                    case_citation(
+                        page="2",
+                        reporter_found="U. S.",
+                        short=True,
+                        metadata={"antecedent_guess": "Smith Johnson"},
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # make sure not to overwrite good data if this method doesnt work
+            (
+                "Judge Regan (dissenting) in <i>Thrift Funds Canal,</i> Inc. v. Foy, 242 So.2d 253, 257 (La.App. 4 Cir. 1970), calls",
+                [
+                    case_citation(
+                        page="253",
+                        reporter="So.2d",
+                        volume="242",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Thrift Funds Canal, Inc.",
+                            "defendant": "Foy",
+                            "pin_cite": "257",
+                            "year": "1970",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Eyecite has issue with linebreaks when identifying defendants and
+            # previously could store defendant as only whitespace
+            (
+                "<em>\n   Smart v. Tatum,\n  </em>\n \n  541 U.S. 1085 (2004);\n  <em>\n",
+                [
+                    case_citation(
+                        page="1085",
+                        volume="541",
+                        reporter="U.S.",
+                        year=2004,
+                        metadata={
+                            "plaintiff": "Smart",
+                            "defendant": "Tatum",
+                            "court": "scotus",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "inline_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States</i> v. <i>Hodgson,</i> ___ Iowa ___, 44 N.J. 151, 207 A. 2d 542;",
+                [
+                    case_citation(
+                        page="151",
+                        volume="44",
+                        reporter="N.J.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                    case_citation(
+                        page="542",
+                        volume="207",
+                        reporter="A. 2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # tricky scotus fake cites if junk is inbetween remove it
+            (
+                " <i>United States ex rel. Russo v. New Jersey</i>, 351 F.2d 429 something something",
+                [
+                    case_citation(
+                        page="429",
+                        volume="351",
+                        reporter="F.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States ex rel. Russo",
+                            "defendant": "New Jersey",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Identify pincite reference
+            (
+                (
+                    " partially secured by a debtor’s principal residence was not "
+                    "con-firmable. <em>Nobelman v. Am. Sav. Bank, </em>"
+                    "508 U.S. 324 (1993). That plan proposed to bifurcate the claim and... pay the unsecured"
+                    "... only by a lien on the debtor’s principal residence.” "
+                    "codifies the  a lien on the debtor’s principal residence.” "
+                    "<em>Nobelman </em>at 332, decision in individual debtor chapter 11 cases."
+                ),
+                [
+                    case_citation(
+                        volume="508",
+                        reporter="U.S.",
+                        page="324",
+                        metadata={
+                            "plaintiff": "Nobelman",
+                            "defendant": "Am. Sav. Bank",
+                            "year": "1993",
+                        },
+                    ),
+                    reference_citation(
+                        "Nobelman",
+                        metadata={"plaintiff": "Nobelman", "pin_cite": "332"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # remove the See at the start and handle other tags
+            (
+                """<i>See <span class="SpellE">DeSantis</span> v. Wackenhut Corp.</i>, 793 S.W.2d 670;""",
+                [
+                    case_citation(
+                        page="670",
+                        reporter="S.W.2d",
+                        volume="793",
+                        short=False,
+                        metadata={
+                            "plaintiff": "DeSantis",
+                            "defendant": "Wackenhut Corp.",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Antecedent guess
+            (
+                """</span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting);""",
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Strawberry Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Stop word inside tag
+            (
+                """</span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting));""",
+                [
+                    unknown_citation("§"),
+                    case_citation(
+                        page="176",
+                        reporter="S.W.2d",
+                        volume="725",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Hill",
+                            "pin_cite": "176",
+                            "parenthetical": "Gonzalez, J., dissenting",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Handle embedded pagnation
+            (
+                """<i>United States</i> v. <i>Carignan,</i> <span class="star-pagination">*528</span> 342 U. S. 36, 41;""",
+                [
+                    case_citation(
+                        page="36",
+                        volume="342",
+                        reporter="U. S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Carignan",
+                            "pin_cite": "41",
+                            "court": "scotus",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Better support Louisiana with proper extraction of defendant
+            (
+                """objection. <i>Our Lady of the Lake Hosp. v. Vanner,</i> 95-0754, p. 3 (La.App. 1 Cir. 12/15/95), 669 So.2d 463, 464;""",
+                [
+                    case_citation(
+                        page="463",
+                        volume="669",
+                        reporter="So.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Our Lady of the Lake Hosp.",
+                            "defendant": "Vanner",
+                            "pin_cite": "464",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # handle page numbers interfering in short cases
+            (
+                """immunity outlined by the Supreme Court in <em>Saucier, </em><page-number citation-index=\"1\" label=\"1029\">*1029</page-number>533 U.S. at 201, 121 S.Ct. 2151""",
+                [
+                    case_citation(
+                        page="201",
+                        volume="533",
+                        reporter="U.S.",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Saucier",
+                            "pin_cite": "201",
+                            "court": "scotus",
+                        },
+                    ),
+                    case_citation(
+                        page="2151",
+                        volume="121",
+                        reporter="S.Ct.",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Saucier",
+                            "court": "scotus",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # handle bad html
+            (
+                """this Court.\n  <em>\n   Holm; In Re Carroll’s Estate\n  </em>\n  (1921), 59 Mont. 403, 413.""",
+                [
+                    case_citation(
+                        page="403",
+                        volume="59",
+                        reporter="Mont.",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Carroll’s Estate",
+                            "pin_cite": "413",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # handle bad html in antecedent guesses
+            (
+                """party.”
+              <em>
+               Anderson, 477
+              </em>
+              U.S. at 248""",
+                [
+                    case_citation(
+                        volume="477",
+                        reporter="U.S.",
+                        page="248",
+                        short=True,
+                        metadata={
+                            "antecedent_guess": "Anderson",
+                            "court": "scotus",
+                            "pin_cite": "248",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # deal with merged citation and case name html
+            (
+                """and <em>In re Spellman, 4 </em>A.D.2d 215 (N.Y.App.Div.1957). <em>""",
+                [
+                    case_citation(
+                        volume="4",
+                        reporter="A.D.2d",
+                        page="215",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Spellman",
+                        },
+                    )
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """<em>Cf. Akins v. State, </em>104 So.3d 1173 (Fla. 1st DCA 2012)""",
+                [
+                    case_citation(
+                        page="1173",
+                        volume="104",
+                        reporter="So.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Akins",
+                            "defendant": "State",
+                            "year": "2012",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """<em>
+   In re Dixon,
+  </em>
+  41 Cal.2d 756 (1953).""",
+                [
+                    case_citation(
+                        page="756",
+                        volume="41",
+                        reporter="Cal.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": None,
+                            "defendant": "Dixon",
+                            "year": "1953",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # can we extract out the citation if its not wrapped in html but in html
+            (
+                "dentification. Stovall v. Denno, 388 U.S. 293, ",
+                [
+                    case_citation(
+                        page="293",
+                        volume="388",
+                        reporter="U.S.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Stovall",
+                            "defendant": "Denno",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # can we remove see also
+            (
+                """<em>see also Cass v. Stephens</em>,\r\n156 S.W.3d 38""",
+                [
+                    case_citation(
+                        page="38",
+                        volume="156",
+                        reporter="S.W.3d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Cass",
+                            "defendant": "Stephens",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                'the trial court.â€™â€ (quoting Ohree v. Commonwealth, </pre><span class="citation no-link"><span class="volume">26</span> <span class="reporter">Va. App.</span> <span class="page">299</span>',
+                [
+                    case_citation(
+                        page="299",
+                        volume="26",
+                        reporter="Va. App.",
+                        metadata={
+                            "plaintiff": "Ohree",
+                            "defendant": "Commonwealth",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Can we ignore the random (1) or (2)
+            (
+                'See id.; see also Harper v. State, </pre><span class="citation no-link">286 Ga. 216</span><pre class="inline">, 218\n(1) (686 SE2d 786) (2009)',
+                [
+                    case_citation(
+                        page="216",
+                        volume="286",
+                        reporter="Ga.",
+                        metadata={
+                            "plaintiff": "Harper",
+                            "defendant": "State",
+                        },
+                    ),
+                    case_citation(
+                        page="786",
+                        volume="686",
+                        reporter="SE2d",
+                        metadata={
+                            "plaintiff": "Harper",
+                            "defendant": "State",
+                            "extra": ")",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            # Can we parse ex. rel.
+            (
+                """\n\nLynch v. State ex rel. Killebrew, 179 Tenn. 339""",
+                [
+                    case_citation(
+                        page="339",
+                        volume="179",
+                        reporter="Tenn.",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Lynch",
+                            "defendant": "State ex rel. Killebrew",
+                        },
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+            (
+                """ <i>See </i><i>Loup-Miller Const. Co. v. City and County of Denver,</i> 676 P.2d 1170 (Colo.1984) .... <i>See </i><i>Loup-Miller,</i> 676 P.2d 1170 and so on <i>Loup-Miller</i>""",
+                [
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Loup-Miller Const. Co.",
+                            "defendant": "City and County of Denver",
+                        },
+                    ),
+                    case_citation(
+                        page="1170",
+                        volume="676",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "defendant": "Loup-Miller",
+                        },
+                    ),
+                    reference_citation(
+                        "Loup-Miller",
+                        metadata={"defendant": "Loup-Miller"},
+                    ),
+                ],
+                {"clean_steps": ["html", "all_whitespace"]},
+            ),
+        )
+        self.run_test_pairs(test_pairs, "Citation extraction")

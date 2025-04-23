@@ -219,7 +219,7 @@ class ModelsTest(TestCase):
         )[0]
         self.assertEqual(
             full_case_citation.corrected_citation_full(),
-            "Bank v. Vinson, 477 U.S. 57, 60 (scotus 1986)",
+            "Meritor Sav. Bank v. Vinson, 477 U.S. 57, 60 (scotus 1986)",
         )
 
     def test_page_correction(self):

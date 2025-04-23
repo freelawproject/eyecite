@@ -291,7 +291,7 @@ class ResourceCitation(CitationBase):
 
         year: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         self.guess_edition()
 
@@ -375,13 +375,13 @@ class FullLawCitation(FullCitation):
         day: Optional[str] = None
         month: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_law_metadata
 
-        add_law_metadata(self, words)
-        super().add_metadata(words)
+        add_law_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return citation with any variations normalized, including extracted
@@ -404,13 +404,13 @@ class FullLawCitation(FullCitation):
 class FullJournalCitation(FullCitation):
     """Citation to a source from `reporters_db/journals.json`."""
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_journal_metadata
 
-        add_journal_metadata(self, words)
-        super().add_metadata(words)
+        add_journal_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return citation with any variations normalized, including extracted
@@ -521,21 +521,29 @@ class FullCaseCitation(CaseCitation, FullCitation):
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
-    def add_metadata(self, words: "Tokens"):
+    def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import (
-            add_defendant,
             add_post_citation,
             add_pre_citation,
+            find_case_name,
+            find_case_name_in_html,
         )
 
-        add_post_citation(self, words)
-        add_defendant(self, words)
-        add_pre_citation(self, words)
+        add_post_citation(self, document.words)
 
+        if document.markup_text:
+            find_case_name_in_html(self, document)
+            if self.metadata.defendant is None:
+                find_case_name(self, document)
+
+        else:
+            find_case_name(self, document)
+
+        add_pre_citation(self, document)
         self.guess_court()
-        super().add_metadata(words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         """Return formatted version of extracted cite."""
@@ -797,6 +805,11 @@ class StopWordToken(Token):
 
 
 @dataclass(eq=True, unsafe_hash=True)
+class PlaceholderCitationToken(Token):
+    """Placeholder Citation Tokens."""
+
+
+@dataclass(eq=True, unsafe_hash=True)
 class CaseReferenceToken(Token):
     """Word matching plaintiff or defendant in a full case citation"""
 
@@ -875,6 +888,7 @@ class Document:
     clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
         default_factory=list
     )
+    emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
 
     def __post_init__(self):
         if self.plain_text and self.clean_steps:
@@ -895,6 +909,17 @@ class Document:
             self.markup_to_plain = SpanUpdater(
                 self.markup_text, self.plain_text
             )
+
+            self.identify_emphasis_tags()
+
+    def identify_emphasis_tags(self):
+        pattern = re.compile(
+            r"<(em|i)[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL
+        )
+        self.emphasis_tags = [
+            (m.group(2).strip(), m.start(), m.end())
+            for m in pattern.finditer(self.markup_text)
+        ]
 
     def tokenize(self, tokenizer):
         # Tokenize the document and store the results in the document object
