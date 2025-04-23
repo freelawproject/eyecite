@@ -20,8 +20,8 @@ entire list by downloading the output.csv file linked above.
 |  4759430   |                |             Mike M. Johnson             |
 |  5329531   |                |           German Savings Bank           |
 |  5661007   |                |               248 P.2d 52               |
-|  5681753   |  828 AD3d 883  |                                         |
 |  5681753   |                |                5 AD3d 883               |
+|  5681753   |  828 AD3d 883  |                                         |
 |  6040243   |                |             153 Misc 2d 600             |
 |  6185261   |                |             140 F. Supp. 260            |
 |  1917661   |                |                  Vanner                 |
@@ -47,8 +47,8 @@ entire list by downloading the output.csv file linked above.
 |  1440932   |                |               San Giovanni              |
 |  6596585   |    Beckwith    |                                         |
 |  6776333   |                |                  Susser                 |
-|  7493362   | 161 So.2d 580  |                                         |
 |  7493362   |                |              218 So.2d 580              |
+|  7493362   | 161 So.2d 580  |                                         |
 
 
 </details>
@@ -64,6 +64,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/dc6548a9e423028df06c239770506eb15238d2ae.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/9dc7e24487f771f7238d2acef75161b8379ed239.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/d6ca09f251e59e6deb613af60b95fa5088cc475f.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/241/results/output.csv)
