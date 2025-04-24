@@ -1,3 +1,4 @@
+import logging
 import re
 from collections import UserString
 from dataclasses import asdict, dataclass, field
@@ -19,6 +20,8 @@ from typing import (
 from eyecite import clean_text
 from eyecite.annotate import SpanUpdater
 from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
+
+logger = logging.getLogger(__name__)
 
 ResourceType = Hashable
 
@@ -78,6 +81,7 @@ class CitationBase:
     full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
+    document: Optional["Document"] = None
 
     def __post_init__(self):
         """Set up groups and metadata."""
@@ -879,6 +883,13 @@ class Resource(ResourceType):
 
 @dataclass(eq=False, unsafe_hash=False)
 class Document:
+    """A class to encapsulate the source text and the pre-processing applied to
+    it before citation parsing
+
+    If the source text comes from `markup_text`, SpanUpdater objects are
+    created to help on citation parsing
+    """
+
     plain_text: str = ""
     markup_text: Optional[str] = ""
     citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
@@ -889,16 +900,21 @@ class Document:
         default_factory=list
     )
     emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+    source_text: str = ""  # will be useful for the annotation step
 
     def __post_init__(self):
-        if self.plain_text and self.clean_steps:
-            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+        if self.plain_text and not self.markup_text:
+            self.source_text = self.plain_text
+            if self.clean_steps:
+                self.plain_text = clean_text(self.plain_text, self.clean_steps)
 
-        if self.markup_text != "":
+        elif self.markup_text and not self.plain_text:
+            self.source_text = self.markup_text
+
             if "html" not in self.clean_steps:
-                raise (
-                    "`html` is a required cleanup step for markup text",
-                    self.markup_text,
+                self.clean_steps.insert("html", 0)
+                logger.warning(
+                    "`html` has been added to `markup_text` clean_steps list"
                 )
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
@@ -912,6 +928,20 @@ class Document:
 
             self.identify_emphasis_tags()
 
+        elif not self.markup_text and not self.plain_text:
+            raise ValueError("Both `markup_text` and `plain_text` are empty")
+
+        elif self.plain_text and self.markup_text:
+            # both arguments were passed, we assume that `plain_text` is the
+            # cleaned version of `markup_text`
+            if self.clean_steps:
+                raise ValueError(
+                    "Both `markup_text` and `plain_text` were passed. "
+                    "Not clear which to apply `clean_steps` to"
+                )
+
+            self.source_text = self.markup_text
+
     def identify_emphasis_tags(self):
         pattern = re.compile(
             r"<(em|i)[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL
@@ -922,5 +952,6 @@ class Document:
         ]
 
     def tokenize(self, tokenizer):
-        # Tokenize the document and store the results in the document object
+        """Tokenize the document and store the results in the document
+        object"""
         self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)

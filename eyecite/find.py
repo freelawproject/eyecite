@@ -128,6 +128,10 @@ def get_citations(
         else:
             continue
 
+        # save a reference to the Document, to access the clean and source
+        # text in following steps
+        citation.document = document
+
         citations.append(citation)
 
     citations = filter_citations(citations)
