@@ -35,6 +35,7 @@ from typing import (
     Callable,
     Dict,
     Hashable,
+    Iterable,
     List,
     Optional,
     Sequence,
@@ -43,6 +44,8 @@ from typing import (
     cast,
 )
 
+from eyecite import clean_text
+from eyecite.annotate import SpanUpdater
 from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
 
 ResourceType = Hashable
@@ -316,7 +319,7 @@ class ResourceCitation(CitationBase):
 
         year: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         self.guess_edition()
 
@@ -387,26 +390,6 @@ class FullCitation(ResourceCitation):
     &#34;&#34;&#34;Abstract base class indicating that a citation fully identifies a
     resource.&#34;&#34;&#34;
 
-    def is_parallel_citation(self, preceding: CitationBase):
-        &#34;&#34;&#34;Check if preceding citation is parallel
-
-        Args:
-            preceding (): The previous citation found
-
-        Returns: None
-        &#34;&#34;&#34;
-        is_parallel = (
-            self.full_span_start == preceding.full_span_start
-            and self.full_span_end == preceding.full_span_end
-            and isinstance(preceding, FullCaseCitation)
-        )
-        if is_parallel:
-            # if parallel get plaintiff/defendant data from
-            # the earlier citation, since it won&#39;t be on the
-            # parallel one.
-            self.metadata.defendant = preceding.metadata.defendant
-            self.metadata.plaintiff = preceding.metadata.plaintiff
-
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullLawCitation(FullCitation):
@@ -420,13 +403,13 @@ class FullLawCitation(FullCitation):
         day: Optional[str] = None
         month: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_law_metadata
 
-        add_law_metadata(self, words)
-        super().add_metadata(words)
+        add_law_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return citation with any variations normalized, including extracted
@@ -449,13 +432,13 @@ class FullLawCitation(FullCitation):
 class FullJournalCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/journals.json`.&#34;&#34;&#34;
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_journal_metadata
 
-        add_journal_metadata(self, words)
-        super().add_metadata(words)
+        add_journal_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return citation with any variations normalized, including extracted
@@ -536,6 +519,24 @@ class FullCaseCitation(CaseCitation, FullCitation):
     ```
     &#34;&#34;&#34;
 
+    def is_parallel_citation(self, preceding: CaseCitation):
+        &#34;&#34;&#34;Check if preceding citation is parallel
+
+        Args:
+            preceding (): The previous citation found
+
+        Returns: None
+        &#34;&#34;&#34;
+        if self.full_span_start == preceding.full_span_start:
+            # if parallel get plaintiff/defendant data from
+            # the earlier citation, since it won&#39;t be on the
+            # parallel one.
+            self.metadata.defendant = preceding.metadata.defendant
+            self.metadata.plaintiff = preceding.metadata.plaintiff
+            # California style may have a year prior to citation; merge as well
+            self.metadata.year = preceding.metadata.year
+            self.year = preceding.year
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CaseCitation.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
@@ -548,21 +549,29 @@ class FullCaseCitation(CaseCitation, FullCitation):
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import (
-            add_defendant,
             add_post_citation,
             add_pre_citation,
+            find_case_name,
+            find_case_name_in_html,
         )
 
-        add_post_citation(self, words)
-        add_defendant(self, words)
-        add_pre_citation(self, words)
+        add_post_citation(self, document.words)
 
+        if document.markup_text:
+            find_case_name_in_html(self, document)
+            if self.metadata.defendant is None:
+                find_case_name(self, document)
+
+        else:
+            find_case_name(self, document)
+
+        add_pre_citation(self, document)
         self.guess_court()
-        super().add_metadata(words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return formatted version of extracted cite.&#34;&#34;&#34;
@@ -824,6 +833,11 @@ class StopWordToken(Token):
 
 
 @dataclass(eq=True, unsafe_hash=True)
+class PlaceholderCitationToken(Token):
+    &#34;&#34;&#34;Placeholder Citation Tokens.&#34;&#34;&#34;
+
+
+@dataclass(eq=True, unsafe_hash=True)
 class CaseReferenceToken(Token):
     &#34;&#34;&#34;Word matching plaintiff or defendant in a full case citation&#34;&#34;&#34;
 
@@ -888,7 +902,56 @@ class Resource(ResourceType):
         )
 
     def __eq__(self, other):
-        return self.__hash__() == other.__hash__()</code></pre>
+        return self.__hash__() == other.__hash__()
+
+
+@dataclass(eq=False, unsafe_hash=False)
+class Document:
+    plain_text: str = &#34;&#34;
+    markup_text: Optional[str] = &#34;&#34;
+    citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
+    words: Tokens = field(default_factory=list)
+    plain_to_markup: Optional[SpanUpdater] = field(default=None, init=False)
+    markup_to_plain: Optional[SpanUpdater] = field(default=None, init=False)
+    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
+        default_factory=list
+    )
+    emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.plain_text and self.clean_steps:
+            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+
+        if self.markup_text != &#34;&#34;:
+            if &#34;html&#34; not in self.clean_steps:
+                raise (
+                    &#34;`html` is a required cleanup step for markup text&#34;,
+                    self.markup_text,
+                )
+
+            self.plain_text = clean_text(self.markup_text, self.clean_steps)
+
+            self.plain_to_markup = SpanUpdater(
+                self.plain_text, self.markup_text
+            )
+            self.markup_to_plain = SpanUpdater(
+                self.markup_text, self.plain_text
+            )
+
+            self.identify_emphasis_tags()
+
+    def identify_emphasis_tags(self):
+        pattern = re.compile(
+            r&#34;&lt;(em|i)[^&gt;]*&gt;(.*?)&lt;/\1&gt;&#34;, re.IGNORECASE | re.DOTALL
+        )
+        self.emphasis_tags = [
+            (m.group(2).strip(), m.start(), m.end())
+            for m in pattern.finditer(self.markup_text)
+        ]
+
+    def tokenize(self, tokenizer):
+        # Tokenize the document and store the results in the document object
+        self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
 </details>
 </section>
 <section>
@@ -1560,6 +1623,136 @@ and combine their editions.</p></div>
 </li>
 </ul>
 </dd>
+<dt id="eyecite.models.Document"><code class="flex name class">
+<span>class <span class="ident">Document</span></span>
+<span>(</span><span>plain_text: str = '', markup_text: Optional[str] = '', citation_tokens: list[typing.Tuple[int, <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>]] = &lt;factory&gt;, words: List[Union[<a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, str]] = &lt;factory&gt;, clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = &lt;factory&gt;, emphasis_tags: List[Tuple[str, int, int]] = &lt;factory&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Document(plain_text: str = '', markup_text: Optional[str] = '', citation_tokens: list[typing.Tuple[int, eyecite.models.Token]] = <factory>, words: List[Union[eyecite.models.Token, str]] = <factory>, clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = <factory>, emphasis_tags: List[Tuple[str, int, int]] = <factory>)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass(eq=False, unsafe_hash=False)
+class Document:
+    plain_text: str = &#34;&#34;
+    markup_text: Optional[str] = &#34;&#34;
+    citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
+    words: Tokens = field(default_factory=list)
+    plain_to_markup: Optional[SpanUpdater] = field(default=None, init=False)
+    markup_to_plain: Optional[SpanUpdater] = field(default=None, init=False)
+    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
+        default_factory=list
+    )
+    emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+
+    def __post_init__(self):
+        if self.plain_text and self.clean_steps:
+            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+
+        if self.markup_text != &#34;&#34;:
+            if &#34;html&#34; not in self.clean_steps:
+                raise (
+                    &#34;`html` is a required cleanup step for markup text&#34;,
+                    self.markup_text,
+                )
+
+            self.plain_text = clean_text(self.markup_text, self.clean_steps)
+
+            self.plain_to_markup = SpanUpdater(
+                self.plain_text, self.markup_text
+            )
+            self.markup_to_plain = SpanUpdater(
+                self.markup_text, self.plain_text
+            )
+
+            self.identify_emphasis_tags()
+
+    def identify_emphasis_tags(self):
+        pattern = re.compile(
+            r&#34;&lt;(em|i)[^&gt;]*&gt;(.*?)&lt;/\1&gt;&#34;, re.IGNORECASE | re.DOTALL
+        )
+        self.emphasis_tags = [
+            (m.group(2).strip(), m.start(), m.end())
+            for m in pattern.finditer(self.markup_text)
+        ]
+
+    def tokenize(self, tokenizer):
+        # Tokenize the document and store the results in the document object
+        self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
+</details>
+<h3>Class variables</h3>
+<dl>
+<dt id="eyecite.models.Document.citation_tokens"><code class="name">var <span class="ident">citation_tokens</span> : list[typing.Tuple[int, <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.clean_steps"><code class="name">var <span class="ident">clean_steps</span> : Optional[Iterable[Union[str, Callable[[str], str]]]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.emphasis_tags"><code class="name">var <span class="ident">emphasis_tags</span> : List[Tuple[str, int, int]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.markup_text"><code class="name">var <span class="ident">markup_text</span> : Optional[str]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.markup_to_plain"><code class="name">var <span class="ident">markup_to_plain</span> : Optional[eyecite.annotate.SpanUpdater]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.plain_text"><code class="name">var <span class="ident">plain_text</span> : str</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.plain_to_markup"><code class="name">var <span class="ident">plain_to_markup</span> : Optional[eyecite.annotate.SpanUpdater]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.words"><code class="name">var <span class="ident">words</span> : List[Union[<a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, str]]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="eyecite.models.Document.identify_emphasis_tags"><code class="name flex">
+<span>def <span class="ident">identify_emphasis_tags</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def identify_emphasis_tags(self):
+    pattern = re.compile(
+        r&#34;&lt;(em|i)[^&gt;]*&gt;(.*?)&lt;/\1&gt;&#34;, re.IGNORECASE | re.DOTALL
+    )
+    self.emphasis_tags = [
+        (m.group(2).strip(), m.start(), m.end())
+        for m in pattern.finditer(self.markup_text)
+    ]</code></pre>
+</details>
+</dd>
+<dt id="eyecite.models.Document.tokenize"><code class="name flex">
+<span>def <span class="ident">tokenize</span></span>(<span>self, tokenizer)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tokenize(self, tokenizer):
+    # Tokenize the document and store the results in the document object
+    self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
 <dt id="eyecite.models.Edition"><code class="flex name class">
 <span>class <span class="ident">Edition</span></span>
 <span>(</span><span>reporter: <a title="eyecite.models.Reporter" href="#eyecite.models.Reporter">Reporter</a>, short_name: str, start: Optional[datetime.datetime], end: Optional[datetime.datetime])</span>
@@ -1663,6 +1856,24 @@ class FullCaseCitation(CaseCitation, FullCitation):
     ```
     &#34;&#34;&#34;
 
+    def is_parallel_citation(self, preceding: CaseCitation):
+        &#34;&#34;&#34;Check if preceding citation is parallel
+
+        Args:
+            preceding (): The previous citation found
+
+        Returns: None
+        &#34;&#34;&#34;
+        if self.full_span_start == preceding.full_span_start:
+            # if parallel get plaintiff/defendant data from
+            # the earlier citation, since it won&#39;t be on the
+            # parallel one.
+            self.metadata.defendant = preceding.metadata.defendant
+            self.metadata.plaintiff = preceding.metadata.plaintiff
+            # California style may have a year prior to citation; merge as well
+            self.metadata.year = preceding.metadata.year
+            self.year = preceding.year
+
     @dataclass(eq=True, unsafe_hash=True)
     class Metadata(CaseCitation.Metadata):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
@@ -1675,21 +1886,29 @@ class FullCaseCitation(CaseCitation, FullCitation):
         resolved_case_name_short: Optional[str] = None
         resolved_case_name: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import (
-            add_defendant,
             add_post_citation,
             add_pre_citation,
+            find_case_name,
+            find_case_name_in_html,
         )
 
-        add_post_citation(self, words)
-        add_defendant(self, words)
-        add_pre_citation(self, words)
+        add_post_citation(self, document.words)
 
+        if document.markup_text:
+            find_case_name_in_html(self, document)
+            if self.metadata.defendant is None:
+                find_case_name(self, document)
+
+        else:
+            find_case_name(self, document)
+
+        add_pre_citation(self, document)
         self.guess_court()
-        super().add_metadata(words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return formatted version of extracted cite.&#34;&#34;&#34;
@@ -1750,6 +1969,37 @@ class FullCaseCitation(CaseCitation, FullCitation):
     return &#34;&#34;.join(parts)</code></pre>
 </details>
 </dd>
+<dt id="eyecite.models.FullCaseCitation.is_parallel_citation"><code class="name flex">
+<span>def <span class="ident">is_parallel_citation</span></span>(<span>self, preceding: <a title="eyecite.models.CaseCitation" href="#eyecite.models.CaseCitation">CaseCitation</a>)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Check if preceding citation is parallel</p>
+<h2 id="args">Args</h2>
+<p>preceding (): The previous citation found
+Returns: None</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def is_parallel_citation(self, preceding: CaseCitation):
+    &#34;&#34;&#34;Check if preceding citation is parallel
+
+    Args:
+        preceding (): The previous citation found
+
+    Returns: None
+    &#34;&#34;&#34;
+    if self.full_span_start == preceding.full_span_start:
+        # if parallel get plaintiff/defendant data from
+        # the earlier citation, since it won&#39;t be on the
+        # parallel one.
+        self.metadata.defendant = preceding.metadata.defendant
+        self.metadata.plaintiff = preceding.metadata.plaintiff
+        # California style may have a year prior to citation; merge as well
+        self.metadata.year = preceding.metadata.year
+        self.year = preceding.year</code></pre>
+</details>
+</dd>
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
@@ -1769,11 +2019,6 @@ class FullCaseCitation(CaseCitation, FullCitation):
 <li><code><a title="eyecite.models.CaseCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
 </ul>
 </li>
-<li><code><b><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></b></code>:
-<ul class="hlist">
-<li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
-</ul>
-</li>
 </ul>
 </dd>
 <dt id="eyecite.models.FullCitation"><code class="flex name class">
@@ -1790,27 +2035,7 @@ resource.</p></div>
 <pre><code class="python">@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullCitation(ResourceCitation):
     &#34;&#34;&#34;Abstract base class indicating that a citation fully identifies a
-    resource.&#34;&#34;&#34;
-
-    def is_parallel_citation(self, preceding: CitationBase):
-        &#34;&#34;&#34;Check if preceding citation is parallel
-
-        Args:
-            preceding (): The previous citation found
-
-        Returns: None
-        &#34;&#34;&#34;
-        is_parallel = (
-            self.full_span_start == preceding.full_span_start
-            and self.full_span_end == preceding.full_span_end
-            and isinstance(preceding, FullCaseCitation)
-        )
-        if is_parallel:
-            # if parallel get plaintiff/defendant data from
-            # the earlier citation, since it won&#39;t be on the
-            # parallel one.
-            self.metadata.defendant = preceding.metadata.defendant
-            self.metadata.plaintiff = preceding.metadata.plaintiff</code></pre>
+    resource.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1823,42 +2048,6 @@ class FullCitation(ResourceCitation):
 <li><a title="eyecite.models.FullJournalCitation" href="#eyecite.models.FullJournalCitation">FullJournalCitation</a></li>
 <li><a title="eyecite.models.FullLawCitation" href="#eyecite.models.FullLawCitation">FullLawCitation</a></li>
 </ul>
-<h3>Methods</h3>
-<dl>
-<dt id="eyecite.models.FullCitation.is_parallel_citation"><code class="name flex">
-<span>def <span class="ident">is_parallel_citation</span></span>(<span>self, preceding: <a title="eyecite.models.CitationBase" href="#eyecite.models.CitationBase">CitationBase</a>)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Check if preceding citation is parallel</p>
-<h2 id="args">Args</h2>
-<p>preceding (): The previous citation found
-Returns: None</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def is_parallel_citation(self, preceding: CitationBase):
-    &#34;&#34;&#34;Check if preceding citation is parallel
-
-    Args:
-        preceding (): The previous citation found
-
-    Returns: None
-    &#34;&#34;&#34;
-    is_parallel = (
-        self.full_span_start == preceding.full_span_start
-        and self.full_span_end == preceding.full_span_end
-        and isinstance(preceding, FullCaseCitation)
-    )
-    if is_parallel:
-        # if parallel get plaintiff/defendant data from
-        # the earlier citation, since it won&#39;t be on the
-        # parallel one.
-        self.metadata.defendant = preceding.metadata.defendant
-        self.metadata.plaintiff = preceding.metadata.plaintiff</code></pre>
-</details>
-</dd>
-</dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
 <li><code><b><a title="eyecite.models.ResourceCitation" href="#eyecite.models.ResourceCitation">ResourceCitation</a></b></code>:
@@ -1893,13 +2082,13 @@ Returns: None</p></div>
 class FullJournalCitation(FullCitation):
     &#34;&#34;&#34;Citation to a source from `reporters_db/journals.json`.&#34;&#34;&#34;
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_journal_metadata
 
-        add_journal_metadata(self, words)
-        super().add_metadata(words)
+        add_journal_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return citation with any variations normalized, including extracted
@@ -1933,7 +2122,6 @@ class FullJournalCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
@@ -1963,13 +2151,13 @@ class FullLawCitation(FullCitation):
         day: Optional[str] = None
         month: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         # pylint: disable=import-outside-toplevel
         from eyecite.helpers import add_law_metadata
 
-        add_law_metadata(self, words)
-        super().add_metadata(words)
+        add_law_metadata(self, document.words)
+        super().add_metadata(document)
 
     def corrected_citation_full(self):
         &#34;&#34;&#34;Return citation with any variations normalized, including extracted
@@ -2006,7 +2194,6 @@ class FullLawCitation(FullCitation):
 <li><code><a title="eyecite.models.FullCitation.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.guess_edition" href="#eyecite.models.ResourceCitation.guess_edition">guess_edition</a></code></li>
-<li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.matched_text" href="#eyecite.models.CitationBase.matched_text">matched_text</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span" href="#eyecite.models.CitationBase.span">span</a></code></li>
 <li><code><a title="eyecite.models.FullCitation.span_with_pincite" href="#eyecite.models.CitationBase.span_with_pincite">span_with_pincite</a></code></li>
@@ -2145,6 +2332,41 @@ class IdToken(Token):
 <pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
 class ParagraphToken(Token):
     &#34;&#34;&#34;Word matching a break between paragraphs.&#34;&#34;&#34;</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></li>
+<li>collections.UserString</li>
+<li>collections.abc.Sequence</li>
+<li>collections.abc.Reversible</li>
+<li>collections.abc.Collection</li>
+<li>collections.abc.Sized</li>
+<li>collections.abc.Iterable</li>
+<li>collections.abc.Container</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a></b></code>:
+<ul class="hlist">
+<li><code><a title="eyecite.models.Token.from_match" href="#eyecite.models.Token.from_match">from_match</a></code></li>
+<li><code><a title="eyecite.models.Token.merge" href="#eyecite.models.Token.merge">merge</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="eyecite.models.PlaceholderCitationToken"><code class="flex name class">
+<span>class <span class="ident">PlaceholderCitationToken</span></span>
+<span>(</span><span>data: str, start: int, end: int, groups: dict = &lt;factory&gt;)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Placeholder Citation Tokens.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@dataclass(eq=True, unsafe_hash=True)
+class PlaceholderCitationToken(Token):
+    &#34;&#34;&#34;Placeholder Citation Tokens.&#34;&#34;&#34;</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -2398,7 +2620,7 @@ class ResourceCitation(CitationBase):
 
         year: Optional[str] = None
 
-    def add_metadata(self, words: &#34;Tokens&#34;):
+    def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
         self.guess_edition()
 
@@ -2498,7 +2720,7 @@ class ResourceCitation(CitationBase):
 <h3>Methods</h3>
 <dl>
 <dt id="eyecite.models.ResourceCitation.add_metadata"><code class="name flex">
-<span>def <span class="ident">add_metadata</span></span>(<span>self, words: Tokens)</span>
+<span>def <span class="ident">add_metadata</span></span>(<span>self, document: <a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Extract metadata from text before and after citation.</p></div>
@@ -2506,7 +2728,7 @@ class ResourceCitation(CitationBase):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add_metadata(self, words: &#34;Tokens&#34;):
+<pre><code class="python">def add_metadata(self, document: &#34;Document&#34;):
     &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
     self.guess_edition()</code></pre>
 </details>
@@ -2983,6 +3205,7 @@ class Token(UserString):
 <li><a title="eyecite.models.CitationToken" href="#eyecite.models.CitationToken">CitationToken</a></li>
 <li><a title="eyecite.models.IdToken" href="#eyecite.models.IdToken">IdToken</a></li>
 <li><a title="eyecite.models.ParagraphToken" href="#eyecite.models.ParagraphToken">ParagraphToken</a></li>
+<li><a title="eyecite.models.PlaceholderCitationToken" href="#eyecite.models.PlaceholderCitationToken">PlaceholderCitationToken</a></li>
 <li><a title="eyecite.models.SectionToken" href="#eyecite.models.SectionToken">SectionToken</a></li>
 <li><a title="eyecite.models.StopWordToken" href="#eyecite.models.StopWordToken">StopWordToken</a></li>
 <li><a title="eyecite.models.SupraToken" href="#eyecite.models.SupraToken">SupraToken</a></li>
@@ -3279,6 +3502,21 @@ class UnknownCitation(CitationBase):
 </ul>
 </li>
 <li>
+<h4><code><a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a></code></h4>
+<ul class="">
+<li><code><a title="eyecite.models.Document.citation_tokens" href="#eyecite.models.Document.citation_tokens">citation_tokens</a></code></li>
+<li><code><a title="eyecite.models.Document.clean_steps" href="#eyecite.models.Document.clean_steps">clean_steps</a></code></li>
+<li><code><a title="eyecite.models.Document.emphasis_tags" href="#eyecite.models.Document.emphasis_tags">emphasis_tags</a></code></li>
+<li><code><a title="eyecite.models.Document.identify_emphasis_tags" href="#eyecite.models.Document.identify_emphasis_tags">identify_emphasis_tags</a></code></li>
+<li><code><a title="eyecite.models.Document.markup_text" href="#eyecite.models.Document.markup_text">markup_text</a></code></li>
+<li><code><a title="eyecite.models.Document.markup_to_plain" href="#eyecite.models.Document.markup_to_plain">markup_to_plain</a></code></li>
+<li><code><a title="eyecite.models.Document.plain_text" href="#eyecite.models.Document.plain_text">plain_text</a></code></li>
+<li><code><a title="eyecite.models.Document.plain_to_markup" href="#eyecite.models.Document.plain_to_markup">plain_to_markup</a></code></li>
+<li><code><a title="eyecite.models.Document.tokenize" href="#eyecite.models.Document.tokenize">tokenize</a></code></li>
+<li><code><a title="eyecite.models.Document.words" href="#eyecite.models.Document.words">words</a></code></li>
+</ul>
+</li>
+<li>
 <h4><code><a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a></code></h4>
 <ul class="">
 <li><code><a title="eyecite.models.Edition.end" href="#eyecite.models.Edition.end">end</a></code></li>
@@ -3292,13 +3530,11 @@ class UnknownCitation(CitationBase):
 <h4><code><a title="eyecite.models.FullCaseCitation" href="#eyecite.models.FullCaseCitation">FullCaseCitation</a></code></h4>
 <ul class="">
 <li><code><a title="eyecite.models.FullCaseCitation.corrected_citation_full" href="#eyecite.models.FullCaseCitation.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.FullCaseCitation.is_parallel_citation" href="#eyecite.models.FullCaseCitation.is_parallel_citation">is_parallel_citation</a></code></li>
 </ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.FullCitation" href="#eyecite.models.FullCitation">FullCitation</a></code></h4>
-<ul class="">
-<li><code><a title="eyecite.models.FullCitation.is_parallel_citation" href="#eyecite.models.FullCitation.is_parallel_citation">is_parallel_citation</a></code></li>
-</ul>
 </li>
 <li>
 <h4><code><a title="eyecite.models.FullJournalCitation" href="#eyecite.models.FullJournalCitation">FullJournalCitation</a></code></h4>
@@ -3317,6 +3553,9 @@ class UnknownCitation(CitationBase):
 </li>
 <li>
 <h4><code><a title="eyecite.models.ParagraphToken" href="#eyecite.models.ParagraphToken">ParagraphToken</a></code></h4>
+</li>
+<li>
+<h4><code><a title="eyecite.models.PlaceholderCitationToken" href="#eyecite.models.PlaceholderCitationToken">PlaceholderCitationToken</a></code></h4>
 </li>
 <li>
 <h4><code><a title="eyecite.models.ReferenceCitation" href="#eyecite.models.ReferenceCitation">ReferenceCitation</a></code></h4>

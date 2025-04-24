@@ -53,6 +53,7 @@ from eyecite.models import (
     Edition,
     IdToken,
     ParagraphToken,
+    PlaceholderCitationToken,
     Reporter,
     SectionToken,
     StopWordToken,
@@ -65,6 +66,7 @@ from eyecite.regexes import (
     ID_REGEX,
     PAGE_NUMBER_REGEX,
     PARAGRAPH_REGEX,
+    PLACEHOLDER_CITATIONS,
     SECTION_REGEX,
     STOP_WORD_REGEX,
     STOP_WORDS,
@@ -82,6 +84,46 @@ from eyecite.regexes import (
 
 EXTRACTORS = []
 EDITIONS_LOOKUP = defaultdict(list)
+
+NOMINATIVE_REPORTER_NAMES = {
+    &#34;Thompson&#34;,
+    &#34;Cooke&#34;,
+    &#34;Holmes&#34;,
+    &#34;Olcott&#34;,
+    &#34;Chase&#34;,
+    &#34;Gilmer&#34;,
+    &#34;Bee&#34;,
+    &#34;Deady&#34;,
+    &#34;Taney&#34;,
+}
+
+
+def token_is_from_nominative_reporter(token: Token) -&gt; bool:
+    &#34;&#34;&#34;Returns true if the token is a citation from a nominative reporter
+
+    Cleaner way to do this would be via an attribute or named group from
+    reporters-db. However; this tagging is currently not complete, so we can
+    use a list of the most problematic names `NOMINATIVE_REPORTER_NAMES`
+
+    ```
+    volume_nominative = token.groups.get(&#34;volume_nominative&#34;, False)
+    reporter_nominative = token.groups.get(&#34;reporter_nominative&#34;, False)
+    token.exact_editions[0].reporter.name
+    return volume_nominative is None or volume_nominative
+        or reporter_nominative is None or reporter_nominative
+    ```
+
+    :param token: the token
+    :return: True if the token has a `volume_nominative` group, even if there
+        was no match; False if it didn&#39;t have the group
+    &#34;&#34;&#34;
+    if not isinstance(token, CitationToken):
+        return False
+    if token.exact_editions:
+        name = token.exact_editions[0].reporter.short_name
+    else:
+        name = token.variation_editions[0].reporter.short_name
+    return name in NOMINATIVE_REPORTER_NAMES
 
 
 def _populate_reporter_extractors():
@@ -294,6 +336,12 @@ def _populate_reporter_extractors():
                 flags=re.I,
                 strings=STOP_WORDS,
             ),
+            # placeholder citations
+            TokenExtractor(
+                PLACEHOLDER_CITATIONS,
+                PlaceholderCitationToken.from_match,
+                flags=re.I,
+            ),
             # tokens containing section symbols
             TokenExtractor(
                 SECTION_REGEX, SectionToken.from_match, strings=[&#34;§&#34;]
@@ -341,8 +389,19 @@ class Tokenizer:
                 if merged:
                     continue
             if offset &gt; token.start:
-                # skip overlaps
-                continue
+                if (
+                    last_token
+                    and isinstance(token, CitationToken)
+                    and token_is_from_nominative_reporter(last_token)
+                ):
+                    # if a token has overlapping matches between a nominative
+                    # reporter and another type of case citation, prefer the
+                    # other case citation. See #221 and #174
+                    citation_tokens.pop(-1)
+                    all_tokens.pop(-1)
+                else:
+                    # skip overlaps
+                    continue
             if offset &lt; token.start:
                 # capture plain text before each match
                 self.append_text(all_tokens, text[offset : token.start])
@@ -354,6 +413,7 @@ class Tokenizer:
         # capture plain text after final match
         if offset &lt; len(text):
             self.append_text(all_tokens, text[offset:])
+
         return all_tokens, citation_tokens
 
     def get_extractors(self, text: str):
@@ -589,6 +649,58 @@ default_tokenizer = AhocorasickTokenizer()</code></pre>
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="eyecite.tokenizers.token_is_from_nominative_reporter"><code class="name flex">
+<span>def <span class="ident">token_is_from_nominative_reporter</span></span>(<span>token: <a title="eyecite.models.Token" href="models.html#eyecite.models.Token">Token</a>) ‑> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns true if the token is a citation from a nominative reporter</p>
+<p>Cleaner way to do this would be via an attribute or named group from
+reporters-db. However; this tagging is currently not complete, so we can
+use a list of the most problematic names <code>NOMINATIVE_REPORTER_NAMES</code></p>
+<pre><code>volume_nominative = token.groups.get(&quot;volume_nominative&quot;, False)
+reporter_nominative = token.groups.get(&quot;reporter_nominative&quot;, False)
+token.exact_editions[0].reporter.name
+return volume_nominative is None or volume_nominative
+    or reporter_nominative is None or reporter_nominative
+</code></pre>
+<p>:param token: the token
+:return: True if the token has a <code>volume_nominative</code> group, even if there
+was no match; False if it didn't have the group</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def token_is_from_nominative_reporter(token: Token) -&gt; bool:
+    &#34;&#34;&#34;Returns true if the token is a citation from a nominative reporter
+
+    Cleaner way to do this would be via an attribute or named group from
+    reporters-db. However; this tagging is currently not complete, so we can
+    use a list of the most problematic names `NOMINATIVE_REPORTER_NAMES`
+
+    ```
+    volume_nominative = token.groups.get(&#34;volume_nominative&#34;, False)
+    reporter_nominative = token.groups.get(&#34;reporter_nominative&#34;, False)
+    token.exact_editions[0].reporter.name
+    return volume_nominative is None or volume_nominative
+        or reporter_nominative is None or reporter_nominative
+    ```
+
+    :param token: the token
+    :return: True if the token has a `volume_nominative` group, even if there
+        was no match; False if it didn&#39;t have the group
+    &#34;&#34;&#34;
+    if not isinstance(token, CitationToken):
+        return False
+    if token.exact_editions:
+        name = token.exact_editions[0].reporter.short_name
+    else:
+        name = token.variation_editions[0].reporter.short_name
+    return name in NOMINATIVE_REPORTER_NAMES</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -1119,8 +1231,19 @@ class Tokenizer:
                 if merged:
                     continue
             if offset &gt; token.start:
-                # skip overlaps
-                continue
+                if (
+                    last_token
+                    and isinstance(token, CitationToken)
+                    and token_is_from_nominative_reporter(last_token)
+                ):
+                    # if a token has overlapping matches between a nominative
+                    # reporter and another type of case citation, prefer the
+                    # other case citation. See #221 and #174
+                    citation_tokens.pop(-1)
+                    all_tokens.pop(-1)
+                else:
+                    # skip overlaps
+                    continue
             if offset &lt; token.start:
                 # capture plain text before each match
                 self.append_text(all_tokens, text[offset : token.start])
@@ -1132,6 +1255,7 @@ class Tokenizer:
         # capture plain text after final match
         if offset &lt; len(text):
             self.append_text(all_tokens, text[offset:])
+
         return all_tokens, citation_tokens
 
     def get_extractors(self, text: str):
@@ -1262,8 +1386,19 @@ just non-string tokens along with their positions in the first list.</p></div>
             if merged:
                 continue
         if offset &gt; token.start:
-            # skip overlaps
-            continue
+            if (
+                last_token
+                and isinstance(token, CitationToken)
+                and token_is_from_nominative_reporter(last_token)
+            ):
+                # if a token has overlapping matches between a nominative
+                # reporter and another type of case citation, prefer the
+                # other case citation. See #221 and #174
+                citation_tokens.pop(-1)
+                all_tokens.pop(-1)
+            else:
+                # skip overlaps
+                continue
         if offset &lt; token.start:
             # capture plain text before each match
             self.append_text(all_tokens, text[offset : token.start])
@@ -1275,6 +1410,7 @@ just non-string tokens along with their positions in the first list.</p></div>
     # capture plain text after final match
     if offset &lt; len(text):
         self.append_text(all_tokens, text[offset:])
+
     return all_tokens, citation_tokens</code></pre>
 </details>
 </dd>
@@ -1292,6 +1428,11 @@ just non-string tokens along with their positions in the first list.</p></div>
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="eyecite" href="index.html">eyecite</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="eyecite.tokenizers.token_is_from_nominative_reporter" href="#eyecite.tokenizers.token_is_from_nominative_reporter">token_is_from_nominative_reporter</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
