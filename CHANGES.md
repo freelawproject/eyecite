@@ -5,6 +5,22 @@
 The following changes are not yet released, but are code complete:
 
 Features:
+-
+
+Changes:
+- 
+
+Fixes:
+- 
+
+## Current
+
+**2.7.0 - 2025-04-24**
+
+Minor version update because `get_citations` Now performs text cleanup internally,
+which will require users to update any code using `eyecite`
+
+Features:
 - Introduced `Document` object to encapsulate plain text, markup text, span updates, tokens, and citation strings.
 - Simplifies citation processing by reducing parameter passing and improving maintainability (hopefully).
 - Should enable more complex html parsing.
@@ -14,19 +30,19 @@ Features:
 
 Changes:
 - Moved text cleaning logic into `get_citations` for simpler call with markup
-- Simplifies is parallel logic
-- moves is parallel citation to full case citation 
+- Simplifies `is_parallel` logic
+- moves `is_parallel_citation` to `FullCaseCitation`
 - remove add defendant for separate html and plain text processing 
 
 Fixes:
 - Fixes run on extra regex captures by capping at semicolons
-- Prefer the other full citation on overlap with nominative reporter 
-  citations #237
+- Prefer the other full citation on overlap with nominative reporter citations #237
 - Update `maybe_balance_style_tags` to account for party names and intro words
   inside the style tag #231
 - updated `.github/workflows/tests.yml` to use the latest ubuntu image
 
-## Current
+
+## Past
 
 **2.6.11 - 2025-02-20**
 
@@ -37,8 +53,6 @@ Fixes:
 
 Features:
 - Adds support to correct citation page
-
-## Past
 
 **2.6.9 - 2025-02-20**
 
