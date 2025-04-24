@@ -115,19 +115,34 @@ Extracting Citations
 
 :code:`get_citations()`, the main executable function, takes four parameters.
 
-1. :code:`plain_text` ==> str: The text to parse. Should be cleaned first.
+1. :code:`plain_text` ==> str, default :code:`''`: The text to parse. If the 
+    text has markup, it's better to use the :code:`markup_text` argument to get
+    enhanced extraction. One of `plain_text` or `markup_text` must be passed
+    as input.
 2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations
-   that might refer to more than one reporter and can't be narrowed down by date.
-3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
-4. :code:`markup_text` ==> str, default :code:`''`: optional XML or HTML source text that will be used to extract ReferenceCitations via :code:`find_reference_citations_from_markup`
+    that might refer to more than one reporter and can't be narrowed down by date.
+3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: 
+    An instance of a Tokenizer object (see "Tokenizers" below).
+4. :code:`markup_text` ==> str, default :code:`''`: optional XML or HTML source 
+    text that will be used to extract ReferenceCitations or help identify case 
+    names using markup tags. 
+5. :code:`clean_steps` ==> list, default :code:`None`: list of callables or the 
+    name string of functions in `clean.py`. Used to clean the input text
 
 
 Resolving Reference Citations
 -----------------------------
 
-Eyecite now supports a two-step process for extracting and resolving reference citations. This feature improves handling of citations that reference previously mentioned cases without explicitly repeating the full case name or citation.
+Eyecite now supports a two-step process for extracting and resolving reference 
+citations. This feature improves handling of citations that reference previously 
+mentioned cases without explicitly repeating the full case name or citation.
 
-Reference citations, such as “Theatre Enterprises at 552”, can be difficult to extract accurately if a judge is citing to `Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954)` they lack a full case name. To address this, Eyecite allows for an initial citation extraction, followed by a secondary reference resolution step. If you have an external database (e.g., CourtListener) that provides resolved case names, you can use this feature to enhance citation finding.::
+Reference citations, such as “Theatre Enterprises at 552”, can be difficult to 
+extract accurately if a judge is citing to `Theatre Enterprises, Inc. v. Paramount Film Distributing Corp., 346 U. S. 537, 541 (1954)` 
+they lack a full case name. To address this, Eyecite allows for an initial 
+citation extraction, followed by a secondary reference resolution step. 
+If you have an external database (e.g., CourtListener) that provides resolved 
+case names, you can use this feature to enhance citation finding.::
 
     from eyecite import get_citations
     from eyecite.find import extract_reference_citations
@@ -158,20 +173,23 @@ Reference citations, such as “Theatre Enterprises at 552”, can be difficult 
     # Step 4: Filter and merge citations
     new_citations = filter_citations(citations + references)
 
-Keep in mind that this feature requires an external database or heuristic method to resolve the short case name before extracting reference citations a second time.
+Keep in mind that this feature requires an external database or heuristic 
+method to resolve the short case name before extracting reference citations a second time.
 
 
 Cleaning Input Text
 -------------------
 
-For a given citation text such as "... 1 Baldwin's Rep. 1 ...", eyecite expects that the text
-will be "clean" before being passed to :code:`get_citation`. This means:
+For a given citation text such as "... 1 Baldwin's Rep. 1 ...", you can input
+the cleaned text and pass it in the :code:`plain_text` argument without 
+:code:`clean_steps``, or you can pass it without pre processing and pass a list
+to :code:`clean_steps`
 
 * Spaces will be single space characters, not multiple spaces or other whitespace.
 * Quotes and hyphens will be standard quote and hyphen characters.
 * No junk such as HTML tags inside the citation.
 
-You can use :code:`clean_text` to help with this:
+The cleanup is done via :code:`clean_text`:
 
 ::
 
