@@ -5,16 +5,26 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- Add a `xml` clean function useful for Harvard XML
+- 
 
 Changes:
-- Now each citation saves a reference to the associated Document object. This
-  is needed to create the SpanUpdater for annotation
+- 
 
 Fixes:
 - 
 
 ## Current
+
+**2.7.1 - 2025-04-25**
+
+Features:
+- Add a `xml` clean function useful for Harvard XML
+
+Changes:
+- Now each citation saves a reference to the associated Document object. This
+  is needed to create the SpanUpdater for annotation
+- Add optional `offset_updater` argument to `annotate_citations`, to reuse
+`plain_to_markup` SpanUpdater used when finding citations for markup sources
 
 **2.7.0 - 2025-04-24**
 
