@@ -95,9 +95,25 @@ def underscores(text: str) -> str:
     return re.sub(r"__+", "", text)
 
 
+def xml(text: str) -> str:
+    """Remove the XML opening tag.
+
+    Needed when the same document is to be cleaned using `html`, since the
+    presence of such tags would break the use of `lxml.html.fromstring`.
+
+    Args:
+        text: The input string.
+
+    Returns:
+        Text without xml opening tag.
+    """
+    return re.sub(r"^<\?xml.*?\?>", "", text, count=1)
+
+
 cleaners_lookup: Dict[str, Callable[[str], str]] = {
     "html": html,
     "inline_whitespace": inline_whitespace,
     "all_whitespace": all_whitespace,
     "underscores": underscores,
+    "xml": xml,
 }

@@ -231,7 +231,6 @@ def _scan_for_case_boundaries(
 
         # Break on opening parenthesis after first word
         if word_str.startswith("(") and state["case_name_length"] > 3:
-
             state["start_index"] = index
             if (
                 word_str == "("

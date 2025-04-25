@@ -5,10 +5,11 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Add a `xml` clean function useful for Harvard XML
 
 Changes:
-- 
+- Now each citation saves a reference to the associated Document object. This
+  is needed to create the SpanUpdater for annotation
 
 Fixes:
 - 
