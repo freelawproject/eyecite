@@ -123,11 +123,27 @@ def underscores(text: str) -&gt; str:
     return re.sub(r&#34;__+&#34;, &#34;&#34;, text)
 
 
+def xml(text: str) -&gt; str:
+    &#34;&#34;&#34;Remove the XML opening tag.
+
+    Needed when the same document is to be cleaned using `html`, since the
+    presence of such tags would break the use of `lxml.html.fromstring`.
+
+    Args:
+        text: The input string.
+
+    Returns:
+        Text without xml opening tag.
+    &#34;&#34;&#34;
+    return re.sub(r&#34;^&lt;\?xml.*?\?&gt;&#34;, &#34;&#34;, text, count=1)
+
+
 cleaners_lookup: Dict[str, Callable[[str], str]] = {
     &#34;html&#34;: html,
     &#34;inline_whitespace&#34;: inline_whitespace,
     &#34;all_whitespace&#34;: all_whitespace,
     &#34;underscores&#34;: underscores,
+    &#34;xml&#34;: xml,
 }</code></pre>
 </details>
 </section>
@@ -320,6 +336,39 @@ in text extracted from PDFs.</p>
     return re.sub(r&#34;__+&#34;, &#34;&#34;, text)</code></pre>
 </details>
 </dd>
+<dt id="eyecite.clean.xml"><code class="name flex">
+<span>def <span class="ident">xml</span></span>(<span>text: str) ‑> str</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Remove the XML opening tag.</p>
+<p>Needed when the same document is to be cleaned using <code><a title="eyecite.clean.html" href="#eyecite.clean.html">html()</a></code>, since the
+presence of such tags would break the use of <code>lxml.html.fromstring</code>.</p>
+<h2 id="args">Args</h2>
+<dl>
+<dt><strong><code>text</code></strong></dt>
+<dd>The input string.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Text without xml opening tag.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xml(text: str) -&gt; str:
+    &#34;&#34;&#34;Remove the XML opening tag.
+
+    Needed when the same document is to be cleaned using `html`, since the
+    presence of such tags would break the use of `lxml.html.fromstring`.
+
+    Args:
+        text: The input string.
+
+    Returns:
+        Text without xml opening tag.
+    &#34;&#34;&#34;
+    return re.sub(r&#34;^&lt;\?xml.*?\?&gt;&#34;, &#34;&#34;, text, count=1)</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -337,12 +386,13 @@ in text extracted from PDFs.</p>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
-<ul class="">
+<ul class="two-column">
 <li><code><a title="eyecite.clean.all_whitespace" href="#eyecite.clean.all_whitespace">all_whitespace</a></code></li>
 <li><code><a title="eyecite.clean.clean_text" href="#eyecite.clean.clean_text">clean_text</a></code></li>
 <li><code><a title="eyecite.clean.html" href="#eyecite.clean.html">html</a></code></li>
 <li><code><a title="eyecite.clean.inline_whitespace" href="#eyecite.clean.inline_whitespace">inline_whitespace</a></code></li>
 <li><code><a title="eyecite.clean.underscores" href="#eyecite.clean.underscores">underscores</a></code></li>
+<li><code><a title="eyecite.clean.xml" href="#eyecite.clean.xml">xml</a></code></li>
 </ul>
 </li>
 </ul>

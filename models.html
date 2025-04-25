@@ -26,7 +26,8 @@
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import re
+<pre><code class="python">import logging
+import re
 from collections import UserString
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
@@ -47,6 +48,8 @@ from typing import (
 from eyecite import clean_text
 from eyecite.annotate import SpanUpdater
 from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
+
+logger = logging.getLogger(__name__)
 
 ResourceType = Hashable
 
@@ -106,6 +109,7 @@ class CitationBase:
     full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
+    document: Optional[&#34;Document&#34;] = None
 
     def __post_init__(self):
         &#34;&#34;&#34;Set up groups and metadata.&#34;&#34;&#34;
@@ -907,6 +911,13 @@ class Resource(ResourceType):
 
 @dataclass(eq=False, unsafe_hash=False)
 class Document:
+    &#34;&#34;&#34;A class to encapsulate the source text and the pre-processing applied to
+    it before citation parsing
+
+    If the source text comes from `markup_text`, SpanUpdater objects are
+    created to help on citation parsing
+    &#34;&#34;&#34;
+
     plain_text: str = &#34;&#34;
     markup_text: Optional[str] = &#34;&#34;
     citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
@@ -917,16 +928,21 @@ class Document:
         default_factory=list
     )
     emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+    source_text: str = &#34;&#34;  # will be useful for the annotation step
 
     def __post_init__(self):
-        if self.plain_text and self.clean_steps:
-            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+        if self.plain_text and not self.markup_text:
+            self.source_text = self.plain_text
+            if self.clean_steps:
+                self.plain_text = clean_text(self.plain_text, self.clean_steps)
 
-        if self.markup_text != &#34;&#34;:
+        elif self.markup_text and not self.plain_text:
+            self.source_text = self.markup_text
+
             if &#34;html&#34; not in self.clean_steps:
-                raise (
-                    &#34;`html` is a required cleanup step for markup text&#34;,
-                    self.markup_text,
+                self.clean_steps.insert(&#34;html&#34;, 0)
+                logger.warning(
+                    &#34;`html` has been added to `markup_text` clean_steps list&#34;
                 )
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
@@ -940,6 +956,20 @@ class Document:
 
             self.identify_emphasis_tags()
 
+        elif not self.markup_text and not self.plain_text:
+            raise ValueError(&#34;Both `markup_text` and `plain_text` are empty&#34;)
+
+        elif self.plain_text and self.markup_text:
+            # both arguments were passed, we assume that `plain_text` is the
+            # cleaned version of `markup_text`
+            if self.clean_steps:
+                raise ValueError(
+                    &#34;Both `markup_text` and `plain_text` were passed. &#34;
+                    &#34;Not clear which to apply `clean_steps` to&#34;
+                )
+
+            self.source_text = self.markup_text
+
     def identify_emphasis_tags(self):
         pattern = re.compile(
             r&#34;&lt;(em|i)[^&gt;]*&gt;(.*?)&lt;/\1&gt;&#34;, re.IGNORECASE | re.DOTALL
@@ -950,7 +980,8 @@ class Document:
         ]
 
     def tokenize(self, tokenizer):
-        # Tokenize the document and store the results in the document object
+        &#34;&#34;&#34;Tokenize the document and store the results in the document
+        object&#34;&#34;&#34;
         self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
 </details>
 </section>
@@ -965,7 +996,7 @@ class Document:
 <dl>
 <dt id="eyecite.models.CaseCitation"><code class="flex name class">
 <span>class <span class="ident">CaseCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents a single citation found in a
@@ -1113,7 +1144,7 @@ class CaseReferenceToken(Token):
 </dd>
 <dt id="eyecite.models.CitationBase"><code class="flex name class">
 <span>class <span class="ident">CitationBase</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for objects returned by <code><a title="eyecite.find.get_citations" href="find.html#eyecite.find.get_citations">get_citations()</a></code>. We
@@ -1138,6 +1169,7 @@ class CitationBase:
     full_span_end: Optional[int] = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
+    document: Optional[&#34;Document&#34;] = None
 
     def __post_init__(self):
         &#34;&#34;&#34;Set up groups and metadata.&#34;&#34;&#34;
@@ -1313,6 +1345,10 @@ class CitationBase:
 <dt id="eyecite.models.CitationBase.Metadata"><code class="name">var <span class="ident">Metadata</span></code></dt>
 <dd>
 <div class="desc"><p>Define fields on self.metadata.</p></div>
+</dd>
+<dt id="eyecite.models.CitationBase.document"><code class="name">var <span class="ident">document</span> : Optional[<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>]</code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 <dt id="eyecite.models.CitationBase.full_span_end"><code class="name">var <span class="ident">full_span_end</span> : Optional[int]</code></dt>
 <dd>
@@ -1625,16 +1661,26 @@ and combine their editions.</p></div>
 </dd>
 <dt id="eyecite.models.Document"><code class="flex name class">
 <span>class <span class="ident">Document</span></span>
-<span>(</span><span>plain_text: str = '', markup_text: Optional[str] = '', citation_tokens: list[typing.Tuple[int, <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>]] = &lt;factory&gt;, words: List[Union[<a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, str]] = &lt;factory&gt;, clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = &lt;factory&gt;, emphasis_tags: List[Tuple[str, int, int]] = &lt;factory&gt;)</span>
+<span>(</span><span>plain_text: str = '', markup_text: Optional[str] = '', citation_tokens: list[typing.Tuple[int, <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>]] = &lt;factory&gt;, words: List[Union[<a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, str]] = &lt;factory&gt;, clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = &lt;factory&gt;, emphasis_tags: List[Tuple[str, int, int]] = &lt;factory&gt;, source_text: str = '')</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Document(plain_text: str = '', markup_text: Optional[str] = '', citation_tokens: list[typing.Tuple[int, eyecite.models.Token]] = <factory>, words: List[Union[eyecite.models.Token, str]] = <factory>, clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = <factory>, emphasis_tags: List[Tuple[str, int, int]] = <factory>)</p></div>
+<div class="desc"><p>A class to encapsulate the source text and the pre-processing applied to
+it before citation parsing</p>
+<p>If the source text comes from <code>markup_text</code>, SpanUpdater objects are
+created to help on citation parsing</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@dataclass(eq=False, unsafe_hash=False)
 class Document:
+    &#34;&#34;&#34;A class to encapsulate the source text and the pre-processing applied to
+    it before citation parsing
+
+    If the source text comes from `markup_text`, SpanUpdater objects are
+    created to help on citation parsing
+    &#34;&#34;&#34;
+
     plain_text: str = &#34;&#34;
     markup_text: Optional[str] = &#34;&#34;
     citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
@@ -1645,16 +1691,21 @@ class Document:
         default_factory=list
     )
     emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+    source_text: str = &#34;&#34;  # will be useful for the annotation step
 
     def __post_init__(self):
-        if self.plain_text and self.clean_steps:
-            self.plain_text = clean_text(self.plain_text, self.clean_steps)
+        if self.plain_text and not self.markup_text:
+            self.source_text = self.plain_text
+            if self.clean_steps:
+                self.plain_text = clean_text(self.plain_text, self.clean_steps)
 
-        if self.markup_text != &#34;&#34;:
+        elif self.markup_text and not self.plain_text:
+            self.source_text = self.markup_text
+
             if &#34;html&#34; not in self.clean_steps:
-                raise (
-                    &#34;`html` is a required cleanup step for markup text&#34;,
-                    self.markup_text,
+                self.clean_steps.insert(&#34;html&#34;, 0)
+                logger.warning(
+                    &#34;`html` has been added to `markup_text` clean_steps list&#34;
                 )
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
@@ -1668,6 +1719,20 @@ class Document:
 
             self.identify_emphasis_tags()
 
+        elif not self.markup_text and not self.plain_text:
+            raise ValueError(&#34;Both `markup_text` and `plain_text` are empty&#34;)
+
+        elif self.plain_text and self.markup_text:
+            # both arguments were passed, we assume that `plain_text` is the
+            # cleaned version of `markup_text`
+            if self.clean_steps:
+                raise ValueError(
+                    &#34;Both `markup_text` and `plain_text` were passed. &#34;
+                    &#34;Not clear which to apply `clean_steps` to&#34;
+                )
+
+            self.source_text = self.markup_text
+
     def identify_emphasis_tags(self):
         pattern = re.compile(
             r&#34;&lt;(em|i)[^&gt;]*&gt;(.*?)&lt;/\1&gt;&#34;, re.IGNORECASE | re.DOTALL
@@ -1678,7 +1743,8 @@ class Document:
         ]
 
     def tokenize(self, tokenizer):
-        # Tokenize the document and store the results in the document object
+        &#34;&#34;&#34;Tokenize the document and store the results in the document
+        object&#34;&#34;&#34;
         self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
 </details>
 <h3>Class variables</h3>
@@ -1708,6 +1774,10 @@ class Document:
 <div class="desc"></div>
 </dd>
 <dt id="eyecite.models.Document.plain_to_markup"><code class="name">var <span class="ident">plain_to_markup</span> : Optional[eyecite.annotate.SpanUpdater]</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="eyecite.models.Document.source_text"><code class="name">var <span class="ident">source_text</span> : str</code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -1741,13 +1811,15 @@ class Document:
 <span>def <span class="ident">tokenize</span></span>(<span>self, tokenizer)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Tokenize the document and store the results in the document
+object</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def tokenize(self, tokenizer):
-    # Tokenize the document and store the results in the document object
+    &#34;&#34;&#34;Tokenize the document and store the results in the document
+    object&#34;&#34;&#34;
     self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)</code></pre>
 </details>
 </dd>
@@ -1831,7 +1903,7 @@ class Edition:
 </dd>
 <dt id="eyecite.models.FullCaseCitation"><code class="flex name class">
 <span>class <span class="ident">FullCaseCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents a standard, fully named citation,
@@ -2023,7 +2095,7 @@ Returns: None</p></div>
 </dd>
 <dt id="eyecite.models.FullCitation"><code class="flex name class">
 <span>class <span class="ident">FullCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Abstract base class indicating that a citation fully identifies a
@@ -2070,7 +2142,7 @@ class FullCitation(ResourceCitation):
 </dd>
 <dt id="eyecite.models.FullJournalCitation"><code class="flex name class">
 <span>class <span class="ident">FullJournalCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Citation to a source from <code>reporters_db/journals.json</code>.</p></div>
@@ -2131,7 +2203,7 @@ class FullJournalCitation(FullCitation):
 </dd>
 <dt id="eyecite.models.FullLawCitation"><code class="flex name class">
 <span>class <span class="ident">FullLawCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Citation to a source from <code>reporters_db/laws.json</code>.</p></div>
@@ -2203,7 +2275,7 @@ class FullLawCitation(FullCitation):
 </dd>
 <dt id="eyecite.models.IdCitation"><code class="flex name class">
 <span>class <span class="ident">IdCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents an 'id' or 'ibid' citation, i.e., a
@@ -2391,7 +2463,7 @@ class PlaceholderCitationToken(Token):
 </dd>
 <dt id="eyecite.models.ReferenceCitation"><code class="flex name class">
 <span>class <span class="ident">ReferenceCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A reference citation is a citation that refers to
@@ -2561,7 +2633,7 @@ class Resource(ResourceType):
 </dd>
 <dt id="eyecite.models.ResourceCitation"><code class="flex name class">
 <span>class <span class="ident">ResourceCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Base class for a case, law, or journal citation. Could be short or
@@ -2880,7 +2952,7 @@ class SectionToken(Token):
 </dd>
 <dt id="eyecite.models.ShortCaseCitation"><code class="flex name class">
 <span>class <span class="ident">ShortCaseCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None, exact_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, variation_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, all_editions: Sequence[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = &lt;factory&gt;, edition_guess: Optional[<a title="eyecite.models.Edition" href="#eyecite.models.Edition">Edition</a>] = None, year: Optional[int] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents a short form citation, i.e., the kind
@@ -3009,7 +3081,7 @@ class StopWordToken(Token):
 </dd>
 <dt id="eyecite.models.SupraCitation"><code class="flex name class">
 <span>class <span class="ident">SupraCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents a 'supra' citation, i.e., a citation
@@ -3403,7 +3475,7 @@ def compiled_regex(self):
 </dd>
 <dt id="eyecite.models.UnknownCitation"><code class="flex name class">
 <span>class <span class="ident">UnknownCitation</span></span>
-<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None)</span>
+<span>(</span><span>token: <a title="eyecite.models.Token" href="#eyecite.models.Token">Token</a>, index: int, span_start: Optional[int] = None, span_end: Optional[int] = None, full_span_start: Optional[int] = None, full_span_end: Optional[int] = None, groups: dict = &lt;factory&gt;, metadata: Any = None, document: Optional[ForwardRef('<a title="eyecite.models.Document" href="#eyecite.models.Document">Document</a>')] = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenience class which represents an unknown citation. A recognized
@@ -3477,6 +3549,7 @@ class UnknownCitation(CitationBase):
 <li><code><a title="eyecite.models.CitationBase.Metadata" href="#eyecite.models.CitationBase.Metadata">Metadata</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation" href="#eyecite.models.CitationBase.corrected_citation">corrected_citation</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.corrected_citation_full" href="#eyecite.models.CitationBase.corrected_citation_full">corrected_citation_full</a></code></li>
+<li><code><a title="eyecite.models.CitationBase.document" href="#eyecite.models.CitationBase.document">document</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.dump" href="#eyecite.models.CitationBase.dump">dump</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.full_span" href="#eyecite.models.CitationBase.full_span">full_span</a></code></li>
 <li><code><a title="eyecite.models.CitationBase.full_span_end" href="#eyecite.models.CitationBase.full_span_end">full_span_end</a></code></li>
@@ -3512,6 +3585,7 @@ class UnknownCitation(CitationBase):
 <li><code><a title="eyecite.models.Document.markup_to_plain" href="#eyecite.models.Document.markup_to_plain">markup_to_plain</a></code></li>
 <li><code><a title="eyecite.models.Document.plain_text" href="#eyecite.models.Document.plain_text">plain_text</a></code></li>
 <li><code><a title="eyecite.models.Document.plain_to_markup" href="#eyecite.models.Document.plain_to_markup">plain_to_markup</a></code></li>
+<li><code><a title="eyecite.models.Document.source_text" href="#eyecite.models.Document.source_text">source_text</a></code></li>
 <li><code><a title="eyecite.models.Document.tokenize" href="#eyecite.models.Document.tokenize">tokenize</a></code></li>
 <li><code><a title="eyecite.models.Document.words" href="#eyecite.models.Document.words">words</a></code></li>
 </ul>
