@@ -725,7 +725,7 @@ class FindTest(TestCase):
                  reporter='U.S. Dist. LEXIS',
                  page='12335',
                  year=2000,
-                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)"})
+                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)", "month": "Aug.", "day": "25", "court": "nysd"})
               ],),
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
