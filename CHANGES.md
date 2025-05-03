@@ -11,7 +11,7 @@ Changes:
 - 
 
 Fixes:
-- 
+- Fix for hyperscan bug and whitespace bug
 
 ## Current
 
