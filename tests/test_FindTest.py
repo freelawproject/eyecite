@@ -660,8 +660,7 @@ class FindTest(TestCase):
              ),
             # extract no page citations
             ("\n 576 U.S. ___, 13",
-             [case_citation(volume='576', reporter='U.S.', page=None, metadata={'pin_cite': '13',
-                                      "court": 'scotus'})],
+             [case_citation(volume='576', reporter='U.S.', page=None, metadata={'pin_cite': '13', "court": 'scotus'})],
              {"clean_steps": ["all_whitespace"]},
              ),
             # test handling zero width whitespace
@@ -671,10 +670,9 @@ class FindTest(TestCase):
              ),
             # Test unprintable characters # /recap-documents/429621284"
             ("Shady Grove Farms v Goldsmith Seeds 1 U.S. 1  \x08*\x07\x07\u038bþİ\u038b\u202cڋ\u202a-\x14V\u202c\u202c",
-             [case_citation(metadata={'defendant': 'Goldsmith Seeds',
-                                     "plaintiff": 'Shady Grove Farms'})],
-            {"clean_steps": ["all_whitespace"]},
-            ),
+             [case_citation(metadata={'defendant': 'Goldsmith Seeds', "plaintiff": 'Shady Grove Farms'})],
+             {"clean_steps": ["all_whitespace"]},
+             ),
             ('(See In re K.F. (2009) 1 U.S. 1, 4 [92 Cal.Rptr.3d 784]; Yield Dynamics, Inc. v. TEA Systems Corp. (2007) 154 Cal.App.4th 547, 558 [66 Cal.Rptr.3d 1].)”', [
                 case_citation(
                     year=2009,
