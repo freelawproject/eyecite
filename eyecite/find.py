@@ -450,6 +450,11 @@ def find_reference_citations_from_markup(
             end_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.end(1), bisect_right
             )
+            raw_after = document.plain_text[full_end_in_plain:]
+            if re.match(rf"^\s*(at|v\.|supra)\s", raw_after):
+                # filter likely bad reference matches
+                continue
+
             reference = ReferenceCitation(
                 token=CaseReferenceToken(
                     data=document.plain_text[start_in_plain:end_in_plain],

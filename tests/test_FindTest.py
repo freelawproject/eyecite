@@ -675,7 +675,20 @@ class FindTest(TestCase):
                     year=2007, volume='66', reporter='Cal.Rptr.3d', page='1',
                     metadata={'plaintiff': 'Yield Dynamics, Inc.', 'defendant': 'TEA Systems Corp.', "year": "2007"}
                 ),
-            ])
+            ]),
+            # ignore bad reference matching in plain text
+            ("In Foo v. Bar 1 U.S. 1, ... yadda yadda yadda the case of Foo v. Bar, supra, was affirmed", [
+                case_citation(metadata={'plaintiff': 'Foo', "defendant": "Bar",
+                                        "court": "scotus"}),
+                supra_citation("supra.", metadata={'antecedent_guess': "Bar"})
+            ]),
+            # Dont make second foo a reference citation
+            ('<p>In <i>Foo</i> v. <i>Bar,</i> 1 U.S. 1, ... yadda yadda yadda the case of <i>Foo</i> v. <i>Bar, supra</i><i>,</i> was affirmed.</p>',
+             [
+                case_citation(metadata={'plaintiff': 'Foo', "defendant": "Bar", "court": "scotus"}),
+                supra_citation("supra.", metadata={'antecedent_guess': "Bar"})
+             ], {'clean_steps': ['html', 'inline_whitespace']}),
+
         )
 
         # fmt: on
