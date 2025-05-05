@@ -14,36 +14,36 @@ There were 33 gains and 0 losses.
 |  5329531   |      German Savings Bank       |        |
 |  5618955   |           Widincamp            |        |
 |  5656104   |              Sime              |        |
+|  3419420   |              Best              |        |
 |  3419420   |             Martin             |        |
 |  3419420   |           Cunningham           |        |
-|  3419420   |              Best              |        |
+|  1431414   |         Motschenbacher         |        |
+|  1431414   |              Price             |        |
+|  1431414   |             Cepeda             |        |
+|  1431414   |            Goldstein           |        |
+|  1431414   |            Uhlaender           |        |
+|  1431414   |             Grant              |        |
 |  1431414   |            Stilson             |        |
+|  1431414   |            Schumann            |        |
+|  1431414   |           Uhlaender            |        |
+|  1431414   |              Ali               |        |
+|  1431414   | Memphis Development Foundation |        |
 |  1431414   |            Fairfield           |        |
 |  1431414   |            O'Brien             |        |
-|  1431414   |             Cepeda             |        |
-|  1431414   |         Motschenbacher         |        |
 |  1431414   |               Ali              |        |
-|  1431414   |            Goldstein           |        |
-|  1431414   |             Grant              |        |
-|  1431414   |            Uhlaender           |        |
-|  1431414   |              Ali               |        |
-|  1431414   |             Price              |        |
-|  1431414   | Memphis Development Foundation |        |
 |  1431414   |             Davies             |        |
-|  1431414   |           Uhlaender            |        |
-|  1431414   |              Price             |        |
 |  1431414   |             Munden             |        |
-|  1431414   |            Schumann            |        |
+|  1431414   |             Price              |        |
 |  3839243   |            Merriam             |        |
 |  3415079   |              Biwer             |        |
 |  3303848   |             Elliott            |        |
 |   100283   |            Monahan             |        |
 |   897829   |            Edwards             |        |
-|  6608066   |             French             |        |
 |  6608066   |              Loeb              |        |
-|  7062108   |              Tate              |        |
+|  6608066   |             French             |        |
 |  7062108   |             O’Mara             |        |
 |  7062108   |            Johnson             |        |
+|  7062108   |              Tate              |        |
 
 
 </details>
@@ -59,6 +59,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/2398fc565c03951d62be08070fa6fe78180e9da0.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/46473737764ea1f77679bffe9335599303b5584d.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/c1edf7acb50b3b7710839b378e4828fc1e0c7a69.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/output.csv)
