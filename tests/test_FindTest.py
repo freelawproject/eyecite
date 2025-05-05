@@ -263,6 +263,10 @@ class FindTest(TestCase):
                              metadata={'pin_cite': 'at 2',
                                        'antecedent_guess': 'Foo'})],
              {'clean_steps': ['all_whitespace']}),
+            # Test short form citation with at p. format
+            ('174 Cal.App.2d at p. 651',
+             [case_citation(volume='174', page='651', reporter='Cal.App.2d', short=True,
+                            metadata={'pin_cite': '651'})]),
             # Test short form citation with a page range
             ('before Foo, 1 U. S., at 20-25',
              [case_citation(page='20', reporter_found='U. S.', short=True,
