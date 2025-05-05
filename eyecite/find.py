@@ -270,6 +270,7 @@ def _extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     Shortform 3: Adarand at 241, 515 U.S.
+    Shortform 4: 174 Cal.App.2d at p. 651
     """
 
     cite_token = cast(CitationToken, document.words[index])
