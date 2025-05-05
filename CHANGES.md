@@ -11,7 +11,7 @@ Changes:
 - 
 
 Fixes:
-- 
+- Add fix for reference citation filtering out bad matches
 
 ## Current
 
