@@ -220,6 +220,12 @@ class FindTest(TestCase):
             # a comma (cf. eyecite#137)
             ('1 U. S. ___,',
              [case_citation(volume='1', reporter_found='U. S.', page=None)]),
+            # can we handle placeholder citations in all tokenizers
+            ('She Enterprises, Inc. v. License Commission of Worcester, ___ U.S. ___, ___, 412 N.E.2d 883 (1980).',
+             [case_citation(volume='412', reporter='N.E.2d', page="883",
+                            metadata={'plaintiff': 'She Enterprises, Inc.',
+                                      'defendant': 'License Commission of Worcester',
+                                      'year': '1980'})]),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [case_citation(source_text='2007-NMCERT-008', page='008',

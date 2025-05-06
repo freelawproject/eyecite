@@ -813,13 +813,13 @@ class PlaceholderCitationToken(Token):
     """Placeholder Citation Tokens."""
 
     @classmethod
-    def from_match(cls, m, extra, offset=0) -> Optional["PlaceholderCitationToken"]:
+    def from_match(
+        cls, m, extra, offset=0
+    ) -> "Token":
         """Handle placeholder citation token matches separately"""
 
         start, end = m.span()
-        return cls(
-            m[0], start + offset, end + offset, **extra
-        )
+        return cls(m[0], start + offset, end + offset, **extra)
 
 
 @dataclass(eq=True, unsafe_hash=True)
