@@ -80,7 +80,7 @@ STOP_WORDS = (
     "Cf",
 )
 STOP_WORD_REGEX = space_boundaries_re(
-    strip_punctuation_re(rf'(?P<stop_word>{"|".join(STOP_WORDS)})')
+    strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
 # Regex for SectionToken

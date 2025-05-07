@@ -820,9 +820,10 @@ class FindTest(TestCase):
             self.assertEqual(
                 date_in_reporter,
                 expected,
-                msg="is_date_in_reporter(%s, %s) != "
-                "%s\nIt's equal to: %s"
-                % (edition[0], year, expected, date_in_reporter),
+                msg=(
+                    f"is_date_in_reporter({edition[0]}, {year}) != {expected}\n"
+                    "It's equal to: {date_in_reporter}"
+                ),
             )
 
     def test_citation_filtering(self):
@@ -1136,9 +1137,7 @@ class FindTest(TestCase):
                 markup_text=markup_text, clean_steps=["html", "all_whitespace"]
             )
             self.assertFalse(
-                any(
-                    [isinstance(cite, ReferenceCitation) for cite in citations]
-                )
+                any(isinstance(cite, ReferenceCitation) for cite in citations)
             )
 
     def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
