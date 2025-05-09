@@ -90,7 +90,7 @@ SECTION_REGEX = r"(\S*§\S*)"
 PARAGRAPH_REGEX = r"(\n)"
 
 # Regex for Placeholder Citations
-PLACEHOLDER_CITATIONS = r"(— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U.\s?S. ___)"
+PLACEHOLDER_CITATIONS = r"((— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U\.\s?S\. ___))"
 
 
 # *** Metadata regexes: ***
