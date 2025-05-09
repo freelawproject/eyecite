@@ -20,6 +20,7 @@ from eyecite.test_factories import (
     id_citation,
     journal_citation,
     law_citation,
+    placeholder_citation,
     reference_citation,
     supra_citation,
     unknown_citation,
@@ -215,17 +216,22 @@ class FindTest(TestCase):
             ('1 U.S. f24601', []),
             # Test with page number that is indicated as missing
             ('1 U.S. ___',
-             [case_citation(volume='1', reporter='U.S.', page=None)]),
+             [placeholder_citation(volume="1", reporter="U.S.")]),
             # Test with page number that is indicated as missing, followed by
             # a comma (cf. eyecite#137)
             ('1 U. S. ___,',
-             [case_citation(volume='1', reporter_found='U. S.', page=None)]),
+             [placeholder_citation(volume="1", reporter="U. S.")]),
             # can we handle placeholder citations in all tokenizers
             ('She Enterprises, Inc. v. License Commission of Worcester, ___ U.S. ___, ___, 412 N.E.2d 883 (1980).',
-             [case_citation(volume='412', reporter='N.E.2d', page="883",
+             [placeholder_citation(
+                 reporter="U.S.",
+                 metadata={'plaintiff': 'She Enterprises, Inc.',
+                           'defendant': 'License Commission of Worcester'}),
+              case_citation(volume='412', reporter='N.E.2d', page="883",
                             metadata={'plaintiff': 'She Enterprises, Inc.',
                                       'defendant': 'License Commission of Worcester',
-                                      'year': '1980'})]),
+                                      'year': '1980'})],
+             ),
             # Test with the 'digit-REPORTER-digit' corner-case formatting
             ('2007-NMCERT-008',
              [case_citation(source_text='2007-NMCERT-008', page='008',
@@ -481,10 +487,11 @@ class FindTest(TestCase):
                                       'year': '1962'})]
              ),
             ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
-             [case_citation(volume='398', reporter='P. 2d', page='251',
+             # can we identify placeholder alternative style
+             [placeholder_citation(reporter="Nev.", metadata={'plaintiff': 'Bean', 'defendant': 'State'}),
+              case_citation(volume='398', reporter='P. 2d', page='251',
                             metadata={'plaintiff': 'Bean',
-                                      'defendant': 'State'})]
-             ),
+                                      'defendant': 'State'})]),
             # test lower case sentence
             ('curiams. Spano v. People of State of New York, 360 U.S. 315',
              [case_citation(volume='360', reporter='U.S.', page='315',
@@ -1377,10 +1384,17 @@ class FindTest(TestCase):
                 ],
                 {"clean_steps": ["html", "inline_whitespace"]},
             ),
-            # tricky scotus fake cites if junk is inbetween remove it
+            # Handle Placeholder citation at start of parallel citations
             (
                 " <i>United States</i> v. <i>Hodgson,</i> ___ Iowa ___, 44 N.J. 151, 207 A. 2d 542;",
                 [
+                    placeholder_citation(
+                        reporter="Iowa",
+                        metadata={
+                            "plaintiff": "United States",
+                            "defendant": "Hodgson",
+                        },
+                    ),
                     case_citation(
                         page="151",
                         volume="44",

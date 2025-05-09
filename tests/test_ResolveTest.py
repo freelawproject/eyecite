@@ -177,8 +177,8 @@ class ResolveTest(TestCase):
         # Test resolving two full citations with missing page numbers but
         # otherwise identical. These should not resolve to the same document.
         self.checkResolution(
-            (0, "Foo v. Bar, 1 U.S. ____."),
-            (1, "Foo v. Bar, 1 U.S. ____."),
+            (None, "Foo v. Bar, 1 U.S. ____."),
+            (None, "Foo v. Bar, 1 U.S. ____."),
         )
         # Test resolving multiple full citations to different documents
         self.checkResolution(
@@ -310,7 +310,7 @@ class ResolveTest(TestCase):
         # Test resolving an Id. citation with a pin cite when the previous
         # citation only has a placeholder page. We expect this to fail.
         self.checkResolution(
-            (0, "Foo v. Bar, 1 U.S. ___"),
+            (None, "Foo v. Bar, 1 U.S. ___"),
             (None, "Id. at 100."),
         )
 

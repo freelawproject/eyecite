@@ -7,6 +7,7 @@ from eyecite.models import (
     FullCaseCitation,
     FullCitation,
     IdCitation,
+    PlaceholderCitation,
     ReferenceCitation,
     Resource,
     ResourceType,
@@ -348,6 +349,10 @@ def resolve_citations(
             resolution = resolve_id_citation(
                 citation, last_resolution, resolutions
             )
+
+        # If the citation is placeholder ignore for resolution purposes
+        elif isinstance(citation, PlaceholderCitation):
+            resolution = None
 
         # If the citation is to an unknown document, ignore for now
         else:

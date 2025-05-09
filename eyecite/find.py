@@ -22,6 +22,7 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
+    PlaceholderCitation,
     ReferenceCitation,
     ResourceCitation,
     SectionToken,
@@ -87,6 +88,8 @@ def get_citations(
             citation_token = cast(CitationToken, token)
             if citation_token.short:
                 citation = _extract_shortform_citation(document, i)
+            elif citation_token.placeholder:
+                citation = _extract_placeholder_citation(document, i)
             else:
                 citation = _extract_full_citation(document, i)
                 if (
@@ -257,6 +260,28 @@ def _extract_full_citation(
     )
     citation.add_metadata(document)
 
+    return citation
+
+
+def _extract_placeholder_citation(
+    document: Document, index: int
+) -> PlaceholderCitation:
+    """Extract placeholder citation around token
+
+    Args:
+        document (): Document to parse
+        index (): the index of the placeholder token
+
+    Returns:placeholder citation
+    """
+    token = cast(CitationToken, document.words[index])
+    citation = PlaceholderCitation(token, index)
+    if document.markup_text:
+        find_case_name_in_html(citation, document)
+        if citation.metadata.defendant is None:
+            find_case_name(citation, document)
+    else:
+        find_case_name(citation, document)
     return citation
 
 

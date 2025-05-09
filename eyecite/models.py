@@ -94,8 +94,11 @@ class CitationBase:
             else self.Metadata()
         )
         # Set known missing page numbers to None
-        if re.search("^_+$", self.groups.get("page", "") or ""):
+        if re.search("^_+|—$", self.groups.get("page", "") or ""):
             self.groups["page"] = None
+        # Set known missing volume numbers to None
+        if re.search("^_+|—$", self.groups.get("volume", "") or ""):
+            self.groups["volume"] = None
 
     def __repr__(self):
         """Simplified repr() to be more readable than full dataclass repr().
@@ -696,6 +699,30 @@ class ReferenceCitation(CitationBase):
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
+class PlaceholderCitation(CaseCitation):
+    """Convenience class which represents a placeholder citation.
+
+    Examples
+    • 123 U.S. ___ - a SCOTUS format
+    • ___ Mass. ___ - when neither volume or page is known
+    • — Nev. —  a hyphenated format
+    • ___ U.S.L.W. ___, ___ S.Ct. ___, ___ L.Ed.2d ___
+    """
+
+    def __hash__(self) -> int:
+        """PlaceholderCitation are considered unique for safety."""
+        return id(self)
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CaseCitation.Metadata):
+        """Define fields on self.metadata."""
+
+        plaintiff: Optional[str] = None
+        defendant: Optional[str] = None
+        antecedent_guess: Optional[str] = None
+
+
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class UnknownCitation(CitationBase):
     """Convenience class which represents an unknown citation. A recognized
     citation should theoretically be parsed as a CaseCitation, FullLawCitation,
@@ -757,6 +784,7 @@ class CitationToken(Token):
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     short: bool = False
+    placeholder: bool = False
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
@@ -811,13 +839,6 @@ class StopWordToken(Token):
 @dataclass(eq=True, unsafe_hash=True)
 class PlaceholderCitationToken(Token):
     """Placeholder Citation Tokens."""
-
-    @classmethod
-    def from_match(cls, m, extra, offset=0) -> "Token":
-        """Handle placeholder citation token matches separately"""
-
-        start, end = m.span()
-        return cls(m[0], start + offset, end + offset, **extra)
 
 
 @dataclass(eq=True, unsafe_hash=True)

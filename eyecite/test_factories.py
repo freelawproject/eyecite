@@ -7,6 +7,8 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
+    PlaceholderCitation,
+    PlaceholderCitationToken,
     ReferenceCitation,
     SectionToken,
     ShortCaseCitation,
@@ -115,3 +117,14 @@ def unknown_citation(source_text=None, index=0, **kwargs):
 def supra_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock SupraCitation objects."""
     return SupraCitation(SupraToken(source_text, 0, 99), index, **kwargs)
+
+
+def placeholder_citation(source_text=None, index=0, **kwargs):
+    """Convenience function for creating mock Placeholder Citation objects."""
+    volume = kwargs.pop("volume", None)
+    reporter = kwargs.pop("reporter", None)
+    page = kwargs.pop("page", None)
+
+    group = {"volume": volume, "reporter": reporter, "page": page}
+    token = PlaceholderCitationToken(source_text, 0, 99, groups=group)
+    return PlaceholderCitation(token, index, **kwargs)

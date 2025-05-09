@@ -25,7 +25,6 @@ from eyecite.models import (
     Edition,
     IdToken,
     ParagraphToken,
-    PlaceholderCitationToken,
     Reporter,
     SectionToken,
     StopWordToken,
@@ -38,12 +37,12 @@ from eyecite.regexes import (
     ID_REGEX,
     PAGE_NUMBER_REGEX,
     PARAGRAPH_REGEX,
-    PLACEHOLDER_CITATIONS,
     SECTION_REGEX,
     STOP_WORD_REGEX,
     STOP_WORDS,
     SUPRA_REGEX,
     nonalphanum_boundaries_re,
+    placeholder_cite_re,
     short_cite_re,
 )
 
@@ -133,6 +132,7 @@ def _populate_reporter_extractors():
             "strings": set(),
             # Whether this regex results in a short cite:
             "short": False,
+            "placeholder": False,
         }
     )
 
@@ -162,6 +162,14 @@ def _populate_reporter_extractors():
                 editions_by_regex[short_cite_regex]["strings"].update(
                     reporters
                 )
+
+        # Create placeholder pattern for standard citations
+        group_index = list(re.compile(regex).groupindex.keys())
+        if group_index == ["volume", "reporter", "page"]:
+            placeholder_regexes = placeholder_cite_re(regex)
+            for regex in placeholder_regexes:
+                editions_by_regex[regex][kind].append(edition)
+                editions_by_regex[regex]["placeholder"] = True
 
     def _add_regexes(
         regex_templates: List[str],
@@ -271,6 +279,7 @@ def _populate_reporter_extractors():
                     "exact_editions": cluster["editions"],
                     "variation_editions": cluster["variations"],
                     "short": cluster["short"],
+                    "placeholder": cluster["placeholder"],
                 },
                 strings=list(cluster["strings"]),
             )
@@ -307,12 +316,6 @@ def _populate_reporter_extractors():
                 StopWordToken.from_match,
                 flags=re.I,
                 strings=STOP_WORDS,
-            ),
-            # placeholder citations
-            TokenExtractor(
-                PLACEHOLDER_CITATIONS,
-                PlaceholderCitationToken.from_match,
-                flags=re.I,
             ),
             # tokens containing section symbols
             TokenExtractor(

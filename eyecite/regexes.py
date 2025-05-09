@@ -23,6 +23,34 @@ def short_cite_re(regex):
     return regex.replace("(?P<page>", "at (?P<page>")
 
 
+def placeholder_cite_re(regex: str) -> list[str]:
+    """Convert regex to placeholder regex
+
+    Because of the complexity of the regexes iterate over regexes to find
+    the group. Create two new regexes or none.
+
+    1. 123 U.S. ___ and 2. ___ U.S. ___
+    """
+    regexes = []
+    for name in ["(?P<page>", "(?P<volume>"]:
+        start = regex.find(name) + len(name)
+        index = start
+        depth = 1
+        while index < len(regex) and depth:
+            char = regex[index]
+            if char == "(":
+                depth += 1
+            elif char == ")":
+                depth -= 1
+            index += 1
+        if depth:
+            # Unbalanced regex: bail.
+            return []
+        regex = regex[:start] + "_+|—" + regex[index - 1 :]
+        regexes.append(regex)
+    return regexes
+
+
 # *** Tokenizer regexes: ***
 # Regexes used from tokenizers.py
 
@@ -47,8 +75,7 @@ ROMAN_NUMERAL_REGEX = "|".join(
 # (ordered in descending order of likelihood)
 # 1) A plain digit. E.g. "123"
 # 2) A roman numeral.
-# 3) A page placeholder. E.g. "Carpenter v. United States, 585 U.S. ___ (2018)"
-PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX}|_+)"
+PAGE_NUMBER_REGEX = rf"(?:\d+|{ROMAN_NUMERAL_REGEX}+)"
 
 # Regex to match punctuation around volume numbers and stopwords.
 # This could potentially be more precise.
@@ -88,9 +115,6 @@ SECTION_REGEX = r"(\S*§\S*)"
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
-
-# Regex for Placeholder Citations
-PLACEHOLDER_CITATIONS = r"(— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U.\s?S. ___)"
 
 
 # *** Metadata regexes: ***
