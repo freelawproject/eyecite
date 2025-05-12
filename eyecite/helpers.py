@@ -19,7 +19,9 @@ from eyecite.models import (
     PlaceholderCitationToken,
     ReferenceCitation,
     ResourceCitation,
+    ShortCaseCitation,
     StopWordToken,
+    SupraCitation,
     Token,
     Tokens,
 )
@@ -1101,6 +1103,11 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
                 filtered_citations.append(citation)
                 continue
             if isinstance(citation, ReferenceCitation):
+                continue
+
+            if isinstance(citation, SupraCitation) and isinstance(
+                last_citation, ShortCaseCitation
+            ):
                 continue
 
             # Known overlap case are parallel full citations

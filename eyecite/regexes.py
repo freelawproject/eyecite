@@ -20,7 +20,7 @@ def short_cite_re(regex):
     """Convert a full citation regex into a short citation regex.
     Currently this just means we turn '(?P<reporter>...),? (?P<page>...'
     to '(?P<reporter>...),? at (?P<page>...'"""
-    return regex.replace("(?P<page>", "at (?P<page>")
+    return regex.replace(r"(?P<page>", r"at( p\.?(age)?)? (?P<page>")
 
 
 # *** Tokenizer regexes: ***
@@ -80,7 +80,7 @@ STOP_WORDS = (
     "Cf",
 )
 STOP_WORD_REGEX = space_boundaries_re(
-    strip_punctuation_re(rf'(?P<stop_word>{"|".join(STOP_WORDS)})')
+    strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
 # Regex for SectionToken

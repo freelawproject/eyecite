@@ -557,7 +557,7 @@ class HyperscanTokenizer(Tokenizer):
                 long_chars = [c for c in regex if len(c.encode("utf8")) > 1]
                 if long_chars:
                     regex = re.sub(
-                        rf'([{"".join(set(long_chars))}])\?', r"(?:\1)?", regex
+                        rf"([{''.join(set(long_chars))}])\?", r"(?:\1)?", regex
                     )
                 # encode as bytes:
                 return regex.encode("utf8")

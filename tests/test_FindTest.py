@@ -688,7 +688,15 @@ class FindTest(TestCase):
                 case_citation(metadata={'plaintiff': 'Foo', "defendant": "Bar", "court": "scotus"}),
                 supra_citation("supra.", metadata={'antecedent_guess': "Bar"})
              ], {'clean_steps': ['html', 'inline_whitespace']}),
-
+            ("""<em>Grant </em>v. <em>Esquire, Inc. </em>(S.D.N.Y. 1973) 367 F.Supp. 876, 879.) ...
+             <em>Grant </em>v. <em>Esquire, Inc., supra, </em>316 F.Supp. at p 884.)</p>
+             <p id="b883-5">III. </p> """,
+             [
+                 case_citation(page='876', reporter='F.Supp.', volume='367',
+                               metadata={'plaintiff': 'Grant', "defendant": "Esquire, Inc.", "pin_cite": "879"}),
+                 case_citation(volume="316", reporter="F.Supp.", page="884", short=True,
+                               metadata={'antecedent_guess': "Esquire, Inc., supra", "pin_cite": "884"}),
+             ], {'clean_steps': ['html', 'inline_whitespace']}),
         )
 
         # fmt: on
