@@ -474,10 +474,80 @@ class FindTest(TestCase):
                                       'defendant': 'State of Washington',
                                       'year': '1962'})]
              ),
+            # As seen in /107252/miranda-v-arizona/
             ('(Mo.); Bean v. State, — Nev. —, 398 P. 2d 251; ',
              [case_citation(volume='398', reporter='P. 2d', page='251',
                             metadata={'plaintiff': 'Bean',
                                       'defendant': 'State'})]
+             ),
+            # https://www.courtlistener.com/opinion/4439963/mark-a-twilegar/
+            # Common em-dash format
+            ('Hurst v. Florida, — U.S. —, 136 S.Ct. 616, 193 L.Ed.2d 504 (2016)',
+             [case_citation(volume='136', reporter='S.Ct.', page='616',
+                            metadata={'plaintiff': 'Hurst',
+                                      'defendant': 'Florida',
+                                      'year': '2016',
+                                      'court': 'scotus',
+                                      'extra': '193 L.Ed.2d 504'
+                                      }),
+              case_citation(volume='193', reporter='L.Ed.2d', page='504',
+                            metadata={'plaintiff': 'Hurst',
+                                      'defendant': 'Florida',
+                                      'year': '2016',
+                                      })
+              ]
+             ),
+            # https://www.courtlistener.com/opinion/9502461/balderas
+            # Single underscore placeholder
+            ('In Viking River Cruises v. Moriana (2022) _ U.S. _ [213 L.Ed.2d 179, 200-201] (Viking River)',
+             [case_citation(volume='213', reporter='L.Ed.2d', page='179',
+                            metadata={'plaintiff': 'Viking River Cruises',
+                                      'defendant': 'Moriana',
+                                      'year': '2022',
+                                      'pin_cite': '200-201',
+                                      })
+              ]
+             ),
+            # Two underscore placeholder
+            # https://www.courtlistener.com/opinion/5290606/williams
+            ('decision in Epic Systems Corporation v. Lewis (2018) __ U.S. __ [138 S.Ct. 1612] (Epic Systems)',
+             [case_citation(volume='138', reporter='S.Ct.', page='1612',
+                            metadata={'plaintiff': 'Epic Systems Corporation',
+                                      'defendant': 'Lewis',
+                                      'year': '2018',
+                                      'court': 'scotus',
+                                      })
+              ]
+             ),
+            # https://www.courtlistener.com/opinion/9780755/touchard
+            # test complicated multiple citations with placeholders
+            ('speech.” Houston Cmty. Coll. Sys. v. Wilson, ---- U.S. ----, '
+             '142 S. Ct. 1253, 1259, ---- L. Ed. 2d ---- (2022) (emphasis added) '
+             '(quoting Nieves v. Bartlett, ---- U.S. ----, 139 S. Ct. 1715, '
+             '1722, 204 L. Ed. 2d 1 (2019);',
+             [case_citation(volume='142', reporter='S. Ct.', page='1253',
+                            metadata={'plaintiff': 'Sys.',
+                                      'defendant': 'Wilson',
+                                      'year': '2022',
+                                      'pin_cite': '1259',
+                                      'court': 'scotus',
+                                      'extra': '---- L. Ed. 2d ----',
+                                      'parenthetical': 'emphasis added',
+                                      }),
+              case_citation(volume='139', reporter='S. Ct.', page='1715',
+                            metadata={'plaintiff': 'Nieves',
+                                      'defendant': 'Bartlett',
+                                      'year': '2019',
+                                      'extra': '204 L. Ed. 2d 1',
+                                      'court': 'scotus',
+                                      'pin_cite': '1722',
+                                      }),
+              case_citation(volume='204', reporter='L. Ed. 2d', page='1',
+                            metadata={'plaintiff': 'Nieves',
+                                      'defendant': 'Bartlett',
+                                      'year': '2019',
+                                      })
+              ]
              ),
             # test lower case sentence
             ('curiams. Spano v. People of State of New York, 360 U.S. 315',
@@ -485,7 +555,6 @@ class FindTest(TestCase):
                             metadata={'plaintiff': 'Spano',
                                       'defendant': 'People of State of New York'})]
              ),
-
             # Test capitalized word
             ('Per Curiams. Spano v. People of State of New York, 360 U.S. 315',
              [case_citation(volume='360', reporter='U.S.', page='315',
@@ -835,9 +904,10 @@ class FindTest(TestCase):
             self.assertEqual(
                 date_in_reporter,
                 expected,
-                msg="is_date_in_reporter(%s, %s) != "
-                "%s\nIt's equal to: %s"
-                % (edition[0], year, expected, date_in_reporter),
+                msg=(
+                    f"is_date_in_reporter({edition[0]}, {year}) != {expected}\n"
+                    "It's equal to: {date_in_reporter}"
+                ),
             )
 
     def test_citation_filtering(self):
@@ -1151,9 +1221,7 @@ class FindTest(TestCase):
                 markup_text=markup_text, clean_steps=["html", "all_whitespace"]
             )
             self.assertFalse(
-                any(
-                    [isinstance(cite, ReferenceCitation) for cite in citations]
-                )
+                any(isinstance(cite, ReferenceCitation) for cite in citations)
             )
 
     def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
@@ -1385,6 +1453,21 @@ class FindTest(TestCase):
                     )
                 ],
                 {"clean_steps": ["html", "inline_whitespace"]},
+            ),
+            (
+                "Craig v. Harrah, ___ Nev. ___ [201 P.2d 1081]. (",
+                [
+                    case_citation(
+                        page="1081",
+                        volume="201",
+                        reporter="P.2d",
+                        short=False,
+                        metadata={
+                            "plaintiff": "Craig",
+                            "defendant": "Harrah",
+                        },
+                    )
+                ],
             ),
             # tricky scotus fake cites if junk is inbetween remove it
             (

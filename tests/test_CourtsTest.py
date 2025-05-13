@@ -33,6 +33,6 @@ class RegexesTest(TestCase):
             "State v. Michael J., 875 A.2d 510, 534-35 (Conn. 2005)": "conn",
             "Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)": "pa",
         }
-        for key in samples.keys():
+        for key in samples:
             eyecite_result = get_citations(key)
             self.assertEqual(eyecite_result[0].metadata.court, samples[key])

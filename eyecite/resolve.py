@@ -1,6 +1,6 @@
 import re
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple, cast
+from typing import Callable, Optional, cast
 
 from eyecite.models import (
     CitationBase,
@@ -16,9 +16,9 @@ from eyecite.models import (
 from eyecite.utils import strip_punct
 
 # type shorthand
-ResolvedFullCite = Tuple[FullCitation, ResourceType]
-ResolvedFullCites = List[ResolvedFullCite]
-Resolutions = Dict[ResourceType, List[CitationBase]]
+ResolvedFullCite = tuple[FullCitation, ResourceType]
+ResolvedFullCites = list[ResolvedFullCite]
+Resolutions = dict[ResourceType, list[CitationBase]]
 
 
 # Skip id. citations that imply a page length longer than this,
@@ -63,7 +63,7 @@ def _filter_by_matching_antecedent(
     resolved_full_cites: ResolvedFullCites,
     antecedent_guess: str,
 ) -> Optional[ResourceType]:
-    matches: List[ResourceType] = []
+    matches: list[ResourceType] = []
     ag: str = strip_punct(antecedent_guess)
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
@@ -71,9 +71,7 @@ def _filter_by_matching_antecedent(
         if (
             full_citation.metadata.defendant
             and ag in full_citation.metadata.defendant
-        ):
-            matches.append(resource)
-        elif (
+        ) or (
             full_citation.metadata.plaintiff
             and ag in full_citation.metadata.plaintiff
         ):
@@ -89,7 +87,7 @@ def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
     reference_citation: ReferenceCitation,
 ) -> Optional[ResourceType]:
     """Filter out reference citations that point to more than 1 Resource"""
-    matches: List[ResourceType] = []
+    matches: list[ResourceType] = []
 
     reference_values = set()
     for key in ReferenceCitation.name_fields:
@@ -143,10 +141,7 @@ def _has_invalid_pin_cite(
     pin_cite = int(m[1])
 
     # check page range
-    if pin_cite < page or pin_cite > page + MAX_OPINION_PAGE_COUNT:
-        return True
-
-    return False
+    return pin_cite < page or pin_cite > page + MAX_OPINION_PAGE_COUNT
 
 
 def _resolve_shortcase_citation(
@@ -173,7 +168,7 @@ def _resolve_shortcase_citation(
             candidates.append((full_citation, resource))
 
     # Remove duplicates and only accept if one candidate remains
-    if len(set(resource for full_citation, resource in candidates)) == 1:
+    if len({resource for full_citation, resource in candidates}) == 1:
         return candidates[0][1]
 
     # Otherwise, if there is an antecedent guess, try to refine further
@@ -250,7 +245,7 @@ def _resolve_id_citation(
 
 
 def resolve_citations(
-    citations: List[CitationBase],
+    citations: list[CitationBase],
     resolve_full_citation: Callable[
         [FullCitation], ResourceType
     ] = resolve_full_citation,

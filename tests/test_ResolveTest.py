@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import Optional
 from unittest import TestCase
 
 from eyecite import get_citations
@@ -58,12 +58,13 @@ class ResolveTest(TestCase):
         )
         citations = get_citations(citation_text)
         if resolved_case_name_short:
-            citations[0].metadata.resolved_case_name_short = (
-                resolved_case_name_short
-            )
+            citations[
+                0
+            ].metadata.resolved_case_name_short = resolved_case_name_short
             citations.extend(
                 extract_reference_citations(
-                    citations[0], document  # type: ignore[arg-type]
+                    citations[0],  # type: ignore[arg-type]
+                    document,
                 )
             )
             citations = filter_citations(citations)
@@ -89,7 +90,7 @@ class ResolveTest(TestCase):
         self.assertEqual(expected_indices, actual_indices)
 
     def checkResolution(
-        self, *expected_resolutions: Tuple[Optional[int], str]
+        self, *expected_resolutions: tuple[Optional[int], str]
     ):
         """Helper function to check how a list of citation strings is
         resolved by resolve_citations().
@@ -125,7 +126,7 @@ class ResolveTest(TestCase):
         citations = []
 
         # resources we've found so far
-        resources: List[Resource] = []
+        resources: list[Resource] = []
 
         for i, cite_text in expected_resolutions:
             # extract cite and make sure there's only one:
