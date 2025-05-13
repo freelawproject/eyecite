@@ -93,7 +93,7 @@ common_placeholder_reporters = [
     r"A\.?2d",
     r"A\.?3d",
     r"AD3d",
-    r"Cal.",
+    r"Cal\.",
     r"F\.?3d",
     r"F\.Supp\.2d",
     r"Idaho",
@@ -107,6 +107,7 @@ common_placeholder_reporters = [
     r"N\.W\.2d",
     r"N\.W\.3d",
     r"N\.?Y\.?",
+    r"Nev\.",
     r"NY3d",
     r"Ohio\sSt\.3d",
     r"P\.?3d",
@@ -125,7 +126,7 @@ common_placeholder_reporters = [
 placeholder_reporters = "|".join(common_placeholder_reporters)
 
 # Regex for Placeholder Citations
-PLACEHOLDER_CITATIONS = rf"((— Nev. —)|(___ ({placeholder_reporters}) ___))"
+PLACEHOLDER_CITATIONS = rf"([_—–-]+\s({placeholder_reporters})\s[_—–-]+)"
 
 
 # *** Metadata regexes: ***
