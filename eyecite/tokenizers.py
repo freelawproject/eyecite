@@ -340,10 +340,12 @@ class Tokenizer:
         # descending. Remove overlaps by returning only matches
         # where the current start offset is greater than the previously
         # returned end offset. Also return text between matches.
+        # filter out empty tokens cause by corrupted/complex pdf data
         citation_tokens = []
         all_tokens: Tokens = []
         tokens = sorted(
-            self.extract_tokens(text), key=lambda m: (m.start, -m.end)
+            (t for t in self.extract_tokens(text) if t.data is not None),
+            key=lambda m: (m.start, -m.end),
         )
         last_token = None
         offset = 0
@@ -519,7 +521,8 @@ class HyperscanTokenizer(Tokenizer):
                 start = byte_to_str_offset[start]
                 end = byte_to_str_offset[end]
                 m = extractor.compiled_regex.match(text[start:end])
-                yield extractor.get_token(m, offset=start)
+                if m:
+                    yield extractor.get_token(m, offset=start)
 
     @property
     def hyperscan_db(self):

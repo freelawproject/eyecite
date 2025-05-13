@@ -80,7 +80,7 @@ def all_whitespace(text: str) -> str:
     Returns:
         Text with collapsed whitespace characters.
     """
-    return re.sub(r"\s+", " ", text)
+    return re.sub(r"[\u200b\s]+", " ", text)
 
 
 def underscores(text: str) -> str:
