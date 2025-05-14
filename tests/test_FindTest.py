@@ -633,20 +633,20 @@ class FindTest(TestCase):
                                       'defendant': 'Liberty Mut. Ins. Co.',
                                       'court': 'ri'
                                       }),
-              reference_citation('Amick at 795', metadata={'plaintiff': 'Amick', 'pin_cite': '795'})]),
+              reference_citation('Amick at 795', metadata={'plaintiff': 'Amick', 'pin_cite': 'at 795'})]),
             # Test reference citation
-            ('Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that',
+            ('Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62, we see that',
              [case_citation(page='12',
                             metadata={'plaintiff': 'Foo',
                                       'defendant': 'Bar',
                                       'pin_cite': '347-348'}),
-              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': 'at 62'})]),
             ('Foo v. United States 1 U.S. 12, 347-348. something something ... the United States at 1776 we see that and Foo at 62',
              [case_citation(page='12',
                             metadata={'plaintiff': 'Foo',
                                       'defendant': 'United States',
                                       'pin_cite': '347-348'}),
-              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': '62'})]),
+              reference_citation('Foo at 62', metadata={'plaintiff': 'Foo', 'pin_cite': 'at 62'})]),
             # Test that reference citation must occur after full case citation
             ('In Foo at 62 we see that, Foo v. Bar 1 U.S. 12, 347-348. something something,',
              [case_citation(page='12',
@@ -654,12 +654,12 @@ class FindTest(TestCase):
                                       'defendant': 'Bar',
                                       'pin_cite': '347-348'})]),
             # Test reference against defendant name
-            ('In re Foo 1 Mass. 12, 347-348. something something, in Foo at 62 we see that, ',
+            ('In re Foo 1 Mass. 12, 347-348. something something, in Foo at 62, we see that, ',
              [case_citation(page='12', reporter="Mass.", volume="1",
                             metadata={'defendant': 'Foo', 'pin_cite': '347-348'}),
               reference_citation('Foo at 62',
                                  metadata={'defendant': 'Foo',
-                                           "pin_cite": "62"})]),
+                                           "pin_cite": "at 62"})]),
             # Test reference citation that contains at
             ('In re Foo 1 Mass. 12, 347-348. something something, in at we see that',
              [case_citation(page='12', reporter="Mass.", volume="1",
@@ -677,7 +677,7 @@ class FindTest(TestCase):
                             metadata={'plaintiff': 'Morton', 'defendant': 'Mancari', "pin_cite": "552", "court": "scotus"}),
               id_citation('Id.,', metadata={}),
               reference_citation('Mancari',
-                                 metadata={'defendant': 'Mancari', "pin_cite": "665"})]),
+                                 metadata={'defendant': 'Mancari', "pin_cite": "at 665"})]),
             # Test Conn. Super. Ct. regex variation.
             ('Failed to recognize 1993 Conn. Super. Ct. 5243-P',
              [case_citation(volume='1993', reporter='Conn. Super. Ct.',
@@ -785,6 +785,24 @@ class FindTest(TestCase):
                  case_citation(volume="316", reporter="F.Supp.", page="884", short=True,
                                metadata={'antecedent_guess': "Esquire, Inc., supra", "pin_cite": "884"}),
              ], {'clean_steps': ['html', 'inline_whitespace']}),
+            ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225, at p. *4.",
+             [
+                 case_citation(volume="2015", reporter="WL", page="2375225",
+                               metadata={"plaintiff": "Angelopoulos",
+                                         "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC",
+                                         "pin_cite": "at p. *4"}),
+             ]),
+            # Expand pin cite matching in reference citations
+            ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225, at p. *4. yadda yadda yadda... Angelopoulos p. *4;",
+             [
+                 case_citation(volume="2015", reporter="WL", page="2375225",
+                               metadata={"plaintiff": "Angelopoulos",
+                                         "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC",
+                                         "pin_cite": "at p. *4"}),
+                 reference_citation("Angelopoulos at 4",
+                                    metadata={"plaintiff": "Angelopoulos", "pin_cite": "p. *4"}),
+             ])
+
         )
 
         # fmt: on
@@ -1561,7 +1579,10 @@ class FindTest(TestCase):
                     ),
                     reference_citation(
                         "Nobelman",
-                        metadata={"plaintiff": "Nobelman", "pin_cite": "332"},
+                        metadata={
+                            "plaintiff": "Nobelman",
+                            "pin_cite": "at 332",
+                        },
                     ),
                 ],
                 {"clean_steps": ["html", "all_whitespace"]},

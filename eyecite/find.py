@@ -32,7 +32,7 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import SUPRA_ANTECEDENT_REGEX
+from eyecite.regexes import SUPRA_ANTECEDENT_REGEX, reference_pin_cite_re
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 
@@ -196,13 +196,13 @@ def extract_pincited_reference_citations(
     ]
     if not regexes:
         return []
-    pin_cite_re = (
-        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
-    )
+
+    pin_cite_re = reference_pin_cite_re(regexes)
+
     reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
     offset = citation.span()[-1]
-    for match in re.compile(pin_cite_re).finditer(remaining_text):
+    for match in re.compile(pin_cite_re, re.VERBOSE).finditer(remaining_text):
         start, end = match.span()
         matched_text = match.group(0)
         reference = ReferenceCitation(
