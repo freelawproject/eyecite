@@ -773,7 +773,7 @@ class FindTest(TestCase):
                 supra_citation("supra.", metadata={'antecedent_guess': "Bar"})
              ], {'clean_steps': ['html', 'inline_whitespace']}),
             ("""<em>Grant </em>v. <em>Esquire, Inc. </em>(S.D.N.Y. 1973) 367 F.Supp. 876, 879.) ...
-             <em>Grant </em>v. <em>Esquire, Inc., supra, </em>316 F.Supp. at p 884.)</p>
+             <em>Grant </em>v. <em>Esquire, Inc., supra, </em>316 F.Supp. at 884.)</p>
              <p id="b883-5">III. </p> """,
              [
                  case_citation(page='876', reporter='F.Supp.', volume='367',
