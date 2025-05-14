@@ -1097,6 +1097,12 @@ def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
             ):
                 continue
 
+            # A citation in a parenthetical would also overlap and should be kept.
+            paren = last_citation.metadata.parenthetical
+            if paren and citation.matched_text() in paren:
+                filtered_citations.append(citation)
+                continue
+
             # Known overlap case are parallel full citations
             if not (
                 isinstance(citation, FullCaseCitation)
