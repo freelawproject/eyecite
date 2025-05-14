@@ -80,7 +80,7 @@ STOP_WORDS = (
     "Cf",
 )
 STOP_WORD_REGEX = space_boundaries_re(
-    strip_punctuation_re(rf'(?P<stop_word>{"|".join(STOP_WORDS)})')
+    strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
 # Regex for SectionToken
@@ -89,8 +89,44 @@ SECTION_REGEX = r"(\S*§\S*)"
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
 
+common_placeholder_reporters = [
+    r"A\.?2d",
+    r"A\.?3d",
+    r"AD3d",
+    r"Cal\.",
+    r"F\.?3d",
+    r"F\.Supp\.2d",
+    r"Idaho",
+    r"Iowa",
+    r"L\.Ed\.",
+    r"Mass\.",
+    r"N\.?J\.?",
+    r"N\.C\.\s?App\.",
+    r"N\.E\.3d",
+    r"N\.J\.\sSuper\.(\sat)?",
+    r"N\.W\.2d",
+    r"N\.W\.3d",
+    r"N\.?Y\.?",
+    r"Nev\.",
+    r"NY3d",
+    r"Ohio\sSt\.3d",
+    r"P\.?3d",
+    r"S\.?E\.?2d",
+    r"S\.?E\.?3d",
+    r"S\.?W\.?2d",
+    r"S\.?W\.?3d",
+    r"S\.C\.",
+    r"S\.Ct\.",
+    r"So\.?3d",
+    r"U\.\s?S\.",
+    r"W\.Va\.",
+    r"Wis\.\s?2d",
+]
+
+placeholder_reporters = "|".join(common_placeholder_reporters)
+
 # Regex for Placeholder Citations
-PLACEHOLDER_CITATIONS = r"(— Nev. —)|(\d{1,3} U\.\s?S\. ___)|(___ U.\s?S. ___)"
+PLACEHOLDER_CITATIONS = rf"([_—–-]+\s({placeholder_reporters})\s[_—–-]+)"
 
 
 # *** Metadata regexes: ***

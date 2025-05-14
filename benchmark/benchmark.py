@@ -8,7 +8,7 @@ import re
 import sys
 from io import StringIO
 from pathlib import Path
-from typing import Any, Dict
+from typing import Any
 
 from matplotlib import pyplot as plt  # type: ignore
 
@@ -25,7 +25,7 @@ root = Path(__file__).parent.absolute()
 MAX_ROWS_IN_MD = 51
 
 
-class Benchmark(object):
+class Benchmark:
     """Benchmark the different eyecite branches"""
 
     def get_filepath(self, filename):
@@ -53,7 +53,7 @@ class Benchmark(object):
                 or row["html_anon_2020"]
                 or row["html"]
             )
-            params: Dict[str, Any] = {
+            params: dict[str, Any] = {
                 "clean_steps": ["html", "inline_whitespace"]
             }
             if text:
@@ -86,7 +86,7 @@ class Benchmark(object):
         """
         max_gain, max_loss = 6, 6
         gains, losses = 0, 0
-        with open("benchmark/output.csv", mode="r") as inp:
+        with open("benchmark/output.csv") as inp:
             reader = csv.DictReader(inp)
             for row in reader:
                 if row["Gain"]:
@@ -108,7 +108,7 @@ class Benchmark(object):
             f.write("# The Eyecite Report :eye:\n\n")
             f.write("\n\nGains and Losses\n")
             f.write("---------\n")
-            f.write(f"There were {gains} gains and " f"{losses} losses.\n")
+            f.write(f"There were {gains} gains and {losses} losses.\n")
             f.write("\n<details>\n")
             f.write("<summary>Click here to see details.</summary>\n\n")
 
@@ -121,7 +121,7 @@ class Benchmark(object):
                 )
             # Generate Markdown Table of Outputs up to 50 rows.
             row_count = 0
-            with open("benchmark/output.csv", mode="r") as inp:
+            with open("benchmark/output.csv") as inp:
                 reader = csv.DictReader(inp)
                 header = [
                     "id".center(10),
@@ -188,10 +188,10 @@ class Benchmark(object):
         return: None
         """
 
-        with open(f"benchmark/{main}.json", "r") as f:
+        with open(f"benchmark/{main}.json") as f:
             main_file = json.load(f)
 
-        with open(f"benchmark/{branch}.json", "r") as b:
+        with open(f"benchmark/{branch}.json") as b:
             branch_file = json.load(b)
 
         with open("benchmark/output.csv", "w") as csvfile:

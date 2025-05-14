@@ -1,18 +1,13 @@
 import logging
 import re
 from collections import UserString
+from collections.abc import Hashable, Iterable, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import (
     Any,
     Callable,
-    Dict,
-    Hashable,
-    Iterable,
-    List,
     Optional,
-    Sequence,
-    Tuple,
     Union,
     cast,
 )
@@ -192,7 +187,7 @@ class CitationBase:
             self.span_end if self.span_end is not None else self.token.end,
         )
 
-    def span_with_pincite(self) -> Tuple[int, int]:
+    def span_with_pincite(self) -> tuple[int, int]:
         """Start and stop offsets in source text for pin cites."""
         start = min(
             list(
@@ -224,7 +219,7 @@ class CitationBase:
 
         return (start, end)
 
-    def full_span(self) -> Tuple[int, int]:
+    def full_span(self) -> tuple[int, int]:
         """Span indices that fully cover the citation
 
         Start and stop offsets in source text for full citation text (including
@@ -747,7 +742,7 @@ class Token(UserString):
 # or bare strings (the typical case of words that aren't
 # related to citations)
 TokenOrStr = Union[Token, str]
-Tokens = List[TokenOrStr]
+Tokens = list[TokenOrStr]
 
 
 @dataclass(eq=True, unsafe_hash=True)
@@ -828,9 +823,9 @@ class TokenExtractor:
     # but this issue makes it inconvenient to specify the input types:
     # https://github.com/python/mypy/issues/5485
     constructor: Callable[..., Token]
-    extra: Dict = field(default_factory=dict)
+    extra: dict = field(default_factory=dict)
     flags: int = 0
-    strings: List = field(default_factory=list)
+    strings: list = field(default_factory=list)
 
     def get_matches(self, text):
         """Return match objects for all matches in text."""
@@ -892,14 +887,14 @@ class Document:
 
     plain_text: str = ""
     markup_text: Optional[str] = ""
-    citation_tokens: list[Tuple[int, Token]] = field(default_factory=list)
+    citation_tokens: list[tuple[int, Token]] = field(default_factory=list)
     words: Tokens = field(default_factory=list)
     plain_to_markup: Optional[SpanUpdater] = field(default=None, init=False)
     markup_to_plain: Optional[SpanUpdater] = field(default=None, init=False)
     clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
         default_factory=list
     )
-    emphasis_tags: List[Tuple[str, int, int]] = field(default_factory=list)
+    emphasis_tags: list[tuple[str, int, int]] = field(default_factory=list)
     source_text: str = ""  # will be useful for the annotation step
 
     def __post_init__(self):
