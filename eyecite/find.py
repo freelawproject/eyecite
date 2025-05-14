@@ -454,7 +454,7 @@ def find_reference_citations_from_markup(
             raw_after = document.plain_text[full_end_in_plain:]
             if re.match(r"^\s*(at|v[.s]|supra)\s", raw_after):
                 # filter likely bad reference matches
-                # when matching references citations in markup it is poosible
+                # when matching reference citations in markup it is possible
                 # to have a pattern like this `<i>Foo</i> v. <i>Bar, supra</i>`
                 # <i>Foo</i> would be a false positive so we check what follows
                 # to avoid this issue
