@@ -283,6 +283,11 @@ def _scan_for_case_boundaries(
             if word_str in ["ex", "rel."]:
                 # ignore common lower cased
                 continue
+            if word_str == "supra,":
+                # supra usually is precededed by a case name so do not
+                # break on supra but also do not capture in title
+                state["title_starting_index"] = index - 1
+                continue
             state["start_index"] = index + 2
             state["candidate_case_name"] = _extract_text(
                 words, state["start_index"], state["title_starting_index"]
