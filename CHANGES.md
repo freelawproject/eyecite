@@ -9,6 +9,7 @@ Features:
 
 Changes:
 - Small tweak to placeholder citations regexes and added a few more known reps
+- Tweak to plain text processing of supra tokens
 
 Fixes:
 - Add fix for reference citation filtering out bad matches
