@@ -32,7 +32,7 @@ from eyecite.models import (
     Tokens,
     UnknownCitation,
 )
-from eyecite.regexes import SUPRA_ANTECEDENT_REGEX
+from eyecite.regexes import SUPRA_ANTECEDENT_REGEX, reference_pin_cite_re
 from eyecite.tokenizers import Tokenizer, default_tokenizer
 from eyecite.utils import is_valid_name
 
@@ -196,13 +196,13 @@ def extract_pincited_reference_citations(
     ]
     if not regexes:
         return []
-    pin_cite_re = (
-        rf"\b(?:{'|'.join(regexes)})\s+at(\s¶)?\s+(?P<pin_cite>\d{{1,5}})\b"
-    )
+
+    pin_cite_re = reference_pin_cite_re(regexes)
+
     reference_citations = []
     remaining_text = plain_text[citation.span()[-1] :]
     offset = citation.span()[-1]
-    for match in re.compile(pin_cite_re).finditer(remaining_text):
+    for match in re.compile(pin_cite_re, re.VERBOSE).finditer(remaining_text):
         start, end = match.span()
         matched_text = match.group(0)
         reference = ReferenceCitation(
@@ -271,7 +271,8 @@ def _extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     Shortform 3: Adarand at 241, 515 U.S.
-    Shortform 4: Grant v. Esquire, supra, 316 F.Supp. at p. 884
+    Shortform 4: 174 Cal.App.2d at p. 651
+    Shortform 5: Grant v. Esquire, supra, 316 F.Supp. at p. 884
     """
 
     cite_token = cast(CitationToken, document.words[index])

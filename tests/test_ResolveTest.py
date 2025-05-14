@@ -362,15 +362,15 @@ class ResolveTest(TestCase):
             ([[0]], "Foo at 2. .... ; Foo v. Bar, 1 U.S. 1"),
             (
                 [[0, 1]],
-                "Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62 we see that",
+                "Foo v. Bar 1 U.S. 12, 347-348. something something, In Foo at 62, we see that",
             ),
             (
                 [[0, 2], [1]],
-                "Foo v. Bar 1 U.S. 12, 347-348; 12 U.S. 1. someting; In Foo at 2 we see that",
+                "Foo v. Bar 1 U.S. 12, 347-348; 12 U.S. 1. someting; In Foo at 2, we see that",
             ),
             (
                 [[0, 2], [1]],
-                "Foo v. Bar 1 U.S. 12, 347-348; In Smith, 12 U.S. 1 (1999) we saw something else. someting. In Foo at 2 we see that",
+                "Foo v. Bar 1 U.S. 12, 347-348; In Smith, 12 U.S. 1 (1999) we saw something else. someting. In Foo at 2, we see that",
             ),
             # Ok resolved_case_name and order, ReferenceCitation should be resolved
             (

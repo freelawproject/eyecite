@@ -19,8 +19,20 @@ def nonalphanum_boundaries_re(regex):
 def short_cite_re(regex):
     """Convert a full citation regex into a short citation regex.
     Currently this just means we turn '(?P<reporter>...),? (?P<page>...'
-    to '(?P<reporter>...),? at (?P<page>...'"""
-    return regex.replace("(?P<page>", "at (?P<page>")
+    to r'(?P<reporter>...),? at\\s(p\\.)? (?P<page>...'"""
+    return regex.replace(r"(?P<page>", r"at\s?(p(\.|age)?)? (?P<page>")
+
+
+def reference_pin_cite_re(regexes):
+    """Create a reference pin-cite regex pattern
+
+    Args:
+        regexes (): Regexes of reference citations to build
+
+    Returns: A pin cite reference regex
+    """
+    pin_cite_re = rf"\b(?:{'|'.join(regexes)})\s+{PIN_CITE_REGEX}"
+    return pin_cite_re
 
 
 # *** Tokenizer regexes: ***
@@ -190,9 +202,10 @@ PIN_CITE_TOKEN_REGEX = r"""
         # page:paragraph cite, like 123:24-25 or 123:24-124:25:
         \d+:\d+(?:-\d+(?::\d+)?)?|
         # page range, like 12 or 12-13:
-        \d+(?:-\d+)?
+        [*]?\d+(?:-\d+)?
     )
 """
+
 PIN_CITE_REGEX = rf"""
     (?P<pin_cite>
         # optional comma, space, "at" before pin cite
