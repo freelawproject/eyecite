@@ -802,8 +802,7 @@ class FindTest(TestCase):
                                          "pin_cite": "at p. *4"}),
                  reference_citation("Angelopoulos at 4",
                                     metadata={"plaintiff": "Angelopoulos", "pin_cite": "p. *4"}),
-             ])
-
+             ]),
             # properly not remove An from the start of the final word
             ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225",
              [case_citation(volume="2015", reporter="WL", page="2375225",
