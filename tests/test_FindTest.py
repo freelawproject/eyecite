@@ -1902,7 +1902,7 @@ class FindTest(TestCase):
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
 
-    @patch('eyecite.helpers.logger.warning')
+    @patch("eyecite.helpers.logger.warning")
     def test_citation_in_parenthetical_does_not_emit_warning(self, mock_warn):
         """
         These two citations are overlapping, but they are not parallel citations. No

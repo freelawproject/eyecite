@@ -13,6 +13,7 @@ Changes:
 Fixes:
 - Add fix for reference citation filtering out bad matches
 - Fix for hyperscan bug and whitespace bug
+- A citation in a parenthetical should not emit the warning "Unknown overlap case"
 
 ## Current
 
@@ -261,7 +262,7 @@ Changes:
      - The `reporter` attribute has been removed from citations and replaced with the `corrected_reporter()` method.
      - Similarly, the `base_citation()` method has been renamed as `corrected_citation()`, and the `formatted()` method has been renamed as `corrected_citation_full()`.
      - The `do_defendant` and `do_post_citation` arguments to `get_citations` have been removed. They're fast enough to just always do. No need to think about these further.\
-     - The `resolve_fullcase_citation` parameter in the `resolve_citations` function has been renamed to `resolve_full_citation`.  
+     - The `resolve_fullcase_citation` parameter in the `resolve_citations` function has been renamed to `resolve_full_citation`.
 
 Fixes:
  - Support for reporter citations with `volume=None` is added. Some reporters don't use volumes, for example, "Bankr. L. Rep. (CCH) P12,345".
