@@ -28,7 +28,7 @@
 </summary>
 <pre><code class="python">import re
 from collections import defaultdict
-from typing import Callable, Dict, List, Optional, Tuple, cast
+from typing import Callable, Optional, cast
 
 from eyecite.models import (
     CitationBase,
@@ -44,9 +44,9 @@ from eyecite.models import (
 from eyecite.utils import strip_punct
 
 # type shorthand
-ResolvedFullCite = Tuple[FullCitation, ResourceType]
-ResolvedFullCites = List[ResolvedFullCite]
-Resolutions = Dict[ResourceType, List[CitationBase]]
+ResolvedFullCite = tuple[FullCitation, ResourceType]
+ResolvedFullCites = list[ResolvedFullCite]
+Resolutions = dict[ResourceType, list[CitationBase]]
 
 
 # Skip id. citations that imply a page length longer than this,
@@ -91,7 +91,7 @@ def _filter_by_matching_antecedent(
     resolved_full_cites: ResolvedFullCites,
     antecedent_guess: str,
 ) -&gt; Optional[ResourceType]:
-    matches: List[ResourceType] = []
+    matches: list[ResourceType] = []
     ag: str = strip_punct(antecedent_guess)
     for full_citation, resource in resolved_full_cites:
         if not isinstance(full_citation, FullCaseCitation):
@@ -99,9 +99,7 @@ def _filter_by_matching_antecedent(
         if (
             full_citation.metadata.defendant
             and ag in full_citation.metadata.defendant
-        ):
-            matches.append(resource)
-        elif (
+        ) or (
             full_citation.metadata.plaintiff
             and ag in full_citation.metadata.plaintiff
         ):
@@ -117,7 +115,7 @@ def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
     reference_citation: ReferenceCitation,
 ) -&gt; Optional[ResourceType]:
     &#34;&#34;&#34;Filter out reference citations that point to more than 1 Resource&#34;&#34;&#34;
-    matches: List[ResourceType] = []
+    matches: list[ResourceType] = []
 
     reference_values = set()
     for key in ReferenceCitation.name_fields:
@@ -171,10 +169,7 @@ def _has_invalid_pin_cite(
     pin_cite = int(m[1])
 
     # check page range
-    if pin_cite &lt; page or pin_cite &gt; page + MAX_OPINION_PAGE_COUNT:
-        return True
-
-    return False
+    return pin_cite &lt; page or pin_cite &gt; page + MAX_OPINION_PAGE_COUNT
 
 
 def _resolve_shortcase_citation(
@@ -201,7 +196,7 @@ def _resolve_shortcase_citation(
             candidates.append((full_citation, resource))
 
     # Remove duplicates and only accept if one candidate remains
-    if len(set(resource for full_citation, resource in candidates)) == 1:
+    if len({resource for full_citation, resource in candidates}) == 1:
         return candidates[0][1]
 
     # Otherwise, if there is an antecedent guess, try to refine further
@@ -278,7 +273,7 @@ def _resolve_id_citation(
 
 
 def resolve_citations(
-    citations: List[CitationBase],
+    citations: list[CitationBase],
     resolve_full_citation: Callable[
         [FullCitation], ResourceType
     ] = resolve_full_citation,
@@ -397,7 +392,7 @@ def resolve_citations(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="eyecite.resolve.resolve_citations"><code class="name flex">
-<span>def <span class="ident">resolve_citations</span></span>(<span>citations: List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], Hashable] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_supra_citation&gt;, resolve_reference_citation: Callable[[<a title="eyecite.models.ReferenceCitation" href="models.html#eyecite.models.ReferenceCitation">ReferenceCitation</a>, List[Tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, Hashable]]], Optional[Hashable]] = &lt;function _resolve_reference_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, Hashable, Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[Hashable]] = &lt;function _resolve_id_citation&gt;) ‑> Dict[Hashable, List[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
+<span>def <span class="ident">resolve_citations</span></span>(<span>citations: list[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>], resolve_full_citation: Callable[[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>], collections.abc.Hashable] = &lt;function resolve_full_citation&gt;, resolve_shortcase_citation: Callable[[<a title="eyecite.models.ShortCaseCitation" href="models.html#eyecite.models.ShortCaseCitation">ShortCaseCitation</a>, list[tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, collections.abc.Hashable]]], Optional[collections.abc.Hashable]] = &lt;function _resolve_shortcase_citation&gt;, resolve_supra_citation: Callable[[<a title="eyecite.models.SupraCitation" href="models.html#eyecite.models.SupraCitation">SupraCitation</a>, list[tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, collections.abc.Hashable]]], Optional[collections.abc.Hashable]] = &lt;function _resolve_supra_citation&gt;, resolve_reference_citation: Callable[[<a title="eyecite.models.ReferenceCitation" href="models.html#eyecite.models.ReferenceCitation">ReferenceCitation</a>, list[tuple[<a title="eyecite.models.FullCitation" href="models.html#eyecite.models.FullCitation">FullCitation</a>, collections.abc.Hashable]]], Optional[collections.abc.Hashable]] = &lt;function _resolve_reference_citation&gt;, resolve_id_citation: Callable[[<a title="eyecite.models.IdCitation" href="models.html#eyecite.models.IdCitation">IdCitation</a>, collections.abc.Hashable, dict[collections.abc.Hashable, list[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]], Optional[collections.abc.Hashable]] = &lt;function _resolve_id_citation&gt;) ‑> dict[collections.abc.Hashable, list[<a title="eyecite.models.CitationBase" href="models.html#eyecite.models.CitationBase">CitationBase</a>]]</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resolve a list of citations to their associated resources by matching
@@ -447,7 +442,7 @@ to lists of <code><a title="eyecite.models.CitationBase" href="models.html#eyeci
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def resolve_citations(
-    citations: List[CitationBase],
+    citations: list[CitationBase],
     resolve_full_citation: Callable[
         [FullCitation], ResourceType
     ] = resolve_full_citation,

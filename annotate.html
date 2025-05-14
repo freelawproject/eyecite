@@ -27,10 +27,11 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">from bisect import bisect_left, bisect_right
+from collections.abc import Iterable
 from difflib import SequenceMatcher
 from functools import partial
 from logging import getLogger
-from typing import Any, Callable, Iterable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 import fast_diff_match_patch
 
@@ -149,7 +150,7 @@ class SpanUpdater:
 
 def annotate_citations(
     plain_text: str,
-    annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
+    annotations: Iterable[tuple[tuple[int, int], Any, Any]],
     source_text: str = &#34;&#34;,
     unbalanced_tags: str = &#34;unchecked&#34;,
     use_dmp: bool = True,
@@ -278,7 +279,7 @@ def annotate_citations(
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="eyecite.annotate.annotate_citations"><code class="name flex">
-<span>def <span class="ident">annotate_citations</span></span>(<span>plain_text: str, annotations: Iterable[Tuple[Tuple[int, int], Any, Any]], source_text: str = '', unbalanced_tags: str = 'unchecked', use_dmp: bool = True, annotator: Optional[Callable[[Any, str, Any], str]] = None, offset_updater: Optional[eyecite.annotate.SpanUpdater] = None) ‑> str</span>
+<span>def <span class="ident">annotate_citations</span></span>(<span>plain_text: str, annotations: collections.abc.Iterable[tuple[tuple[int, int], typing.Any, typing.Any]], source_text: str = '', unbalanced_tags: str = 'unchecked', use_dmp: bool = True, annotator: Optional[Callable[[Any, str, Any], str]] = None, offset_updater: Optional[eyecite.annotate.SpanUpdater] = None) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Given a list of citations and the text from which they were parsed,
@@ -338,7 +339,7 @@ to find citations, passing it saves this expensive instantiation.</dd>
 </summary>
 <pre><code class="python">def annotate_citations(
     plain_text: str,
-    annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
+    annotations: Iterable[tuple[tuple[int, int], Any, Any]],
     source_text: str = &#34;&#34;,
     unbalanced_tags: str = &#34;unchecked&#34;,
     use_dmp: bool = True,

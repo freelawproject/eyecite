@@ -27,7 +27,8 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import re
-from typing import Callable, Dict, Iterable, Union
+from collections.abc import Iterable
+from typing import Callable, Union
 
 import lxml.html
 
@@ -107,7 +108,7 @@ def all_whitespace(text: str) -&gt; str:
     Returns:
         Text with collapsed whitespace characters.
     &#34;&#34;&#34;
-    return re.sub(r&#34;\s+&#34;, &#34; &#34;, text)
+    return re.sub(r&#34;[\u200b\s]+&#34;, &#34; &#34;, text)
 
 
 def underscores(text: str) -&gt; str:
@@ -138,7 +139,7 @@ def xml(text: str) -&gt; str:
     return re.sub(r&#34;^&lt;\?xml.*?\?&gt;&#34;, &#34;&#34;, text, count=1)
 
 
-cleaners_lookup: Dict[str, Callable[[str], str]] = {
+cleaners_lookup: dict[str, Callable[[str], str]] = {
     &#34;html&#34;: html,
     &#34;inline_whitespace&#34;: inline_whitespace,
     &#34;all_whitespace&#34;: all_whitespace,
@@ -181,11 +182,11 @@ character.</p>
     Returns:
         Text with collapsed whitespace characters.
     &#34;&#34;&#34;
-    return re.sub(r&#34;\s+&#34;, &#34; &#34;, text)</code></pre>
+    return re.sub(r&#34;[\u200b\s]+&#34;, &#34; &#34;, text)</code></pre>
 </details>
 </dd>
 <dt id="eyecite.clean.clean_text"><code class="name flex">
-<span>def <span class="ident">clean_text</span></span>(<span>text, steps: Iterable[Union[str, Callable[[str], str]]]) ‑> str</span>
+<span>def <span class="ident">clean_text</span></span>(<span>text, steps: collections.abc.Iterable[typing.Union[str, typing.Callable[[str], str]]]) ‑> str</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Given a list of "cleaning" functions, apply each in sequence to a
