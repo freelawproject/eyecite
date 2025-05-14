@@ -2,6 +2,7 @@ import os
 from copy import copy
 from datetime import datetime
 from unittest import TestCase
+from unittest.mock import patch
 
 from eyecite import get_citations
 from eyecite.find import extract_reference_citations
@@ -788,7 +789,11 @@ class FindTest(TestCase):
                                metadata={"pin_cite": "1146",
                                          "antecedent_guess": "Kaiser Foundation"}),
               ]),
-
+            # properly not remove An from the start of the final word
+            ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225",
+             [case_citation(volume="2015", reporter="WL", page="2375225",
+                            metadata={"plaintiff": "Angelopoulos", "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC"})]
+             )
         )
 
         # fmt: on
@@ -1908,3 +1913,14 @@ class FindTest(TestCase):
             ),
         )
         self.run_test_pairs(test_pairs, "Citation extraction")
+
+    @patch("eyecite.helpers.logger.warning")
+    def test_citation_in_parenthetical_does_not_emit_warning(self, mock_warn):
+        """
+        These two citations are overlapping, but they are not parallel citations. No
+        warning should be emitted.
+        """
+        text = "Gotthelf v. Toyota Motor Sales, U.S.A., Inc., 525 F. App’x 94, 103 n.15 (3d Cir. 2013) (quoting Iqbal, 556 U.S. at 686-87)."
+        citations = get_citations(text)
+        self.assertEqual(len(citations), 2)
+        mock_warn.assert_not_called()

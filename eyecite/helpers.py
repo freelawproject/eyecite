@@ -313,7 +313,7 @@ def _scan_for_case_boundaries(
             )
             state["start_index"] = 0
             state["candidate_case_name"] = re.sub(
-                r"^(of|the|an|and)",
+                r"^(of|the|an|and)\b",
                 "",
                 state["candidate_case_name"],
                 flags=re.IGNORECASE,
@@ -1101,6 +1101,12 @@ def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
             if isinstance(citation, SupraCitation) and isinstance(
                 last_citation, ShortCaseCitation
             ):
+                continue
+
+            # A citation in a parenthetical would also overlap and should be kept.
+            paren = last_citation.metadata.parenthetical
+            if paren and citation.matched_text() in paren:
+                filtered_citations.append(citation)
                 continue
 
             # Known overlap case are parallel full citations
