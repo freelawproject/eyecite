@@ -22,8 +22,9 @@ from eyecite.models import (
     ShortCaseCitation,
     StopWordToken,
     SupraCitation,
+    SupraToken,
     Token,
-    Tokens, SupraToken,
+    Tokens,
 )
 from eyecite.regexes import (
     POST_FULL_CITATION_REGEX,
