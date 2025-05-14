@@ -1,8 +1,9 @@
 from bisect import bisect_left, bisect_right
+from collections.abc import Iterable
 from difflib import SequenceMatcher
 from functools import partial
 from logging import getLogger
-from typing import Any, Callable, Iterable, Optional, Tuple
+from typing import Any, Callable, Optional
 
 import fast_diff_match_patch
 
@@ -121,7 +122,7 @@ class SpanUpdater:
 
 def annotate_citations(
     plain_text: str,
-    annotations: Iterable[Tuple[Tuple[int, int], Any, Any]],
+    annotations: Iterable[tuple[tuple[int, int], Any, Any]],
     source_text: str = "",
     unbalanced_tags: str = "unchecked",
     use_dmp: bool = True,

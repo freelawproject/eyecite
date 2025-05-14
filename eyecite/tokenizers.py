@@ -1,19 +1,14 @@
 import hashlib
 import re
 from collections import defaultdict
+from collections.abc import Generator, Iterable, Sequence
 from copy import deepcopy
 from dataclasses import dataclass, field
 from pathlib import Path
 from string import Template
 from typing import (
     Any,
-    Generator,
-    Iterable,
-    List,
     Optional,
-    Sequence,
-    Set,
-    Tuple,
 )
 
 import ahocorasick
@@ -138,7 +133,7 @@ def _populate_reporter_extractors():
 
     def _add_regex(
         kind: str,
-        reporters: List[str],
+        reporters: list[str],
         edition: Edition,
         regex: str,
     ):
@@ -164,10 +159,10 @@ def _populate_reporter_extractors():
                 )
 
     def _add_regexes(
-        regex_templates: List[str],
+        regex_templates: list[str],
         edition_name: str,
         edition: Edition,
-        variations: List[str],
+        variations: list[str],
     ):
         """Expand regex_templates and add to editions_by_regex."""
         for regex_template in regex_templates:
@@ -334,21 +329,23 @@ class Tokenizer:
     This base class should be overridden by tokenizers that use a
     more efficient strategy for running all the extractors."""
 
-    extractors: List[TokenExtractor] = field(
+    extractors: list[TokenExtractor] = field(
         default_factory=lambda: list(EXTRACTORS)
     )
 
-    def tokenize(self, text: str) -> Tuple[Tokens, List[Tuple[int, Token]]]:
+    def tokenize(self, text: str) -> tuple[Tokens, list[tuple[int, Token]]]:
         """Tokenize text and return list of all tokens, followed by list of
         just non-string tokens along with their positions in the first list."""
         # Sort all matches by start offset ascending, then end offset
         # descending. Remove overlaps by returning only matches
         # where the current start offset is greater than the previously
         # returned end offset. Also return text between matches.
+        # filter out empty tokens cause by corrupted/complex pdf data
         citation_tokens = []
         all_tokens: Tokens = []
         tokens = sorted(
-            self.extract_tokens(text), key=lambda m: (m.start, -m.end)
+            (t for t in self.extract_tokens(text) if t.data is not None),
+            key=lambda m: (m.start, -m.end),
         )
         last_token = None
         offset = 0
@@ -422,9 +419,7 @@ class AhocorasickTokenizer(Tokenizer):
     def __post_init__(self):
         """Set up helpers to narrow down possible extractors."""
         # Build a set of all extractors that don't list required strings
-        self.unfiltered_extractors = set(
-            e for e in EXTRACTORS if not e.strings
-        )
+        self.unfiltered_extractors = {e for e in EXTRACTORS if not e.strings}
         # Build a pyahocorasick filter for all case-sensitive extractors
         self.case_sensitive_filter = self.make_ahocorasick_filter(
             (s, e)
@@ -440,7 +435,7 @@ class AhocorasickTokenizer(Tokenizer):
             for s in e.strings
         )
 
-    def get_extractors(self, text: str) -> Set[TokenExtractor]:
+    def get_extractors(self, text: str) -> set[TokenExtractor]:
         """Override get_extractors() to filter out extractors
         that can't possibly match."""
         unique_extractors = set(self.unfiltered_extractors)
@@ -505,7 +500,7 @@ class HyperscanTokenizer(Tokenizer):
         byte_to_str_offset = {}
         last_byte_offset = 0
         str_offset = 0
-        byte_offsets = sorted(set(i for m in matches for i in m[1]))
+        byte_offsets = sorted({i for m in matches for i in m[1]})
         for byte_offset in byte_offsets:
             try:
                 str_offset += len(
@@ -526,7 +521,8 @@ class HyperscanTokenizer(Tokenizer):
                 start = byte_to_str_offset[start]
                 end = byte_to_str_offset[end]
                 m = extractor.compiled_regex.match(text[start:end])
-                yield extractor.get_token(m, offset=start)
+                if m:
+                    yield extractor.get_token(m, offset=start)
 
     @property
     def hyperscan_db(self):

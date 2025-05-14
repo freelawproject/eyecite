@@ -2,7 +2,7 @@ import logging
 from bisect import bisect_right
 from datetime import date
 from string import whitespace
-from typing import Any, Dict, List, Optional, Tuple, cast
+from typing import Any, Optional, cast
 
 import regex as re
 from courts_db import courts
@@ -122,12 +122,9 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         citation.full_span_end
         and m["parenthetical"] is not None
         and isinstance(citation.metadata.parenthetical, str)
-    ):
-        if len(m["parenthetical"]) > len(citation.metadata.parenthetical):
-            offset = len(m["parenthetical"]) - len(
-                citation.metadata.parenthetical
-            )
-            citation.full_span_end = citation.full_span_end - offset
+    ) and len(m["parenthetical"]) > len(citation.metadata.parenthetical):
+        offset = len(m["parenthetical"]) - len(citation.metadata.parenthetical)
+        citation.full_span_end = citation.full_span_end - offset
     citation.metadata.year = m["year"]
     if m["year"]:
         citation.year = get_year(m["year"])
@@ -164,7 +161,7 @@ def find_case_name(
         _process_case_name(citation, document, search_state, short)
 
 
-def _initialize_search_state(citation: CaseCitation) -> Dict[str, Any]:
+def _initialize_search_state(citation: CaseCitation) -> dict[str, Any]:
     """Initialize the state dictionary for case name search."""
     return {
         "offset": 0,
@@ -179,8 +176,8 @@ def _initialize_search_state(citation: CaseCitation) -> Dict[str, Any]:
 
 
 def _scan_for_case_boundaries(
-    document: Document, citation: CaseCitation, state: Dict[str, Any]
-) -> Dict[str, Any]:
+    document: Document, citation: CaseCitation, state: dict[str, Any]
+) -> dict[str, Any]:
     """Scan backward from citation to find case name boundaries.
 
     Args:
@@ -258,9 +255,7 @@ def _scan_for_case_boundaries(
             break
 
         # Skip placeholder citations
-        if isinstance(word, CitationToken) or isinstance(
-            word, PlaceholderCitationToken
-        ):
+        if isinstance(word, (CitationToken, PlaceholderCitationToken)):
             state["title_starting_index"] = index - 1
             continue
 
@@ -276,15 +271,7 @@ def _scan_for_case_boundaries(
         # Break on likely new sentence after "v" token
         elif _is_capitalized_abbreviation(
             word_str, state["v_token"], state["plaintiff_length"]
-        ):
-            state["start_index"] = index + 2
-            state["candidate_case_name"] = _extract_text(
-                words, state["start_index"], state["title_starting_index"]
-            )
-            break
-
-        # Break on other stop words
-        elif isinstance(word, StopWordToken):
+        ) or isinstance(word, StopWordToken):
             state["start_index"] = index + 2
             state["candidate_case_name"] = _extract_text(
                 words, state["start_index"], state["title_starting_index"]
@@ -336,7 +323,7 @@ def _scan_for_case_boundaries(
 def _process_case_name(
     citation: CaseCitation,
     document: Document,
-    state: Dict[str, Any],
+    state: dict[str, Any],
     short: bool,
 ) -> None:
     """Process the found case name and update the citation object.
@@ -406,7 +393,7 @@ def _process_case_name(
 # Helper functions to improve readability
 
 
-def _extract_text(words: List[Any], start: int, end: int) -> str:
+def _extract_text(words: list[Any], start: int, end: int) -> str:
     """Extract text from words list between start and end indices."""
     return "".join(str(w) for w in words[start:end])
 
@@ -489,7 +476,7 @@ def _is_lowercase_without_v_token(
 
 def find_html_tags_at_position(
     document: Document, position: int
-) -> List[Tuple[str, int, int]]:
+) -> list[tuple[str, int, int]]:
     """Find emphasis tags at particular positions in HTML document.
 
     Locates HTML emphasis tags that contain the specified position.
@@ -588,7 +575,7 @@ def _is_versus_token(word: Any) -> bool:
 
 
 def _extract_short_citation_name(
-    citation: CaseCitation, words: List[Any], document: Document
+    citation: CaseCitation, words: list[Any], document: Document
 ) -> None:
     """Extract case name for short-form citation.
 
@@ -632,7 +619,7 @@ def _extract_short_citation_name(
 def _extract_plaintiff_defendant_from_versus(
     citation: CaseCitation,
     document: Document,
-    words: List[Any],
+    words: list[Any],
     index: int,
     versus_token: Any,
 ) -> Optional[None]:
@@ -671,7 +658,7 @@ def _extract_plaintiff_defendant_from_versus(
 def _extract_from_single_html_element(
     citation: CaseCitation,
     document: Document,
-    tags: List[Tuple[str, int, int]],
+    tags: list[tuple[str, int, int]],
 ) -> None:
     """Extract plaintiff and defendant from a single HTML element.
 
@@ -715,8 +702,8 @@ def _extract_from_single_html_element(
 def _extract_from_separate_html_elements(
     citation: CaseCitation,
     document: Document,
-    plaintiff_tags: List[Tuple[str, int, int]],
-    defendant_tags: List[Tuple[str, int, int]],
+    plaintiff_tags: list[tuple[str, int, int]],
+    defendant_tags: list[tuple[str, int, int]],
 ) -> None:
     """Extract plaintiff and defendant from separate HTML elements.
 
@@ -757,7 +744,7 @@ def _extract_from_separate_html_elements(
 def _extract_defendant_after_stopword(
     citation: CaseCitation,
     document: Document,
-    words: List[Any],
+    words: list[Any],
     index: int,
     word: Any,
 ) -> Optional[None]:
@@ -833,8 +820,8 @@ def strip_stop_words(text: str) -> str:
 
 
 def convert_html_to_plain_text_and_loc(
-    document: Document, results: List[Tuple[str, int, int]]
-) -> Tuple:
+    document: Document, results: list[tuple[str, int, int]]
+) -> tuple:
     """A helper function to convert emphasis tags to plain text and location
 
     Args:
@@ -959,7 +946,7 @@ def process_parenthetical(
 
 def extract_pin_cite(
     words: Tokens, index: int, prefix: str = ""
-) -> Tuple[Optional[str], Optional[int], Optional[str]]:
+) -> tuple[Optional[str], Optional[int], Optional[str]]:
     """Test whether text following token at index is a valid pin cite.
     Return pin cite text and number of extra characters matched.
     If prefix is provided, use that as the start of text to match.
@@ -1050,8 +1037,8 @@ def match_on_tokens(
 
 
 def disambiguate_reporters(
-    citations: List[CitationBase],
-) -> List[CitationBase]:
+    citations: list[CitationBase],
+) -> list[CitationBase]:
     """Filter out citations where there is more than one possible reporter."""
     return [
         c
@@ -1061,7 +1048,7 @@ def disambiguate_reporters(
 
 
 def overlapping_citations(
-    full_span_1: Tuple[int, int], full_span_2: Tuple[int, int]
+    full_span_1: tuple[int, int], full_span_2: tuple[int, int]
 ) -> bool:
     """Check if citations overlap at all"""
     start_1, end_1 = full_span_1
@@ -1069,7 +1056,7 @@ def overlapping_citations(
     return max(start_1, start_2) < min(end_1, end_2)
 
 
-def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
+def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
     """Filter and order citations, ensuring reference citations are in sequence
 
     This function resolves rare but possible overlaps between ref. citations
@@ -1089,7 +1076,7 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     sorted_citations = sorted(
         citations, key=lambda citation: citation.full_span()
     )
-    filtered_citations: List[CitationBase] = [sorted_citations[0]]
+    filtered_citations: list[CitationBase] = [sorted_citations[0]]
 
     for citation in sorted_citations[1:]:
         last_citation = filtered_citations[-1]
@@ -1126,7 +1113,7 @@ def filter_citations(citations: List[CitationBase]) -> List[CitationBase]:
     return filtered_citations
 
 
-joke_cite: List[CitationBase] = [
+joke_cite: list[CitationBase] = [
     FullCaseCitation(
         CitationToken(
             "1 FLP 1",

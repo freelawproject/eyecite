@@ -1,0 +1,32 @@
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+ci:
+  autoupdate_schedule: quarterly
+exclude: migrations
+default_language_version:
+  python: "python3.12"
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+     - id: check-added-large-files
+     - id: check-ast
+     - id: check-json
+     - id: check-merge-conflict
+     - id: check-toml
+     - id: check-xml
+     - id: check-yaml
+     - id: debug-statements
+     - id: detect-private-key
+     - id: fix-byte-order-marker
+     - id: fix-encoding-pragma
+       args: [--remove]
+     - id: trailing-whitespace
+       args: [--markdown-linebreak-ext=md]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.8
+    hooks:
+      - id: ruff
+        args: [ --fix ]
+      - id: ruff-format

@@ -1,5 +1,6 @@
 import re
-from typing import Callable, Dict, Iterable, Union
+from collections.abc import Iterable
+from typing import Callable, Union
 
 import lxml.html
 
@@ -79,7 +80,7 @@ def all_whitespace(text: str) -> str:
     Returns:
         Text with collapsed whitespace characters.
     """
-    return re.sub(r"\s+", " ", text)
+    return re.sub(r"[\u200b\s]+", " ", text)
 
 
 def underscores(text: str) -> str:
@@ -110,7 +111,7 @@ def xml(text: str) -> str:
     return re.sub(r"^<\?xml.*?\?>", "", text, count=1)
 
 
-cleaners_lookup: Dict[str, Callable[[str], str]] = {
+cleaners_lookup: dict[str, Callable[[str], str]] = {
     "html": html,
     "inline_whitespace": inline_whitespace,
     "all_whitespace": all_whitespace,

@@ -1,6 +1,7 @@
 import re
 from bisect import bisect_left, bisect_right
-from typing import Callable, Iterable, List, Optional, Type, Union, cast
+from collections.abc import Iterable
+from typing import Callable, Optional, Union, cast
 
 from eyecite.helpers import (
     disambiguate_reporters,
@@ -42,7 +43,7 @@ def get_citations(
     tokenizer: Tokenizer = default_tokenizer,
     markup_text: str = "",
     clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = None,
-) -> List[CitationBase]:
+) -> list[CitationBase]:
     """This is eyecite's main workhorse function. Given a string of text
     (e.g., a judicial opinion or other legal doc), return a list of
     `eyecite.models.CitationBase` objects representing the citations found
@@ -150,7 +151,7 @@ def get_citations(
 
 def extract_reference_citations(
     citation: ResourceCitation, document: Document
-) -> List[ReferenceCitation]:
+) -> list[ReferenceCitation]:
     """Extract reference citations that follow a full citation
 
     :param citation: the full case citation found
@@ -180,7 +181,7 @@ def extract_reference_citations(
 
 def extract_pincited_reference_citations(
     citation: FullCaseCitation, plain_text: str
-) -> List[ReferenceCitation]:
+) -> list[ReferenceCitation]:
     """Extract reference citations with the name-pincite pattern
 
     :param citation: the full case citation found
@@ -232,13 +233,13 @@ def _extract_full_citation(
     # journals). Get the set of all sources that matched, preferring exact
     # matches to variations:
     token = cast(CitationToken, document.words[index])
-    cite_sources = set(
+    cite_sources = {
         e.reporter.source
         for e in (token.exact_editions or token.variation_editions)
-    )
+    }
 
     # get citation_class based on cite_sources
-    citation_class: Type[ResourceCitation]
+    citation_class: type[ResourceCitation]
     if "reporters" in cite_sources:
         citation_class = FullCaseCitation
     elif "laws" in cite_sources:
@@ -409,7 +410,7 @@ def find_reference_citations_from_markup(
             regex_value = r"\s+".join(
                 re.escape(token) for token in value.strip().split()
             )
-            regexes.append(r"(?P<{}>{})".format(key, regex_value))
+            regexes.append(rf"(?P<{key}>{regex_value})")
         if not regexes:
             continue
 

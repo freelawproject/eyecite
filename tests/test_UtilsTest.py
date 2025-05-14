@@ -20,9 +20,7 @@ class UtilsTest(TestCase):
             ),
         )
         for steps, text, expected in test_pairs:
-            print(
-                "Testing clean_text for %s" % text.replace("\n", " "), end=" "
-            )
+            print("Testing clean_text for " + text.replace("\n", " "), end=" ")
             result = clean_text(text, steps)
             self.assertEqual(
                 result,

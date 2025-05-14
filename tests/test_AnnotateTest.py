@@ -313,8 +313,8 @@ class AnnotateTest(TestCase):
         ]
         for source_text, expected in test_pairs:
             plain_text = clean_text(source_text, ["all_whitespace", "html"])
-            citation = get_citations(plain_text)
-            for citation in citation:
+            citations = get_citations(plain_text)
+            for citation in citations:
                 start, end = citation.span_with_pincite()
                 pin_cite_span = plain_text[start:end]
                 self.assertEqual(
