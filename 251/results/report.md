@@ -14,27 +14,27 @@ There were 35 gains and 0 losses.
 |  5329531   |      German Savings Bank       |        |
 |  5618955   |           Widincamp            |        |
 |  5656104   |              Sime              |        |
-|  3419420   |             Martin             |        |
-|  3419420   |           Cunningham           |        |
 |  3419420   |              Best              |        |
+|  3419420   |           Cunningham           |        |
+|  3419420   |             Martin             |        |
 |  1771039   |             supra,             |        |
+|  1431414   |            Goldstein           |        |
+|  1431414   |            Uhlaender           |        |
 |  1431414   |              Ali               |        |
+|  1431414   |            O'Brien             |        |
+|  1431414   |             Davies             |        |
+|  1431414   |             Munden             |        |
+|  1431414   |             Price              |        |
+|  1431414   |            Fairfield           |        |
+|  1431414   |             Cepeda             |        |
 |  1431414   |             Grant              |        |
 |  1431414   |            Schumann            |        |
-|  1431414   |             Cepeda             |        |
-|  1431414   |            Fairfield           |        |
-|  1431414   |              Price             |        |
-|  1431414   |            Uhlaender           |        |
-|  1431414   |             Davies             |        |
-|  1431414   | Memphis Development Foundation |        |
-|  1431414   |             Price              |        |
 |  1431414   |         Motschenbacher         |        |
-|  1431414   |           Uhlaender            |        |
 |  1431414   |               Ali              |        |
-|  1431414   |            Goldstein           |        |
+|  1431414   |              Price             |        |
+|  1431414   |           Uhlaender            |        |
+|  1431414   | Memphis Development Foundation |        |
 |  1431414   |            Stilson             |        |
-|  1431414   |             Munden             |        |
-|  1431414   |            O'Brien             |        |
 |  3839243   |            Merriam             |        |
 |  3415079   |              Biwer             |        |
 |  3303848   |             Elliott            |        |
@@ -43,9 +43,9 @@ There were 35 gains and 0 losses.
 |   897829   |            Edwards             |        |
 |  6608066   |             French             |        |
 |  6608066   |              Loeb              |        |
-|  7062108   |             O’Mara             |        |
-|  7062108   |              Tate              |        |
 |  7062108   |            Johnson             |        |
+|  7062108   |              Tate              |        |
+|  7062108   |             O’Mara             |        |
 
 
 </details>
@@ -61,6 +61,6 @@ Time Chart
 Generated Files
 ---------
 
-[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/84de4ba5ba721d98ab61cfd676ee55a3386e3fb3.json)
+[Branch 1 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/646fa3318161d732aecf3436d5d14101ff1ea3fe.json)
 [Branch 2 Output](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/464b65566de0c6a4747de0efdc8e5b5c263240a4.json)
 [Full Output CSV ](https://raw.githubusercontent.com/freelawproject/eyecite/artifacts/251/results/output.csv)
