@@ -782,6 +782,11 @@ class FindTest(TestCase):
                  case_citation(volume="316", reporter="F.Supp.", page="884", short=True,
                                metadata={'antecedent_guess': "Esquire, Inc., supra", "pin_cite": "884"}),
              ], {'clean_steps': ['html', 'inline_whitespace']}),
+            # properly not remove An from the start of the final word
+            ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225",
+             [case_citation(volume="2015", reporter="WL", page="2375225",
+                            metadata={"plaintiff": "Angelopoulos", "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC"})]
+             )
         )
 
         # fmt: on

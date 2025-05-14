@@ -13,6 +13,7 @@ Changes:
 Fixes:
 - Add fix for reference citation filtering out bad matches
 - Fix for hyperscan bug and whitespace bug
+- Fix boundary scanning bug to not remove parts of words
 - A citation in a parenthetical should not emit the warning "Unknown overlap case"
 
 ## Current

@@ -307,7 +307,7 @@ def _scan_for_case_boundaries(
             )
             state["start_index"] = 0
             state["candidate_case_name"] = re.sub(
-                r"^(of|the|an|and)",
+                r"^(of|the|an|and)\b",
                 "",
                 state["candidate_case_name"],
                 flags=re.IGNORECASE,
