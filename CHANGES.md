@@ -11,6 +11,7 @@ Changes:
 - Small tweak to placeholder citations regexes and added a few more known reps
 
 Fixes:
+- Add fix for reference citation filtering out bad matches
 - Fix for hyperscan bug and whitespace bug
 
 ## Current

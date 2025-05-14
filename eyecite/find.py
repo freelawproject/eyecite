@@ -271,6 +271,7 @@ def _extract_shortform_citation(
     Shortform 1: Adarand, 515 U.S., at 241
     Shortform 2: 515 U.S., at 241
     Shortform 3: Adarand at 241, 515 U.S.
+    Shortform 4: Grant v. Esquire, supra, 316 F.Supp. at p. 884
     """
 
     cite_token = cast(CitationToken, document.words[index])
@@ -451,6 +452,15 @@ def find_reference_citations_from_markup(
             end_in_plain = document.markup_to_plain.update(
                 start_in_markup + match.end(1), bisect_right
             )
+            raw_after = document.plain_text[full_end_in_plain:]
+            if re.match(r"^\s*(at|v[.s]|supra)\s", raw_after):
+                # filter likely bad reference matches
+                # when matching reference citations in markup it is possible
+                # to have a pattern like this `<i>Foo</i> v. <i>Bar, supra</i>`
+                # <i>Foo</i> would be a false positive so we check what follows
+                # to avoid this issue
+                continue
+
             reference = ReferenceCitation(
                 token=CaseReferenceToken(
                     data=document.plain_text[start_in_plain:end_in_plain],
