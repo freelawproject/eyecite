@@ -13,6 +13,7 @@ Changes:
 Fixes:
 - Add fix for reference citation filtering out bad matches
 - Fix for hyperscan bug and whitespace bug
+- Fix boundary scannig bug to not remove parts of words
 
 ## Current
 
