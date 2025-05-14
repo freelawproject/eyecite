@@ -786,14 +786,13 @@ class FindTest(TestCase):
                  case_citation(volume="316", reporter="F.Supp.", page="884", short=True,
                                metadata={'antecedent_guess': "Esquire, Inc., supra", "pin_cite": "884"}),
              ], {'clean_steps': ['html', 'inline_whitespace']}),
-            ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225, at p. *4.",
+            ("""However, as we explained in Kaiser Foundation, supra, 13 Cal.App.5th at 1146""",
              [
-                 case_citation(volume="2015", reporter="WL", page="2375225",
-                               metadata={"plaintiff": "Angelopoulos",
-                                         "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC",
-                                         "pin_cite": "at p. *4"}),
-             ]),
-            # Expand pin cite matching in reference citations
+                 case_citation(page='1146', reporter='Cal.App.5th', volume='13',
+                               short=True,
+                               metadata={"pin_cite": "1146",
+                                         "antecedent_guess": "Kaiser Foundation"}),
+              ]),
             ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225, at p. *4. yadda yadda yadda... Angelopoulos p. *4;",
              [
                  case_citation(volume="2015", reporter="WL", page="2375225",

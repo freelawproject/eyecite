@@ -22,6 +22,7 @@ from eyecite.models import (
     ShortCaseCitation,
     StopWordToken,
     SupraCitation,
+    SupraToken,
     Token,
     Tokens,
 )
@@ -282,6 +283,11 @@ def _scan_for_case_boundaries(
         if _is_lowercase_without_v_token(word_str, state["v_token"]):
             if word_str in ["ex", "rel."]:
                 # ignore common lower cased
+                continue
+            if isinstance(word, SupraToken):
+                # supra usually is preceded by a case name so do not
+                # break on supra but also do not capture in title
+                state["title_starting_index"] = index - 1
                 continue
             state["start_index"] = index + 2
             state["candidate_case_name"] = _extract_text(
