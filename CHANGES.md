@@ -5,19 +5,30 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- Add another short form style to short cite regex
+-
 
 Changes:
-- Small tweak to placeholder citations regexes and added a few more known reps
-- Tweak to plain text processing of supra tokens
+-
 
 Fixes:
-- Add fix for reference citation filtering out bad matches
-- Fix for hyperscan bug and whitespace bug
-- Fix boundary scanning bug to not remove parts of words
-- A citation in a parenthetical should not emit the warning "Unknown overlap case"
+-
 
 ## Current
+
+**2.7.2 - 2025-05-14**
+
+Features:
+- Add another short form style to short cite regex #252
+
+Changes:
+- Small tweak to placeholder citations regexes and added a few more known reps #256
+- Tweak to plain text processing of supra tokens #258
+
+Fixes:
+- Add fix for reference citation filtering out bad matches #251
+- Fix for hyperscan bug and whitespace bug #250
+- Fix boundary scanning bug to not remove parts of words #258
+- A citation in a parenthetical should not emit the warning "Unknown overlap case" #259
 
 **2.7.1 - 2025-04-25**
 
