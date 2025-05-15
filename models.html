@@ -317,6 +317,8 @@ class ResourceCitation(CitationBase):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         year: Optional[str] = None
+        month: Optional[str] = None
+        day: Optional[str] = None
 
     def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
@@ -2685,6 +2687,8 @@ class ResourceCitation(CitationBase):
         &#34;&#34;&#34;Define fields on self.metadata.&#34;&#34;&#34;
 
         year: Optional[str] = None
+        month: Optional[str] = None
+        day: Optional[str] = None
 
     def add_metadata(self, document: &#34;Document&#34;):
         &#34;&#34;&#34;Extract metadata from text before and after citation.&#34;&#34;&#34;
