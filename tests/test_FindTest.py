@@ -814,7 +814,17 @@ class FindTest(TestCase):
             ("Angelopoulos v. Keystone Orthopedic Specialists, S.C., Wachn, LCC, 2015 WL 2375225",
              [case_citation(volume="2015", reporter="WL", page="2375225",
                             metadata={"plaintiff": "Angelopoulos", "defendant": "Keystone Orthopedic Specialists, S.C., Wachn, LCC"})]
-             )
+             ),
+            ("See <em>Bivens </em>v. <em>Six Unknown Fed. Narcotics Agents, </em>403 U. S. 388 (1971). "
+             "The legal issue there was whether a <em>Bivens </em> at 122, action can be employed...",
+             [case_citation(volume="403", reporter="U. S.", page="388",
+                            metadata={"plaintiff": "Bivens",
+                                      "defendant": "Six Unknown Fed. Narcotics Agents",
+                                      "court": "scotus",
+                                      "year": "1971"},
+                            ),
+              reference_citation("Bivens", metadata={"plaintiff": "Bivens", "pin_cite": "at 122"})],
+             {'clean_steps': ['html', 'inline_whitespace']}),
         )
 
         # fmt: on
