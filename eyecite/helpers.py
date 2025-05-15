@@ -127,6 +127,8 @@ def add_post_citation(citation: CaseCitation, words: Tokens) -> None:
         offset = len(m["parenthetical"]) - len(citation.metadata.parenthetical)
         citation.full_span_end = citation.full_span_end - offset
     citation.metadata.year = m["year"]
+    citation.metadata.month = m["month"]
+    citation.metadata.day = m["day"]
     if m["year"]:
         citation.year = get_year(m["year"])
     if m["court"]:

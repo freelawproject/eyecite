@@ -32,6 +32,10 @@ class RegexesTest(TestCase):
             "State Kennedy, 666 P.2d 1316, 1326 (Or. 1983)": "or",
             "State v. Michael J., 875 A.2d 510, 534-35 (Conn. 2005)": "conn",
             "Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)": "pa",
+            "Commonwealth v. Shaffer, 209 A.3d 957, 969 (Pa. Jan. 1, 2019)": "pa",
+            "Sixty-Eight Liquors, Inc. v. Colvin, 118 S.W.3d 171 (Ky. Aug. 2, 2003)": "ky",
+            "Wisniewski v. Johns-Manville Corp., 812 F.2d 81, 83 (3rd Cir. June 30, 1987).": "ca3",
+            "Wallace v. Cellco P'ship, No. CV 14-8052-DSF (AS), 2015 WL 13908106, at *7 (C.D. Cal. Feb. 9, 2015)": "cacd",
         }
         for key in samples:
             eyecite_result = get_citations(key)

@@ -162,8 +162,18 @@ PARENTHETICAL_REGEX = r"""
 
 MONTH_REGEX = r"""
     (?P<month>
-        Jan\.|Feb\.|Mar\.|Apr\.|May|June|
-        July|Aug\.|Sept\.|Oct\.|Nov\.|Dec\.
+        January|Jan\.|
+        February|Feb\.|
+        March|Mar\.|
+        April|Apr\.|
+        May|
+        June|Jun\.|
+        July|Jul\.|
+        August|Aug\.|
+        September|Sept?\.|
+        October|Oct\.|
+        November|Nov\.|
+        December|Dec\.
     )
 """
 
@@ -276,32 +286,43 @@ SUPRA_ANTECEDENT_REGEX = r"""
 # Post full citation regex:
 # Capture metadata after a full cite. For example given the citation "1 U.S. 1"
 # with the following text:
-#   1 U.S. 1, 4-5, 2 S. Ct. 2, 6-7 (4th Cir. 2012) (overruling foo)
+#   1 U.S. 1, 4-5, 2 S. Ct. 2, 6-7 (4th Cir. Jan. 1, 2012) (overruling foo)
 # we want to capture:
 #   pin_cite = 4-5
 #   extra = 2 S. Ct. 2, 6-7
 #   court = 4th Cir.
+#   month = Jan.
+#   day = 1
 #   year = 2012
 #   parenthetical = overruling foo
 POST_FULL_CITATION_REGEX = rf"""
-    (?:  # handle a full cite with a valid year paren:
-        # content before year paren:
+    (?: # handle a full cite with a valid court+date paren:
+        # content before court+date paren:
         (?:
             # pin cite with comma and extra:
             {PIN_CITE_REGEX}?
             ,?\ ?
             (?P<extra>[^(;]*)
         )
-        # content within year paren:
-        [\(\[](?:
-            # court and year:
-            (?P<court>[^)]+)\ {YEAR_REGEX}|
-            # just year:
-            {YEAR_REGEX}
-        )[\)\]]
+        # content within court+date paren:
+        [\(\[] # opening paren or bracket
+        (?:
+            (?:
+                (?P<court>.*?) # treat anything before date as court
+                (?= # lookahead to stop when we see a month or year
+                    \s+{MONTH_REGEX} |
+                    \s+{YEAR_REGEX}
+                )
+            )?
+            \ ?
+            (?P<month>{MONTH_REGEX})?\ ?   # optional month
+            (?P<day>\d{{1,2}})?\,?\ ?      # optional day and comma
+            (?P<year>{YEAR_REGEX})         # year is required
+        )
+        [\)\]] # closing paren or bracket
         # optional parenthetical comment:
         {PARENTHETICAL_REGEX}
-    |  # handle a pin cite with no valid year paren:
+    |  # handle a pin cite with no valid court+date paren:
         {PIN_CITE_REGEX}
     )
 """

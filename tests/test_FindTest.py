@@ -152,6 +152,14 @@ class FindTest(TestCase):
                             metadata={'plaintiff': 'Commonwealth',
                                       'defendant': 'Muniz',
                                       'court': 'pa'})]),
+            # Test with month/day in court parenthetical
+            ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. Feb. 9, 2017)',
+             [case_citation(page='1189', reporter='A.3d', volume='164', year=2017,
+                            metadata={'plaintiff': 'Commonwealth',
+                                      'defendant': 'Muniz',
+                                      'month': 'Feb.',
+                                      'day': '9',
+                                      'court': 'pa'})]),
             # Parallel cite with parenthetical
             ('Bob Lissner v. Test 1 U.S. 12, 347-348, 1 S. Ct. 2, 358 (4th Cir. 1982) (overruling foo)',
              [case_citation(page='12', year=1982,
@@ -717,7 +725,7 @@ class FindTest(TestCase):
                  reporter='U.S. Dist. LEXIS',
                  page='12335',
                  year=2000,
-                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)"})
+                 metadata={'plaintiff': "Corp.", 'defendant': "Nature's Farm Prods., No. 99 Civ. 9404 (SHS)", "month": "Aug.", "day": "25", "court": "nysd"})
               ],),
             # Long pin cite -- make sure no catastrophic backtracking in regex
             ('1 U.S. 1, 2277, 2278, 2279, 2280, 2281, 2282, 2283, 2284, 2286, 2287, 2288, 2289, 2290, 2291',
