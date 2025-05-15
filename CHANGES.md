@@ -11,10 +11,21 @@ Changes:
 -
 
 Fixes:
+-
+
+## Current
+**2.7.3 - 2025-05-15**
+
+Features:
+-
+
+Changes:
+-
+
+Fixes:
 - Fixes court detection with court/date parenthetical contains the month and day, e.g., `(C.D. Cal. Feb. 9, 2015)` #242
 - Fixes over reference filtering in markup text
 
-## Current
 
 **2.7.2 - 2025-05-14**
 
