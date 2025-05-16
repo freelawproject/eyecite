@@ -1122,6 +1122,80 @@ class FindTest(TestCase):
                 f"Nominative reporters getting in the way of parsing: {parsed_cite}",
             )
 
+    def test_line_number_short_cites(self):
+        """
+        Test that in cases like "21 Taylor, 281 F.3d at 830", which is caused by a short
+        cite starting on a line, in a PDF that includes line numbers, we parse the short
+        cite correctly.
+        """
+        no_ed = {"exact_editions": (), "edition_guess": None}
+        pairs = [
+            # Correctly parsed cases
+            (
+                # From https://www.courtlistener.com/api/rest/v3/recap-documents/139032416/
+                "21 Taylor, 281 F.3d at 830",
+                case_citation(
+                    volume="281", reporter="F.3d", page="830", short=True
+                ),
+            ),
+            (
+                # From https://www.courtlistener.com/api/rest/v3/recap-documents/139032384/
+                "28 Phillips, 415 F.3d at 1321",
+                case_citation(
+                    volume="415", reporter="F.3d", page="1321", short=True
+                ),
+            ),
+            # Making sure we aren't overzealous -- we should take the first citation in
+            # these cases.
+            #
+            # Note: Need to remove the editions from the case_citation, because the
+            # parsed_cite object doesn't have any edition attached. When the correct
+            # edition is attached, the correct_reporter() becomes "Tay." and then the
+            # two objects don't match.
+            (
+                # Volume number too large
+                "212 Taylor, 281 F.3d at 830",
+                case_citation(
+                    volume="212", reporter="Taylor", page="281", **no_ed
+                ),
+            ),
+            (
+                # Volume number too large
+                "212 Taylor, 281 Thompson 830",
+                case_citation(
+                    volume="212", reporter="Taylor", page="281", **no_ed
+                ),
+            ),
+            (
+                # No comma after reporter
+                "212 Taylor 281 Thompson 830",
+                case_citation(
+                    volume="212", reporter="Taylor", page="281", **no_ed
+                ),
+            ),
+            (
+                # No comma after reporter
+                "21 Taylor 281 F.3d at 830",
+                case_citation(
+                    volume="21", reporter="Taylor", page="281", **no_ed
+                ),
+            ),
+            (
+                # The two citations don't actually overlap
+                "21 Taylor, 281 and 281 F.3d at 830",
+                case_citation(
+                    volume="21", reporter="Taylor", page="281", **no_ed
+                ),
+            ),
+        ]
+        for cite_string, cite_object in pairs:
+            parsed_cite = get_citations(cite_string)[0]
+            self.assertEqual(
+                parsed_cite,
+                cite_object,
+                f"Short cites with line numbers not parsed correctly: {cite_string}",
+            )
+
     def test_custom_tokenizer(self):
         extractors = []
         for e in EXTRACTORS:

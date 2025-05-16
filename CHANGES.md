@@ -11,7 +11,7 @@ Changes:
 -
 
 Fixes:
--
+- Fix parsing of short cites that occur after a line number #267, #264
 
 ## Current
 
