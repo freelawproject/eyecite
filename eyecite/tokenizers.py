@@ -388,7 +388,7 @@ class Tokenizer:
         # where the current start offset is greater than the previously
         # returned end offset. Also return text between matches.
         # filter out empty tokens cause by corrupted/complex pdf data
-        citation_tokens = []
+        citation_tokens: list[tuple[int, Token]] = []
         all_tokens: Tokens = []
         tokens = sorted(
             (t for t in self.extract_tokens(text) if t.data is not None),
