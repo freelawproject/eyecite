@@ -337,7 +337,9 @@ class Tokenizer:
         """Tokenize text and return list of all tokens, followed by list of
         just non-string tokens along with their positions in the first list."""
 
-        def _is_short_cite_following_line_number(last_token: Token | None, token: Token) -> bool:
+        def _is_short_cite_following_line_number(
+            last_token: Token | None, token: Token
+        ) -> bool:
             """
             When we have a short cite following a line number, it can result in two
             CitationTokens.
@@ -357,7 +359,9 @@ class Tokenizer:
             """
             if last_token is None:
                 return False
-            if not isinstance(last_token, CitationToken) or not isinstance(token, CitationToken):
+            if not isinstance(last_token, CitationToken) or not isinstance(
+                token, CitationToken
+            ):
                 return False
             last_token_volume = last_token.groups.get("volume")
 
