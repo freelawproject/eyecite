@@ -87,9 +87,11 @@ class SpanUpdater:
         two characters, delete three characters.
         """
         try:
-            return fast_diff_match_patch.diff(
+            steps = fast_diff_match_patch.diff(
                 a, b, timelimit=0, checklines=False, cleanup="No"
             )
+            logger.warn("DMP steps for a=%r, b_head=%r...: %s", a[:50], b[:50], steps)
+            return steps
         except AttributeError as e:
             raise AttributeError(
                 "This may be caused by having the diff_match_patch package "
@@ -193,6 +195,27 @@ def annotate_citations(
         if offset_updater:
             start = offset_updater.update(start, bisect_right)
             end = offset_updater.update(end, bisect_left)
+
+            # # Smart check: skip annotations that begin inside an HTML tag declaration
+            tag_start = plain_text.rfind("<", 0, start)
+            tag_end = plain_text.rfind(">", 0, start)
+
+            # detect that start is inside a tag
+            if tag_start > tag_end and plain_text[tag_start:start].find(" ") != -1:
+                # Move the annotation out of the tag:
+                new_start = plain_text.find(">", tag_start) + 1
+                # And adjust end by the same delta so span length is preserved:
+                delta = new_start - start
+                new_end = end + delta
+
+                start, end = new_start, new_end
+                logger.warning("Snapped annotation from %s–%s to %s–%s",
+                            start - delta, end - delta, start, end)
+
+                # Trim any trailing tag from the annotation span so we don't include "</...>"
+                next_tag_pos = plain_text.find("<", start)
+                if next_tag_pos != -1 and next_tag_pos < end:
+                    end = next_tag_pos
 
         # handle overlaps
         if start < last_end:
