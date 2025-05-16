@@ -202,20 +202,22 @@ def annotate_citations(
 
             # detect that start is inside a tag
             if tag_start > tag_end and plain_text[tag_start:start].find(" ") != -1:
-                # Move the annotation out of the tag:
-                new_start = plain_text.find(">", tag_start) + 1
-                # And adjust end by the same delta so span length is preserved:
-                delta = new_start - start
-                new_end = end + delta
-
-                start, end = new_start, new_end
-                logger.warning("Snapped annotation from %s–%s to %s–%s",
-                            start - delta, end - delta, start, end)
-
-                # Trim any trailing tag from the annotation span so we don't include "</...>"
-                next_tag_pos = plain_text.find("<", start)
-                if next_tag_pos != -1 and next_tag_pos < end:
-                    end = next_tag_pos
+                continue
+                # logger.warning("")
+                # # Move the annotation out of the tag:
+                # new_start = plain_text.find(">", tag_start) + 1
+                # # And adjust end by the same delta so span length is preserved:
+                # delta = new_start - start
+                # new_end = end + delta
+                #
+                # start, end = new_start, new_end
+                # logger.warning("Snapped annotation from %s–%s to %s–%s",
+                #             start - delta, end - delta, start, end)
+                #
+                # # Trim any trailing tag from the annotation span so we don't include "</...>"
+                # next_tag_pos = plain_text.find("<", start)
+                # if next_tag_pos != -1 and next_tag_pos < end:
+                #     end = next_tag_pos
 
         # handle overlaps
         if start < last_end:
