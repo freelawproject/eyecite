@@ -336,6 +336,49 @@ class Tokenizer:
     def tokenize(self, text: str) -> tuple[Tokens, list[tuple[int, Token]]]:
         """Tokenize text and return list of all tokens, followed by list of
         just non-string tokens along with their positions in the first list."""
+
+        def _is_short_cite_following_line_number(last_token: Token | None, token: Token) -> bool:
+            """
+            When we have a short cite following a line number, it can result in two
+            CitationTokens.
+            e.g., "21 Taylor, 281 F.3d at 830" will result in:
+            1) "21 Taylor, 281"
+            2) "281 F.3d at 830"
+
+            When this occurs, we want to take the latter. However we'll try to be
+            conservative and only take the second token if:
+            - last_token.volume < 50 (line numbers rarely go past 50)
+            - last_token.page == token.volume
+            - the overlap is precisely the last_token's page and the next token's volume
+            - last_token's reporter is followed by a comma, which makes it more likely
+            that we're dealing with a short cite.
+
+            Can we also check whether `token` is a short cite?
+            """
+            if last_token is None:
+                return False
+            if not isinstance(last_token, CitationToken) or not isinstance(token, CitationToken):
+                return False
+            last_token_volume = last_token.groups.get("volume")
+
+            # Is the last token's volume under 50?
+            if not last_token_volume or int(last_token_volume) >= 50:
+                return False
+
+            # Does the last token's page match the next token's volume?
+            last_token_page = last_token.groups["page"]
+            token_volume = token.groups.get("volume")
+            if not token_volume or last_token_page != token_volume:
+                return False
+
+            # Do they precisely overlap on the last token's page/next token's volume?
+            if token.start + len(last_token_page) != last_token.end:
+                return False
+
+            # Is the last token's reporter followed by a comma?
+            last_token_reporter = last_token.groups["reporter"]
+            return last_token_reporter + "," in last_token.data
+
         # Sort all matches by start offset ascending, then end offset
         # descending. Remove overlaps by returning only matches
         # where the current start offset is greater than the previously
@@ -366,6 +409,12 @@ class Tokenizer:
                     # if a token has overlapping matches between a nominative
                     # reporter and another type of case citation, prefer the
                     # other case citation. See #221 and #174
+                    citation_tokens.pop(-1)
+                    all_tokens.pop(-1)
+                elif _is_short_cite_following_line_number(last_token, token):
+                    # In cases like "21 Taylor, 281 F.3d at 830", we get two overlapping
+                    # citations but the first is likely caused by a line number. Take
+                    # the second citation.
                     citation_tokens.pop(-1)
                     all_tokens.pop(-1)
                 else:
