@@ -11,7 +11,7 @@ Changes:
 -
 
 Fixes:
--
+- Update `annotate_citations` to preprocess html before annotating, drop `offset_updater` parameter
 
 ## Current
 
