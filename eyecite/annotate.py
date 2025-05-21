@@ -10,7 +10,7 @@ import fast_diff_match_patch
 from eyecite.utils import (
     is_balanced_html,
     maybe_balance_style_tags,
-    wrap_html_tags,
+    wrap_html_tags, placeholder_markup,
 )
 
 logger = getLogger(__name__)
@@ -181,7 +181,8 @@ def annotate_citations(
     if offset_updater:
         plain_text = source_text
     elif source_text and source_text != plain_text:
-        offset_updater = SpanUpdater(plain_text, source_text, use_dmp=use_dmp)
+        placeholder_text = placeholder_markup(source_text)
+        offset_updater = SpanUpdater(plain_text, placeholder_text, use_dmp=use_dmp)
         plain_text = source_text
 
     # append text for each annotation to out

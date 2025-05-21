@@ -315,3 +315,29 @@ def maybe_balance_style_tags(
                 start = extended_start + matches[-1].start()
 
     return start, end, plain_text[start:end]
+
+
+def placeholder_markup(html: str) -> str:
+    """Create placeholder HTML to identify annotation locations.
+
+    This allows diffing or annotation algorithms to maintain correct
+    character offsets by hiding tags behind 'X's of the same length.
+
+    Args:
+        html: The raw HTML string to sanitize.
+
+    Returns:
+        A safe string to annotate
+    """
+    tag_re = re.compile(r"<([\/a-z])[^>]+>")
+
+    def _replace(m: re.Match) -> str:
+        """Replace tags with placeholder tags"""
+        tag = m.group(0)
+        if tag.startswith("</"):
+            return "</" + "X" * (len(tag) - 3) + ">"
+        else:
+            return "<" + "X" * (len(tag) - 2) + ">"
+
+    text = tag_re.sub(_replace, html)
+    return text
