@@ -901,6 +901,7 @@ class Document:
 
     def __post_init__(self):
         from eyecite.utils import placeholder_markup
+
         if self.plain_text and not self.markup_text:
             self.source_text = self.plain_text
             if self.clean_steps:
@@ -954,6 +955,7 @@ class Document:
         """Tokenize the document and store the results in the document
         object"""
         self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)
+
     #
     # def placeholder_markup(self, html: str) -> str:
     #     """Create placeholder HTML to identify annotation locations.
