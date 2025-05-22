@@ -917,6 +917,10 @@ class Document:
                 )
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
+
+            # Replace original tags (including their attributes) with same‐length placeholders
+            # so that SpanUpdater’s offset calculations remain correct and aren’t skewed by
+            # attribute characters (e.g., in id or index). ex. <span> <XXXX>
             placeholder_markup = placeholder_markup(self.markup_text)
 
             self.plain_to_markup = SpanUpdater(
@@ -955,29 +959,3 @@ class Document:
         """Tokenize the document and store the results in the document
         object"""
         self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)
-
-    #
-    # def placeholder_markup(self, html: str) -> str:
-    #     """Create placeholder HTML to identify annotation locations.
-    #
-    #     This allows diffing or annotation algorithms to maintain correct
-    #     character offsets by hiding tags behind 'X's of the same length.
-    #
-    #     Args:
-    #         html: The raw HTML string to sanitize.
-    #
-    #     Returns:
-    #         A safe string to annotate
-    #     """
-    #     tag_re = re.compile(r"<([\/a-z])[^>]+>")
-    #
-    #     def _replace(m: re.Match) -> str:
-    #         """Replace tags with placeholder tags"""
-    #         tag = m.group(0)
-    #         if tag.startswith("</"):
-    #             return "</" + "X" * (len(tag) - 3) + ">"
-    #         else:
-    #             return "<" + "X" * (len(tag) - 2) + ">"
-    #
-    #     text = tag_re.sub(_replace, html)
-    #     return text
