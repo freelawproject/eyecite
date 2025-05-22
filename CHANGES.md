@@ -8,12 +8,23 @@ Features:
 -
 
 Changes:
-- Add method to remove tags from markup to avoid diffing bug
+- 
 
 Fixes:
 -
 
 ## Current
+
+**2.7.5 - 2025-05-22**
+
+Features:
+-
+
+Changes:
+- Add method to remove tags from markup to avoid diffing bug
+
+Fixes:
+-
 
 **2.7.4 - 2025-05-15**
 
