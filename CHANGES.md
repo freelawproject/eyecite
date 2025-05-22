@@ -8,7 +8,7 @@ Features:
 -
 
 Changes:
--
+- Add method to remove tags from markup to avoid diffing bug
 
 Fixes:
 -

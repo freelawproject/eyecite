@@ -200,6 +200,27 @@ class AnnotateTest(TestCase):
                     "use_markup": True,
                 },
             ),
+            (
+                """<p index="143">2016 WL 4217254</p>.<p index="144">id.</p>""",
+                """<p index="143"><0>2016 WL 4217254</0></p>.<p index="144"><1>id.</1></p>""",
+                ["html", "all_whitespace"],
+                {
+                    "annotate_anchors": False,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
+            ),
+            # Ensure < does not affect annotations
+            (
+                """contending it <12123 is < the most “apt.” “ ‘[A] vast enterprise usu. <p index="143">2016 WL 4217254</p>""",
+                """contending it <12123 is < the most “apt.” “ ‘[A] vast enterprise usu. <p index="143"><0>2016 WL 4217254</0></p>""",
+                ["html", "all_whitespace"],
+                {
+                    "annotate_anchors": False,
+                    "unbalanced_tags": "skip",
+                    "use_markup": True,
+                },
+            ),
         )
         for source_text, expected, clean_steps, *annotate_kwargs in test_pairs:
             annotate_kwargs = annotate_kwargs[0] if annotate_kwargs else {}

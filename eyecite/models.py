@@ -900,6 +900,8 @@ class Document:
     source_text: str = ""  # will be useful for the annotation step
 
     def __post_init__(self):
+        from eyecite.utils import placeholder_markup
+
         if self.plain_text and not self.markup_text:
             self.source_text = self.plain_text
             if self.clean_steps:
@@ -916,8 +918,13 @@ class Document:
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
 
+            # Replace original tags (including their attributes) with same‐length placeholders
+            # so that SpanUpdater’s offset calculations remain correct and aren’t skewed by
+            # attribute characters (e.g., in id or index). ex. <span> <XXXX>
+            placeholder_markup = placeholder_markup(self.markup_text)
+
             self.plain_to_markup = SpanUpdater(
-                self.plain_text, self.markup_text
+                self.plain_text, placeholder_markup
             )
             self.markup_to_plain = SpanUpdater(
                 self.markup_text, self.plain_text
