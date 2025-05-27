@@ -381,8 +381,12 @@ HyperscanTokenizer
 The alternate HyperscanTokenizer compiles all extraction regexes into a hyperscan database
 so they can be extracted in a single pass. This is far faster than the default tokenizer
 (exactly how much faster depends on how many citation formats are included in the target text),
-but requires the optional :code:`hyperscan` dependency that has limited platform support.
-See the "Installation" section for hyperscan installation instructions and limitations.
+but requires the optional dependency `hyperscan <https://pypi.org/project/hyperscan/>`__,
+which you can install with Pip like:
+
+::
+
+    pip install hyperscan
 
 Compiling the hyperscan database takes several seconds, so short-running scripts may want to
 provide a cache directory where the database can be stored. The directory should be writeable
@@ -391,7 +395,6 @@ only by the user:
 ::
 
     hyperscan_tokenizer = HyperscanTokenizer(cache_dir='.hyperscan')
-
 
 Debugging
 ---------
@@ -452,36 +455,6 @@ Or via pip::
 Or install the latest dev version from github::
 
     pip install https://github.com/freelawproject/eyecite/archive/main.zip#egg=eyecite
-
-Hyperscan installation
-----------------------
-
-To use :code:`HyperscanTokenizer` you must additionally install the python `hyperscan <https://pypi.org/project/hyperscan/>`_
-library and its dependencies. **python-hyperscan officially supports only x86 linux,** though other configurations may be
-possible.
-
-Hyperscan installation example on x86 Ubuntu 20.04:
-
-::
-
-    apt install libhyperscan-dev
-    pip install hyperscan
-
-Hyperscan installation example on x86 Debian Buster:
-
-::
-
-    echo 'deb http://deb.debian.org/debian buster-backports main' > /etc/apt/sources.list.d/backports.list
-    apt install -t buster-backports libhyperscan-dev
-    pip install hyperscan
-
-Hyperscan installation example with homebrew on x86 MacOS:
-
-::
-
-    brew install hyperscan
-    pip install hyperscan
-
 
 Deployment
 ==========
