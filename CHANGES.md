@@ -8,7 +8,8 @@ Features:
 -
 
 Changes:
--
+- Move dependency management to uv.
+  This shouldn’t have any visible impact to users, except from a few small metadata changes.
 
 Fixes:
 -
