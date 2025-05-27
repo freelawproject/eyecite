@@ -1,7 +1,7 @@
 import re
 from bisect import bisect_left, bisect_right
-from collections.abc import Iterable
-from typing import Callable, Optional, Union, cast
+from collections.abc import Callable, Iterable
+from typing import cast
 
 from eyecite.helpers import (
     disambiguate_reporters,
@@ -42,7 +42,7 @@ def get_citations(
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
     markup_text: str = "",
-    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = None,
+    clean_steps: Iterable[str | Callable[[str], str]] | None = None,
 ) -> list[CitationBase]:
     """This is eyecite's main workhorse function. Given a string of text
     (e.g., a judicial opinion or other legal doc), return a list of

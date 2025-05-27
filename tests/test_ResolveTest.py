@@ -1,5 +1,4 @@
 from collections import defaultdict
-from typing import Optional
 from unittest import TestCase
 
 from eyecite import get_citations
@@ -37,7 +36,7 @@ class ResolveTest(TestCase):
         self,
         expected_indices: list[list[int]],
         citation_text: str,
-        resolved_case_name_short: Optional[str] = None,
+        resolved_case_name_short: str | None = None,
     ):
         """
         Helper function to help test reference citations.
@@ -89,9 +88,7 @@ class ResolveTest(TestCase):
         actual_indices = list(result.values())
         self.assertEqual(expected_indices, actual_indices)
 
-    def checkResolution(
-        self, *expected_resolutions: tuple[Optional[int], str]
-    ):
+    def checkResolution(self, *expected_resolutions: tuple[int | None, str]):
         """Helper function to check how a list of citation strings is
         resolved by resolve_citations().
 

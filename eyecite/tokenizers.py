@@ -8,7 +8,6 @@ from pathlib import Path
 from string import Template
 from typing import (
     Any,
-    Optional,
 )
 
 import ahocorasick
@@ -480,7 +479,7 @@ class HyperscanTokenizer(Tokenizer):
     # To avoid that, provide a cache directory writeable
     # only by this user where the precompiled database
     # can be stored.
-    cache_dir: Optional[str] = None
+    cache_dir: str | None = None
 
     def extract_tokens(self, text) -> Generator[Token, None, None]:
         """Extract tokens via hyperscan."""
