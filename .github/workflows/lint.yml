@@ -2,11 +2,9 @@ name: Lint
 
 on:
   push:
-    branches-ignore:
-      - 'artifacts'
+    branches:
+      - main
   pull_request:
-    branches-ignore:
-      - 'artifacts'
 
 jobs:
   lint:
