@@ -1,9 +1,9 @@
 from bisect import bisect_left, bisect_right
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
 from difflib import SequenceMatcher
 from functools import partial
 from logging import getLogger
-from typing import Any, Callable, Optional
+from typing import Any
 
 import fast_diff_match_patch
 
@@ -127,8 +127,8 @@ def annotate_citations(
     source_text: str = "",
     unbalanced_tags: str = "unchecked",
     use_dmp: bool = True,
-    annotator: Optional[Callable[[Any, str, Any], str]] = None,
-    offset_updater: Optional[SpanUpdater] = None,
+    annotator: Callable[[Any, str, Any], str] | None = None,
+    offset_updater: SpanUpdater | None = None,
 ) -> str:
     """Given a list of citations and the text from which they were parsed,
     insert annotations into the text surrounding each citation. This could be

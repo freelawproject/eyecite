@@ -1,11 +1,10 @@
 import re
-from collections.abc import Iterable
-from typing import Callable, Union
+from collections.abc import Callable, Iterable
 
 import lxml.html
 
 
-def clean_text(text, steps: Iterable[Union[str, Callable[[str], str]]]) -> str:
+def clean_text(text, steps: Iterable[str | Callable[[str], str]]) -> str:
     """Given a list of "cleaning" functions, apply each in sequence to a
     given text string and return the result. Steps may be the names of
     functions in `eyecite.clean`, or other custom callables. You may wish to

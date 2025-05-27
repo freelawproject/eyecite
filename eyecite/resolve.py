@@ -1,6 +1,7 @@
 import re
 from collections import defaultdict
-from typing import Callable, Optional, cast
+from collections.abc import Callable
+from typing import cast
 
 from eyecite.models import (
     CitationBase,
@@ -62,7 +63,7 @@ def resolve_full_citation(full_citation: FullCitation) -> Resource:
 def _filter_by_matching_antecedent(
     resolved_full_cites: ResolvedFullCites,
     antecedent_guess: str,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     matches: list[ResourceType] = []
     ag: str = strip_punct(antecedent_guess)
     for full_citation, resource in resolved_full_cites:
@@ -85,7 +86,7 @@ def _filter_by_matching_antecedent(
 def _filter_by_matching_plaintiff_or_defendant_or_resolved_names(
     resolved_full_cites: ResolvedFullCites,
     reference_citation: ReferenceCitation,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     """Filter out reference citations that point to more than 1 Resource"""
     matches: list[ResourceType] = []
 
@@ -147,7 +148,7 @@ def _has_invalid_pin_cite(
 def _resolve_shortcase_citation(
     short_citation: ShortCaseCitation,
     resolved_full_cites: ResolvedFullCites,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     """
     Try to match shortcase citations by checking whether their reporter and
     volume number matches those of any of the previously resolved full
@@ -185,7 +186,7 @@ def _resolve_shortcase_citation(
 def _resolve_supra_citation(
     supra_citation: SupraCitation,
     resolved_full_cites: ResolvedFullCites,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     """
     Try to resolve supra citations by checking whether their antecedent_guess
     appears in either the defendant or plaintiff field of any of the
@@ -203,7 +204,7 @@ def _resolve_supra_citation(
 def _resolve_reference_citation(
     reference_citation: ReferenceCitation,
     resolved_full_cites: ResolvedFullCites,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     """Resolve reference citations
 
     Try to resolve reference citations by checking whether their is only one
@@ -227,7 +228,7 @@ def _resolve_id_citation(
     id_citation: IdCitation,
     last_resolution: ResourceType,
     resolutions: Resolutions,
-) -> Optional[ResourceType]:
+) -> ResourceType | None:
     """
     Resolve id citations to the resource of the previously resolved
     citation.
@@ -251,18 +252,18 @@ def resolve_citations(
     ] = resolve_full_citation,
     resolve_shortcase_citation: Callable[
         [ShortCaseCitation, ResolvedFullCites],
-        Optional[ResourceType],
+        ResourceType | None,
     ] = _resolve_shortcase_citation,
     resolve_supra_citation: Callable[
         [SupraCitation, ResolvedFullCites],
-        Optional[ResourceType],
+        ResourceType | None,
     ] = _resolve_supra_citation,
     resolve_reference_citation: Callable[
         [ReferenceCitation, ResolvedFullCites],
-        Optional[ResourceType],
+        ResourceType | None,
     ] = _resolve_reference_citation,
     resolve_id_citation: Callable[
-        [IdCitation, ResourceType, Resolutions], Optional[ResourceType]
+        [IdCitation, ResourceType, Resolutions], ResourceType | None
     ] = _resolve_id_citation,
 ) -> Resolutions:
     """Resolve a list of citations to their associated resources by matching
@@ -314,7 +315,7 @@ def resolve_citations(
     resolved_full_cites: ResolvedFullCites = []
 
     # The resource of the most recently resolved citation, if any
-    last_resolution: Optional[ResourceType] = None
+    last_resolution: ResourceType | None = None
 
     # Iterate over each citation and attempt to resolve it to a resource
     for citation in citations:
