@@ -440,19 +440,16 @@ You can use the :code:`context_chars=30` parameter to control how much text is s
 
 Installation
 ============
-Installing eyecite is easy.
 
-::
+With Pip:
 
-    poetry add eyecite
+.. code-block:: console
 
+    $ pip install eyecite
 
-Or via pip::
+Or, to install the latest in-development version from GitHub:
 
-    pip install eyecite
-
-
-Or install the latest dev version from github::
+.. code-block:: console
 
     pip install https://github.com/freelawproject/eyecite/archive/main.zip#egg=eyecite
 
@@ -461,18 +458,23 @@ Deployment
 
 1. Update CHANGES.md.
 
-1. Update version info in :code:`pyproject.toml` by running :code:`poetry version [major, minor, patch]`.
+1. Update version info in :code:`pyproject.toml` by running :code:`uv version --bump [major|minor|patch]`.
 
-For an automated deployment, tag the commit with vx.y.z, and push it to main.
-An automated deploy and documentation update will be completed for you.
+1. Commit and make a pull request.
 
-For a manual deployment, run:
+1. Tag the merged commit with the new version number in the format ``vx.y.z``:
 
-::
+   .. code-block:: console
 
-    poetry publish --build
+        $ git tag -a v1.2.3 -m v1.2.3
 
-You will probably also need to push new documentation files to the gh-pages branch.
+1. Push the tag:
+
+    .. code-block:: console
+
+        $ git push origin v1.2.3
+
+The automated deployment process will then take care of the rest, publishing the new version to PyPI and building the documentation.
 
 Testing
 =======

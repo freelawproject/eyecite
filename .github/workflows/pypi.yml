@@ -8,12 +8,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Install Poetry
-        uses: snok/install-poetry@v1.3.4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
         with:
-          virtualenvs-create: true
-          virtualenvs-in-project: true
-      - name: Publish to pypi
-        run: poetry publish --build
-        env:
-          POETRY_PYPI_TOKEN_PYPI: "${{ secrets.pypi_token }}"
+          enable-cache: true
+          version: "0.7.x"
+
+      - name: Build
+        run: uv build
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          password: ${{ secrets.pypi_token }}

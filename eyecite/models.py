@@ -1,14 +1,12 @@
 import logging
 import re
 from collections import UserString
-from collections.abc import Hashable, Iterable, Sequence
+from collections.abc import Callable, Hashable, Iterable, Sequence
 from dataclasses import asdict, dataclass, field
 from datetime import datetime
 from typing import (
     Any,
-    Callable,
     Optional,
-    Union,
     cast,
 )
 
@@ -46,8 +44,8 @@ class Edition:
 
     reporter: Reporter
     short_name: str
-    start: Optional[datetime]
-    end: Optional[datetime]
+    start: datetime | None
+    end: datetime | None
 
     def includes_year(
         self,
@@ -70,10 +68,10 @@ class CitationBase:
     token: "Token"  # token this citation came from
     index: int  # index of _token in the token list
     # span() overrides
-    span_start: Optional[int] = None
-    span_end: Optional[int] = None
-    full_span_start: Optional[int] = None
-    full_span_end: Optional[int] = None
+    span_start: int | None = None
+    span_end: int | None = None
+    full_span_start: int | None = None
+    full_span_end: int | None = None
     groups: dict = field(default_factory=dict)
     metadata: Any = None
     document: Optional["Document"] = None
@@ -147,10 +145,10 @@ class CitationBase:
     class Metadata:
         """Define fields on self.metadata."""
 
-        parenthetical: Optional[str] = None
-        pin_cite: Optional[str] = None
-        pin_cite_span_start: Optional[int] = None
-        pin_cite_span_end: Optional[int] = None
+        parenthetical: str | None = None
+        pin_cite: str | None = None
+        pin_cite_span_start: int | None = None
+        pin_cite_span_end: int | None = None
 
     def corrected_citation(self):
         """Return citation with any variations normalized."""
@@ -249,11 +247,11 @@ class ResourceCitation(CitationBase):
     exact_editions: Sequence[Edition] = field(default_factory=tuple)
     variation_editions: Sequence[Edition] = field(default_factory=tuple)
     all_editions: Sequence[Edition] = field(default_factory=tuple)
-    edition_guess: Optional[Edition] = None
+    edition_guess: Edition | None = None
 
     # year extracted from metadata["year"] and converted to int,
     # if in a valid range
-    year: Optional[int] = None
+    year: int | None = None
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
@@ -288,9 +286,9 @@ class ResourceCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        year: Optional[str] = None
-        month: Optional[str] = None
-        day: Optional[str] = None
+        year: str | None = None
+        month: str | None = None
+        day: str | None = None
 
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
@@ -372,9 +370,9 @@ class FullLawCitation(FullCitation):
     class Metadata(FullCitation.Metadata):
         """Define fields on self.metadata."""
 
-        publisher: Optional[str] = None
-        day: Optional[str] = None
-        month: Optional[str] = None
+        publisher: str | None = None
+        day: str | None = None
+        month: str | None = None
 
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
@@ -470,7 +468,7 @@ class CaseCitation(ResourceCitation):
 
         # court is included for ShortCaseCitation as well. It won't appear in
         # the cite itself but can also be guessed from the reporter
-        court: Optional[str] = None
+        court: str | None = None
 
     def guess_court(self):
         """Set court based on reporter."""
@@ -514,13 +512,13 @@ class FullCaseCitation(CaseCitation, FullCitation):
     class Metadata(CaseCitation.Metadata):
         """Define fields on self.metadata."""
 
-        plaintiff: Optional[str] = None
-        defendant: Optional[str] = None
-        extra: Optional[str] = None
-        antecedent_guess: Optional[str] = None
+        plaintiff: str | None = None
+        defendant: str | None = None
+        extra: str | None = None
+        antecedent_guess: str | None = None
         # May be populated after citation resolution
-        resolved_case_name_short: Optional[str] = None
-        resolved_case_name: Optional[str] = None
+        resolved_case_name_short: str | None = None
+        resolved_case_name: str | None = None
 
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
@@ -586,7 +584,7 @@ class ShortCaseCitation(CaseCitation):
     class Metadata(CaseCitation.Metadata):
         """Define fields on self.metadata."""
 
-        antecedent_guess: Optional[str] = None
+        antecedent_guess: str | None = None
 
     def corrected_citation_full(self):
         """Return formatted version of extracted cite."""
@@ -618,8 +616,8 @@ class SupraCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        antecedent_guess: Optional[str] = None
-        volume: Optional[str] = None
+        antecedent_guess: str | None = None
+        volume: str | None = None
 
     def formatted(self):
         """Return formatted version of extracted cite."""
@@ -679,10 +677,10 @@ class ReferenceCitation(CitationBase):
     class Metadata(CitationBase.Metadata):
         """Define fields on self.metadata."""
 
-        plaintiff: Optional[str] = None
-        defendant: Optional[str] = None
-        resolved_case_name_short: Optional[str] = None
-        resolved_case_name: Optional[str] = None
+        plaintiff: str | None = None
+        defendant: str | None = None
+        resolved_case_name_short: str | None = None
+        resolved_case_name: str | None = None
 
     name_fields = [
         "plaintiff",
@@ -743,7 +741,7 @@ class Token(UserString):
 # For performance, lists of tokens can include either Token subclasses
 # or bare strings (the typical case of words that aren't
 # related to citations)
-TokenOrStr = Union[Token, str]
+TokenOrStr = Token | str
 Tokens = list[TokenOrStr]
 
 
@@ -888,12 +886,12 @@ class Document:
     """
 
     plain_text: str = ""
-    markup_text: Optional[str] = ""
+    markup_text: str | None = ""
     citation_tokens: list[tuple[int, Token]] = field(default_factory=list)
     words: Tokens = field(default_factory=list)
-    plain_to_markup: Optional[SpanUpdater] = field(default=None, init=False)
-    markup_to_plain: Optional[SpanUpdater] = field(default=None, init=False)
-    clean_steps: Optional[Iterable[Union[str, Callable[[str], str]]]] = field(
+    plain_to_markup: SpanUpdater | None = field(default=None, init=False)
+    markup_to_plain: SpanUpdater | None = field(default=None, init=False)
+    clean_steps: Iterable[str | Callable[[str], str]] | None = field(
         default_factory=list
     )
     emphasis_tags: list[tuple[str, int, int]] = field(default_factory=list)

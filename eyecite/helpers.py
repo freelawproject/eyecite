@@ -2,7 +2,7 @@ import logging
 from bisect import bisect_right
 from datetime import date
 from string import whitespace
-from typing import Any, Optional, cast
+from typing import Any, cast
 
 import regex as re
 from courts_db import courts
@@ -46,7 +46,7 @@ BACKWARD_SEEK = 28  # Median case name length in the CL db is 28 (2016-02-26)
 MAX_MATCH_CHARS = 300
 
 
-def get_court_by_paren(paren_string: str) -> Optional[str]:
+def get_court_by_paren(paren_string: str) -> str | None:
     """Takes the citation string, usually something like "2d Cir", and maps
     that back to the court code.
 
@@ -82,7 +82,7 @@ def get_court_by_paren(paren_string: str) -> Optional[str]:
 _highest_valid_year = date.today().year + 1
 
 
-def get_year(word: str) -> Optional[int]:
+def get_year(word: str) -> int | None:
     """Given a matched year string, look for a year within a reasonable
     range."""
     try:
@@ -258,7 +258,7 @@ def _scan_for_case_boundaries(
             break
 
         # Skip placeholder citations
-        if isinstance(word, (CitationToken, PlaceholderCitationToken)):
+        if isinstance(word, CitationToken | PlaceholderCitationToken):
             state["title_starting_index"] = index - 1
             continue
 
@@ -411,7 +411,7 @@ def _is_v_token(word: Any) -> bool:
     return isinstance(word, StopWordToken) and word.groups["stop_word"] == "v"
 
 
-def _is_lowercase_after_v_token(word_str: str, v_token: Optional[Any]) -> bool:
+def _is_lowercase_after_v_token(word_str: str, v_token: Any | None) -> bool:
     """Check if we should break at lowercase word after v token.
 
     Determines if the current word should cause a break in case name
@@ -433,7 +433,7 @@ def _is_lowercase_after_v_token(word_str: str, v_token: Optional[Any]) -> bool:
 
 
 def _is_capitalized_abbreviation(
-    word_str: str, v_token: Optional[Any], plaintiff_length: int
+    word_str: str, v_token: Any | None, plaintiff_length: int
 ) -> bool:
     """Check if we found a likely abbreviation after 'v' token.
 
@@ -457,9 +457,7 @@ def _is_capitalized_abbreviation(
     )
 
 
-def _is_lowercase_without_v_token(
-    word_str: str, v_token: Optional[Any]
-) -> bool:
+def _is_lowercase_without_v_token(word_str: str, v_token: Any | None) -> bool:
     """Check if we should break at lowercase word with no v token.
 
     Determines if the current word should cause a break in case name
@@ -630,7 +628,7 @@ def _extract_plaintiff_defendant_from_versus(
     words: list[Any],
     index: int,
     versus_token: Any,
-) -> Optional[None]:
+) -> None:
     """Extract plaintiff and defendant from text around 'v' token.
 
     Args:
@@ -755,7 +753,7 @@ def _extract_defendant_after_stopword(
     words: list[Any],
     index: int,
     word: Any,
-) -> Optional[None]:
+) -> None:
     """Extract defendant name after a stop word.
 
     For cases where a stop word (other than 'v') precedes the defendant name,
@@ -921,7 +919,7 @@ def add_journal_metadata(citation: FullJournalCitation, words: Tokens) -> None:
         citation.year = get_year(m["year"])
 
 
-def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
+def clean_pin_cite(pin_cite: str | None) -> str | None:
     """Strip spaces and commas from pin_cite, if it is not None."""
     if pin_cite is None:
         return pin_cite
@@ -929,8 +927,8 @@ def clean_pin_cite(pin_cite: Optional[str]) -> Optional[str]:
 
 
 def process_parenthetical(
-    matched_parenthetical: Optional[str],
-) -> Optional[str]:
+    matched_parenthetical: str | None,
+) -> str | None:
     """Exclude any additional paren matched as well as year parentheticals
 
     For example: 'something) (something else)' will be trimmed down
@@ -954,7 +952,7 @@ def process_parenthetical(
 
 def extract_pin_cite(
     words: Tokens, index: int, prefix: str = ""
-) -> tuple[Optional[str], Optional[int], Optional[str]]:
+) -> tuple[str | None, int | None, str | None]:
     """Test whether text following token at index is a valid pin cite.
     Return pin cite text and number of extra characters matched.
     If prefix is provided, use that as the start of text to match.
