@@ -62,15 +62,19 @@ class FindTest(TestCase):
             tokenizers = tested_tokenizers
         for q, expected_cites, *kwargs in test_pairs:
             kwargs = kwargs[0] if kwargs else {}
-            clean_steps = kwargs.get("clean_steps", [])
+            clean_steps = kwargs.pop("clean_steps", [])
             for tokenizer in tokenizers:
                 with self.subTest(
                     message, tokenizer=type(tokenizer).__name__, q=q
                 ):
                     if "html" in clean_steps:
-                        kwargs["markup_text"] = q
+                        kwargs["document"] = Document(
+                            q, has_markup=True, clean_steps=clean_steps
+                        )
                     else:
-                        kwargs["plain_text"] = q
+                        kwargs["document"] = Document(
+                            q, clean_steps=clean_steps
+                        )
 
                     cites_found = get_citations(tokenizer=tokenizer, **kwargs)
                     self.assertEqual(
@@ -1115,7 +1119,7 @@ class FindTest(TestCase):
             ),
         ]
         for cite_string, cite_object in pairs:
-            parsed_cite = get_citations(cite_string)[0]
+            parsed_cite = get_citations(Document(cite_string))[0]
             self.assertEqual(
                 parsed_cite,
                 cite_object,
@@ -1147,7 +1151,7 @@ class FindTest(TestCase):
 
         # Make sure it works with several citations in one string
         combined_example = "citation number one is Wilson v. Mar. Overseas Corp., 150 F.3d 1, 6-7 ( 1st Cir. 1998); This is different from Commonwealth v. Bauer, 604 A.2d 1098 (Pa.Super. 1992), my second example"
-        extracted = get_citations(combined_example)
+        extracted = get_citations(Document(combined_example))
         # answers format is (citation_index, (full_span_start, full_span_end))
         answers = [(0, (23, 86)), (1, (111, 164))]
         for cit_idx, (start, end) in answers:
@@ -1173,7 +1177,7 @@ class FindTest(TestCase):
             "Alderson v. Concordia Par. Corr. Facility, 848 F.3d 415 (5th Cir. 2017)",
         ]
         for example in simple_examples:
-            extracted = get_citations(example)[0]
+            extracted = get_citations(Document(example))[0]
             error_msg = "Full span indices for a simple example should be (0, len(example)) "
             self.assertEqual(
                 extracted.full_span(), (0, len(example)), error_msg
@@ -1184,7 +1188,7 @@ class FindTest(TestCase):
             ("Citing 66 B.U. L. Rev. 71 (1986)", 7),
         ]
         for sentence, start_idx in stopword_examples:
-            extracted = get_citations(sentence)[0]
+            extracted = get_citations(Document(sentence))[0]
             error_msg = "Wrong span for stopword example"
             self.assertEqual(
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
@@ -1204,10 +1208,10 @@ class FindTest(TestCase):
             [State v. Wingler at 175, citing, Minnesota ex rel.]""",
         ]
         for plain_text in texts:
-            citations = get_citations(plain_text)
+            document = Document(plain_text)
+            citations = get_citations(document)
             found_cite = citations[0]
             found_cite.metadata.resolved_case_name = "State v. Wingler"
-            document = Document(plain_text=plain_text, markup_text="")
             references = extract_reference_citations(
                 citation=found_cite, document=document
             )
@@ -1242,7 +1246,11 @@ class FindTest(TestCase):
         punitive goals as well.\" 44 <i>F.</i>3d at 493.</p>"""
 
         citations = get_citations(
-            markup_text=markup_text, clean_steps=["html", "all_whitespace"]
+            Document(
+                markup_text,
+                has_markup=True,
+                clean_steps=["html", "all_whitespace"],
+            )
         )
         references = [c for c in citations if isinstance(c, ReferenceCitation)]
         # Tests both for the order and exact counts. Note that there is one
@@ -1283,7 +1291,11 @@ class FindTest(TestCase):
         ]
         for markup_text in texts:
             citations = get_citations(
-                markup_text=markup_text, clean_steps=["html", "all_whitespace"]
+                Document(
+                    markup_text,
+                    has_markup=True,
+                    clean_steps=["html", "all_whitespace"],
+                )
             )
             self.assertFalse(
                 any(isinstance(cite, ReferenceCitation) for cite in citations)
@@ -1955,6 +1967,6 @@ class FindTest(TestCase):
         warning should be emitted.
         """
         text = "Gotthelf v. Toyota Motor Sales, U.S.A., Inc., 525 F. App’x 94, 103 n.15 (3d Cir. 2013) (quoting Iqbal, 556 U.S. at 686-87)."
-        citations = get_citations(text)
+        citations = get_citations(Document(text))
         self.assertEqual(len(citations), 2)
         mock_warn.assert_not_called()
