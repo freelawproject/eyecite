@@ -66,7 +66,7 @@ Install eyecite::
 
 Here's a short example of extracting citations and their metadata from text using eyecite's main :code:`get_citations()` function::
 
-    from eyecite import get_citations
+    from eyecite import get_citations, Document
 
     text = """
         Mass. Gen. Laws ch. 1, § 2 (West 1999) (barring ...).
@@ -75,7 +75,8 @@ Here's a short example of extracting citations and their metadata from text usin
         Foo, supra, at 5.
     """
 
-    get_citations(text)
+    document = Document(text)
+    get_citations(document)
 
     # returns:
     [
@@ -113,21 +114,41 @@ eyecite's full API is documented `here <https://freelawproject.github.io/eyecite
 Extracting Citations
 --------------------
 
-:code:`get_citations()`, the main executable function, takes four parameters.
+:code:`get_citations()`, the main executable function, takes three parameters.
 
-1. :code:`plain_text` ==> str, default :code:`''`: The text to parse. If the
-    text has markup, it's better to use the :code:`markup_text` argument to get
-    enhanced extraction. One of `plain_text` or `markup_text` must be passed
-    as input.
-2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations
-    that might refer to more than one reporter and can't be narrowed down by date.
-3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`:
-    An instance of a Tokenizer object (see "Tokenizers" below).
-4. :code:`markup_text` ==> str, default :code:`''`: optional XML or HTML source
-    text that will be used to extract ReferenceCitations or help identify case
-    names using markup tags.
-5. :code:`clean_steps` ==> list, default :code:`None`: list of callables or the
-    name string of functions in `clean.py`. Used to clean the input text
+1. :code:`document` ==> Document: The document to parse.
+2. :code:`remove_ambiguous` ==> bool, default :code:`False`: Whether to remove citations that might refer to more than one reporter and can't be narrowed down by date.
+3. :code:`tokenizer` ==> Tokenizer, default :code:`eyecite.tokenizers.default_tokenizer`: An instance of a Tokenizer object (see "Tokenizers" below).
+
+
+Creating a Document
+-------------------
+
+eyecite operates on :code:`Document` objects, an abstraction representing the
+text of a legal document (or any string!) and any pre-processing cleaning steps
+applied to it before citation parsing. Creating a :code:`Document` requires
+only a string and three optional parameters:
+
+1. :code:`source_text` ==> str: The text to be parsed.
+2. :code:`has_markup` ==> bool, default :code:`False`: Whether the text contains markup. If it does, it is best to indicate this for a downstream performance boost that exploits the XML / HTML structure.
+3. :code:`clean_steps` ==> list, default :code:`[]`: Optional cleaning steps to apply to the source text (see below for more details).
+4. :code:`use_dmp` ==>  bool, default :code:`True`: Whether differences between the given source text and the cleaned text should be calculated using the fast_diff_match_patch_python library (the default) or the slower built-in difflib library, which may be useful for debugging.
+
+
+Cleaning Document Text
+^^^^^^^^^^^^^^^^^^^
+
+Oftentimes, the text you want to parse contains unhelpful whitespace,
+linebreaks, markup, or other characters that could obstruct the
+identification of citations. To deal with these problems, you can specify a
+sequence of cleaning steps to apply to your text when you create a `Document`.
+The :code:`clean_steps` parameter currently accepts these values as cleaners:
+
+1. :code:`inline_whitespace`: replace all runs of tab and space characters with a single space character
+2. :code:`all_whitespace`: replace all runs of any whitespace character with a single space character
+3. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
+4. :code:`html`: remove non-visible HTML content using the lxml library
+5. Custom function: any function taking a string and returning a string.
 
 
 Resolving Reference Citations
@@ -144,7 +165,7 @@ citation extraction, followed by a secondary reference resolution step.
 If you have an external database (e.g., CourtListener) that provides resolved
 case names, you can use this feature to enhance citation finding.::
 
-    from eyecite import get_citations
+    from eyecite import get_citations, Document
     from eyecite.find import extract_reference_citations
     from eyecite.helpers import filter_citations
 
@@ -156,19 +177,15 @@ case names, you can use this feature to enhance citation finding.::
         "self-interested conduct as an As Theatre Enterprises at 552 held, parallel"
         )
 
-
-    from eyecite import get_citations
-    from eyecite.find import extract_reference_citations
-    from eyecite.helpers import filter_citations
-
     # Step 1: Extract full citations
-    citations = get_citations(plain_text)
+    document = Document(plain_text)
+    citations = get_citations(document)
 
     # Step 2: Resolve the case name from an external database or prior knowledge
     citations[0].metadata.resolved_case_name_short = "Theatre Enterprises"
 
     # Step 3: Extract reference citations using the resolved name
-    references = extract_reference_citations(citations[0], plain_text)
+    references = extract_reference_citations(citations[0], document)
 
     # Step 4: Filter and merge citations
     new_citations = filter_citations(citations + references)
@@ -177,82 +194,23 @@ Keep in mind that this feature requires an external database or heuristic
 method to resolve the short case name before extracting reference citations a second time.
 
 
-Cleaning Input Text
--------------------
-
-For a given citation text such as "... 1 Baldwin's Rep. 1 ...", you can input
-the cleaned text and pass it in the :code:`plain_text` argument without
-:code:`clean_steps``, or you can pass it without pre processing and pass a list
-to :code:`clean_steps`
-
-* Spaces will be single space characters, not multiple spaces or other whitespace.
-* Quotes and hyphens will be standard quote and hyphen characters.
-* No junk such as HTML tags inside the citation.
-
-The cleanup is done via :code:`clean_text`:
-
-::
-
-    from eyecite import clean_text, get_citations
-
-    source_text = '<p>foo   1  U.S.  1   </p>'
-    plain_text = clean_text(text, ['html', 'inline_whitespace', my_func])
-    found_citations = get_citations(plain_text)
-
-See the `Annotating Citations <#annotating-citations>`_ section for how to insert links into the original text using
-citations extracted from the cleaned text.
-
-:code:`clean_text` currently accepts these values as cleaners:
-
-1. :code:`inline_whitespace`: replace all runs of tab and space characters with a single space character
-2. :code:`all_whitespace`: replace all runs of any whitespace character with a single space character
-3. :code:`underscores`: remove two or more underscores, a common error in text extracted from PDFs
-4. :code:`html`: remove non-visible HTML content using the lxml library
-5. Custom function: any function taking a string and returning a string.
-
-
 Annotating Citations
 --------------------
 
-For simple plain text, you can insert links to citations using the :code:`annotate_citations` function:
+Once the citations have been extracted, you can insert links (or other annotations) to
+them in your original text using the :code:`annotate_citations` function:
 
 ::
 
-    from eyecite import get_citations, annotate_citations
+    from eyecite import get_citations, annotate_citations, Document
 
-    plain_text = 'bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)'
-    citations = get_citations(plain_text)
-    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations])
+    document = Document('bob lissner v. test 1 U.S. 12, 347-348 (4th Cir. 1982)')
+    citations = get_citations(document)
+    linked_text = annotate_citations(document, [[c.span(), "<a>", "</a>"] for c in citations])
 
     returns:
     'bob lissner v. test <a>1 U.S. 12</a>, 347-348 (4th Cir. 1982)'
 
-Each citation returned by get_citations keeps track of where it was found in the source text.
-As a result, :code:`annotate_citations` must be called with the *same* cleaned text used by :code:`get_citations`
-to extract citations. If you do not, the offsets returned by the citation's :code:`span` method will
-not align with the text, and your annotations will be in the wrong place.
-
-If you want to clean text and then insert annotations into the original text, you can pass
-the original text in as :code:`source_text`:
-
-::
-
-    from eyecite import get_citations, annotate_citations, clean_text
-
-    source_text = '<p>bob lissner v. <i>test   1 U.S.</i> 12,   347-348 (4th Cir. 1982)</p>'
-    plain_text = clean_text(source_text, ['html', 'inline_whitespace'])
-    citations = get_citations(plain_text)
-    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], source_text=source_text)
-
-    returns:
-    '<p>bob lissner v. <i>test   <a>1 U.S.</i> 12</a>,   347-348 (4th Cir. 1982)</p>'
-
-The above example extracts citations from :code:`plain_text` and applies them to
-:code:`source_text`, using a diffing algorithm to insert annotations in the correct locations
-in the original text.
-
-There is also a :code:`full_span` attribute that can be used to get the indexes of the full citation, including the
-pre- and post-citation attributes.
 
 Wrapping HTML Tags
 ^^^^^^^^^^^^^^^^^^
@@ -279,7 +237,7 @@ that takes :code:`(before, span_text, after)` and returns the annotated text:
 
     def annotator(before, span_text, after):
         return before + span_text.lower() + after
-    linked_text = annotate_citations(plain_text, [[c.span(), "<a>", "</a>"] for c in citations], annotator=annotator)
+    linked_text = annotate_citations(document, [[c.span(), "<a>", "</a>"] for c in citations], annotator=annotator)
 
     returns:
     'bob lissner v. test <a>1 u.s. 12</a>, 347-348 (4th Cir. 1982)'
@@ -294,10 +252,10 @@ returning a dictionary that maps resources to lists of associated citations:
 
 ::
 
-    from eyecite import get_citations, resolve_citations
+    from eyecite import get_citations, resolve_citations, Document
 
-    text = 'first citation: 1 U.S. 12. second citation: 2 F.3d 2. third citation: Id.'
-    found_citations = get_citations(text)
+    document = Document('first citation: 1 U.S. 12. second citation: 2 F.3d 2. third citation: Id.')
+    found_citations = get_citations(document)
     resolved_citations = resolve_citations(found_citations)
 
     returns (pseudo):
