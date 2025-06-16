@@ -12,7 +12,7 @@ Changes:
   This shouldn’t have any visible impact to users, except from a few small metadata changes.
 
 Fixes:
--
+- Fixes rendering of AhocorasickTokenizer parameter definition in API docs #279
 
 ## Current
 

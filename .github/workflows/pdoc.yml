@@ -35,8 +35,8 @@ jobs:
       - name: Run sed  # Removes insanely-long parameter definition from docs
         working-directory: ./api_documentation
         run: |
-          sed -i 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/find.html
-          sed -i 's/AhocorasickTokenizer(.*\]))/AhocorasickTokenizer()/' ./eyecite/index.html
+          sed -i 's/AhocorasickTokenizer(.*\])\)/AhocorasickTokenizer()/' ./eyecite/find.html
+          sed -i 's/AhocorasickTokenizer(.*\])\)/AhocorasickTokenizer()/' ./eyecite/index.html
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
