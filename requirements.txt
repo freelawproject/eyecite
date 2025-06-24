@@ -1,0 +1,4 @@
+fastapi
+uvicorn
+pydantic
+# Add any other dependencies for eyecite if not already in pyproject.toml
