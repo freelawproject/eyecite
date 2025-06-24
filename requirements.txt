@@ -3,4 +3,9 @@ uvicorn
 pydantic
 fast_diff_match_patch
 lxml
+regex
+pyahocorasick
+reporters_db
+courts_db
+hyperscan
 # Add any other dependencies for eyecite if not already in pyproject.toml
