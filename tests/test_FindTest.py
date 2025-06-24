@@ -825,6 +825,10 @@ class FindTest(TestCase):
                             ),
               reference_citation("Bivens", metadata={"plaintiff": "Bivens", "pin_cite": "at 122"})],
              {'clean_steps': ['html', 'inline_whitespace']}),
+            # Fix for index error when searching for case name
+            ("<p>State v. Luna-Benitez (S53965). Alternative writ issued, dismissed, 342 Or 255</p>",
+            [case_citation(volume="342", reporter="Or", page="255")],
+            {'clean_steps': ['html', 'inline_whitespace']})
         )
 
         # fmt: on

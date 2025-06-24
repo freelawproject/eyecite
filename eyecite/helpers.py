@@ -770,7 +770,7 @@ def _extract_defendant_after_stopword(
         None - updates citation object in place, or None if extraction fails
     """
     shift = 3
-    while words[index + shift] == " ":
+    while index + shift < len(words) and words[index + shift] == " ":
         shift += 1
 
     right_offset = len("".join([str(w) for w in words[index : index + shift]]))
