@@ -1,4 +1,5 @@
 fastapi
 uvicorn
 pydantic
+fast_diff_match_patch
 # Add any other dependencies for eyecite if not already in pyproject.toml
