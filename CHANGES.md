@@ -13,6 +13,7 @@ Changes:
 
 Fixes:
 - Fixes rendering of AhocorasickTokenizer parameter definition in API docs #279
+- Fix for parsing defendant name causing crash
 
 ## Current
 
