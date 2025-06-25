@@ -6,7 +6,7 @@ requires = [
 
 [project]
 name = "eyecite"
-version = "2.7.5"
+version = "2.7.6"
 description = "Tool for extracting legal citations from text strings."
 readme = "README.rst"
 keywords = ["legal", "courts", "citations", "extraction", "cites"]

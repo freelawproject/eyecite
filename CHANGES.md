@@ -8,14 +8,25 @@ Features:
 -
 
 Changes:
+-
+
+Fixes:
+-
+
+## Current
+
+**2.7.6 - 2025-06-25**
+
+Features:
+-
+
+Changes:
 - Move dependency management to uv.
   This shouldn’t have any visible impact to users, except from a few small metadata changes.
 
 Fixes:
 - Fixes rendering of AhocorasickTokenizer parameter definition in API docs #279
 - Fix for parsing defendant name causing crash
-
-## Current
 
 **2.7.5 - 2025-05-22**
 
