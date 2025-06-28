@@ -3,16 +3,18 @@ from collections.abc import Callable, Iterable
 from difflib import SequenceMatcher
 from functools import partial
 from logging import getLogger
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import fast_diff_match_patch
 
 from eyecite.utils import (
     is_balanced_html,
     maybe_balance_style_tags,
-    placeholder_markup,
     wrap_html_tags,
 )
+
+if TYPE_CHECKING:
+    from eyecite.models import Document
 
 logger = getLogger(__name__)
 
@@ -122,78 +124,62 @@ class SpanUpdater:
 
 
 def annotate_citations(
-    plain_text: str,
+    document: "Document",
     annotations: Iterable[tuple[tuple[int, int], Any, Any]],
-    source_text: str = "",
     unbalanced_tags: str = "unchecked",
-    use_dmp: bool = True,
     annotator: Callable[[Any, str, Any], str] | None = None,
-    offset_updater: SpanUpdater | None = None,
 ) -> str:
-    """Given a list of citations and the text from which they were parsed,
+    """Given a `eyecite.models.Document` and a list of citation positions,
     insert annotations into the text surrounding each citation. This could be
     useful for linking the citations to a URL, or otherwise indicating that
     they were successfully parsed or resolved.
 
-    If you pre-processed your text before extracting the citations, this
-    function will intelligently reconcile the differences between the original
-    source text and the cleaned text using a diffing algorithm, ensuring that
-    each annotation is inserted in the correct location.
-
     Example:
-    >>> plain_text = "foo 1 U.S. 1 bar"
-    >>> citations = get_citations(plain_text)
-    >>> annotate_citations("foo 1 U.S. 1 bar",
-    ...     [(citations[0].span(), "<a>", "</a>")])
+    >>> document = Document("foo 1 U.S. 1 bar")
+    >>> citations = get_citations(document)
+    >>> annotate_citations(document, [(citations[0].span(), "<a>", "</a>")])
     >>>
     >>> returns: "foo <a>1 U.S. 1</a> bar"
 
     Args:
-        plain_text: The text containing the citations. If this text was
-            cleaned, you should also pass the `source_text` below.
+        document: The `eyecite.models.Document` object from which the
+            citations were parsed.
         annotations: A `Tuple` of (1) the start and end positions of the
             citation in the text, (2) the text to insert before the citation,
             and (3) the text to insert after the citation.
-        source_text: If provided, apply annotations to this text instead using
-            a diffing algorithm.
-        unbalanced_tags: If provided, unbalanced_tags="skip" will skip
-            inserting annotations that result in invalid HTML.
-            unbalanced_tags="wrap" will ensure valid HTML by wrapping
-            annotations around any unbalanced tags.
-        use_dmp: If `True` (default), use the fast_diff_match_patch_python
-            library for diffing. If `False`, use the slower built-in difflib,
-            which may be useful for debugging.
+        unbalanced_tags: Optional instruction for how to handle the insertion
+            of annotations into a `eyecite.models.Document` instantiated from
+            markup. If `unbalanced_tags="unchecked"` (default), no handling
+            is performed. If `unbalanced_tags="skip"`, annotations that would
+            result in the creation of invalid markup are skipped. If
+            `unbalanced_tags="wrap"`, annotations that would result in the
+            creation of invalid markup are wrapped in additional tags to
+            ensure balance.
         annotator: If provided, should be a function that takes three
             arguments (the text to insert before, the text of the citation,
             and the text to insert after) and returns the annotation. This is
             useful for customizing the annotation action: If you don't pass
             this function, eyecite will simply concatenate the before_text,
             citation_text, and after_text together for each annotation.
-        offset_updater: If provided, use this SpanUpdater. Citation finding
-            for HTML / XML sources use a SpanUpdater called `plain_to_markup`
-            to find citations, passing it saves this expensive instantiation.
     Returns:
         The annotated text.
     """
     if unbalanced_tags not in ["unchecked", "skip", "wrap"]:
         raise ValueError(f"Unknown option '{unbalanced_tags}")
 
-    # set up offset_updater if we have to move annotations to source_text
-    if offset_updater:
-        plain_text = source_text
-    elif source_text and source_text != plain_text:
-        placeholder_text = placeholder_markup(source_text)
-        offset_updater = SpanUpdater(
-            plain_text, placeholder_text, use_dmp=use_dmp
-        )
-        plain_text = source_text
+    # if no cleaning was applied to the document, then no need to calculate
+    # any offsets
+    if document.source_text == document.cleaned_text:
+        offset_updater = None
+    else:
+        offset_updater = document.cleaned_to_source
 
     # append text for each annotation to out
     annotations = sorted(annotations)
     out = []
     last_end = 0
     for (start, end), before, after in annotations:
-        # if we're applying to source_text, update offsets
+        # update offsets if necessary
         if offset_updater:
             start = offset_updater.update(start, bisect_right)
             end = offset_updater.update(end, bisect_left)
@@ -206,7 +192,7 @@ def annotate_citations(
                 # if annotation is entirely covered, skip
                 continue
 
-        span_text = plain_text[start:end]
+        span_text = document.source_text[start:end]
 
         # handle HTML tags
         if unbalanced_tags == "unchecked":
@@ -217,7 +203,7 @@ def annotate_citations(
             else:  # "skip" case
                 original_span_text = span_text
                 start, end, span_text = maybe_balance_style_tags(
-                    start, end, plain_text
+                    start, end, document.source_text
                 )
                 if not is_balanced_html(span_text):
                     logger.warning(
@@ -234,14 +220,14 @@ def annotate_citations(
         # append each span
         out.extend(
             [
-                plain_text[last_end:start],
+                document.source_text[last_end:start],
                 annotated_span,
             ]
         )
         last_end = end
 
     # append text after final citation
-    if last_end < len(plain_text):
-        out.append(plain_text[last_end:])
+    if last_end < len(document.source_text):
+        out.append(document.source_text[last_end:])
 
     return "".join(out)

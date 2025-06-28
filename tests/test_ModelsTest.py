@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from eyecite import get_citations
-from eyecite.models import Resource
+from eyecite.models import Document, Resource
 from eyecite.test_factories import (
     case_citation,
     id_citation,
@@ -98,8 +98,8 @@ class ModelsTest(TestCase):
         """Are two citation objects equal when their attributes are
         the same, even if one of them has a nominative reporter?"""
         citations = [
-            get_citations("5 U.S. 137")[0],
-            get_citations("5 U.S. (1 Cranch) 137")[0],
+            get_citations(Document("5 U.S. 137"))[0],
+            get_citations(Document("5 U.S. (1 Cranch) 137"))[0],
         ]
         print(
             "Testing citation comparison with nominative reporter...", end=" "
@@ -128,8 +128,8 @@ class ModelsTest(TestCase):
         the same, even if they are tax court citations and might not
         have volumes?"""
         citations = [
-            get_citations("T.C.M. (RIA) ¶ 95,342")[0],
-            get_citations("T.C.M. (RIA) ¶ 95,342")[0],
+            get_citations(Document("T.C.M. (RIA) ¶ 95,342"))[0],
+            get_citations(Document("T.C.M. (RIA) ¶ 95,342"))[0],
         ]
         print("Testing tax court citation comparison...", end=" ")
         self.assertEqual(citations[0], citations[1])
@@ -163,7 +163,7 @@ class ModelsTest(TestCase):
         attribute set to None?"""
 
         citation1 = case_citation(2, volume="2", reporter="U.S.", page="__")
-        citation2 = get_citations("2 U.S. __")[0]
+        citation2 = get_citations(Document("2 U.S. __"))[0]
         print("Testing missing page conversion...", end=" ")
         self.assertIsNone(citation1.groups["page"])
         self.assertIsNone(citation2.groups["page"])
@@ -207,7 +207,9 @@ class ModelsTest(TestCase):
         """Does the corrected_citation_full method return a properly formatted
         citation?"""
         journal_citation = get_citations(
-            "Originalism without Foundations, 65 N.Y.U. L. Rev. 1373 (1990)"
+            Document(
+                "Originalism without Foundations, 65 N.Y.U. L. Rev. 1373 (1990)"
+            )
         )[0]
         self.assertEqual(
             journal_citation.corrected_citation_full(),
@@ -215,7 +217,7 @@ class ModelsTest(TestCase):
         )
 
         full_case_citation = get_citations(
-            "Meritor Sav. Bank v. Vinson, 477 U.S. 57, 60 (1986)"
+            Document("Meritor Sav. Bank v. Vinson, 477 U.S. 57, 60 (1986)")
         )[0]
         self.assertEqual(
             full_case_citation.corrected_citation_full(),
@@ -242,7 +244,7 @@ class ModelsTest(TestCase):
             ),
         ]
         for citation, corrected_citation, corrected_page in tests:
-            cite = get_citations(citation)[0]
+            cite = get_citations(Document(citation))[0]
             self.assertEqual(
                 cite.corrected_citation(),
                 corrected_citation,

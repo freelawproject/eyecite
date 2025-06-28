@@ -3,6 +3,7 @@ from textwrap import dedent
 from unittest import TestCase
 
 from eyecite import clean_text, get_citations
+from eyecite.models import Document
 from eyecite.utils import dump_citations
 
 
@@ -34,7 +35,7 @@ class UtilsTest(TestCase):
 
     def test_dump_citations(self):
         text = "blah. Foo v. Bar, 1 U.S. 2, 3-4 (1999). blah"
-        cites = get_citations(text)
+        cites = get_citations(Document(text))
         dumped_text = dump_citations(cites, text)
         dumped_text = re.sub(r"\x1B.*?m", "", dumped_text)  # strip colors
         expected = dedent(

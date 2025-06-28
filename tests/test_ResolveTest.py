@@ -52,10 +52,8 @@ class ResolveTest(TestCase):
             None
         """
 
-        document = Document(
-            plain_text=citation_text,
-        )
-        citations = get_citations(citation_text)
+        document = Document(citation_text)
+        citations = get_citations(document)
         if resolved_case_name_short:
             citations[
                 0
@@ -127,7 +125,7 @@ class ResolveTest(TestCase):
 
         for i, cite_text in expected_resolutions:
             # extract cite and make sure there's only one:
-            cites = get_citations(cite_text)
+            cites = get_citations(document=Document(cite_text))
             self.assertEqual(
                 len(cites),
                 1,

@@ -1,6 +1,7 @@
 from unittest import TestCase
 
 from eyecite import get_citations
+from eyecite.models import Document
 
 
 class RegexesTest(TestCase):
@@ -38,5 +39,5 @@ class RegexesTest(TestCase):
             "Wallace v. Cellco P'ship, No. CV 14-8052-DSF (AS), 2015 WL 13908106, at *7 (C.D. Cal. Feb. 9, 2015)": "cacd",
         }
         for key in samples:
-            eyecite_result = get_citations(key)
+            eyecite_result = get_citations(Document(key))
             self.assertEqual(eyecite_result[0].metadata.court, samples[key])
