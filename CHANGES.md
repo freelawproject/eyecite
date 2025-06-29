@@ -11,7 +11,7 @@ Changes:
 -
 
 Fixes:
--
+- Modifies rendering of AhocorasickTokenizer parameter in API docs II
 
 ## Current
 
