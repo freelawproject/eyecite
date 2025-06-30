@@ -2,7 +2,7 @@ import re
 from pathlib import Path
 from unittest import TestCase
 
-from eyecite import annotate_citations, clean_text, get_citations
+from eyecite import annotate_citations, get_citations
 from eyecite.models import Document
 from eyecite.utils import maybe_balance_style_tags
 
@@ -62,27 +62,37 @@ class AnnotateTest(TestCase):
                 "<body>foo  <i>1   <b>U.S.</b></i>   1 bar</body>",
                 "<body>foo  <i><0>1   <b>U.S.</b></i>   1</0> bar</body>",
                 ["html", "inline_whitespace"],
+                {"has_markup": True},
             ),
             # whitespace and html -- unbalanced tags are repaired
             (
                 "foo  <i>1 U.S.</i> 1; 2 <i>U.S.</i> 2",
                 "foo  <0><i>1 U.S.</i> 1</0>; <1>2 <i>U.S.</i> 2</1>",
                 ["html", "inline_whitespace"],
-                {"unbalanced_tags": "skip"},
+                {
+                    "unbalanced_tags": "skip",
+                    "has_markup": True,
+                },
             ),
             # whitespace and html -- wrap unbalanced tags
             (
                 "<i>1 U.S.</i> 1; 2 <i>U.S.</i> 2",
                 "<i><0>1 U.S.</0></i><0> 1</0>; <1>2 <i>U.S.</i> 2</1>",
                 ["html", "inline_whitespace"],
-                {"unbalanced_tags": "wrap"},
+                {
+                    "unbalanced_tags": "wrap",
+                    "has_markup": True,
+                },
             ),
             # tighly-wrapped html -- skip unbalanced tags (issue #54)
             (
                 "foo <i>Ibid.</i> bar",
                 "foo <i><0>Ibid.</0></i> bar",
                 ["html", "inline_whitespace"],
-                {"unbalanced_tags": "skip"},
+                {
+                    "unbalanced_tags": "skip",
+                    "has_markup": True,
+                },
             ),
             # whitespace containing linebreaks
             ("1\nU.S. 1", "<0>1\nU.S. 1</0>", ["all_whitespace"]),
@@ -123,7 +133,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": True,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
             # solvable unbalanced <i> tag
@@ -145,7 +155,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": True,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
             # The next 2 examples could be resolved if we increased the
@@ -175,7 +185,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": True,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
             (
@@ -197,7 +207,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": True,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
             (
@@ -207,7 +217,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": False,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
             # Ensure < does not affect annotations
@@ -218,7 +228,7 @@ class AnnotateTest(TestCase):
                 {
                     "annotate_anchors": False,
                     "unbalanced_tags": "skip",
-                    "use_markup": True,
+                    "has_markup": True,
                 },
             ),
         )
@@ -229,18 +239,14 @@ class AnnotateTest(TestCase):
                 clean_steps=clean_steps,
                 annotate_args=annotate_kwargs,
             ):
-                if annotate_kwargs.pop("use_markup", False):
-                    get_citations_args = {"markup_text": source_text}
+                if annotate_kwargs.pop("has_markup", False):
+                    document = Document(
+                        source_text, has_markup=True, clean_steps=clean_steps
+                    )
                 else:
-                    get_citations_args = {"plain_text": source_text}
+                    document = Document(source_text, clean_steps=clean_steps)
 
-                document = Document(
-                    **get_citations_args, clean_steps=clean_steps
-                )
-
-                cites = get_citations(
-                    **get_citations_args, clean_steps=clean_steps
-                )
+                cites = get_citations(document)
                 annotations = [
                     (c.span(), f"<{i}>", f"</{i}>")
                     for i, c in enumerate(cites)
@@ -253,9 +259,8 @@ class AnnotateTest(TestCase):
                     ]
 
                 annotated = annotate_citations(
-                    document.plain_text,
+                    document,
                     annotations,
-                    source_text=source_text,
                     **annotate_kwargs,
                 )
                 self.assertEqual(annotated, expected)
@@ -298,9 +303,14 @@ class AnnotateTest(TestCase):
         opinion_text = (
             Path(__file__).parent / "assets" / "opinion.txt"
         ).read_text()
-        cleaned_text = clean_text(opinion_text, ["all_whitespace"])
+        document = Document(
+            opinion_text,
+            has_markup=True,
+            clean_steps=["html", "all_whitespace"],
+        )
         annotated_text = annotate_citations(
-            cleaned_text, [((902, 915), "~FOO~", "~BAR~")], opinion_text
+            document,
+            [((902, 915), "~FOO~", "~BAR~")],
         )
         self.assertIn("~FOO~539\n  U. S. 306~BAR~", annotated_text)
 
@@ -333,11 +343,13 @@ class AnnotateTest(TestCase):
             ),
         ]
         for source_text, expected in test_pairs:
-            plain_text = clean_text(source_text, ["all_whitespace", "html"])
-            citations = get_citations(plain_text)
+            document = Document(
+                source_text, clean_steps=["all_whitespace", "html"]
+            )
+            citations = get_citations(document)
             for citation in citations:
                 start, end = citation.span_with_pincite()
-                pin_cite_span = plain_text[start:end]
+                pin_cite_span = document.cleaned_text[start:end]
                 self.assertEqual(
                     pin_cite_span,
                     expected.pop(0),

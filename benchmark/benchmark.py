@@ -12,7 +12,7 @@ from typing import Any
 
 from matplotlib import pyplot as plt  # type: ignore
 
-from eyecite import get_citations
+from eyecite import Document, get_citations
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(os.path.dirname(SCRIPT_DIR))
@@ -59,11 +59,13 @@ class Benchmark:
             if text:
                 # Remove XML encodings from xml_harvard
                 text = re.sub(r"^<\?xml.*?\?>", "", text, count=1)
-                params["markup_text"] = text or ""
+                params["source_text"] = text or ""
+                params["has_markup"] = True
             else:
-                params["markup_text"] = row["plain_text"]
+                params["source_text"] = row["plain_text"]
 
-            found_citations = get_citations(**params)
+            document = Document(**params)
+            found_citations = get_citations(document)
 
             # Get the citation text string from the cite object
             cites = [cite.token.data for cite in found_citations if cite.token]

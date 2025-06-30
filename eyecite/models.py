@@ -12,7 +12,11 @@ from typing import (
 
 from eyecite import clean_text
 from eyecite.annotate import SpanUpdater
-from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
+from eyecite.utils import (
+    REPORTERS_THAT_NEED_PAGE_CORRECTION,
+    create_placeholder_markup,
+    hash_sha256,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -532,7 +536,7 @@ class FullCaseCitation(CaseCitation, FullCitation):
 
         add_post_citation(self, document.words)
 
-        if document.markup_text:
+        if document.has_markup:
             find_case_name_in_html(self, document)
             if self.metadata.defendant is None:
                 find_case_name(self, document)
@@ -878,82 +882,104 @@ class Resource(ResourceType):
 
 @dataclass(eq=False, unsafe_hash=False)
 class Document:
-    """A class to encapsulate the source text and the pre-processing applied to
-    it before citation parsing
-
-    If the source text comes from `markup_text`, SpanUpdater objects are
-    created to help on citation parsing
+    """Class representing the text of a legal document or string and
+    any pre-processing cleaning steps applied to it before citation parsing.
+    If the source text contains markup, indicate that by setting
+    `has_markup=True` for a performance boost in citation parsing.
     """
 
-    plain_text: str = ""
-    markup_text: str | None = ""
-    citation_tokens: list[tuple[int, Token]] = field(default_factory=list)
-    words: Tokens = field(default_factory=list)
-    plain_to_markup: SpanUpdater | None = field(default=None, init=False)
-    markup_to_plain: SpanUpdater | None = field(default=None, init=False)
-    clean_steps: Iterable[str | Callable[[str], str]] | None = field(
+    #################
+    # User parameters
+    #################
+
+    # Instantiate with some source text and indicate whether it has markup
+    # or not
+    source_text: str
+    has_markup: bool = False
+
+    # Provide optional cleaning steps to apply to the instantiating text
+    clean_steps: Iterable[str | Callable[[str], str]] = field(
         default_factory=list
     )
-    emphasis_tags: list[tuple[str, int, int]] = field(default_factory=list)
-    source_text: str = ""  # will be useful for the annotation step
+
+    # Specify how differences between the given source_text and the
+    # cleaned cleaned_text should be calculated. If `True` (default), the
+    # fast_diff_match_patch_python library is used for diffing. If `False`,
+    # the slower built-in difflib is used instead, which may be useful for
+    # debugging.
+    use_dmp: bool = True
+
+    ######################################################
+    # Document properties that are set after instantiation
+    ######################################################
+
+    # The cleaned version of the source_text
+    cleaned_text: str = field(init=False)
+
+    # The tokenized version of the cleaned_text
+    citation_tokens: list[tuple[int, Token]] = field(init=False)
+    words: Tokens = field(init=False)
+
+    # Functions for diffing the source_text and cleaned_text
+    cleaned_to_source: SpanUpdater | None = field(default=None, init=False)
+    source_to_cleaned: SpanUpdater | None = field(default=None, init=False)
+
+    # When `has_markup=True`, these are additional variables
+    # representing useful markup-specific features of the document
+    emphasis_tags: list[tuple[str, int, int]] | None = field(
+        default=None, init=False
+    )
+    placeholder_markup: str | None = field(default=None, init=False)
 
     def __post_init__(self):
-        from eyecite.utils import placeholder_markup
+        """Configure Document properties after user initialization"""
 
-        if self.plain_text and not self.markup_text:
-            self.source_text = self.plain_text
-            if self.clean_steps:
-                self.plain_text = clean_text(self.plain_text, self.clean_steps)
+        # (1) Plain text
+        if not self.has_markup:
+            self.cleaned_text = clean_text(self.source_text, self.clean_steps)
 
-        elif self.markup_text and not self.plain_text:
-            self.source_text = self.markup_text
-
+        # (2) Markup text
+        else:
             if "html" not in self.clean_steps:
-                self.clean_steps.insert("html", 0)
-                logger.warning(
-                    "`html` has been added to `markup_text` clean_steps list"
-                )
+                self.clean_steps.insert(0, "html")
+                logger.warning("`html` has been added to clean_steps list")
 
-            self.plain_text = clean_text(self.markup_text, self.clean_steps)
+            self.cleaned_text = clean_text(self.source_text, self.clean_steps)
 
-            # Replace original tags (including their attributes) with same‐length placeholders
-            # so that SpanUpdater’s offset calculations remain correct and aren’t skewed by
-            # attribute characters (e.g., in id or index). ex. <span> <XXXX>
-            placeholder_markup = placeholder_markup(self.markup_text)
-
-            self.plain_to_markup = SpanUpdater(
-                self.plain_text, placeholder_markup
-            )
-            self.markup_to_plain = SpanUpdater(
-                self.markup_text, self.plain_text
+            # Replace original tags (including their attributes) with
+            # same-length placeholders so that the SpanUpdater's offset
+            # calculations remain correct and aren't skewed by attribute
+            # characters (e.g., in id or index). ex. <span> <XXXX>
+            self.placeholder_markup = create_placeholder_markup(
+                self.source_text
             )
 
-            self.identify_emphasis_tags()
+            # Identify any emphasis tags in the markup
+            self._identify_emphasis_tags()
 
-        elif not self.markup_text and not self.plain_text:
-            raise ValueError("Both `markup_text` and `plain_text` are empty")
+        # Create functions for diffing the source_text and cleaned_text
+        self.cleaned_to_source = SpanUpdater(
+            self.cleaned_text,
+            self.placeholder_markup if self.has_markup else self.source_text,
+            use_dmp=self.use_dmp,
+        )
+        self.source_to_cleaned = SpanUpdater(
+            self.placeholder_markup if self.has_markup else self.source_text,
+            self.cleaned_text,
+            use_dmp=self.use_dmp,
+        )
 
-        elif self.plain_text and self.markup_text:
-            # both arguments were passed, we assume that `plain_text` is the
-            # cleaned version of `markup_text`
-            if self.clean_steps:
-                raise ValueError(
-                    "Both `markup_text` and `plain_text` were passed. "
-                    "Not clear which to apply `clean_steps` to"
-                )
-
-            self.source_text = self.markup_text
-
-    def identify_emphasis_tags(self):
+    def _identify_emphasis_tags(self):
         pattern = re.compile(
             r"<(em|i)[^>]*>(.*?)</\1>", re.IGNORECASE | re.DOTALL
         )
         self.emphasis_tags = [
             (m.group(2).strip(), m.start(), m.end())
-            for m in pattern.finditer(self.markup_text)
+            for m in pattern.finditer(self.source_text)
         ]
 
     def tokenize(self, tokenizer):
-        """Tokenize the document and store the results in the document
-        object"""
-        self.words, self.citation_tokens = tokenizer.tokenize(self.plain_text)
+        """Tokenize the document and store the results"""
+        self.words, self.citation_tokens = tokenizer.tokenize(
+            self.cleaned_text
+        )

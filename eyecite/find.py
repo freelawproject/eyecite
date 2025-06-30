@@ -1,6 +1,5 @@
 import re
 from bisect import bisect_left, bisect_right
-from collections.abc import Callable, Iterable
 from typing import cast
 
 from eyecite.helpers import (
@@ -38,43 +37,35 @@ from eyecite.utils import is_valid_name
 
 
 def get_citations(
-    plain_text: str = "",
+    document: Document,
     remove_ambiguous: bool = False,
     tokenizer: Tokenizer = default_tokenizer,
-    markup_text: str = "",
-    clean_steps: Iterable[str | Callable[[str], str]] | None = None,
 ) -> list[CitationBase]:
-    """This is eyecite's main workhorse function. Given a string of text
-    (e.g., a judicial opinion or other legal doc), return a list of
-    `eyecite.models.CitationBase` objects representing the citations found
-    in the doc.
+    """This is eyecite's main workhorse function. Given a
+    `eyecite.models.Document` object (e.g., a judicial opinion, other legal
+    document, or just a string of text), return a list of
+    `eyecite.models.CitationBase` objects representing the citations found in
+    the document.
 
     Args:
-        plain_text: The text to parse. You may wish to use the
-            `eyecite.clean.clean_text` function to pre-process your text
-            before passing it here.
+        document: The `eyecite.models.Document` object (which can be
+            instantiated with just a string) to parse for citations.
         remove_ambiguous: Whether to remove citations that might refer to more
             than one reporter and can't be narrowed down by date.
         tokenizer: An instance of a Tokenizer object. See `eyecite.tokenizers`
             for information about available tokenizers. Uses the
             `eyecite.tokenizers.AhocorasickTokenizer` by default.
-        markup_text: if the source text has markup (XML or HTML mostly), pass
-            it to extract ReferenceCitations that may be detectable via
-            markup style tags
-        clean_steps: Cleanup steps and methods
 
     Returns:
         A list of `eyecite.models.CitationBase` objects
     """
-    if plain_text == "eyecite":
+    if document.source_text == "eyecite":
         return joke_cite
 
-    document = Document(
-        plain_text=plain_text,
-        markup_text=markup_text,
-        clean_steps=clean_steps,
-    )
+    # Tokenize the document using the chosen tokenizer
     document.tokenize(tokenizer=tokenizer)
+
+    # Iterate through the document's tokens and look for citations
     citations: list[CitationBase] = []
     for i, token in document.citation_tokens:
         citation: CitationBase
@@ -135,6 +126,9 @@ def get_citations(
 
         citations.append(citation)
 
+    # Ensure that the extracted citations are sorted in the order that they
+    # appear in the document (addresses rare but possible overlaps and other
+    # subtle problems)
     citations = filter_citations(citations)
 
     # Remove citations with multiple reporter candidates where we couldn't
@@ -159,16 +153,16 @@ def extract_reference_citations(
 
     :return: Reference citations
     """
-    if len(document.plain_text) <= citation.span()[-1]:
+    if len(document.cleaned_text) <= citation.span()[-1]:
         return []
     if not isinstance(citation, FullCaseCitation):
         return []
 
     reference_citations = extract_pincited_reference_citations(
-        citation, document.plain_text
+        citation, document.cleaned_text
     )
 
-    if document.markup_text:
+    if document.has_markup:
         reference_citations.extend(
             find_reference_citations_from_markup(
                 document,
@@ -293,7 +287,7 @@ def _extract_shortform_citation(
         },
     )
 
-    if document.markup_text:
+    if document.has_markup:
         find_case_name_in_html(citation, document, short=True)
         if citation.metadata.antecedent_guess is None:
             find_case_name(citation, document, short=True)
@@ -425,35 +419,35 @@ def find_reference_citations_from_markup(
         regex = rf"<(?:{tags})>\s*({'|'.join(regexes)})[:;.,\s]*</(?:{tags})>"
 
         if (
-            not document.plain_to_markup
-            or not document.markup_to_plain
-            or not document.markup_text
+            not document.cleaned_to_source
+            or not document.source_to_cleaned
+            or not document.has_markup
         ):
             # ensure we have markup text
             return []
-        start_in_markup = document.plain_to_markup.update(
+        start_in_markup = document.cleaned_to_source.update(
             citation.span()[0], bisect_right
         )
         for match in re.finditer(
-            regex, document.markup_text[start_in_markup:]
+            regex, document.source_text[start_in_markup:]
         ):
-            full_start_in_plain = document.markup_to_plain.update(
+            full_start_in_plain = document.source_to_cleaned.update(
                 start_in_markup + match.start(), bisect_left
             )
-            full_end_in_plain = document.markup_to_plain.update(
+            full_end_in_plain = document.source_to_cleaned.update(
                 start_in_markup + match.end(), bisect_right
             )
 
             # the first group [match.group(0)] is the whole match,
             # with whitespace and punctuation. the second group, match.group(1)
             # is the only capturing and named group
-            start_in_plain = document.markup_to_plain.update(
+            start_in_plain = document.source_to_cleaned.update(
                 start_in_markup + match.start(1), bisect_left
             )
-            end_in_plain = document.markup_to_plain.update(
+            end_in_plain = document.source_to_cleaned.update(
                 start_in_markup + match.end(1), bisect_right
             )
-            raw_after = document.plain_text[full_end_in_plain:]
+            raw_after = document.cleaned_text[full_end_in_plain:]
             if re.match(r"^\s*(v[.s]|supra)\s", raw_after):
                 # filter likely bad reference matches
                 # when matching reference citations in markup it is possible
@@ -464,7 +458,7 @@ def find_reference_citations_from_markup(
 
             reference = ReferenceCitation(
                 token=CaseReferenceToken(
-                    data=document.plain_text[start_in_plain:end_in_plain],
+                    data=document.cleaned_text[start_in_plain:end_in_plain],
                     start=start_in_plain,
                     end=end_in_plain,
                 ),
