@@ -1962,3 +1962,57 @@ class FindTest(TestCase):
         citations = get_citations(text)
         self.assertEqual(len(citations), 2)
         mock_warn.assert_not_called()
+
+    def test_nominative_reporter_case_name_extraction(self):
+        """Test that case names are correctly extracted when nominative reporter
+        names appear in case names.
+
+        This tests the issue where nominative reporter names (like Thompson) in
+        case names can interfere with tokenization and case name extraction due
+        to overlapping citation token conflicts.
+        """
+        test_pairs = [
+            # Thompson is a known nominative reporter - this was failing
+            (
+                "Calderon v. Thompson, 523 U.S. 538, 556 (1998)",
+                case_citation(
+                    volume="523",
+                    reporter="U.S.",
+                    page="538",
+                    year=1998,
+                    metadata={
+                        "plaintiff": "Calderon",
+                        "defendant": "Thompson",
+                        "pin_cite": "556",
+                        "court": "scotus",
+                    },
+                ),
+            ),
+        ]
+
+        for cite_string, expected in test_pairs:
+            with self.subTest(cite_string=cite_string):
+                found_cites = get_citations(cite_string)
+                self.assertEqual(len(found_cites), 1)
+                found = found_cites[0]
+
+                self.assertEqual(
+                    found.metadata.plaintiff, expected.metadata.plaintiff
+                )
+                self.assertEqual(
+                    found.metadata.defendant, expected.metadata.defendant
+                )
+
+                full_span_text = cite_string[
+                    found.full_span()[0] : found.full_span()[1]
+                ]
+                self.assertIn(
+                    expected.metadata.plaintiff,
+                    full_span_text,
+                    f"Full span should include plaintiff '{expected.metadata.plaintiff}' for: {cite_string}",
+                )
+                self.assertIn(
+                    expected.metadata.defendant,
+                    full_span_text,
+                    f"Full span should include defendant '{expected.metadata.defendant}' for: {cite_string}",
+                )

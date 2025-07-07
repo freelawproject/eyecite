@@ -362,11 +362,29 @@ class Tokenizer:
                     and isinstance(token, CitationToken)
                     and token_is_from_nominative_reporter(last_token)
                 ):
-                    # if a token has overlapping matches between a nominative
+                    # If a token has overlapping matches between a nominative
                     # reporter and another type of case citation, prefer the
                     # other case citation. See #221 and #174
+                    #
+                    # Example: "Calderon v. Thompson, 523 U.S. 538"
+                    # - nominative token: "Thompson, 523" (positions 12-25)
+                    # - standard token: "523 U.S. 538" (positions 22-34)
+                    # These overlap at "523", so we discard the nominative token.
                     citation_tokens.pop(-1)
                     all_tokens.pop(-1)
+
+                    # However, the text "Thompson, " was only contained in the
+                    # nominative token. If we discard the token, then the text no longer
+                    # appears in any token. So we have to make sure it's preserved.
+                    non_overlapping_start = last_token.start
+                    non_overlapping_end = min(last_token.end, token.start)
+
+                    if non_overlapping_start < non_overlapping_end:
+                        discarded_text = text[
+                            non_overlapping_start:non_overlapping_end
+                        ]
+                        self.append_text(all_tokens, discarded_text)
+                        offset = non_overlapping_end
                 else:
                     # skip overlaps
                     continue
