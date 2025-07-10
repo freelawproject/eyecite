@@ -828,7 +828,14 @@ class FindTest(TestCase):
             # Fix for index error when searching for case name
             ("<p>State v. Luna-Benitez (S53965). Alternative writ issued, dismissed, 342 Or 255</p>",
             [case_citation(volume="342", reporter="Or", page="255")],
-            {'clean_steps': ['html', 'inline_whitespace']})
+            {'clean_steps': ['html', 'inline_whitespace']}),
+            # Previously, this test would fail because lowercase words were removed from
+            # the plaintiff name.
+            ('City of Davis v. Coleman, 521 F.2d 661 (9th Cir. 1975)',
+             [case_citation(volume='521', reporter='F.2d', page='661', year=1975,
+                            metadata={'plaintiff': 'City of Davis',
+                                      'defendant': 'Coleman',
+                                      'court': 'ca9'})])
         )
 
         # fmt: on
