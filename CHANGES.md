@@ -8,7 +8,7 @@ Features:
 -
 
 Changes:
--
+- Handle sequential citations (in close proximity) better
 
 Fixes:
 - Modifies rendering of AhocorasickTokenizer parameter in API docs II

@@ -218,6 +218,7 @@ def _scan_for_case_boundaries(
             word_str.endswith(";")
             or word_str.endswith("”")
             or word_str.endswith('"')
+            or (word_str.endswith("),") and state["v_token"] is not None)
         ):
             state["start_index"] = index + 2
             state["candidate_case_name"] = _extract_text(
@@ -227,7 +228,10 @@ def _scan_for_case_boundaries(
 
         # Handle year before citation
         if re.match(r"\(\d{4}\)", word_str):
-            state["title_starting_index"] = index - 1
+            # Don't override title_starting_index if we already found a v. token
+            # and have a case name set, as this would corrupt the extraction
+            if state["v_token"] is None or not state["candidate_case_name"]:
+                state["title_starting_index"] = index - 1
             state["pre_cite_year"] = word_str[1:5]
             continue
 
@@ -264,11 +268,13 @@ def _scan_for_case_boundaries(
 
         # Handle "v" token - store it but don't break yet
         if _is_v_token(word):
-            state["v_token"] = word
-            state["start_index"] = index - 2
-            state["candidate_case_name"] = _extract_text(
-                words, state["start_index"], state["title_starting_index"]
-            )
+            # Don't overwrite a case name we already found from a more recent v. token
+            if state["v_token"] is None:
+                state["v_token"] = word
+                state["start_index"] = index - 2
+                state["candidate_case_name"] = _extract_text(
+                    words, state["start_index"], state["title_starting_index"]
+                )
             continue
 
         # Break on likely new sentence after "v" token
