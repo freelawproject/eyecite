@@ -12,6 +12,7 @@ Changes:
 
 Fixes:
 - Modifies rendering of AhocorasickTokenizer parameter in API docs II
+- Fixes full_span_end not always being the same among parallel citations
 
 ## Current
 

@@ -828,7 +828,7 @@ class FindTest(TestCase):
             # Fix for index error when searching for case name
             ("<p>State v. Luna-Benitez (S53965). Alternative writ issued, dismissed, 342 Or 255</p>",
             [case_citation(volume="342", reporter="Or", page="255")],
-            {'clean_steps': ['html', 'inline_whitespace']})
+            {'clean_steps': ['html', 'inline_whitespace']}),
         )
 
         # fmt: on
@@ -1193,6 +1193,21 @@ class FindTest(TestCase):
             self.assertEqual(
                 extracted.full_span(), (start_idx, len(sentence)), error_msg
             )
+
+    def test_parallel_full_span(self):
+        """Parallel citations should have the same full_span_end
+
+        Note: it seems that the full_span_end can sometimes differ for a parallel
+        citation due to the way POST_FULL_CITATION_REGEX is defined. Under certain
+        conditions, it can end up matching to the next citation as opposed to the end of
+        the current citation. However, we can trust that the post citation matching
+        worked correctly for the first of the parallel citations.
+        """
+        text = "Kaiser Steel Corp. v. W.S. Ranch Co., 391 U.S. 593, 598, 88 S. Ct. 1753, 20 L.Ed.2d 835 (1968). We have previously held that the automatic stay provisions of the Bankruptcy Code may toll the statute the Montreal Convention. See Zicherman v. Korean Air Lines Co., Ltd., 516 F.3d 1237, 1254 (11th Cir. 2008)"
+        citations = get_citations(text)
+        self.assertEqual(citations[0].full_span_end, 94)
+        self.assertEqual(citations[1].full_span_end, 94)
+        self.assertEqual(citations[2].full_span_end, 94)
 
     def test_reference_extraction_using_resolved_names(self):
         """Can we extract a reference citation using resolved metadata?"""

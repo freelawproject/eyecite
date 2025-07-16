@@ -308,7 +308,7 @@ POST_FULL_CITATION_REGEX = rf"""
         [\(\[] # opening paren or bracket
         (?:
             (?:
-                (?P<court>.*?) # treat anything before date as court
+                (?P<court>[^)\]]*?) # treat anything before date as court
                 (?= # lookahead to stop when we see a month or year
                     \s+{MONTH_REGEX} |
                     \s+{YEAR_REGEX}
