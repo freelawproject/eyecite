@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Add extended citation models for constitutions, regulations, court rules, legislative bills, session laws, journal articles, scientific identifiers, and attorney general opinions
 
 Changes:
 -

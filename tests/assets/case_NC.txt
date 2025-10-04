@@ -1,0 +1,273 @@
+North Carolina Cases
+March 28, 2025: Hogarth v. Bell
+
+Court: U.S. District Court — Eastern District of North Carolina
+Docket Number(s): 5:24-CV-481-FL
+Date: March 28, 2025
+
+Case Description
+1
+
+SUSAN JANE HOGARTH, Plaintiff,
+v.
+KAREN BRINSON BELL, in her official capacity as Executive Director of the North Carolina State Board of Elections; ALAN HIRSCH, in his official capacity as Chair of the North Carolina State Board of Elections; JEFF CARMON, in his official capacity as Secretary of the North Carolina State Board of Elections; STACY EGGERS IV, KEVIN N. LEWIS, and SIOBHAN O'DUFFY MILLEN, in their official capacities as Members of the North Carolina State Board of Elections; DANIELLE BRINTON, in her official capacity as Investigator for the North Carolina State Board of Elections; OLIVIA MCCALL, in her official capacity as Director of the Wake County Board of Elections; ERICA PORTER, in her official capacity as Chair of the Wake County Board of Elections; ANGELA HAWKINS, in her official capacity as Secretary of the Wake County Board of Elections; GREG FLYNN, GERRY COHEN, and KEITH WEATHERLY, in their official capacities as Members of the Wake County Board of Elections; LORRIN FREEMAN, in her official capacity as Wake County District Attorney; and JEFF JACKSON, in his official capacity as North Carolina Attorney General, Defendants.
+
+No. 5:24-CV-481-FL
+
+United States District Court, E.D. North Carolina, Western Division
+
+March 28, 2025
+
+ORDER
+
+2
+
+This matter, the root of which is an asserted First Amendment right to share “ballot selfies,” is before the court upon defendants' motions to dismiss for lack of subject matter jurisdiction under Federal Rule of Civil Procedure 12(b)(1) (DE 53, 55, 58). The motions have been briefed fully, and in this posture the issues raised are ripe for ruling.
+
+STATEMENT OF THE CASE
+
+In complaint filed August 22, 2024, plaintiff seeks declaratory and injunctive relief against a total of five North Carolina election procedure statutes she alleges infringe her First Amendment-protected right to take so-called “ballot selfies.” She also seeks fees and costs under 42 U.S.C. § 1988. Plaintiff sues four groups of defendants, represented in the three motions to dismiss before this court:
+
+1. Karen Brinson Bell, Alan Hirsch, and Jeff Carmon, in their official capacities as executive director, chair, and secretary, respectively, of the North Carolina State Board of Elections; Stacy Eggers IV, Kevin N. Lewis, and Siobhan O'Duffy Millen in their official capacities as members of the North Carolina State Board of Elections; and Danielle Brinton, in her official capacity as investigator for the North Carolina State Board of Elections (collectively, the “State Board”);
+
+2. Olivia McCall, Erica Porter, and Angela Hawkins, in their official capacities as director, chair, and secretary, respectively, of the Wake County Board of Elections; and Greg Flynn, Gerry Cohen, and Keith Weatherly, in their official capacities as members of the Wake County Board of Elections (collectively, the “Wake County Board”);
+
+3. Lorrin Freeman (“Freeman”), in her official capacity as Wake County District Attorney; and
+
+3
+
+4. The North Carolina Attorney General, previously Josh Stein, now Jeff Jackson (“Jackson”), in his official capacity. [1]
+
+The court held hearing October 7, 2024, on plaintiff's request for preliminary injunctive relief. The court granted plaintiff's requested relief in part, which allowed plaintiff to take a “ballot selfie” when she cast her ballot in the November 5, 2024, general election. (See Order (DE 60)). The hearing then transitioned into a conference under Federal Rule of Civil Procedure 16, at which the parties and the court discussed a briefing schedule for defendants' anticipated motions to dismiss. It was agreed defendants would move first under Federal Rule of Civil Procedure 12(b)(1) and later, if appropriate, to dismiss under any other provision(s) of Rule 12 if some part of the case remained after decision.
+
+On November 5, 2024, plaintiff filed unopposed motion for leave to file a verified supplemental complaint under Federal Rule of Civil Procedure 15(d). This supplemental complaint contained additional allegations about plaintiff's experience in early voting during the 2024 general election. The court granted the motion November 6, 2024, and plaintiff duly filed the supplemental complaint the same day. The court provided opportunity for supplemental briefing on the new allegations in the complaint, in the context of the motions now before it, which is complete.
+
+STATEMENT OF FACTS
+
+The facts alleged are as follows. Plaintiff is a resident and registered voter of Wake County, North Carolina, who has voted in “nearly every” national election since 2014. (Compl. (DE 2) ¶ 9). Plaintiff has taken and shared “ballot selfies,” which are voters' photos of their own completed
+
+4
+
+ballots or of themselves in the voting booth, to 1) promote the candidates she votes for; 2) show voters they can vote for third-party candidates; 3) “challenge the narrative that voters can only vote for major party candidates”; 4) encourage potential voters to vote; 5) commemorate her vote; 6) express her pride in participating in the electoral process; and 7) express her disagreement with North Carolina's ban on “ballot selfies.” ( Id. ¶¶ 30, 50-51). Plaintiff alleges that the five electoral procedure statutes she challenges together operate to ban “ballot selfies.” (Id. ¶¶ 31-48).
+
+On March 5, 2024, plaintiff went to her precinct's polling place to vote in a primary election. ( Id. ¶¶ 52-53). From the time plaintiff arrived at the polling place to the time she left, no more than three other voters entered the voting enclosure. (Id. ¶ 54). Plaintiff entered the voting booth, voted, then took a photo depicting herself, her ballot, and a voting booth sign prohibiting photography. (Id. ¶¶ 55-58). Taking the photo took approximately 45 seconds. (Id. ¶ 59). Nobody had to wait to access a voting booth while plaintiff voted, no poll worker notified plaintiff that her time had expired or that she was taking too long to exit, and nobody said anything to plaintiff about the photograph. (Id. ¶¶ 61-64). After taking the photograph, plaintiff shared it on the social network formerly known as twitter, along with a criticism of ballot photography laws and an endorsement of her preferred candidates. (Id. ¶¶ 66-70).
+
+Plaintiff received a letter dated March 13, 2024, from defendant Danielle Brinton, informing plaintiff that photographing a completed ballot is unlawful, threatening plaintiff with criminal prosecution, warning plaintiff that she had committed a crime by taking the photograph and by sharing it on social media, and demanding that plaintiff take the photo down from social media. (Id. ¶¶ 72-83). The letter warned plaintiff four times that photographing a completed ballot is unlawful. (Id. ¶ 81).
+
+5
+
+The North Carolina State Board of Elections warns voters on its website and in press releases that “ballot selfies” are illegal, and it investigates reports thereof. (Id. ¶¶ 85-90). Between March, 2016, and March, 2024, the State Board investigated at least 50 reports of photography of completed ballots, and it refers individuals who have taken such photos to district attorneys for prosecution. (Id. ¶¶ 91, 97). Similarly, the Wake County Board warns voters that photography of completed ballots is illegal, and reported a violation of those laws to the State Board on November 8, 2022. ( Id. ¶¶ 98-99, 101).
+
+Plaintiff has not taken down her “ballot selfie,” and does not intend to. (Id. ¶¶ 105-06). Plaintiff intends to vote in future elections in Wake County, and to take “ballot selfies” for social media. (Id. ¶¶ 107, 111-13). Plaintiff stood as a candidate for state senate in the November 2024, general election. (Id. ¶ 116).
+
+On October 25, 2024, plaintiff went to an early polling place in Wake County to vote. (Suppl. Compl. (DE 65) ¶ 5). When she arrived, four voters waited in line ahead of her. (Id. ¶ 6). When plaintiff entered the voting enclosure, “the majority” of the more than 50 voting booths were available. (Id. ¶ 7). Plaintiff filled out her ballot, which took approximately two minutes. (Id. ¶¶ 9-10). While in the voting booth, plaintiff took more “ballot selfies,” which included her voted ballot, herself with a “no photos” sign posted next to the voting booth, and herself holding up her voted ballot. (Id. ¶ 11). This photography took less than one minute. ( Id. ¶ 12). As plaintiff took her last photograph, a poll worker approached plaintiff and ordered her to delete her photographs. (Id. ¶ 14). Plaintiff advised the poll worker that a court had ordered she could take her “ballot selfies,” which the poll worker confirmed with the State and/or Wake County Boards. (Id. ¶¶ 1520). Nobody had to wait to vote while plaintiff took her “ballot selfies,” and no election official told plaintiff her time had expired, that plaintiff was disrupting the polling place, that plaintiff was
+
+6
+
+intimidating other voters, or that plaintiff was violating the privacy of other voters. (Id. ¶¶ 22-26). Plaintiff alleges that without this court's order permitting plaintiff to take “ballot selfies” when she voted in the 2024 general election, officials would have prevented plaintiff from doing so. ( Id. ¶ 27).
+
+COURT'S DISCUSSION
+
+A. Standard of Review
+
+Where a Rule 12(b)(1) motion challenges the court's subject matter jurisdiction, plaintiff bears the burden of showing that federal jurisdiction is appropriate when, as here, challenged by a defendant. See McNutt v. Gen. Motors Acceptance Corp., 298 U.S. 178, 189 (1936); Adams v. Bain , 697 F.2d 1213, 1219 (4th Cir. 1982). [2] Such a motion may either 1) assert the complaint fails to state facts upon which subject matter jurisdiction may be based, or 2) attack the existence of subject matter jurisdiction in fact, apart from the complaint. Bain , 697 F.2d at 1219. Where a defendant raises a “facial challenge[] to standing that do[es] not dispute the jurisdictional facts alleged in the complaint,” the court accepts “ the facts of the complaint as true as [the court] would in context of a Rule 12(b)(6) challenge.” Kenny v. Wilson , 885 F.3d 280, 287 (4th Cir. 2018).
+
+B. Analysis
+
+Pending before the court are three different Rule 12(b)(1) motions, variously lodged by 1) Freeman; 2) the Wake County Board; and 3) the State Board and Jackson together. Because each movant is situated differently in ways legally relevant to the arguments presented, the court sets out the five challenged statutes, then some legal principles common to all defendants' motions, and last evaluates plaintiff's standing with respect to the pertinent groups of defendants in turn.
+
+7
+
+1. Five Challenged Statutes
+
+As noted, plaintiff challenges five election procedure statutes. (Compl. ¶¶ 141, 184).
+
+The first statute is N.C. Gen. Stat. § 163-166.3(c). This short provision states that:
+
+(c) Photographing Voted Ballot Prohibited.-No person shall photograph, videotape, or otherwise record the image of a voted official ballot for any purpose not otherwise permitted under law.
+The second statute is N.C. Gen. Stat. § 163-273(a)(1). This similarly brief statute states:
+
+(a) Any person who shall, in connection with any primary or election in this State, do any of the acts and things declared in this section to be unlawful, shall be guilty of a Class 2 misdemeanor. It shall be unlawful:
+(1) For a voter, except as otherwise provided in this Chapter, to allow his ballot to be seen by any person.
+
+The third statute is N.C. Gen. Stat. § 163-165.1(e). This statute states that:
+
+(e) Voted ballots and paper and electronic records of individual voted ballots shall be treated as confidential, and no person other than elections officials performing their duties may have access to voted ballots or paper or electronic records of individual voted ballots except by court order or order of the appropriate board of elections as part of the resolution of an election protest or investigation of an alleged election irregularity or violation. Voted ballots and paper and electronic records of individual voted ballots shall not be disclosed to members of the public in such a way as to disclose how a particular voter voted, unless a court orders otherwise. Any person who has access to an official voted ballot or record and knowingly discloses in violation of this section how an individual has voted that ballot is guilty of a Class 1 misdemeanor.
+The fourth statute is N.C. Gen. Stat. § 163-274(b)(1), which states:
+
+(Image Omitted)
+
+Plaintiff refers to these four provisions together as the “ballot photography provisions.”
+
+(Compl. ¶ 141). The court does likewise for the sake of convenience.
+
+8
+
+The final statute, N.C. Gen. Stat. § 163-166.3(b), which plaintiff labels the “voting enclosure provision,” (Compl. ¶¶ 170-84), provides that:
+
+(Image Omitted)
+
+2. General Principles
+
+All defendants advance arguments based on the Article III doctrine of standing, as applicable to their respective statuses in enforcing the challenged statutes. Defendant Jackson also makes an argument under the Eleventh Amendment.
+
+Standing under Article III is “a bedrock constitutional requirement” which serves to limit the powers of federal courts to adjudicate only cases and controversies. FDA v. All. for Hippocratic Med. , 602 U.S. 367, 378 (2024). To establish standing to sue, “a plaintiff must demonstrate (i) that she has suffered or likely will suffer an injury in fact, (ii) that the injury likely was caused or will be caused by the defendant, and (iii) that the injury likely would be redressed by the requested judicial relief.” Id. at 380. Because the second and third requirements are “often flip sides of the same coin[,]” the “two key questions” in most standing disputes are injury and causation. Id. at 380-81.
+
+To create standing, an injury must be “concrete,” meaning “real and not abstract.” Id. at 381. “The injury must also be particularized,” affecting the “plaintiff in a personal and individual way,” rather than a “generalized grievance.” Id. And “the injury must be actual or imminent, not speculative,” and when a plaintiff seeks prospective injunctive relief, she “must establish a sufficient likelihood of future injury.” Id.
+
+9
+
+Standing causation requires that the alleged injury be “fairly traceable” to the complained-of action. Libertarian Party of Va. v. Judd , 718 F.3d 308, 315-16 (4th Cir. 2013). “[T]here must be a causal connection between the injury and the conduct complained of.” Dep't of Education v. Brown , 600 U.S. 551, 561 (2023). When the causal relation between injury and challenged action depends upon a third party, “standing is not precluded, but it is ordinarily substantially more difficult to establish[.]” California v. Texas, 593 U.S. 659, 675 (2021).
+
+With these principles in mind, the court addresses plaintiff's Article III standing as it relates to the pertinent defendant groups, in turn.
+
+3. Attorney General of North Carolina
+
+Jackson argues that he is not a proper defendant because of Eleventh Amendment immunity. The court agrees.
+
+The Eleventh Amendment generally bars suits in federal court against both the state itself, and against state officials sued in their official capacities, whatever relief the suit seeks. Pennhurst State Sch. & Hosp. v. Halderman , 465 U.S. 89, 101-02 (1984). However, Ex Parte Young , 209 U.S. 123 (1908) establishes a narrow exception to this rule, permitting suits against state officials for allegedly unconstitutional conduct which seek prospective relief. See Pennhurst , 465 U.S. at 101-03. However, such suits remain barred by the Eleventh Amendment if there is no “special relation” between the official defendant and the challenged statute. See Ex Parte Young, 209 U.S. at 157; Doyle v. Hogan , 1 F.4th 249, 254-55 (4th Cir. 2021); Waste Mgmt. Holdings, Inc. v. Gilmore , 252 F.3d 316, 331 (4th Cir. 2001).
+
+Accordingly, Jackson argues that he has no “special relation” with enforcement of any statute. The court agrees.
+
+10
+
+It is well-settled that mere general authority to enforce a state's laws held by a governor or an attorney general is insufficient to create the requisite relationship. E.g., Doyle, 1 F.4th at 255. Instead, plaintiff relies upon 1) Jackson's power to participate in criminal prosecutions; 2) his duty to represent the state on appeal; and 3) his duty to “appear” for the state when it is an interested party. None of these arguments prevails.
+
+First, North Carolina law sharply circumscribes the attorney general's powers to participate directly in criminal prosecutions. The attorney general may assist criminal prosecutions, but only at district attorney request and if the attorney general independently, as a matter of discretion, approves such participation. N.C. Gen. Stat. § 114-11.6. This statute imposes no duty to participate in the prosecution process in any way, in contrast to the statutes governing the State Board, which impose mandatory duties upon that body. See N.C. Gen. Stat. § 163-278. For Jackson to have a relationship with the statute, Freeman would have to make the discretionary decision to pursue charges against plaintiff, and the discretionary decision to request attorney general involvement, and then Jackson would have to make the discretionary decision to approve such involvement. This chain of contingencies stretches the relationship between Jackson and the challenged statutes past the breaking point. Cf. Clapper v. Amnesty Int'l USA , 568 U.S. 398, 41114 (2013) (rejecting standing premised on a similar chain of contingencies).
+
+Plaintiff cites two decisions of this court which have recognized standing against the North Carolina Attorney General based on § 114-11.6. However, each case primarily analyzed standing to sue a district attorney, and found standing against the attorney general largely as an afterthought and without substantive analysis of standing specifically against that official. See Meredith v. Stein , 355 F.Supp.3d 355, 361 (E.D. N.C. 2018); Grabarczyk v. Stein, No. 5:19-cv-48-BO, 2019 WL 4235356, at *3 (E.D. N.C. Sept. 5, 2019). Under the circumstances alleged here, these cases
+
+11
+
+hold little persuasive value. Instead, a case both sides cite, N.C. A. Philip Randolph Inst., 1:20CV876, 2020 WL 6488704 (M.D. N.C. Nov. 4, 2020), which rejected similar, election lawbased claims against the attorney general for lack of any prosecutorial role, is more apposite. See id. at *5-6.
+
+Second, Jackson's duty to represent the state in appeals is insufficient. The attorney general's office has never defended a conviction under any of these statutes, one of which was enacted as long ago as 1929, nor has it ever issued an advisory opinion on any. These facts demonstrate the absence of a “special relation” as required. See McBurney v. Cuccinelli, 616 F.3d 393, 400-02 (4th Cir. 2010) (holding attorney general lacked special relation based on advisory opinion practices and lack of any express prosecutorial role).
+
+Finally, plaintiff contends that Jackson has general prosecutorial authority, citing N.C. Gen. Stat. § 114-2(1), which empowers the attorney general to “appear” for the state in court. This argument is contrary to North Carolina constitutional and statutory law, which vest general prosecutorial authority only in district attorneys, not the attorney general, including specifically as to the challenged statutes here. See N.C. Const. Art. IV § 18 (vesting prosecutorial authority only in district attorneys); N.C. Gen. Stat. § 163-278 (same specifically for violations of state election law, including the challenged statutes); State v. Camacho, 329 N.C. 589, 593 (1991) (“the clear mandate of [§ 18] is that the responsibility and authority to prosecute all criminal actions . . . is vested solely in the several district attorneys of the state”).
+
+Accordingly, the attorney general does not possess the “special relation” to the challenged statutes as required to render an Ex Parte Young action against him proper. Because this exception does not apply, defendant Jackson possesses Eleventh Amendment immunity against this suit, and must be dismissed.
+
+12
+
+4. State Board
+
+Plaintiff has demonstrated Article III standing based upon the alleged conduct of the State Board defendants. The State Board's investigative staff sent a letter to plaintiff informing her that she had committed a possible violation of N.C. Gen. Stat. §163-166.3(c). (Compl. Ex. A (DE 21) 2) (the “letter”). The letter informed plaintiff that the State Board had a duty to investigate violations of state election law, that plaintiff's alleged actions were criminal, and that the “purpose” of the letter was to explain the law and request that plaintiff take down her “ballot selfie” social media post. ( Id. ).
+
+The State Board has a statutorily imposed duty to investigate the administration of election law as necessary, and to report violations of the election laws to the State Bureau of Investigation for inquiry and prosecution. N.C. Gen. Stat. § 163-22(c), (d). It also bears the duty, jointly with district attorneys, to investigate violations of election law, and the separate duty to “furnish” district attorneys with a copy of any investigations of election law, upon which district attorneys shall initiate prosecution. Id. § 163-278.
+
+Based on these facts and the duties and powers conferred by statute on the State Board, plaintiff has standing to assert her First Amendment claims against this group of defendants. She has shown “she has suffered or likely will suffer an injury in fact” based upon the letter, and the State Board defendants' power to make prosecution referrals if she did not comply. All. for Hippocratic Med. , 602 U.S. at 378. For the same reason, the “injury likely would be redressed by the requested judicial relief.” Id. at 380. Plaintiff's injury is “concrete” and “particularized” because the letter was addressed directly to her. Id. at 381. Plaintiff also has established “a sufficient likelihood of future injury” because of the State Board's authorities and duties as noted above. Id.
+
+13
+
+In response, the State Board defendants first challenge the injury element on grounds that plaintiff's First Amendment interests, as enumerated in her complaint, are not infringed by the challenged statutes because plaintiff may still vindicate these interests through many other forms of communication. This argument does not make it off the ground. The availability of other forms of expression is sometimes relevant to assessing the merits of a First Amendment challenge, but such availability does not vitiate an injury for standing purposes. See FEC v. Cruz , 596 U.S. 289, 298 (2022). At least some other form of communication would remain open under virtually any statute that allegedly violates the First Amendment, so this argument, if accepted, would eliminate standing in virtually every First Amendment case.
+
+The State Board also argues that Freeman's declaration, stating that she will not prosecute plaintiff, defeats any credible threat of prosecution. The court concludes, in its discussion below, that Freeman's declaration does not obviate a credible threat of prosecution.
+
+Next, the State Board challenges the traceability element of standing, contending that its lack of prosecutorial power severs any link between the purported injuries here and its actions. The court disagrees.
+
+To be a proper party, a defendant generally must have “some connection” with the enforcement of a statute challenged as unconstitutional. S.C. Wildlife Fed. v. Limehouse , 549 F.3d 324, 333 (4th Cir. 2008). This requirement bars injunctive actions where the relationship between the defendant and the enforcement of the challenged statute is “significantly attenuated.” Id. In Limehouse , a sufficient connection existed between a statute and an official because the latter was an administrative head of an agency with responsibility for carrying out that agency's allegedly unconstitutional policies. Even more appositely, the Supreme Court has found standing based on a mere complaint to a body charged with enforcing state law. See Susan B. Anthony List v. Driehaus,
+
+14
+
+573 U.S. 149, 164 (2014). And in a non-binding but persuasive opinion, the Sixth Circuit has found standing in another “ballot selfie” case based on state electoral authorities' demand that a “ballot selfie”-taker remove a photograph from social media, and statement that such photographs violated state law. See Kareem v. Cuyahoga Cnty. Bd. of Elections, 95 F.4th 1019, 1025-27 (6th Cir. 2024).
+
+These cases are applicable here. The State Board informed plaintiff that her “ballot selfie” violated North Carolina law, warned her of possible criminal consequences, and has a history of actually enforcing these laws to the extent of its authority. These activities certainly constitute “some connection” with the challenged statutes. Limehouse, 549 F.3d at 333. Indeed, this conduct goes far beyond a single complaint, Driehaus , 573 at 164, or an anti-“ballot selfie” policy a state authority had privately admitted it no longer enforced, Kareem, 95 F.4th at 1025. Nor does the State Board's lack of prosecutorial authority defeat standing, because a threatened governmental action need not be a criminal prosecution to provide standing. Cooksey v. Futrell, 721 F.3d 226, 238 n.5 (4th Cir. 2013).
+
+In addition and in the alternative, traceable injury need not be the “last step in the chain of causation[,]” and may rest upon actions that produce “determinative or coercive effect upon the action of someone else.” Bennett v. Spear, 520 U.S. 154, 169 (1997). The State Board “initiate[s] the causal chain” that leads to prosecution, even if it is not the “last link” in that chain. N.C. A. Philip Randolph Inst. , 2020 WL 6488704, at *5 (finding standing as to State Board and enforcement of North Carolina electoral law); see Md. Shall Issue, Inc. v. Hogan, 971 F.3d 199, 212-13 (4th Cir. 2020) (discussing principle more generally); N.C. Gen. Stat. § 163-278 (imposing “duty” of investigation of state electoral law and of referral to district attorneys); (Compl. ¶¶ 7283, 86-89 (alleging State Board's actions under these duties vis-a-vis plaintiff)).
+
+15
+
+The State Board relies upon the principle that standing is generally defeated when an injury depends on the actions of some independent third party. See Murthy v. Missouri , 603 U.S. 43, 68 n.8 (2024). Though prosecution here ultimately depends on the actions of Freeman, she and the State Board are not independent actors as contemplated by this principle, as they have enmeshed statutory duties which together establish an integrated investigative and prosecutorial process. See Spear , 520 U.S. at 169; Sierra Club v. U.S. Dep't of the Interior , 899 F.3d 260, 284 (4th Cir. 2018) (finding traceability based on two parties' cooperation to produce alleged injury); see also Hogan , 971 F.3d at 212-13 (finding traceability based on more tenuous theory of a regulation's effects on purchasing habits of business's customers). And as noted, criminal prosecution is not the only form of cognizable injury. Futrell , 721 F.3d at 238 n.5. Accordingly, Plaintiff meets the traceability element of standing against the State Board.
+
+Finally, this group of defendants purports to attack the redressability element of standing. However, their arguments on this point are indistinguishable from their assertions on the other two elements. (See State Bd. Defs' Br. (DE 56) 12-13). The court rejects these contentions for the same reasons as above.
+
+In sum, plaintiff possesses standing to assert claims against the State Board defendants challenging the ballot photography provisions.
+
+The court reaches largely the same conclusions as above regarding the voting enclosure provision. However, the State Board defendants also advance the argument here that plaintiff's status as a candidate in the November, 2024, general election defeats standing. Indeed, plaintiff's status as a candidate in that election removed her from most of the statute's reach, so that she required no state actor's permission to photograph herself within the voting enclosure. See N.C. Gen. Stat. § 163-166.3(b) (“If the voter is a candidate, only the permission of the voter is
+
+16
+
+required.”). However, plaintiff does not allege, and no party argues, that plaintiff will be a candidate in any other election cycle. This argument is therefore ineffective.
+
+The State Board defendants also argue that the voting enclosure provision causes no injury because “ballot selfies” are outlawed instead by other statutes, such that injunctive relief against the voting enclosure statute would provide no redress for plaintiff's purported injuries. However, if the court granted injunctive relief against the ballot photography provisions, then the only obstacle to plaintiff's desired activity would be the voting enclosure provision, so injunctive relief against all five statutes would together provide redress for plaintiff's alleged injuries. [3] Plaintiff therefore also holds standing to assert claims against the State Board defendants challenging the voting enclosure provision.
+
+The State Board's motion challenging plaintiff's standing to assert claims against it is denied.
+
+5. County Board Defendants
+
+Plaintiff has standing generally against the Wake County Board defendants for the same reasons as the State Board defendants, because they are responsible for carrying out many of the State Board's powers during elections. N.C. Gen. Stat. § 163-33(2), (3), (12); Limehouse , 549 F.3d at 333.
+
+The Wake County Board defendants argue that plaintiff's alleged injuries are not traceable to them, which defeats plaintiff's standing to sue them. This argument is unavailing.
+
+These defendants rely largely upon the statutes that define and limit the powers of county election boards in North Carolina. Under N.C. Gen. Stat. § 163-33(1), county election boards hold the power to make rules and regulations consistent with state law and the directives of the state
+
+17
+
+board of elections. Id. Similarly, county boards have the statutory duty to appoint precinct-level electoral officials. Id. § 163-33(2). In turn, however, these precinct-level officials have the statutory duty to arrest anybody who violates state election law. Id. §§ 163-273(b), 163-48.
+
+Thus although county boards lack prosecutorial power, they have statutorily defined obligations to carry out enforcement of the challenged statutes in polling places. And county boards actively investigate violations of election laws, which they report to the State Board. (Compl. ¶¶ 14, 16, 101-03). The Wake County Board is thus enmeshed with the State Board and district attorneys in the integrated investigative apparatus which North Carolina election law creates, discussed above. That the Wake County Board's employees attempted to stop plaintiff from taking a “ballot selfie” on October 26, 2024, corroborates that the Wake County Board defendants have a substantial link to the enforcement of the challenged statutes. (Suppl. Compl. ¶¶ 14-21). Plaintiff therefore has standing to sue the Wake County Board for the same reasons as the State Board as discussed above. See Driehaus , 573 U.S. at 164; Limehouse, 549 F.3d at 333; Kareem , 95 F.4th at 1025.
+
+6. Freeman
+
+Like the other defendants, Freeman challenges plaintiff's standing to sue her, primarily through a declaration she has filed in this case. The court concludes that plaintiff possesses standing to sue Freeman.
+
+A plaintiff challenging the constitutionality of a criminal statute need not expose herself to actual arrest and prosecution to possess standing. See Babbitt v. United Farm Workers Nat'l Union , 442 U.S. 289, 298 (1979). Instead, when the plaintiff alleges an intention to engage in conduct arguably imbued with constitutional interest but proscribed by statute, and a credible threat of prosecution is present, standing exists. See id. Nonetheless, a plaintiff with only an
+
+18
+
+“imaginary or speculative” fear of prosecution lacks standing under this principle. Id. A history of past enforcement is “good evidence” that a threat of prosecution is not imaginary or speculative. Driehaus , 573 U.S. at 164; see also Kareem , 95 F.4th at 2015.
+
+Plaintiff pleads past conduct, and future intent to repeat that conduct, that violates the challenged statutes here. (Compl. ¶¶ 161-62, 179-80). In these circumstances, defendants bear the burden to demonstrate through “compelling evidence” the lack of a credible threat of prosecution or that the statute is “moribund.” N.C. Right to Life, Inc. v. Bartlett, 168 F.3d 705, 710 (4th Cir. 1999).
+
+Freeman first argues that no credible threat of prosecution exists because her office has never enforced this statute. This argument fails for two reasons.
+
+First, the State Board and Wake County Board repeatedly have exercised the extent of their powers to enforce the statutes, such as by warning voters, including plaintiff, about the statutes, threatening plaintiff with prosecution, and investigating and referring violations to district attorneys. (Compl. ¶¶ 10, 72-83, 90-97, 101-03). That Freeman has not enforced these statutes to final conviction against anybody during her term of office does not overcome the presumption of credible prosecution. See Driehaus , 573 U.S. at 164 (stating that single complaint to electoral commission sufficed); Futrell , 721 F.3d at 237-38 (government warnings about speech sufficed).
+
+Second, an enforcing authority's interpretation that a statute does not apply to certain conduct, when the statute's plain terms show the contrary, does not defeat the threat of prosecution. In Bartlett , the United States Court of Appeals for the Fourth Circuit noted, in a challenge to another North Carolina electoral law, that the state had never interpreted it to apply to the conduct at issue in that case in the 25 years since the statute's enactment. See Bartlett , 168 F.3d at 710. Nonetheless, the court rejected the assertion that this situation defeated standing. See id. That
+
+19
+
+Freeman has chosen not to enforce the statute in the past, in her exercise of prosecutorial discretion, does not defeat standing for the same reasons. Freeman's arguments about the prosecutorial decisions of other district attorneys, and the paucity of cases brought under these statutes statewide, likewise fail. Freeman's argument that the statute is moribund for rarity of prosecution fails for the same reasons.
+
+Next, Freeman makes an argument specific to this case, based on a declaration she filed September 17, 2024. In this filing, Freeman states that she was unfamiliar with plaintiff before this case began, that she never communicated with the State Board about the facts alleged in the complaint, and that she will not prosecute plaintiff under any of the challenged statutes “pending determination of the constitutionality of the challenged statutory provisions.” (See generally Decl. Freeman (DE 42-1)).
+
+This declaration does not defeat the threat of prosecution. First, the wording of the declaration, that Freeman will forbear from prosecution only while this case is pending, evinces possible intent to prosecute plaintiff should the court rule that she lacks standing, thus creating a circular credible threat of prosecution. Second, the declaration would not bind Freeman's successor in the event of her departure from office for any reason. Finally, authority rejects this type of maneuver. The Supreme Court has repeatedly and resoundingly rejected the proposition that unconstitutional statutes may stand because the enforcing authority “promise[s] to use [them] responsibly.” United States v. Stevens , 559 U.S. 460, 480 (2010); see, e.g., Dubin v. United States, 599 U.S. 110, 131 (2023); McDonnell v. United States , 579 U.S. 550, 576 (2016).
+
+Other courts have rejected disavowals of prosecution as destroying standing by applying this principle. See Bartlett , 168 F.3d 705 (rejecting argument that would leave plaintiff's First Amendment rights “at the sufferance of” the enforcement authority); Correll v. Herring , 212 F.Supp.3d 584, 602-03 (E.D. Va. 2016)
+
+20
+
+(similar, and rejecting in particular a post-complaint disavowal of prosecutorial intent); see also Crookston v. Johnson , 370 F.Supp.3d 804, 812 (W.D. Mich. 2018) (similar as to a state board's disavowal of enforcement); Hill v. Williams , No. 16-cv-2627, 2016 WL 8667798, at *5 (D. Colo. Nov. 4, 2016) (similar as to district attorney disavowal); cf. Doe v. Pryor , 344 F.3d 1282, 1287 (11th Cir. 2003) (no standing when state conceded statute was unconstitutional and could not be enforced).
+
+The court therefore concludes that Freeman fails to rebut the presumption in favor of a credible threat of prosecution, Bartlett , 168 F.3d at 710, and accordingly that an injury sufficient to support standing exists.
+
+Freeman also makes arguments under the other prongs of standing. However, these contentions largely shade into the injury arguments already addressed, so the court need address them only briefly.
+
+First, Freeman asserts that no injury is traceable to her because of her declaration. This point is unavailing. As district attorney, Freeman has the exclusive power to initiate criminal prosecutions, so the decision to prosecute unavoidably goes through her. See Camacho , 329 N.C. at 593.
+
+Second, Freeman makes a redressability argument similar to the State Board's contention that alternative channels of expression exist. This assertion fails for the same reasons, and in any case, enjoining the challenged statutes would certainly redress the credible threat of prosecution that currently hovers over plaintiff. Plaintiff therefore has standing to sue Freeman.
+
+In sum, plaintiff has standing to sue all defendants in this suit except for Jeff Jackson in his official capacity as Attorney General of North Carolina.
+
+21
+
+CONCLUSION
+
+For the foregoing reasons, the Wake County Board defendants' motion to dismiss under Federal Rule of Civil Procedure 12(b)(1) (DE 53) is DENIED. Freeman's motion to dismiss under Federal Rule of Civil Procedure 12(b)(1) (DE 58) is DENIED. Jackson and the State Board's joint motion to dismiss under Federal Rule of Civil Procedure 12(b)(1) (DE 55) is GRANTED in part as it requests dismissal of defendant Jeff Jackson, and otherwise DENIED. Jeff Jackson is hereby DISMISSED from this action pursuant to the Eleventh Amendment. Pursuant to the court's October 15, 2024, order, remaining defendants shall have 14 days from the date of this order to file an answer or motions to dismiss based on any other defenses listed in Rule 12(b).
+
+SO ORDERED.
+
+---------
+
+Notes:
+
+[1] The court has amended the caption of this case sua sponte to reflect Jeff Jackson's January 1, 2025, assumption of office as North Carolina Attorney General, following former Attorney General Josh Stein's election to the governorship. See Fed.R.Civ.P. 25(d).
+
+[2] Internal citations and quotation marks are omitted from all citations unless otherwise specified.
+
+[3] The court emphasizes that neither this discussion nor anything else in this order should be construed as expressing a view on the merits of plaintiff's claims, which have yet to be briefed.
+
+---------
+
+Citation
+Hogarth v. Bell, 5:24-CV-481-FL (E.D.N.C. 2025)

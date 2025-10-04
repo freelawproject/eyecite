@@ -1,201 +1,136 @@
-name: Benchmark Pull Request
-on:
-  pull_request:
-  repository_dispatch:
-    types: [ reporters-db-pr ]
+name: CI
 
-env:
-  main: "$(/usr/bin/git log -1 --format='%H')"
+on:
+  push:
+    branches: [main]
+  pull_request:
 
 jobs:
-  benchmark:
-    name: PR comment
-    if: github.event_name == 'pull_request'
+  lint:
     runs-on: ubuntu-latest
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python
-        id: setup-python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.12
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
-        with:
-          enable-cache: true
-          version: "0.7.x"
-
-      - name: Add or Update comment on PR that Test is running
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          recreate: true
-          message: |
-            Eyecite Benchmarking in progress...
-
-            For details, see: https://github.com/freelawproject/eyecite/actions/workflows/benchmark.yml
-
-            This message will be updated when the test is completed.
-
-      - name: Install Python dependencies
-        run: |
-          uv sync --frozen --no-group dev --group benchmark
-          source .venv/bin/activate
-          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
-          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
-
-      - name: Setup variables I
-        id: branch1
-        run: |
-          echo ${{ github.event.issue.pull_request }}
-          echo "::set-output name=filepath::benchmark/${{ env.main }}.json"
-          echo "::set-output name=hash::${{ env.main }}"
-      #----------------------------------------------
-      #             Download Testing File
-      #
-      # We generated our testing datasets with the following command:
-      #
-      # root@maintenance:/opt/courtlistener# PGPASSWORD=$DB_PASSWORD psql \
-      #   --host $DB_HOST \
-      #   --username $DB_USER \
-      #   --dbname courtlistener \
-      #   --command \
-      #     'set statement_timeout to 0;
-      #      COPY (
-      #        SELECT \
-      #          id, plain_text, html, html_lawbox, html_columbia, html_anon_2020, xml_harvard \
-      #        FROM \
-      #          search_opinion \
-      #        TABLESAMPLE BERNOULLI (0.1) \
-      #      ) \
-      #      TO STDOUT \
-      #      WITH (FORMAT csv, ENCODING utf8, HEADER); \
-      #     ' \
-      #   | bzip2 \
-      #   | aws s3 cp - s3://com-courtlistener-storage/bulk-data/eyecite/tests/ten-percent.csv.bz2 \
-      #      --acl public-read
-      #----------------------------------------------
-      - name: Download Testing File
-        run: |
-          curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
-
-      - name: Run first benchmark
-        run: |
-          python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }}
-          git stash --include-untracked
-
       - uses: actions/checkout@v4
-        with:
-          repository: freelawproject/eyecite
-          ref: main
-
-      - name: Install dependencies 2
-        run: uv sync --frozen --no-group dev --group benchmark
-
-      - name: Setup variables II
-        id: branch2
-        run: |
-          echo "::set-output name=filepath::benchmark/${{ env.main }}.json"
-          echo "::set-output name=hash::${{ env.main }}"
-
-      - name: Run second benchmark
-        run: |
-          git stash pop
-          python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }} ${{ steps.branch2.outputs.hash }} --pr ${{ github.event.number }}
-          mkdir results
-          mv benchmark/output.csv benchmark/${{ steps.branch1.outputs.hash }}.json benchmark/${{ steps.branch2.outputs.hash }}.json benchmark/report.md benchmark/chart.png results/
-
-      #----------------------------------------------
-      #             Upload to Github PR
-      #----------------------------------------------
-      - name: Pushes test file
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.FREELAWBOT_TOKEN }}
-        with:
-          user_email: 'info@free.law'
-          user_name: 'freelawbot'
-          source_file: 'results/'
-          destination_repo: 'freelawproject/eyecite'
-          destination_folder: '${{ github.event.number }}'
-          destination_branch: 'artifacts'
-          commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
-
-      - name: Add or Update PR Comment from Generated Report
-        uses: marocchino/sticky-pull-request-comment@v2
-        with:
-          recreate: true
-          path: results/report.md
-
-  dispatch:
-    name: Reporters-DB-Dipatch
-    if: github.event_name == 'repository_dispatch'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-
       - name: Set up Python
-        id: setup-python
         uses: actions/setup-python@v5
         with:
-          python-version: 3.12
-
-      - name: Install uv
-        uses: astral-sh/setup-uv@v6
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
         with:
-          enable-cache: true
-          version: "0.7.x"
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --sync
+      - name: Run linters
+        run: |
+          poetry run ruff check .
+          poetry run black --check .
 
-      - name: Add or Update comment on PR that Test is running
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --sync
+      - name: Run tests
+        run: poetry run pytest --maxfail=1 --disable-warnings -q --cov=.
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+  benchmark:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --sync
+      - name: Run benchmarks
+        run: poetry run pytest --benchmark-only --benchmark-json=benchmark.json
+      - name: Convert benchmark results
+        run: |
+          python - <<'EOF'
+          import json
+          with open("benchmark.json") as f:
+              data = json.load(f)
+          with open("benchmark-results.txt", "w") as f:
+              for bench in data["benchmarks"]:
+                  f.write(f"{bench['fullname']}: {bench['stats']['mean']:.6f} sec\n")
+          EOF
+      - name: Benchmark Pull Request
         uses: marocchino/sticky-pull-request-comment@v2
         with:
-          recreate: true
+          header: benchmark
           GITHUB_TOKEN: ${{ secrets.FREELAWBOT_TOKEN }}
-          number: ${{ github.event.client_payload.pr_number }}
-          repo: reporters-db
-          message: |
-            Eyecite Benchmarking in progress ...
-            This message will be updated when the test is completed.
+          path: benchmark-results.txt
 
-      - name: Install Python dependencies
-        run: |
-          uv sync --frozen --no-group dev --group benchmark
-          source .venv/bin/activate
-          echo "$VIRTUAL_ENV/bin" >> $GITHUB_PATH
-          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
-
-      - name: Run Tests
-        run: |
-          uv pip install "git+https://github.com/freelawproject/reporters-db.git"
-          echo ${{ github.event.client_payload.pr_number }}
-          curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
-          python benchmark/benchmark.py --branches original
-          uv pip install "git+https://github.com/freelawproject/reporters-db.git@${{ github.event.client_payload.commit }}"
-          python benchmark/benchmark.py --branches original update --reporters --pr ${{ github.event.client_payload.pr_number }}
-          mkdir results
-          mv benchmark/output.csv benchmark/original.json benchmark/update.json benchmark/report.md benchmark/chart.png results/
-
-      - name: Pushes test file
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.FREELAWBOT_TOKEN }}
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          user_email: 'info@free.law'
-          user_name: 'freelawbot'
-          source_file: 'results/'
-          destination_repo: 'freelawproject/reporters-db'
-          destination_folder: '${{ github.event.client_payload.pr_number }}'
-          destination_branch: 'artifacts'
-          commit_message: 'feat(ci): Add artifacts for PR #${{ github.event.client_payload.pr_number }}'
-
-      - name: Add or Update PR Comment from Generated Report
-        uses: marocchino/sticky-pull-request-comment@v2
+          python-version: "3.11"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
         with:
-          recreate: true
-          GITHUB_TOKEN: ${{ secrets.FREELAWBOT_TOKEN }}
-          path: results/report.md
-          number: ${{ github.event.client_payload.pr_number }}
-          repo: reporters-db
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+      - name: Load cached venv
+        id: cached-poetry-dependencies
+        uses: actions/cache@v3
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('**/poetry.lock') }}
+      - name: Install dependencies
+        if: steps.cached-poetry-dependencies.outputs.cache-hit != 'true'
+        run: poetry install --sync
+      - name: Build docs
+        run: poetry run mkdocs build --strict
+      - name: Deploy docs
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.FREELAWBOT_TOKEN }}
+          publish_dir: ./site
+

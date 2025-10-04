@@ -1,0 +1,95 @@
+Kentucky Advisory Opinions
+August 16, 2018: AGO OAG 18-011 (August 16, 2018)
+
+Collection: Kentucky Attorney General Opinions
+Docket Number(s): AGO OAG 18-011
+Date: Aug. 16, 2018
+
+Advisory Opinion Text
+
+Hon. Alison Lundergan Grimes
+
+AGO OAG 18-011
+
+No. OAG 18-011
+
+Commonwealth of Kentucky Office of the Attorney General
+
+August 16, 2018
+Subject: Whether elections officers may provide to voters the list of certified write-in candidates.
+
+Requested by: Hon. Alison Lundergan Grimes Secretary of State and Chief Election Official
+
+Written by : Marc G. Farris, Assistant Attorney General
+
+Syllabus: The statutory prohibition on electioneering does not prohibit distributing the list of certified write-in candidates to voters. Election officers may provide the list of certified write-in candidates (or the information contained therein) to a voter if doing so is responsive to the voter's request for instruction as to how to cast a write-in vote.
+
+Statutes construed: KRS 117.235; KRS 117.265
+
+OAGs cited: OAG 92-73
+
+OPINION OF THE ATTORNEY GENERAL
+
+You have requested an opinion from this Office as to the application of KRS 117.265(5), requiring that clerks provide election officers with certified lists of write-in candidates, and KRS 117.265(6), requiring election officers to, "upon request," "instruct the voter on how to cast a write-in vote." Specifically, you have asked whether these statues require or permit election officers to provide the list of certified write-in candidates to voters, and whether distributing or posting the list of write-in candidates would violate the prohibition on electioneering, KRS 117.235(3)(c). As explained more fully below, we believe that distributing or posting the list of candidates does not constitute electioneering. We note that the General Assembly has empowered the Board of Elections to remove any doubt as to whether certain actions qualify as "electioneering/' and that the Board may wish to do so here. Finally, we believe election officers may provide the list of write-in candidates to a voter if doing so is responsive to the voter's request for instruction concerning how to cast a write-in vote, but because that statute requires instruction only "upon request/' it does not require the posting of the list.
+
+Write-In Voting
+
+We begin by noting that write-in voting is an important part of our democratic system. In 1939, our highest court indicated that the right to vote and be voted for by write-in is enshrined in the Kentucky Constitution. See Asher v. Arnett, 132 S.W.2d 772, 775 (Ky. 1939) ("[T]he voter has the unrestricted right to vote for any eligible person he may choose to vote for by writing that person's name upon the ballot in the blank space provided for that purpose. . . . The right to thus vote and be voted for is a constitutional right. . ..").
+
+Under current law, write-in candidates must file a declaration of intent with the Secretary of State or county clerk, depending on the office the candidate seeks, in order for write-in votes for that candidate to be counted. KRS 117.265(2), (3). Pursuant to KRS 117.265(5), lists of eligible write-in candidates are then provided to precinct election officers: "The county clerk shall provide to the precinct election officers certified lists of those persons who have filed declarations of intent as provided in subsections (2) and (3) of this section. Only write-in votes cast for qualified candidates shall be counted." The next statutory subsection, KRS 117.265(6), provides that "[t]wo (2) election officers of opposing parties shall upon the request of any voter instruct the voter on how to cast a write-in vote."
+
+We understand from your letters that your administration and county clerks have not given guidance on providing lists of certified write-in candidates to voters, but that some county boards of elections have informed precinct officers not to post the lists of certified write-in candidates because doing so may violate the statutory prohibition on electioneering. [1]
+
+Distributing or Displaying Write-In Lists Does Not Constitute Electioneering
+
+We do not believe that distributing or displaying the lists of certified write-in candidates violates the prohibition on electioneering. Under that statute, the Board of Elections is empowered to eliminate any doubt on this question. Specifically, KRS 117.235(3)(c) provides:
+
+Electioneering shall include the displaying of signs, the distribution of campaign literature, cards, or handbills, the soliciting of signatures to any petition, or the solicitation of votes for or against any bona fide candidate or ballot question in a manner which expressly advocates the election or defeat of the candidate or expressly advocates the passage or defeat of the ballot question, but shall not include exit polling, bumper stickers affixed to a person's vehicle while parked within or passing through a distance of one hundred (100) feet of any entrance to a building in which a voting machine is located, private property as provided in subsection (7) of this section, or other exceptions established by the State Board of Elections through the promulgation of administrative regulations.
+
+(emphasis added). Electioneering is prohibited at polling places, KRS 117.235(3)(a), and KRS 117.235(2) provides that "[n]o officer of election shall do any electioneering on election day."
+
+We do not believe that displaying the list of certified write-in candidates, or providing that list to voters who ask for it, constitutes "electioneering" under the statute. It is plain from the definition of electioneering, and relevant case law, that for an activity to qualify as electioneering it must reasonably appear to solicit or persuade an individual to vote for or against a candidate or issue. For instance, in Ellis v. Meeks, the Supreme Court held that shaking hands and distributing food constituted "non-verbal conduct [that] solicited votes and amounted to electioneering ...." 957 S.W.2d 213, 216 (Ky. 1997).
+
+Our opinion is reinforced by an earlier opinion from this Office. We have twice interpreted the application of the prohibition on electioneering to buttons worn in polling places. In 1984, we held that voters wearing political buttons were not electioneering because the buttons were not "signs" for purposes of KRS 117.235. OAG 84-94. In 1992, we reversed that decision and opined that the wearing of campaign buttons did constitute electioneering under the statute. OAG 92-73. In doing so, we focused on the "broad" sweep of the last phrase — the "general prohibition against 'the solicitation of votes ... in any manner.'" Id. We concluded that "[i]f the display of a campaign sign constitutes a prohibited solicitation of votes, then the wearing of a button must perform the same prohibited purpose." Id. In other words, our 1992 Opinion clarified that, when determining whether material qualifies as "electioneering," the focus is on what a reasonable person would perceive as the purpose of the material, and not its physical characteristics. Id.
+
+The 1992 Opinion thus provides useful guidance in determining whether displaying or providing the certified list of write-in candidates would violate the prohibition on electioneering. In light of the reasoning in that Opinion, we believe it would not violate the statute because providing the list could not reasonably be interpreted as intending to persuade voters or solicit votes for or against a candidate or issue. A list of candidates for whom voters may have their write-in votes count is no more persuasive than a sample ballot, which similarly informs voters for whom they may vote. The sample ballot is made publicly available on the Board of Elections website, and "a copy of the ballot cards or supplementary material on which appear the names of candidates or issues to be voted upon" is required to be published in the local newspaper prior to the election. KRS 424.290(1). Neither of these actions could reasonably be interpreted as favoring or disfavoring a particular candidate such that they would meet the definition of electioneering.
+
+Moreover, the list of certified write-in candidates could not be confused with a document advocating for a specific candidate because, like a sample ballot, it will often list multiple candidates running for the same seat. For instance, the example provided by your office lists twenty-three candidates for President in the 2016 election. It lists all of the candidates only by name and the office they seek—it does not provide party affiliation, or any other information that could be considered "persuasive." No observer could reasonably interpret such a list as encouraging (or discouraging) a vote for any of those candidates.
+
+For these reasons, we believe that neither distributing nor displaying the list of certified write-in candidates would violate the prohibition on electioneering.
+
+We note, however, that any doubt about this question could be resolved by the Board of Elections. The General Assembly has specifically delegated to the Board of Elections the power to except conduct from the definition of electioneering "through the promulgation of administrative regulations." KRS 117.235(3)(c). The Board may therefore clarify that posting or distributing the list of certified write-in candidates does not violate the prohibition on electioneering by promulgating a regulation to that effect.
+
+Election Officers May Instruct Voters on Write-In Votes Upon Request
+
+Turning to the question of whether the precinct officials are required to post or distribute the list, the text of the relevant statute provides that "[t]wo (2) election officers of opposing parties shall upon the request of any voter instruct the voter on how to cast a write-in vote." KRS 117.265(6).
+
+"The cardinal rule of statutory construction is that the intention of the legislature should be ascertained and given effect." Jefferson Cnty. Bd. of Educ. v. Fell, 391 S.W.3d 713, 718 (Ky. 2012) (citations omitted). To accomplish this, a court will first look at the "language employed by the legislature itself, relying generally on the common meaning of the particular words chosen, which meaning is often determined by reference to dictionary definitions." Id. at 719 (citations omitted). "Instruct" means "to give special knowledge or information to," or "to furnish with directions based on informed or technical awareness of a problem." Webster's Third New Int'l Dictionary, 1172 (1963).
+
+Under the plain terms of the statute, instruction—that is, special knowledge or information—as to how to cast the write-in vote is to be given to voters upon request. The statute therefore contemplates that the instructions will be given not proactively, but when the voter asks for them. It logically follows that the instructions must be tailored to the request. Accordingly, if a voter's request for instruction is properly answered by providing the list of write-in candidates, it is appropriate for the election officer to do so. This interpretation of the statute vindicates the voter's right to write in candidates by facilitating the voter's exercise of that right.
+
+While we are not aware of any Kentucky case law or prior opinions of this Office that provide guidance, our conclusion is reinforced by the one case we found that is directly on point. In State of Alaska, Division of Elections v. Alaska Democratic Party, the Alaska Supreme Court construed a similar statute in deciding whether the Division of Elections properly posted and distributed a list of certified write-in candidates to voters. State of Alaska, Div. of Elections v. Alaska Democratic Party, No. S-14054, slip op. (Alaska Oct. 29, 2010). Specifically, the statute at issue required the Division of Elections to "assist the voter" if the voter . requested assistance. Id., at 2 (quoting AS 15.15.240). The court held that, notwithstanding a regulation that expressly prohibited providing "information regarding a write-in candidate" in the polling place, the statute required the Department to provide a list of write-in candidates to voters who asked for such assistance. Id., at 3-4. The court cautioned that "the assistance provided to the voter must be related to and commensurate with the voter's request." Id., at 5-6. Accordingly, the Division's employees properly provided the list to voters "when its use is tailored to address a voter's request for specific assistance." Id., at 6.
+
+We think the Alaska Court's reasoning is sound and applies here, despite the slightly different statutory language. It is proper for two election officials of opposing parties to provide the list of certified write-in candidates to a voter if doing so is in response to a voter's request for instruction as to how to cast a write-in vote. See KRS 117.265(6). We do not believe that the statute requires posting the list of candidates, because doing so would not be providing instruction "upon request," as contemplated by the statute. Id. [2] On the other hand, posting the list is not prohibited by the electioneering statute, for the reasons given above, and our research has not revealed any other statutory provision prohibiting precinct officers from posting the list. Accordingly, we recommend that the Board of Elections promulgate a regulation concerning the posting of the lists of certified write-in candidates for purposes of uniformity.
+
+In sum, we do not believe that either posting or distributing the list of certified write-in candidates violates the statutory prohibition on electioneering, KRS 117.235(3)(c). Under KRS 117.265(6), election officers should provide the list to a voter if doing so is responsive to a request for instruction from the voter, but they are not required to post the list in polling places.
+
+ANDY BESHEAR, ATTORNEY GENERAL.
+
+Marc G. Farris, Assistant Attorney General.
+
+---------
+
+Notes:
+
+[1] Similarly, in the October 2007 Board of Elections Training Session under then-Secretary of State Trey Grayson, the guidance provided to participants included the following questions and answers concerning write-in candidates:
+
+Q. Should I instruct the precinct officers to post the list of write-in candidates at the precinct?
+
+A. No. The county clerk shall provide to the precinct election officers certified lists of those persons who have filed declarations of intent to be write-in candidates. KRS 117.265(5). However, you need to train your precinct officers that they must not post this list at the precinct because they could be violating the electioneering prohibition. KRS 117.235(3). This list should only be provided to the public upon request and should not be volunteered.
+
+Q. Should I include the list of write-in candidates when sending absentee ballots?
+
+A. No. The list of write-in candidates mentioned in KRS 117.265(5) should only be provided to the public upon request and should not be volunteered. Otherwise, you could be violating the electioneering prohibition. KRS 117.235(3).
+
+[2] Other state legislatures have passed statutes required the posting of lists of certified write-in candidates. See Ariz. Rev. Stat. § 16-312; Tex. Elec. Code § 146.031. We presume that if our General Assembly intended to enact a similar requirement, it would have said so plainly.
