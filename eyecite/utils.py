@@ -317,7 +317,7 @@ def maybe_balance_style_tags(
     return start, end, plain_text[start:end]
 
 
-def placeholder_markup(html: str) -> str:
+def create_placeholder_markup(html: str) -> str:
     """Create placeholder HTML to identify annotation locations.
 
     This allows diffing or annotation algorithms to maintain correct

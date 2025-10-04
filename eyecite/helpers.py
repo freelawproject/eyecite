@@ -495,11 +495,14 @@ def find_html_tags_at_position(
         List of tuples containing (tag_name, start_pos, end_pos)
         Empty list if no matching tags found
     """
-    markup_loc = document.plain_to_markup.update(  # type: ignore
+    if not document.has_markup:
+        return []
+
+    markup_loc = document.cleaned_to_source.update(  # type: ignore
         position,
         bisect_right,
     )
-    tags = [r for r in document.emphasis_tags if r[1] <= markup_loc < r[2]]
+    tags = [r for r in document.emphasis_tags if r[1] <= markup_loc < r[2]]  # type: ignore
     if len(tags) != 1:
         return []
     return tags
@@ -838,15 +841,15 @@ def convert_html_to_plain_text_and_loc(
     """
     markup_location = results[0]
 
-    start = document.markup_to_plain.update(  # type: ignore
+    start = document.source_to_cleaned.update(  # type: ignore
         markup_location[1],
         bisect_right,
     )
-    end = document.markup_to_plain.update(  # type: ignore
+    end = document.source_to_cleaned.update(  # type: ignore
         markup_location[2],
         bisect_right,
     )
-    case_name = document.plain_text[start:end]
+    case_name = document.cleaned_text[start:end]
     return (case_name, start, end)
 
 
