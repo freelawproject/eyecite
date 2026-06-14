@@ -377,7 +377,7 @@ class FullLawCitation(FullCitation):
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_law_metadata
+        from eyecite.citation_metadata import add_law_metadata
 
         add_law_metadata(self, document.words)
         super().add_metadata(document)
@@ -406,7 +406,7 @@ class FullJournalCitation(FullCitation):
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import add_journal_metadata
+        from eyecite.citation_metadata import add_journal_metadata
 
         add_journal_metadata(self, document.words)
         super().add_metadata(document)
@@ -523,9 +523,11 @@ class FullCaseCitation(CaseCitation, FullCitation):
     def add_metadata(self, document: "Document"):
         """Extract metadata from text before and after citation."""
         # pylint: disable=import-outside-toplevel
-        from eyecite.helpers import (
+        from eyecite.citation_metadata import (
             add_post_citation,
             add_pre_citation,
+        )
+        from eyecite.case_name import (
             find_case_name,
             find_case_name_in_html,
         )
