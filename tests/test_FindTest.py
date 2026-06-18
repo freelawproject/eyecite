@@ -841,6 +841,47 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
 
+    def test_relaxed_reporter_whitespace(self):
+        """Do we match reporters printed with extra inter-token whitespace?
+
+        Reporter abbreviations are stored compactly in reporters-db (e.g.
+        "N.Y.S.2d"), but the older/official print style spaces the tokens out
+        ("N. Y. S. 2d"). Whitespace between tokens is relaxed at match time
+        while periods stay mandatory. See #305.
+        """
+        # fmt: off
+        test_pairs = (
+            # Spaced single-letter reporters
+            ('123 N. Y. S. 2d 456',
+             [case_citation(volume='123', page='456',
+                            reporter='N.Y.S.2d',
+                            reporter_found='N. Y. S. 2d')]),
+            ('260 F. R. D. 38',
+             [case_citation(volume='260', page='38',
+                            reporter='F.R.D.',
+                            reporter_found='F. R. D.')]),
+            ('8 N. Y. 3d 204',
+             [case_citation(volume='8', page='204',
+                            reporter='N.Y.3d',
+                            reporter_found='N. Y. 3d')]),
+            # Partially spaced (space only after the final period)
+            ('799 N.Y.S. 2d 795',
+             [case_citation(volume='799', page='795',
+                            reporter='N.Y.S.2d',
+                            reporter_found='N.Y.S. 2d')]),
+            # Multi-word reporter with spaced tokens
+            ('31 Ohio C. C. 270',
+             [case_citation(volume='31', page='270',
+                            reporter='Ohio C.C.',
+                            reporter_found='Ohio C. C.')]),
+            # Compact forms still match unchanged
+            ('799 N.Y.S.2d 795',
+             [case_citation(volume='799', page='795',
+                            reporter='N.Y.S.2d')]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
+
     def test_find_law_citations(self):
         """Can we find citations from laws.json?"""
         # fmt: off
