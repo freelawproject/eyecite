@@ -209,10 +209,11 @@ PIN_CITE_TOKEN_REGEX = r"""
         )\ ?  # optional space after label
     )?
     (?:
-        # page:paragraph cite, like 123:24-25 or 123:24-124:25:
-        \d+:\d+(?:-\d+(?::\d+)?)?|
-        # page range, like 12 or 12-13:
-        [*]?\d+(?:-\d+)?
+        # page:paragraph cite, like 123:24-25 or 123:24-124:25
+        # (the range separator may also be an en- or em-dash):
+        \d+:\d+(?:[-–—]\d+(?::\d+)?)?|
+        # page range, like 12 or 12-13 (or 12–13 / 12—13):
+        [*]?\d+(?:[-–—]\d+)?
     )
 """
 

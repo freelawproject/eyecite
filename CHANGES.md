@@ -13,6 +13,7 @@ Changes:
 Fixes:
 - Modifies rendering of AhocorasickTokenizer parameter in API docs II
 - Removed star-pagination markers from extracted text #293
+- Recognize Unicode en-dash (U+2013) and em-dash (U+2014) as pin-cite page-range separators, so ranges like `241–242` are no longer dropped
 
 ## Current
 
