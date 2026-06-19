@@ -1,5 +1,7 @@
 from unittest import TestCase
 
+from reporters_db import REPORTERS
+
 from eyecite.models import CitationToken, IdToken, StopWordToken
 from eyecite.regexes import STOP_WORDS
 from eyecite.tokenizers import (
@@ -19,6 +21,11 @@ class TokenizerTest(TestCase):
             17,
             30,
             groups={"volume": "410", "reporter": "U. S.", "page": "113"},
+            # The spaced form "U. S." is both a registered variation and,
+            # since reporter whitespace is now relaxed (#305), an exact match
+            # for the canonical "U.S." edition. The two overlapping matches
+            # are merged into a single token.
+            exact_editions=(us_reporter,),
             variation_editions=(us_reporter,),
         )
         see_token = StopWordToken("See", 0, 3, "see")
@@ -90,14 +97,27 @@ class TokenizerTest(TestCase):
     def test_extractor_filter(self):
         """Does AhocorasickTokenizer only run the needed extractors?"""
         text = "See foo, 123 U.S. 456. Id."
-        # text should only require four extractors --
-        # stop token, US long cite, US short cite, id.
+        # text should only require the stop-word, id., and U.S. extractors:
+        # the canonical "U.S." edition (long + short cite) and its variations.
+        # The variations extractor is now selected too because reporter
+        # prefilter strings are matched whitespace-insensitively (#305), so
+        # variations like "U. S." also match the compact "U.S." in the text.
+        # `strings` is built from a set, so compare order-independently.
+        us_variations = frozenset(
+            variation
+            for variation, edition in REPORTERS["U.S."][0][
+                "variations"
+            ].items()
+            if edition == "U.S."
+        )
         expected_strings = {
-            STOP_WORDS,
-            ("U.S.",),
-            ("U.S.",),
-            ("id.", "ibid."),
+            frozenset(STOP_WORDS),
+            frozenset(["U.S."]),
+            us_variations,
+            frozenset(["id.", "ibid."]),
         }
         extractors = AhocorasickTokenizer().get_extractors(text)
-        extractor_strings = {tuple(e.strings) for e in extractors if e.strings}
+        extractor_strings = {
+            frozenset(e.strings) for e in extractors if e.strings
+        }
         self.assertEqual(expected_strings, extractor_strings)
