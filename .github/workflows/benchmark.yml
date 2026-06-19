@@ -87,6 +87,12 @@ jobs:
       - name: Run first benchmark
         run: |
           python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }}
+          # Preserve the PR's benchmark.py outside the working tree: the next
+          # step checks out main (clean: true), which would otherwise replace
+          # this script with main's version. The second run needs main's
+          # eyecite *library* for the baseline, but the PR's *script* so its
+          # report/CLI changes (e.g. --base) actually run.
+          cp benchmark/benchmark.py "$RUNNER_TEMP/benchmark.py"
           git stash --include-untracked
 
       - uses: actions/checkout@v4
@@ -109,6 +115,9 @@ jobs:
       - name: Run second benchmark
         run: |
           git stash pop
+          # Restore the PR's benchmark.py over main's checkout so the report
+          # generation and the --base flag come from the PR, not from main.
+          cp "$RUNNER_TEMP/benchmark.py" benchmark/benchmark.py
           python benchmark/benchmark.py --branches ${{ steps.branch1.outputs.hash }} ${{ steps.branch2.outputs.hash }} --base ${{ steps.branch2.outputs.hash }} --pr ${{ github.event.number }}
           mkdir results
           mv benchmark/output.csv benchmark/${{ steps.branch1.outputs.hash }}.json benchmark/${{ steps.branch2.outputs.hash }}.json benchmark/report.md benchmark/chart.png results/
