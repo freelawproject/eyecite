@@ -878,6 +878,18 @@ class FindTest(TestCase):
             ('799 N.Y.S.2d 795',
              [case_citation(volume='799', page='795',
                             reporter='N.Y.S.2d')]),
+            # Short cite with a spaced reporter, which goes through the
+            # separate short_cite_re path. "N. Y. S. 2d" is not a registered
+            # variation, so it matches only via the whitespace relaxation --
+            # unlike the "U. S." short cites elsewhere in this file, which
+            # still pass through their reporters-db variation. Once those
+            # whitespace-only variations are removed (reporters-db #261),
+            # this relaxation becomes the only path for spaced short cites,
+            # so guard that short_cite_re composes with it.
+            ('See Adarand, 799 N. Y. S. 2d, at 797',
+             [case_citation(volume='799', page='797', reporter='N.Y.S.2d',
+                            reporter_found='N. Y. S. 2d', short=True,
+                            metadata={'antecedent_guess': 'Adarand'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
