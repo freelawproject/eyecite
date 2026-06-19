@@ -841,6 +841,70 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Citation extraction")
 
+    def test_relaxed_reporter_whitespace(self):
+        """Do we match reporters printed with extra inter-token whitespace?
+
+        Reporter abbreviations are stored compactly in reporters-db (e.g.
+        "N.Y.S.2d"), but the older/official print style spaces the tokens out
+        ("N. Y. S. 2d"). Whitespace between tokens is relaxed at match time
+        while periods stay mandatory. See #305.
+        """
+        # fmt: off
+        test_pairs = (
+            # Spaced single-letter reporters
+            ('123 N. Y. S. 2d 456',
+             [case_citation(volume='123', page='456',
+                            reporter='N.Y.S.2d',
+                            reporter_found='N. Y. S. 2d')]),
+            ('260 F. R. D. 38',
+             [case_citation(volume='260', page='38',
+                            reporter='F.R.D.',
+                            reporter_found='F. R. D.')]),
+            ('8 N. Y. 3d 204',
+             [case_citation(volume='8', page='204',
+                            reporter='N.Y.3d',
+                            reporter_found='N. Y. 3d')]),
+            # Partially spaced (space only after the final period)
+            ('799 N.Y.S. 2d 795',
+             [case_citation(volume='799', page='795',
+                            reporter='N.Y.S.2d',
+                            reporter_found='N.Y.S. 2d')]),
+            # Multi-word reporter with spaced tokens
+            ('31 Ohio C. C. 270',
+             [case_citation(volume='31', page='270',
+                            reporter='Ohio C.C.',
+                            reporter_found='Ohio C. C.')]),
+            # Compact forms still match unchanged
+            ('799 N.Y.S.2d 795',
+             [case_citation(volume='799', page='795',
+                            reporter='N.Y.S.2d')]),
+            # Short cite with a spaced reporter, which goes through the
+            # separate short_cite_re path. "N. Y. S. 2d" is not a registered
+            # variation, so it matches only via the whitespace relaxation --
+            # unlike the "U. S." short cites elsewhere in this file, which
+            # still pass through their reporters-db variation. Once those
+            # whitespace-only variations are removed (reporters-db #261),
+            # this relaxation becomes the only path for spaced short cites,
+            # so guard that short_cite_re composes with it.
+            ('See Adarand, 799 N. Y. S. 2d, at 797',
+             [case_citation(volume='799', page='797', reporter='N.Y.S.2d',
+                            reporter_found='N. Y. S. 2d', short=True,
+                            metadata={'antecedent_guess': 'Adarand'})]),
+            # Law citations (laws.json) and journal citations (journals.json)
+            # build their regexes through the same chokepoint, so the
+            # relaxation applies to them too. Spaced "U. S. C." / "F. B. I. S."
+            # are not registered variations, so these only match via it.
+            ('18 U. S. C. § 4241',
+             [law_citation('18 U. S. C. § 4241', reporter='U.S.C.',
+                           reporter_found='U. S. C.',
+                           groups={'title': '18', 'section': '4241'})]),
+            ('1 F. B. I. S. 1',
+             [journal_citation('1 F. B. I. S. 1', reporter='F.B.I.S.',
+                               reporter_found='F. B. I. S.')]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
+
     def test_find_law_citations(self):
         """Can we find citations from laws.json?"""
         # fmt: off

@@ -5,7 +5,7 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Relax inter-token whitespace when matching reporter abbreviations, so spaced-out print forms like `123 N. Y. S. 2d 456` match the compact `N.Y.S.2d` in reporters-db. Periods stay mandatory. #305
 
 Changes:
 -
