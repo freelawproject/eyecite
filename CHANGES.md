@@ -13,6 +13,9 @@ Changes:
 Fixes:
 - Modifies rendering of AhocorasickTokenizer parameter in API docs II
 - Removed star-pagination markers from extracted text #293
+- Benchmark: fix inverted gains/losses, broken Markdown tables (citation
+  tokens with embedded newlines), and compare documents by id. Adds a net
+  citation-count summary. #212
 
 ## Current
 
