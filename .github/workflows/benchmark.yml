@@ -14,22 +14,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           version: "0.7.x"
 
       - name: Add or Update comment on PR that Test is running
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           recreate: true
           message: |
@@ -95,7 +95,7 @@ jobs:
           cp benchmark/benchmark.py "$RUNNER_TEMP/benchmark.py"
           git stash --include-untracked
 
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           repository: freelawproject/eyecite
           ref: main
@@ -139,7 +139,7 @@ jobs:
           commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
 
       - name: Add or Update PR Comment from Generated Report
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           recreate: true
           path: results/report.md
@@ -150,22 +150,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           enable-cache: true
           version: "0.7.x"
 
       - name: Add or Update comment on PR that Test is running
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           recreate: true
           GITHUB_TOKEN: ${{ secrets.FREELAWBOT_TOKEN }}
@@ -208,7 +208,7 @@ jobs:
           commit_message: 'feat(ci): Add artifacts for PR #${{ github.event.client_payload.pr_number }}'
 
       - name: Add or Update PR Comment from Generated Report
-        uses: marocchino/sticky-pull-request-comment@v2
+        uses: marocchino/sticky-pull-request-comment@v3
         with:
           recreate: true
           GITHUB_TOKEN: ${{ secrets.FREELAWBOT_TOKEN }}
