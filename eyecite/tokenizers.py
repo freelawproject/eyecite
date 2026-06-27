@@ -92,6 +92,44 @@ def token_is_from_nominative_reporter(token: Token) -> bool:
     return name in NOMINATIVE_REPORTER_NAMES
 
 
+_WHITESPACE_RE = re.compile(r"\s+")
+
+
+def _relax_ws(escaped: str) -> str:
+    """Relax inter-token whitespace in an escaped reporter abbreviation.
+
+    ``re.escape`` turns a reporter string into an exact-match pattern in which
+    each period matches a literal period and each space matches exactly one
+    space. That makes the spaced-out print style common in older/official
+    reporters fail to match: ``N.Y.S.2d`` is in reporters-db, but the same
+    citation as printed -- ``N. Y. S. 2d`` -- is not recognized.
+
+    This makes the whitespace *between* abbreviation tokens flexible while
+    keeping periods mandatory, so a single canonical reporter string matches
+    all of its respaced forms (e.g. ``N.Y.S.2d`` also matches ``N. Y. S. 2d``
+    and ``N.Y.S. 2d``; ``Ohio C.C.`` also matches ``Ohio  C. C.``).
+
+    See https://github.com/freelawproject/eyecite/issues/305.
+    """
+    # period -> period followed by optional whitespace
+    escaped = escaped.replace(r"\.", r"\.\s*")
+    # one or more literal spaces -> optional whitespace.
+    # (`re.escape` escapes a space as "\ "; match it with or without the
+    # backslash so this is robust across Python versions.)
+    escaped = re.sub(r"(?:\\?\ )+", r"\\s*", escaped)
+    return escaped
+
+
+def _strip_ws(text: str) -> str:
+    """Remove all whitespace from ``text``.
+
+    Used by :class:`AhocorasickTokenizer` to match its whitespace-insensitive
+    reporter prefilter strings against text that may use a spaced-out print
+    style. See :func:`_relax_ws`.
+    """
+    return _WHITESPACE_RE.sub("", text)
+
+
 def _populate_reporter_extractors():
     """Populate EXTRACTORS and EDITIONS_LOOKUP."""
 
@@ -103,7 +141,7 @@ def _populate_reporter_extractors():
 
     def _substitute_edition(template, *edition_names):
         """Helper to replace $edition in template with edition_names."""
-        edition = "|".join(re.escape(e) for e in edition_names)
+        edition = "|".join(_relax_ws(re.escape(e)) for e in edition_names)
         return Template(template).safe_substitute(edition=edition)
 
     # Extractors step one: add an extractor for each reporter string
@@ -143,7 +181,9 @@ def _populate_reporter_extractors():
         editions_by_regex[regex][kind].append(edition)
 
         # add strings
-        have_strings = re.escape(reporters[0]) in regex
+        # The reporter is embedded in `regex` with relaxed inter-token
+        # whitespace (see _relax_ws), so check for the relaxed form.
+        have_strings = _relax_ws(re.escape(reporters[0])) in regex
         if have_strings:
             editions_by_regex[regex]["strings"].update(reporters)
 
@@ -419,16 +459,22 @@ class AhocorasickTokenizer(Tokenizer):
         """Set up helpers to narrow down possible extractors."""
         # Build a set of all extractors that don't list required strings
         self.unfiltered_extractors = {e for e in EXTRACTORS if not e.strings}
+        # Build the filters from whitespace-stripped prefilter strings, and
+        # match them against a whitespace-stripped copy of the text (see
+        # get_extractors). Reporter regexes allow flexible inter-token
+        # whitespace (see _relax_ws), so e.g. "N. Y. S. 2d" must still select
+        # the "N.Y.S.2d" extractor. Stripping whitespace from both sides keeps
+        # the prefilter a sound superset of the relaxed regexes' matches.
         # Build a pyahocorasick filter for all case-sensitive extractors
         self.case_sensitive_filter = self.make_ahocorasick_filter(
-            (s, e)
+            (_strip_ws(s), e)
             for e in EXTRACTORS
             if e.strings and not e.flags & re.I
             for s in e.strings
         )
         # Build a pyahocorasick filter for all case-insensitive extractors
         self.case_insensitive_filter = self.make_ahocorasick_filter(
-            (s.lower(), e)
+            (_strip_ws(s).lower(), e)
             for e in EXTRACTORS
             if e.strings and e.flags & re.I
             for s in e.strings
@@ -437,10 +483,17 @@ class AhocorasickTokenizer(Tokenizer):
     def get_extractors(self, text: str) -> set[TokenExtractor]:
         """Override get_extractors() to filter out extractors
         that can't possibly match."""
+        # Strip whitespace so spaced-out reporter forms (e.g. "N. Y. S. 2d")
+        # still match their compact prefilter strings ("N.Y.S.2d"). This is
+        # only used to select candidate extractors; the actual match spans
+        # come from running the extractors against the original text.
+        stripped = _strip_ws(text)
         unique_extractors = set(self.unfiltered_extractors)
-        for _, extractors in self.case_sensitive_filter.iter(text):
+        for _, extractors in self.case_sensitive_filter.iter(stripped):
             unique_extractors.update(extractors)
-        for _, extractors in self.case_insensitive_filter.iter(text.lower()):
+        for _, extractors in self.case_insensitive_filter.iter(
+            stripped.lower()
+        ):
             unique_extractors.update(extractors)
         return unique_extractors
 

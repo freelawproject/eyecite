@@ -11,11 +11,24 @@ Changes:
 -
 
 Fixes:
-- Modifies rendering of AhocorasickTokenizer parameter in API docs II
-- Removed star-pagination markers from extracted text #293
 - Recognize Unicode en-dash (U+2013) and em-dash (U+2014) as pin-cite page-range separators, so ranges like `241–242` are no longer dropped
 
 ## Current
+
+**2.7.7 - 2026-06-25**
+
+Features:
+- Relax inter-token whitespace when matching reporter abbreviations, so spaced-out print forms like `123 N. Y. S. 2d 456` match the compact `N.Y.S.2d` in reporters-db. Periods stay mandatory. #305
+
+Changes:
+-
+
+Fixes:
+- Modifies rendering of AhocorasickTokenizer parameter in API docs II
+- Removed star-pagination markers from extracted text #293
+- Benchmark: fix inverted gains/losses, broken Markdown tables (citation
+  tokens with embedded newlines), and compare documents by id. Adds a net
+  citation-count summary. #212
 
 **2.7.6 - 2025-06-25**
 
