@@ -8,7 +8,7 @@ Features:
 -
 
 Changes:
--
+- CI: bump GitHub Actions to Node 24 runtimes, clearing the directly-fixable Node 20 deprecation warnings
 
 Fixes:
 -
