@@ -75,9 +75,7 @@ def _dedupe_editions(
     """
     exact = tuple(dict.fromkeys(exact))
     seen = set(exact)
-    variation = tuple(
-        e for e in dict.fromkeys(variation) if e not in seen
-    )
+    variation = tuple(e for e in dict.fromkeys(variation) if e not in seen)
     return exact, variation
 
 
