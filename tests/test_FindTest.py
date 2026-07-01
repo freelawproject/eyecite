@@ -905,6 +905,48 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
 
+    def test_no_duplicate_editions(self):
+        """Is the same Edition never listed twice in all_editions? (#317)
+
+        A single edition can be reached both as an exact match and as a
+        variation, surfacing the identical Edition object twice. This happens
+        via two independent mechanisms:
+
+        * the whitespace relaxation (#305) makes a reporter's canonical regex
+          and its whitespace-only variation regex both match the plain text
+          (e.g. ``F.3d`` / ``F. 3d``); and
+        * the ``S.W.2d`` custom regex omits ``$edition``, so its canonical and
+          variation substitutions are byte-identical and collapse into one
+          extractor carrying the edition as both an exact match and a variation
+          (this one predates #305).
+
+        Either way the duplicate is a spurious copy of the same edition, not
+        genuine ambiguity, so it must not inflate ``all_editions``.
+        """
+        # Each of these should resolve to exactly one edition, listed once.
+        for cite_string in (
+            "238 F.3d 273",  # whitespace-only variation (#305)
+            "410 U.S. 113",
+            "123 F.2d 456",
+            "5 Cal. 4th 1",
+            "410 S.W.2d 1",  # custom-regex collapse, predates #305
+        ):
+            cite = get_citations(cite_string)[0]
+            self.assertEqual(
+                len(cite.all_editions),
+                1,
+                msg=f"{cite_string!r} has duplicate editions: "
+                f"{[e.short_name for e in cite.all_editions]}",
+            )
+            self.assertEqual(len(set(cite.all_editions)), 1)
+
+        # Genuine ambiguity must be preserved: "B.R." maps to two distinct
+        # editions (Bankruptcy Reporter and Baltimore City Reports), so
+        # de-duplication must not collapse it to one.
+        ambiguous = get_citations("1 B.R. 1")[0]
+        self.assertEqual(len(ambiguous.all_editions), 2)
+        self.assertEqual(len(set(ambiguous.all_editions)), 2)
+
     def test_find_law_citations(self):
         """Can we find citations from laws.json?"""
         # fmt: off

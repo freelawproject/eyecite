@@ -59,6 +59,28 @@ class Edition:
         )
 
 
+def _dedupe_editions(
+    exact: Sequence["Edition"], variation: Sequence["Edition"]
+) -> tuple[tuple["Edition", ...], tuple["Edition", ...]]:
+    """De-duplicate editions while preserving order and genuine ambiguity.
+
+    A single ``Edition`` can be reached both as an exact match and as a
+    variation -- e.g. for reporters with whitespace-only variations that the
+    relaxation in #305 makes redundant, or for the ``S.W.2d`` custom regex that
+    omits ``$edition`` so its canonical and variation forms are identical. That
+    surfaces the same object twice in ``all_editions`` (a spurious duplicate,
+    not genuine ambiguity). Dedupe each list, and drop variation editions that
+    are already exact matches, so distinct editions are preserved but a single
+    edition is never listed more than once.
+    """
+    exact = tuple(dict.fromkeys(exact))
+    seen = set(exact)
+    variation = tuple(
+        e for e in dict.fromkeys(variation) if e not in seen
+    )
+    return exact, variation
+
+
 @dataclass(eq=False, unsafe_hash=False)
 class CitationBase:
     """Base class for objects returned by `eyecite.find.get_citations`. We
@@ -255,11 +277,10 @@ class ResourceCitation(CitationBase):
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
-        self.exact_editions = tuple(self.exact_editions)
-        self.variation_editions = tuple(self.variation_editions)
-        self.all_editions = tuple(self.exact_editions) + tuple(
-            self.variation_editions
+        self.exact_editions, self.variation_editions = _dedupe_editions(
+            self.exact_editions, self.variation_editions
         )
+        self.all_editions = self.exact_editions + self.variation_editions
         super().__post_init__()
 
     def __hash__(self) -> int:
@@ -755,8 +776,9 @@ class CitationToken(Token):
 
     def __post_init__(self):
         """Make iterables into tuples to make sure we're hashable."""
-        self.exact_editions = tuple(self.exact_editions)
-        self.variation_editions = tuple(self.variation_editions)
+        self.exact_editions, self.variation_editions = _dedupe_editions(
+            self.exact_editions, self.variation_editions
+        )
 
     def merge(self, other: "Token") -> Optional["Token"]:
         """To merge citation tokens, also make sure `short` matches,
@@ -765,15 +787,17 @@ class CitationToken(Token):
         if merged:
             other = cast(CitationToken, other)
             if self.short == other.short:
-                self.exact_editions = cast(tuple, self.exact_editions) + cast(
-                    tuple, other.exact_editions
+                # Combine and de-duplicate editions after merge, dropping
+                # variation editions that are also exact matches (see
+                # _dedupe_editions).
+                self.exact_editions, self.variation_editions = (
+                    _dedupe_editions(
+                        cast(tuple, self.exact_editions)
+                        + cast(tuple, other.exact_editions),
+                        cast(tuple, self.variation_editions)
+                        + cast(tuple, other.variation_editions),
+                    )
                 )
-                self.variation_editions = cast(
-                    tuple, self.variation_editions
-                ) + cast(tuple, other.variation_editions)
-                # Remove duplicate editions after merge
-                self.exact_editions = tuple(set(self.exact_editions))
-                self.variation_editions = tuple(set(self.variation_editions))
                 return self
         return None
 

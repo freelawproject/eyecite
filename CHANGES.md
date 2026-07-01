@@ -11,7 +11,12 @@ Changes:
 - CI: bump GitHub Actions to Node 24 runtimes, clearing the directly-fixable Node 20 deprecation warnings
 
 Fixes:
--
+- De-duplicate identical editions in `all_editions` (and across
+  `exact_editions`/`variation_editions`) so a single canonical citation never
+  lists the same `Edition` twice. The whitespace relaxation in #305 made every
+  reporter with a whitespace-only variation surface a spurious duplicate, and
+  the `S.W.2d` custom regex did so even before #305; distinct editions
+  (genuine ambiguity) are preserved. #317
 
 ## Current
 
