@@ -24,9 +24,11 @@ class TokenizerTest(TestCase):
             # The spaced form "U. S." is both a registered variation and,
             # since reporter whitespace is now relaxed (#305), an exact match
             # for the canonical "U.S." edition. The two overlapping matches
-            # are merged into a single token.
+            # are merged into a single token; the edition is kept as an exact
+            # match and dropped from the variations to avoid a spurious
+            # duplicate in all_editions (#317).
             exact_editions=(us_reporter,),
-            variation_editions=(us_reporter,),
+            variation_editions=(),
         )
         see_token = StopWordToken("See", 0, 3, "see")
         v_token = StopWordToken("v.", 8, 10, "v")
