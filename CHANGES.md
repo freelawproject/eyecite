@@ -8,6 +8,19 @@ Features:
 -
 
 Changes:
+-
+
+Fixes:
+-
+
+## Current
+
+**2.7.8 - 2026-07-01**
+
+Features:
+-
+
+Changes:
 - CI: bump GitHub Actions to Node 24 runtimes, clearing the directly-fixable Node 20 deprecation warnings
 
 Fixes:
@@ -17,8 +30,6 @@ Fixes:
   reporter with a whitespace-only variation surface a spurious duplicate, and
   the `S.W.2d` custom regex did so even before #305; distinct editions
   (genuine ambiguity) are preserved. #317
-
-## Current
 
 **2.7.7 - 2026-06-25**
 
