@@ -146,6 +146,22 @@ class FindTest(TestCase):
                                       'defendant': 'Test',
                                       'court': 'pasuperct',
                                       'pin_cite': '347-348'})]),
+            # Pin-cite page range with a Unicode en-dash (U+2013); common
+            # in typeset opinions and OCR'd text. The full range must be
+            # captured, not truncated to the first page.
+            ('bob Lissner v. Test 1 U.S. 12, 347–348 (4th Cir. 1982)',
+             [case_citation(page='12', year=1982,
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
+                                      'court': 'ca4',
+                                      'pin_cite': '347–348'})]),
+            # Pin-cite page range with a Unicode em-dash (U+2014).
+            ('bob Lissner v. Test 1 U.S. 12, 347—348 (4th Cir. 1982)',
+             [case_citation(page='12', year=1982,
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
+                                      'court': 'ca4',
+                                      'pin_cite': '347—348'})]),
             # Test with court string exact match
             ('Commonwealth v. Muniz, 164 A.3d 1189 (Pa. 2017)',
              [case_citation(page='1189', reporter='A.3d', volume='164', year=2017,

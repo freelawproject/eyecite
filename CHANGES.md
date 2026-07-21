@@ -11,7 +11,7 @@ Changes:
 -
 
 Fixes:
--
+- Recognize Unicode en-dash (U+2013) and em-dash (U+2014) as pin-cite page-range separators, so ranges like `241–242` are no longer dropped
 
 ## Current
 
