@@ -11,7 +11,9 @@ Changes:
 -
 
 Fixes:
--
+- Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when 
+  `clean_steps` was omitted or lacked `"html"`. The documented fallback that
+  prepends the `html` step was both unreachable and broken.
 
 ## Current
 
