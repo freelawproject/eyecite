@@ -539,10 +539,29 @@ class HyperscanTokenizer(Tokenizer):
         # Get all matches, with byte offsets because hyperscan uses
         # bytes instead of unicode:
         text_bytes = text.encode("utf8")
+        text_bytes_len = len(text_bytes)
         matches = []
 
+        # Hyperscan matches bytes, so a pattern can consume part of a
+        # multi-byte character and report an offset inside it. Snap forward
+        # to the next character rather than drop the match; an end offset gains
+        # the whole character, a start offset loses its leading character, but
+        # the ^ in (?:^|[^a-zA-Z0-9]) matches.
+        def snap_to_boundary(offset: int) -> int:
+            """Enforces that the offset is at a UTF-8 character boundary."""
+            while (  # UTF-8 continuation bytes have the form 0b10xxxxxx
+                offset < text_bytes_len and text_bytes[offset] & 0xC0 == 0x80
+            ):
+                offset += 1
+            return offset
+
         def on_match(index, start, end, flags, context):
-            matches.append((self.extractors[index], (start, end)))
+            matches.append(
+                (
+                    self.extractors[index],
+                    (snap_to_boundary(start), snap_to_boundary(end)),
+                )
+            )
 
         self.hyperscan_db.scan(text_bytes, match_event_handler=on_match)
 
@@ -554,27 +573,20 @@ class HyperscanTokenizer(Tokenizer):
         str_offset = 0
         byte_offsets = sorted({i for m in matches for i in m[1]})
         for byte_offset in byte_offsets:
-            try:
-                str_offset += len(
-                    text_bytes[last_byte_offset:byte_offset].decode("utf8")
-                )
-            except UnicodeDecodeError:
-                # offsets will fail to decode for invalid regex matches
-                # that don't align with a unicode character
-                continue
+            str_offset += len(
+                text_bytes[last_byte_offset:byte_offset].decode("utf8")
+            )
             byte_to_str_offset[byte_offset] = str_offset
             last_byte_offset = byte_offset
 
-        # Narrow down our matches to only those that successfully decoded,
         # re-run regex against just the matching strings to get match groups
         # (which aren't provided by hyperscan), and tokenize:
         for extractor, (start, end) in matches:
-            if start in byte_to_str_offset and end in byte_to_str_offset:
-                start = byte_to_str_offset[start]
-                end = byte_to_str_offset[end]
-                m = extractor.compiled_regex.match(text[start:end])
-                if m:
-                    yield extractor.get_token(m, offset=start)
+            start = byte_to_str_offset[start]
+            end = byte_to_str_offset[end]
+            m = extractor.compiled_regex.match(text[start:end])
+            if m:
+                yield extractor.get_token(m, offset=start)
 
     @property
     def hyperscan_db(self):

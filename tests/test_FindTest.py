@@ -905,6 +905,51 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
 
+    def test_citations_adjacent_to_multibyte_characters(self):
+        """Are citations touching multi-byte characters found by every
+        tokenizer?
+
+        Hyperscan matches bytes, so a pattern that consumes only part of a
+        multi-byte character (e.g. a negated character class matching one
+        byte of an en dash) reports an offset inside that character. Such
+        matches used to be dropped instead of snapped to the character
+        boundary, silently losing citations that the other tokenizers find.
+        The ASCII-only fixtures elsewhere in this file cannot catch that, so
+        keep these strings non-ASCII.
+        """
+        # fmt: off
+        test_pairs = (
+            # Curly quote right before the volume. Extractors open with
+            # (?:^|[^a-zA-Z0-9]), so the byte before the volume is part of
+            # the match and lands inside the quote character
+            ('Lissner v. Test, “1 U.S. 1” (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
+                                      'extra': '”'},
+                            year=1982)]),
+            # En dash right after the page number, as in US Reports page
+            # ranges
+            ('Lissner v. Test, 1 U.S. 1–2 (1982)',
+             [case_citation(metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test',
+                                      'extra': '–2'},
+                            year=1982)]),
+            # En dash right after a short cite's page. The en dash also
+            # stops pin-cite parsing, so pin_cite stays unset rather than
+            # taking the factory's page default.
+            ('before Foo 1 U. S., at 339–340 after',
+             [case_citation(page='339', reporter_found='U. S.', short=True,
+                            metadata={'antecedent_guess': 'Foo',
+                                      'pin_cite': None})]),
+            # Multi-byte character (§ is two bytes) inside the matched text
+            # itself, not just at its edge
+            ('18 U.S.C. § 4241–4243',
+             [law_citation('18 U.S.C. § 4241–4243', reporter='U.S.C.',
+                           groups={'title': '18', 'section': '4241'})]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Multi-byte adjacent citations")
+
     def test_no_duplicate_editions(self):
         """Is the same Edition never listed twice in all_editions? (#317)
 

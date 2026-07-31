@@ -11,7 +11,10 @@ Changes:
 -
 
 Fixes:
--
+- Fix `HyperscanTokenizer` silent dropping citations adjacent to multi-byte
+  characters, either preceding (e.g. the `“` in `“1 U.S. 1”`) or following
+  (e.g. en dash `–` in `1 U.S. 1–2`). Byte offsets that land inside a multi-
+  byte character are now snapped to the next character boundary instead.
 
 ## Current
 
