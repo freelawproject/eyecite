@@ -358,7 +358,7 @@ POST_SHORT_CITATION_REGEX = rf"""
 
 
 # Roman numeral numbering an official U.S. Code supplement, like "Supp. II".
-# Optional because the shorthand "Supp. 1997" also occurs.
+# Optional for the trailing form, where "& Supp. 1997" occurs.
 LAW_SUPPLEMENT_NUMBER_REGEX = r"(?:[IVXL]+\ )?"
 
 # Post law citation regex:
