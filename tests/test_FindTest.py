@@ -1015,6 +1015,47 @@ class FindTest(TestCase):
              [law_citation('Mass. Gen. Laws ch. 1, §§ 2-3',
                            reporter='Mass. Gen. Laws',
                            groups={'chapter': '1', 'section': '2-3'})]),
+            # Official main edition marker, like "(2018 ed.)" #325
+            ('18 U.S.C. § 1 (2018 ed.)',
+             [law_citation('18 U.S.C. § 1 (2018 ed.)',
+                           reporter='U.S.C.',
+                           groups={'title': '18', 'section': '1'},
+                           year=2018)]),
+            # Official supplement preceding the year #325
+            ('8 U.S.C. § 1101 (Supp. IV 1998)',
+             [law_citation('8 U.S.C. § 1101 (Supp. IV 1998)',
+                           reporter='U.S.C.',
+                           groups={'title': '8', 'section': '1101'},
+                           year=1998)]),
+            # Combined main edition and supplement; `year` is the main
+            # edition year #325
+            ('8 U.S.C. § 1101 (1994 ed. & Supp. IV 1998)',
+             [law_citation('8 U.S.C. § 1101 (1994 ed. & Supp. IV 1998)',
+                           reporter='U.S.C.',
+                           groups={'title': '8', 'section': '1101'},
+                           year=1994)]),
+            # Publisher plus trailing supplement #325
+            ('18 U.S.C. § 1 (West 1994 & Supp. 1997)',
+             [law_citation('18 U.S.C. § 1 (West 1994 & Supp. 1997)',
+                           reporter='U.S.C.',
+                           metadata={'publisher': 'West'},
+                           groups={'title': '18', 'section': '1'},
+                           year=1994)]),
+            # Publisher with an internal capital #325
+            ('18 U.S.C.S. § 1101 (LexisNexis 2018)',
+             [law_citation('18 U.S.C.S. § 1101 (LexisNexis 2018)',
+                           reporter='U.S.C.S.',
+                           metadata={'publisher': 'LexisNexis'},
+                           groups={'title': '18', 'section': '1101'},
+                           year=2018)]),
+            # Publisher with an apostrophe, state code #325
+            ("Tex. Penal Code Ann. § 22.01 (Vernon's 2003)",
+             [law_citation("Tex. Penal Code Ann. § 22.01 (Vernon's 2003)",
+                           reporter='Tex. Code Ann.',
+                           reporter_found='Tex. Penal Code Ann.',
+                           metadata={'publisher': "Vernon's"},
+                           groups={'subject': 'Penal', 'section': '22.01'},
+                           year=2003)]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Law citation extraction")
