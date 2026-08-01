@@ -11,7 +11,15 @@ Changes:
 -
 
 Fixes:
--
+- Parse official U.S. Code edition and supplement parentheticals, and broaden
+  the law-citation publisher token. `POST_LAW_CITATION_REGEX` now extracts
+  `year` from `(2018 ed.)`, `(Supp. II 1997)`, `(1994 ed. & Supp. IV 1998)` and
+  `(West 1994 & Supp. 1997)`, where previously the whole parenthetical was
+  either misfiled as a `parenthetical` or dropped entirely. The publisher token
+  now accepts internal capitals and apostrophes, so `(LexisNexis 2018)` and
+  `(Vernon's 2003)` are captured as publishers. Where a citation carries both a
+  main edition and a supplement year, `year` holds the main edition year.
+  Multi-word publishers such as `(West Group 2000)` are still not matched. #325
 
 ## Current
 

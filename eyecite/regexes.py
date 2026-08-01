@@ -357,6 +357,10 @@ POST_SHORT_CITATION_REGEX = rf"""
 """
 
 
+# Roman numeral numbering an official U.S. Code supplement, like "Supp. II".
+# Optional for the trailing form, where "& Supp. 1997" occurs.
+LAW_SUPPLEMENT_NUMBER_REGEX = r"(?:[IVXL]+\ )?"
+
 # Post law citation regex:
 # statutory and regulatory cites may have publishers and dates after them, like
 #  (West), (West 1999), (Lexis Jun. 2018), (1999), or (May 2, 1999),
@@ -365,9 +369,11 @@ POST_LAW_CITATION_REGEX = rf"""
     {LAW_PIN_CITE_REGEX}?
     \ ?
     (?:\(
-        # Consol., McKinney, Deering, West, LexisNexis, etc.
+        # Consol., McKinney, Deering, West, LexisNexis, Vernon's, etc.
+        # Internal capitals and apostrophes allowed; single word only --
+        # a trailing word would swallow the month in "(West Jan. 1, 2012)".
         (?P<publisher>
-            [A-Z][a-z]+\.?
+            [A-Z][A-Za-z'’]+\.?
             (?:\ Supp\.)?
         )?
         \ ?
@@ -375,8 +381,15 @@ POST_LAW_CITATION_REGEX = rf"""
         (?:{MONTH_REGEX}\ )?
         # day
         (?P<day>\d{{1,2}})?,?\ ?
+        # leading supplement, like "Supp. II 1997"
+        (?:Supp\.\ {LAW_SUPPLEMENT_NUMBER_REGEX})?
         # four-digit year
         {YEAR_REGEX}?
+        # main edition marker, like "2018 ed."
+        (?:\ ed\.)?
+        # trailing supplement, like "& Supp. IV 1998". Its year is matched
+        # but not captured; `year` holds the main edition year.
+        (?:\ &\ Supp\.\ {LAW_SUPPLEMENT_NUMBER_REGEX}\d{{4}})?
     \))?
     \ ?
     # parenthetical
