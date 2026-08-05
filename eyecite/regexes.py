@@ -95,6 +95,27 @@ STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
+# Common short English words that could be mistaken for a law-citation
+# section-number suffix in space-stripped text (e.g. "1983and" -> "and").
+# Not exhaustive -- a defensive heuristic, same approach as STOP_WORDS above.
+SECTION_SUFFIX_STOPWORDS = (
+    "and", "are", "as", "at", "but", "by", "for", "has", "had", "in", "is",
+    "it", "its", "not", "of", "on", "or", "our", "out", "the", "to", "use",
+    "was", "we", "you", "all", "any", "can", "day", "get", "her", "him",
+    "his", "how", "man", "may", "new", "now", "one", "see", "she", "too",
+    "two",
+)
+
+# A run of 1-4 letters that may follow a law-citation section number or one
+# of its dash/dot/colon-separated groups (e.g. the "gg" in "300gg-91", or
+# the "A" in "1028A"). Guarded against common short English words so
+# space-stripped prose glued to a citation (e.g. "1983and the equal
+# protection clause") doesn't get swallowed into the section number.
+# See https://github.com/freelawproject/eyecite/issues/146
+SECTION_LETTER_SUFFIX_REGEX = (
+    rf"(?:(?!(?:{'|'.join(SECTION_SUFFIX_STOPWORDS)})\b)[a-zA-Z]{{1,4}})?"
+)
+
 # Regex for SectionToken
 SECTION_REGEX = r"(\S*§\S*)"
 
