@@ -137,6 +137,10 @@ def _populate_reporter_extractors():
     raw_regex_variables = deepcopy(RAW_REGEX_VARIABLES)
     raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
     raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
+    raw_regex_variables["law"]["section"] = (
+        r"(?P<section>(?:\d+(?:[\-.:]\d+){0,3}[a-zA-Z]{0,4})"
+        r"|(?:\d+(?:\((?:[a-zA-Z]{1}|\d{1,2})\))+))"
+    )
     regex_variables = process_variables(raw_regex_variables)
 
     def _substitute_edition(template, *edition_names):
