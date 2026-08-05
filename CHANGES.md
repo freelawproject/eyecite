@@ -15,7 +15,7 @@ Fixes:
 
 ## Current
 
-**2.7.9 - 2026-8-04**
+**2.7.9 - 2026-8-05**
 Features:
 -
 
@@ -23,7 +23,7 @@ Changes:
 -
 
 Fixes:
-- Fix citation parser to recognize law citations with a trailing letter in the section number Ex. 18 U.S.C. § 1028A
+- Fix citation parser to recognize law-citation section numbers with letter suffixes, including single-letter (`1028A`) and compound dash-separated forms (`300gg-91`, `1749bbb-10c`), while guarding against fabricating section numbers from adjacent prose in space-stripped text (e.g. `§1983and`) #146
 
 **2.7.8 - 2026-07-01**
 
