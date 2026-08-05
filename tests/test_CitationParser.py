@@ -11,14 +11,13 @@ Run with:
 from eyecite import get_citations
 from eyecite.models import FullLawCitation
 
-
 POSITIVE_CASES = [
     # (text, expected section value)
-    ("18 U.S.C. § 1028A", "1028A"),               # the reported bug (#146)
-    ("18 U.S.C. § 1028", "1028"),                 # plain section, unaffected
-    ("42 U.S.C. § 300gg-91", "300gg-91"),         # real compound section (ACA)
-    ("12 U.S.C. § 1749bbb-10c", "1749bbb-10c"),   # triple-letter compound
-    ("42 U.S.C. § 1396a", "1396a"),               # common single-letter suffix (Medicaid)
+    ("18 U.S.C. § 1028A", "1028A"),  # the reported bug (#146)
+    ("18 U.S.C. § 1028", "1028"),  # plain section, unaffected
+    ("42 U.S.C. § 300gg-91", "300gg-91"),  # real compound section (ACA)
+    ("12 U.S.C. § 1749bbb-10c", "1749bbb-10c"),  # triple-letter compound
+    ("42 U.S.C. § 1396a", "1396a"),  # common single-letter suffix (Medicaid)
 ]
 
 NEGATIVE_CASES = [
@@ -31,7 +30,9 @@ NEGATIVE_CASES = [
 
 def law_section(text):
     """Return the section value of the first FullLawCitation found, or None."""
-    law_cites = [c for c in get_citations(text) if isinstance(c, FullLawCitation)]
+    law_cites = [
+        c for c in get_citations(text) if isinstance(c, FullLawCitation)
+    ]
     return law_cites[0].groups.get("section") if law_cites else None
 
 
@@ -43,7 +44,9 @@ def run():
         got = law_section(text)
         ok = got == expected
         failures.append((text, expected, got)) if not ok else None
-        print(f"[{'PASS' if ok else 'FAIL'}] {text!r:45} -> {got!r} (expected {expected!r})")
+        print(
+            f"[{'PASS' if ok else 'FAIL'}] {text!r:45} -> {got!r} (expected {expected!r})"
+        )
 
     print("\n=== Negative cases (should NOT fabricate a citation) ===")
     for text in NEGATIVE_CASES:
@@ -63,4 +66,3 @@ def run():
 
 if __name__ == "__main__":
     run()
-    
