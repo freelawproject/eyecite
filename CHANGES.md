@@ -15,14 +15,14 @@ Fixes:
 
 ## Current
 
-**2.7.9 - 2026-8-04** 
-Features: 
+**2.7.9 - 2026-8-04**
+Features:
 -
 
-Changes: 
-- 
+Changes:
+-
 
-Fixes: 
+Fixes:
 - Fix citation parser to recognize law citations with a trailing letter in the section number Ex. 18 U.S.C. § 1028A
 
 **2.7.8 - 2026-07-01**
