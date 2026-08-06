@@ -7,6 +7,7 @@ from eyecite.test_factories import (
     id_citation,
     journal_citation,
     law_citation,
+    short_law_citation,
     unknown_citation,
 )
 
@@ -156,6 +157,43 @@ class ModelsTest(TestCase):
         print("Testing unknown citation comparison...", end=" ")
         self.assertNotEqual(citations[0], citations[1])
         self.assertNotEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
+    def test_short_law_citation_comparison(self):
+        """Are two ShortLawCitation objects always different?"""
+        citations = [
+            short_law_citation("§ 484(a)", groups={"section": "484(a)"}),
+            short_law_citation("§ 484(a)", groups={"section": "484(a)"}),
+        ]
+        print("Testing short law citation comparison...", end=" ")
+        self.assertNotEqual(citations[0], citations[1])
+        self.assertNotEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
+    def test_short_law_citation_corrected_citation_full(self):
+        """Does corrected_citation_full render the inherited identity?"""
+        print("Testing short law corrected_citation_full...", end=" ")
+        # unresolved: falls back to matched text
+        cite = short_law_citation("§ 484(a)", groups={"section": "484(a)"})
+        self.assertEqual(cite.corrected_citation_full(), "§ 484(a)")
+        # U.S.C. - title before reporter
+        cite = short_law_citation(
+            "§ 484(a)",
+            groups={"section": "484(a)"},
+            metadata={"reporter": "U. S. C.", "title": "12"},
+        )
+        self.assertEqual(
+            cite.corrected_citation_full(), "12 U. S. C. § 484(a)"
+        )
+        # Pub. L. - reporter before title
+        cite = short_law_citation(
+            "§ 3610",
+            groups={"section": "3610"},
+            metadata={"reporter": "Pub. L.", "title": "116-136"},
+        )
+        self.assertEqual(
+            cite.corrected_citation_full(), "Pub. L. 116-136, § 3610"
+        )
         print("✓")
 
     def test_missing_page_cite_conversion(self):

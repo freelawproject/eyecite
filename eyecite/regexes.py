@@ -95,8 +95,13 @@ STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
-# Regex for SectionToken
-SECTION_REGEX = r"(\S*§\S*)"
+# Regex for SectionToken. Not reporters_db's law_section: its alternation
+# never reaches the parenthetical branch ("484(a)" captures "484"). The
+# trailing guard is a consumed char because hyperscan can't compile lookaheads.
+LAW_SECTION_REGEX = (
+    r"(?P<section>\d+(?:[\-.:]\d+){0,3}(?:\((?:[a-zA-Z]|\d{1,2})\))*)"
+)
+SECTION_REGEX = rf"(§§?\s*{LAW_SECTION_REGEX})(?:[^a-zA-Z0-9]|$)"
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"

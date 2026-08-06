@@ -5,7 +5,9 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Add `ShortLawCitation`, emitted for bare section references like
+  `§ 484(a)`, with spans covering the marker through the section number
+  (#329)
 
 Changes:
 -

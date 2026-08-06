@@ -5,13 +5,16 @@ from typing import cast
 
 from eyecite.models import (
     CitationBase,
+    CitationToken,
     FullCaseCitation,
     FullCitation,
+    FullLawCitation,
     IdCitation,
     ReferenceCitation,
     Resource,
     ResourceType,
     ShortCaseCitation,
+    ShortLawCitation,
     SupraCitation,
 )
 from eyecite.utils import strip_punct
@@ -25,6 +28,11 @@ Resolutions = dict[ResourceType, list[CitationBase]]
 # Skip id. citations that imply a page length longer than this,
 # such as "1 U.S. 1. Id. at 200.":
 MAX_OPINION_PAGE_COUNT = 150
+
+# Reporters whose full cites a bare section reference may inherit from
+# (compared against corrected_reporter()). CFR and state codes are
+# follow-up work; see #77.
+SHORT_LAW_REPORTERS = ("U.S.C.", "Pub. L.")
 
 
 def resolve_full_citation(full_citation: FullCitation) -> Resource:
@@ -183,6 +191,52 @@ def _resolve_shortcase_citation(
         return None
 
 
+def _resolve_shortlaw_citation(
+    short_citation: ShortLawCitation,
+    resolved_full_cites: ResolvedFullCites,
+) -> ResourceType | None:
+    """
+    Resolve a bare section reference like "§ 484(a)" by walking backward
+    for the nearest preceding FullLawCitation with a section group of its
+    own, skipping page-based law cites (48 Stat. 891, 65 Fed. Reg. 12905)
+    and non-law citations. A U.S.C. or Pub. L. antecedent is inherited;
+    any other section bearing law cite (e.g. 12 CFR § 7.4000) blocks
+    resolution rather than being leapfrogged.
+    """
+    section = short_citation.groups.get("section")
+    if not section:
+        return None
+    for full_citation, _resource in reversed(resolved_full_cites):
+        if not isinstance(full_citation, FullLawCitation):
+            continue
+        if not full_citation.groups.get("section"):
+            # page-based law cites have no title/section structure to
+            # inherit; keep walking
+            continue
+        if full_citation.corrected_reporter() not in SHORT_LAW_REPORTERS:
+            return None
+        # Backfill the inherited identity into metadata. The raw groups
+        # are used (not corrected_reporter()) so the minted resource
+        # hashes identically to the antecedent's own resource.
+        short_citation.metadata.reporter = full_citation.groups.get("reporter")
+        short_citation.metadata.title = full_citation.groups.get("title")
+        span_start, span_end = short_citation.span()
+        synthetic = FullLawCitation(
+            CitationToken(
+                short_citation.matched_text(),
+                span_start,
+                span_end,
+                {**full_citation.groups, "section": section},
+            ),
+            0,
+            exact_editions=full_citation.exact_editions,
+            variation_editions=full_citation.variation_editions,
+            edition_guess=full_citation.edition_guess,
+        )
+        return Resource(synthetic)
+    return None
+
+
 def _resolve_supra_citation(
     supra_citation: SupraCitation,
     resolved_full_cites: ResolvedFullCites,
@@ -265,10 +319,15 @@ def resolve_citations(
     resolve_id_citation: Callable[
         [IdCitation, ResourceType, Resolutions], ResourceType | None
     ] = _resolve_id_citation,
+    resolve_shortlaw_citation: Callable[
+        [ShortLawCitation, ResolvedFullCites],
+        ResourceType | None,
+    ] = _resolve_shortlaw_citation,
 ) -> Resolutions:
     """Resolve a list of citations to their associated resources by matching
     each type of Citation object (FullCaseCitation, ShortCaseCitation,
-    SupraCitation, and IdCitation) to a "resource" object. A "resource" could
+    ShortLawCitation, ReferenceCitation, SupraCitation, and IdCitation) to
+    a "resource" object. A "resource" could
     be a document, a URL, a database entry, etc. -- anything that conforms to
     the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
     type. By default, eyecite uses an extremely thin "resource" object that
@@ -303,6 +362,8 @@ def resolve_citations(
             `eyecite.models.SupraCitation` objects to resources.
         resolve_id_citation: A function that resolves
             `eyecite.models.IdCitation` objects to resources.
+        resolve_shortlaw_citation: A function that resolves
+            `eyecite.models.ShortLawCitation` objects to resources.
 
     Returns:
         A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
@@ -327,6 +388,12 @@ def resolve_citations(
         # If the citation is a short case citation, try to resolve it
         elif isinstance(citation, ShortCaseCitation):
             resolution = resolve_shortcase_citation(
+                citation, resolved_full_cites
+            )
+
+        # If the citation is a short law citation, try to resolve it
+        elif isinstance(citation, ShortLawCitation):
+            resolution = resolve_shortlaw_citation(
                 citation, resolved_full_cites
             )
 
