@@ -12,7 +12,9 @@ Changes:
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
 
 Fixes:
--
+- Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
+  `clean_steps` was omitted or lacked `"html"`. The documented fallback that
+  prepends the `html` step was both unreachable and broken.
 
 ## Current
 
