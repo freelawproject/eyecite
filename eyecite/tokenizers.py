@@ -416,6 +416,8 @@ class Tokenizer:
                     # a full citation ("§ 550 U.S. 544"); prefer the citation
                     citation_tokens.pop(-1)
                     all_tokens.pop(-1)
+                    # the section token started earlier, so its marker ("§ ")
+                    # would vanish from the token stream without this
                     self.append_text(
                         all_tokens, text[last_token.start : token.start]
                     )

@@ -95,13 +95,17 @@ STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
-# Regex for SectionToken. Not reporters_db's law_section: its alternation
-# never reaches the parenthetical branch ("484(a)" captures "484"). The
-# trailing guard is a consumed char because hyperscan can't compile lookaheads.
+# Regex for SectionToken. Not reporters_db's law_section: its alternation never
+# reaches the parenthetical branch ("484(a)" captures "484") and it rejects a
+# letter glued to the digits ("93a"), which full cites need fixed upstream but
+# short cites can capture today. The trailing guard keeps a partially consumed
+# number out of the group ("§ 5th Cir." would otherwise capture "5t"); it is a
+# consumed char, not a lookahead, because hyperscan rejects zero-width
+# assertions. Section is optional so an unparseable marker is still found.
 LAW_SECTION_REGEX = (
-    r"(?P<section>\d+(?:[\-.:]\d+){0,3}(?:\((?:[a-zA-Z]|\d{1,2})\))*)"
+    r"(?P<section>\d+[a-z]?(?:[\-.:]\d+){0,3}(?:\((?:[a-zA-Z]|\d{1,2})\))*)"
 )
-SECTION_REGEX = rf"(§§?\s*{LAW_SECTION_REGEX})(?:[^a-zA-Z0-9]|$)"
+SECTION_REGEX = rf"(§§?(?:\s*{LAW_SECTION_REGEX})?)(?:[^a-zA-Z0-9]|$)"
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"

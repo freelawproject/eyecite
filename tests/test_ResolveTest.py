@@ -311,8 +311,7 @@ class ResolveTest(TestCase):
 
     def test_shortlaw_no_leapfrog(self):
         """Does a section bearing CFR cite block resolution rather than
-        being leapfrogged? And is a page-based Fed. Reg. cite never an
-        antecedent?"""
+        being leapfrogged?"""
         # The leading U.S.C. cite would wrongly resolve the short cite if
         # the CFR cite were skipped instead of blocking.
         text = (

@@ -1020,13 +1020,18 @@ class FindTest(TestCase):
         self.run_test_pairs(test_pairs, "Law citation extraction")
 
     def test_find_short_law_citations(self):
-        """Do short law citation spans cover the section marker through the
-        last character of the section group?"""
+        """Do bare section references produce ShortLawCitations, spanning the
+        marker through the last character of the section group?"""
         test_triples = (
             ("See § 484(a);", "§ 484(a)", "484(a)"),
             ('... law ...." §484(a).', "§484(a)", "484(a)"),
             # span mirrors full cites: stops after the first section
             ("See §§ 24, 93a, 371(a).", "§§ 24", "24"),
+            # letter-suffixed forms, which full cites miss entirely until
+            # reporters_db's law_section is fixed upstream
+            ("See § 93a.", "§ 93a", "93a"),
+            ("See § 78j(b).", "§ 78j(b)", "78j(b)"),
+            ("under § 2000e-2 the", "§ 2000e-2", "2000e-2"),
         )
         for text, span_text, section in test_triples:
             for tokenizer in tested_tokenizers:
@@ -1043,16 +1048,26 @@ class FindTest(TestCase):
                     self.assertEqual(text[start:end], span_text)
                     self.assertEqual(cite.groups["section"], section)
 
-        # Letter-suffixed sections like "§ 93a" are a clean miss, matching
-        # full cites, which don't detect "12 U.S.C. § 93a" either; a partial
-        # "§ 93" match would be wrong data.
+        # Shape alone identifies a short cite, so an unparseable number still
+        # yields a marker-only cite, which resolution then drops. A partial
+        # "§ 5" match would be wrong data.
+        unparsed_sections = ("A bare § here.", "See § 5th Cir.", "§ ibid")
+        for text in unparsed_sections:
+            for tokenizer in tested_tokenizers:
+                with self.subTest(
+                    "Unparsed section",
+                    q=text,
+                    tokenizer=type(tokenizer).__name__,
+                ):
+                    cites = get_citations(text, tokenizer=tokenizer)
+                    self.assertEqual(len(cites), 1, f"got {cites}")
+                    cite = cites[0]
+                    self.assertIsInstance(cite, ShortLawCitation)
+                    self.assertIsNone(cite.groups["section"])
+                    start, end = cite.span()
+                    self.assertEqual(text[start:end], "§")
+
         for tokenizer in tested_tokenizers:
-            with self.subTest(
-                "Letter-suffixed miss", tokenizer=type(tokenizer).__name__
-            ):
-                self.assertEqual(
-                    get_citations("See § 93a.", tokenizer=tokenizer), []
-                )
             with self.subTest(
                 "Multi-space marker", tokenizer=type(tokenizer).__name__
             ):

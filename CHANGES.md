@@ -5,12 +5,16 @@
 The following changes are not yet released, but are code complete:
 
 Features:
-- Add `ShortLawCitation`, emitted for bare section references like
-  `§ 484(a)`, with spans covering the marker through the section number
-  (#329)
+- Add `ShortLawCitation`, emitted for bare section references like `§ 484(a)`,
+  with spans covering the marker through the section number (#329)
 
 Changes:
--
+- `UnknownCitation` is no longer emitted for section markers; section tokens
+  now produce `ShortLawCitation`. Section numbers with a letter glued to the
+  digits (`§ 93a`, `§ 78j(b)`, `§ 2000e-2`) are captured, which
+  `reporters_db`'s `law_section` does not yet allow for full cites. A marker
+  whose number can't be parsed at all still yields a `ShortLawCitation`
+  spanning the bare marker, with `groups["section"]` set to `None` (#329)
 
 Fixes:
 -

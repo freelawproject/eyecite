@@ -29,8 +29,8 @@ Resolutions = dict[ResourceType, list[CitationBase]]
 # such as "1 U.S. 1. Id. at 200.":
 MAX_OPINION_PAGE_COUNT = 150
 
-# Reporters whose full cites a bare section reference may inherit from
-# (compared against corrected_reporter()). CFR and state codes are
+# Matched against corrected_reporter(), so an addition here needs the
+# normalized spelling ("C.F.R.", not "CFR"). CFR and state codes are
 # follow-up work; see #77.
 SHORT_LAW_REPORTERS = ("U.S.C.", "Pub. L.")
 
@@ -202,6 +202,10 @@ def _resolve_shortlaw_citation(
     and non-law citations. A U.S.C. or Pub. L. antecedent is inherited;
     any other section bearing law cite (e.g. 12 CFR § 7.4000) blocks
     resolution rather than being leapfrogged.
+
+    On a match, backfills the inherited reporter and title into
+    short_citation.metadata. Unlike shortcase resolution, this can mint a
+    resource that no full citation produced.
     """
     section = short_citation.groups.get("section")
     if not section:
@@ -215,12 +219,12 @@ def _resolve_shortlaw_citation(
             continue
         if full_citation.corrected_reporter() not in SHORT_LAW_REPORTERS:
             return None
-        # Backfill the inherited identity into metadata. The raw groups
-        # are used (not corrected_reporter()) so the minted resource
-        # hashes identically to the antecedent's own resource.
         short_citation.metadata.reporter = full_citation.groups.get("reporter")
         short_citation.metadata.title = full_citation.groups.get("title")
         span_start, span_end = short_citation.span()
+        # Resource hashes raw groups, so copying them verbatim (not
+        # corrected_reporter()) is what lets a short cite cluster with an
+        # antecedent naming the same section.
         synthetic = FullLawCitation(
             CitationToken(
                 short_citation.matched_text(),
@@ -326,13 +330,12 @@ def resolve_citations(
 ) -> Resolutions:
     """Resolve a list of citations to their associated resources by matching
     each type of Citation object (FullCaseCitation, ShortCaseCitation,
-    ShortLawCitation, ReferenceCitation, SupraCitation, and IdCitation) to
-    a "resource" object. A "resource" could
-    be a document, a URL, a database entry, etc. -- anything that conforms to
-    the (non-prescriptive) requirements of the `eyecite.models.ResourceType`
-    type. By default, eyecite uses an extremely thin "resource" object that
-    simply serves as a conceptual way to group citations with the same
-    references together.
+    ShortLawCitation, ReferenceCitation, SupraCitation, and IdCitation) to a
+    "resource" object. A "resource" could be a document, a URL, a database
+    entry, etc. -- anything that conforms to the (non-prescriptive)
+    requirements of the `eyecite.models.ResourceType` type. By default,
+    eyecite uses an extremely thin "resource" object that simply serves as a
+    conceptual way to group citations with the same references together.
 
     This function assumes that the given list of citations is ordered in the
     order that they were extracted from the text (i.e., assumes that supra
@@ -360,6 +363,8 @@ def resolve_citations(
             `eyecite.models.ShortCaseCitation` objects to resources.
         resolve_supra_citation: A function that resolves
             `eyecite.models.SupraCitation` objects to resources.
+        resolve_reference_citation: A function that resolves
+            `eyecite.models.ReferenceCitation` objects to resources.
         resolve_id_citation: A function that resolves
             `eyecite.models.IdCitation` objects to resources.
         resolve_shortlaw_citation: A function that resolves

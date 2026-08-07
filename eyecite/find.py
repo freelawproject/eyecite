@@ -118,7 +118,6 @@ def get_citations(
             citation = _extract_supra_citation(document.words, i)
 
         # CASE 4: Token is a section marker.
-        # A bare section reference like "§ 484(a)" is a short-form law citation
         elif token_type is SectionToken:
             citation = ShortLawCitation(cast(SectionToken, token), i)
 
