@@ -1,17 +1,51 @@
 name: Benchmark Pull Request
 on:
   pull_request:
+    # `labeled` lets a maintainer opt a fork PR in (see the `if:` below). Once
+    # `types:` is set the defaults no longer apply, so they must be listed.
+    types: [opened, synchronize, reopened, labeled]
   repository_dispatch:
     types: [ reporters-db-pr ]
 
 env:
   main: "$(/usr/bin/git log -1 --format='%H')"
 
+# A new push supersedes any benchmark still running for the same PR, so only
+# the newest commit is measured. Keyed on the PR number rather than
+# `github.head_ref` (as tests.yml uses) because two forks can share a branch
+# name -- `patch-1` is GitHub's default for web edits -- and would otherwise
+# cancel each other. `repository_dispatch` runs have no PR number and fall
+# back to a unique run id, so they never cancel one another.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+# This workflow runs the PR's own code, so it must never hold a writable
+# token: for fork PRs GitHub already forces one that is read-only, and we
+# declare it here so the same is true for internal branches. Commenting and
+# pushing results happen in publish-benchmark.yml, which never runs PR code.
+permissions:
+  contents: read
+
 jobs:
   benchmark:
-    name: PR comment
-    if: github.event_name == 'pull_request'
+    name: Benchmark
+    # Run automatically for anything pushed to this repo (all maintainers, plus
+    # Dependabot) and for org members working from a personal fork. Other fork
+    # PRs need a maintainer to add the `run-benchmark` label. Note that
+    # `author_association` reports contribution history rather than access --
+    # Dependabot reports CONTRIBUTOR -- so the head-repo check is what keeps
+    # everyone with write access running automatically. #332
+    if: >-
+      github.event_name == 'pull_request'
+      && (github.event.pull_request.head.repo.full_name == github.repository
+      || github.event.pull_request.author_association == 'MEMBER'
+      || github.event.pull_request.author_association == 'OWNER'
+      || contains(github.event.pull_request.labels.*.name, 'run-benchmark'))
     runs-on: ubuntu-latest
+    # Runs have never exceeded 4m; this caps a hung or hostile one well short
+    # of the 6 hour default while leaving room for a slow runner.
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -27,17 +61,6 @@ jobs:
         with:
           enable-cache: true
           version: "0.7.x"
-
-      - name: Add or Update comment on PR that Test is running
-        uses: marocchino/sticky-pull-request-comment@v3
-        with:
-          recreate: true
-          message: |
-            Eyecite Benchmarking in progress...
-
-            For details, see: https://github.com/freelawproject/eyecite/actions/workflows/benchmark.yml
-
-            This message will be updated when the test is completed.
 
       - name: Install Python dependencies
         run: |
@@ -123,31 +146,31 @@ jobs:
           mv benchmark/output.csv benchmark/${{ steps.branch1.outputs.hash }}.json benchmark/${{ steps.branch2.outputs.hash }}.json benchmark/report.md benchmark/chart.png results/
 
       #----------------------------------------------
-      #             Upload to Github PR
+      #             Hand off to publish-benchmark.yml
+      #
+      # We cannot comment or push from here: this job has a read-only token by
+      # design. Upload the results instead; publish-benchmark.yml picks them up
+      # on `workflow_run` and does the privileged half.
+      #
+      # The PR number travels inside the artifact because
+      # `github.event.workflow_run.pull_requests` is empty for fork PRs.
       #----------------------------------------------
-      - name: Pushes test file
-        uses: dmnemec/copy_file_to_another_repo_action@main
-        env:
-          API_TOKEN_GITHUB: ${{ secrets.FREELAWBOT_TOKEN }}
-        with:
-          user_email: 'info@free.law'
-          user_name: 'freelawbot'
-          source_file: 'results/'
-          destination_repo: 'freelawproject/eyecite'
-          destination_folder: '${{ github.event.number }}'
-          destination_branch: 'artifacts'
-          commit_message: 'feat(ci): Add artifacts for PR# ${{ github.event.number }}'
+      - name: Record PR number for the publish workflow
+        run: echo "${{ github.event.number }}" > results/pr-number.txt
 
-      - name: Add or Update PR Comment from Generated Report
-        uses: marocchino/sticky-pull-request-comment@v3
+      - name: Upload benchmark results
+        uses: actions/upload-artifact@v7
         with:
-          recreate: true
-          path: results/report.md
+          name: benchmark-results
+          path: results/
+          retention-days: 7
+          if-no-files-found: error
 
   dispatch:
     name: Reporters-DB-Dipatch
     if: github.event_name == 'repository_dispatch'
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - name: Check out repository
         uses: actions/checkout@v5
@@ -195,7 +218,10 @@ jobs:
           mv benchmark/output.csv benchmark/original.json benchmark/update.json benchmark/report.md benchmark/chart.png results/
 
       - name: Pushes test file
-        uses: dmnemec/copy_file_to_another_repo_action@main
+        # Pinned to a commit: `@main` is a mutable ref, and this is the step
+        # that receives FREELAWBOT_TOKEN. The SHA below is what `main` has
+        # resolved to since 2022-02-04, so this changes nothing behaviourally.
+        uses: dmnemec/copy_file_to_another_repo_action@bbebd3da22e4a37d04dca5f782edd5201cb97083 # main @ 2022-02-04
         env:
           API_TOKEN_GITHUB: ${{ secrets.FREELAWBOT_TOKEN }}
         with:
