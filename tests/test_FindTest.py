@@ -1077,7 +1077,7 @@ class FindTest(TestCase):
 
         # A multi-byte char after the section number (e.g. curly quote ”) must
         # not affect detection. HyperscanTokenizer fails this due to matching
-        # bytes and needs the pending multibyte-offsets fix (PR #XXX) for
+        # bytes and needs the pending multibyte-offsets fix (PR #334) for
         # parity, so it is excluded here;
         for tokenizer in tested_tokenizers[:2]:
             with self.subTest(
