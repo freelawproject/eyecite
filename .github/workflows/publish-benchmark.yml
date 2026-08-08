@@ -1,0 +1,128 @@
+name: Publish Benchmark Results
+
+# The privileged half of the benchmark (#332). benchmark.yml runs the PR's own
+# code and therefore only ever holds a read-only token, which is why it cannot
+# comment on the PR or push to the artifacts branch itself. `workflow_run`
+# fires once it finishes and always executes *this* file as it exists on the
+# default branch, with a normal write token and access to secrets.
+#
+# The safety property this rests on: nothing here checks out or executes any
+# code from the pull request. This job only ever handles the data files the
+# other workflow produced. Keep it that way.
+on:
+  workflow_run:
+    workflows: ["Benchmark Pull Request"]
+    types: [completed]
+
+# Every run of this workflow pushes to the same `artifacts` branch, so two
+# PRs finishing at once would race and one push would lose. A single global
+# group serialises them. `cancel-in-progress: false` because both sets of
+# results should land -- we want to queue here, not drop.
+concurrency:
+  group: publish-benchmark-artifacts
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  actions: read           # to download the artifact from the triggering run
+  pull-requests: write    # to post the sticky comment
+
+jobs:
+  publish:
+    name: Publish benchmark report
+    # Skip the reporters-db `repository_dispatch` runs, which publish
+    # themselves, and skip runs that failed or were gated out by the label
+    # check (a fully skipped run does not conclude as success).
+    if: >-
+      github.event.workflow_run.event == 'pull_request'
+      && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    # Only downloads an artifact, pushes it, and comments -- well under a
+    # minute in practice.
+    timeout-minutes: 10
+    steps:
+      - name: Download benchmark results
+        uses: actions/download-artifact@v8
+        with:
+          name: benchmark-results
+          path: results
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      # The artifact was produced by a job running fork code, so everything in
+      # it is untrusted input. Read the PR number without ever letting its
+      # contents reach the shell, then confirm with the API that the PR really
+      # is the one that produced this run -- otherwise a fork could point us at
+      # someone else's PR and have us comment on it or overwrite its artifacts.
+      - name: Resolve and verify PR number
+        id: pr
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          EXPECTED_REPO: ${{ github.event.workflow_run.head_repository.full_name }}
+          EXPECTED_BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          set -euo pipefail
+          # Bound the read before filtering: piping an unbounded file into a
+          # truncating `head` would SIGPIPE the reader and abort under
+          # pipefail, failing with no diagnostic. Reject anything that is not
+          # plainly a PR number rather than salvaging digits out of it.
+          number=$(head -c 64 results/pr-number.txt | tr -d '[:space:]')
+          if ! printf '%s' "$number" | grep -Eq '^[0-9]{1,9}$'; then
+            echo "::error::artifact contained no usable PR number"
+            exit 1
+          fi
+          actual=$(gh api "repos/$GITHUB_REPOSITORY/pulls/$number" \
+            --jq '"\(.head.repo.full_name):\(.head.ref)"')
+          if [ "$actual" != "$EXPECTED_REPO:$EXPECTED_BRANCH" ]; then
+            echo "::error::PR #$number is $actual, but this run came from $EXPECTED_REPO:$EXPECTED_BRANCH"
+            exit 1
+          fi
+          echo "number=$number" >> "$GITHUB_OUTPUT"
+
+      # Anything the fork slipped into results/ would otherwise be served from
+      # raw.githubusercontent.com under our org, so publish only what
+      # benchmark.py is expected to produce.
+      - name: Drop unexpected files
+        run: |
+          set -euo pipefail
+          cd results
+          rm -f pr-number.txt
+          # dotglob because a bare `*` skips dotfiles; nullglob so an empty
+          # directory does not leave the literal `*` to be processed.
+          shopt -s dotglob nullglob
+          for f in *; do
+            case "$f" in
+              output.csv|report.md|chart.png|*.json)
+                # Keep only real files: a directory or a symlink wearing an
+                # allowed name should not reach the artifacts branch.
+                if [ -f "$f" ] && [ ! -L "$f" ]; then
+                  continue
+                fi
+                ;;
+            esac
+            echo "::warning::dropping unexpected entry from benchmark artifact: $f"
+            rm -rf -- "$f"
+          done
+
+      - name: Push results to the artifacts branch
+        # Pinned to a commit: `@main` is a mutable ref, and this is the step
+        # that receives FREELAWBOT_TOKEN. The SHA below is what `main` has
+        # resolved to since 2022-02-04, so this changes nothing behaviourally.
+        uses: dmnemec/copy_file_to_another_repo_action@bbebd3da22e4a37d04dca5f782edd5201cb97083 # main @ 2022-02-04
+        env:
+          API_TOKEN_GITHUB: ${{ secrets.FREELAWBOT_TOKEN }}
+        with:
+          user_email: 'info@free.law'
+          user_name: 'freelawbot'
+          source_file: 'results/'
+          destination_repo: 'freelawproject/eyecite'
+          destination_folder: '${{ steps.pr.outputs.number }}'
+          destination_branch: 'artifacts'
+          commit_message: 'feat(ci): Add artifacts for PR# ${{ steps.pr.outputs.number }}'
+
+      - name: Add or update PR comment from generated report
+        uses: marocchino/sticky-pull-request-comment@v3
+        with:
+          recreate: true
+          number: ${{ steps.pr.outputs.number }}
+          path: results/report.md

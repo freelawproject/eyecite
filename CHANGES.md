@@ -8,7 +8,8 @@ Features:
 -
 
 Changes:
--
+- CI: the benchmark now works on fork and Dependabot PRs, with commenting and artifact pushes split into a separate privileged workflow, and fork PRs gated behind a `run-benchmark` label. #332
+- CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
 
 Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
