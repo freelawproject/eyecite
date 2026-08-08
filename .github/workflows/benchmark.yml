@@ -36,8 +36,19 @@ jobs:
     # `author_association` reports contribution history rather than access --
     # Dependabot reports CONTRIBUTOR -- so the head-repo check is what keeps
     # everyone with write access running automatically. #332
+    #
+    # The `labeled` clause keeps an unrelated label from re-running the
+    # benchmark: `labeled` fires for every label, so on a PR that already
+    # passes the gate below, adding `bug` triggered a full re-run -- and with
+    # `cancel-in-progress` that cancels the in-flight benchmark rather than
+    # merely duplicating it. It has to be `action != 'labeled' || ...` rather
+    # than a plain equality, because `github.event.label` is absent on
+    # opened/synchronize/reopened; comparing it there would be false and the
+    # benchmark would only ever run on labeling.
     if: >-
       github.event_name == 'pull_request'
+      && (github.event.action != 'labeled'
+      || github.event.label.name == 'run-benchmark')
       && (github.event.pull_request.head.repo.full_name == github.repository
       || github.event.pull_request.author_association == 'MEMBER'
       || github.event.pull_request.author_association == 'OWNER'
