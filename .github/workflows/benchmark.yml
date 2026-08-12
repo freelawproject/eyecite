@@ -217,14 +217,34 @@ jobs:
           echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
       - name: Run Tests
+        # `client_payload` is caller-supplied JSON. Never interpolate it into
+        # the shell as `${{ ... }}` -- that substitutes the raw text before bash
+        # parses the line, so a value like `x$(...)` or `` x`...` `` would
+        # execute in this job, which holds FREELAWBOT_TOKEN. Pass it through the
+        # environment instead (bash never re-parses an env value) and validate
+        # the shape before either value reaches a command.
+        env:
+          PR_NUMBER: ${{ github.event.client_payload.pr_number }}
+          COMMIT: ${{ github.event.client_payload.commit }}
         run: |
+          set -euo pipefail
+          if ! printf '%s' "$PR_NUMBER" | grep -Eq '^[0-9]{1,9}$'; then
+            echo "::error::client_payload.pr_number is not a plain number: $PR_NUMBER"
+            exit 1
+          fi
+          # A git commit ref: 7-40 hex chars. Rejecting anything else keeps the
+          # value safe to splice into the install URL below.
+          if ! printf '%s' "$COMMIT" | grep -Eiq '^[0-9a-f]{7,40}$'; then
+            echo "::error::client_payload.commit is not a commit sha: $COMMIT"
+            exit 1
+          fi
           uv pip install "git+https://github.com/freelawproject/reporters-db.git"
-          echo ${{ github.event.client_payload.pr_number }}
+          echo "$PR_NUMBER"
           curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
           python benchmark/benchmark.py --branches original
-          uv pip install "git+https://github.com/freelawproject/reporters-db.git@${{ github.event.client_payload.commit }}"
+          uv pip install "git+https://github.com/freelawproject/reporters-db.git@$COMMIT"
           # "original" is the baseline; "update" is the reporters-db PR.
-          python benchmark/benchmark.py --branches original update --base original --reporters --pr ${{ github.event.client_payload.pr_number }}
+          python benchmark/benchmark.py --branches original update --base original --reporters --pr "$PR_NUMBER"
           mkdir results
           mv benchmark/output.csv benchmark/original.json benchmark/update.json benchmark/report.md benchmark/chart.png results/
 
