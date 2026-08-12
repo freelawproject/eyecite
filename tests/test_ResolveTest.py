@@ -389,6 +389,26 @@ class ResolveTest(TestCase):
             },
         )
 
+    def test_shortlaw_subsection_distinct_resources(self):
+        """Do short cites naming different subsections of the same section
+        mint distinct resources? Roman-numeral subsections used to truncate
+        ("§ 1158(b)(2)(A)(ii)" captured "1158(b)(2)(A)"), merging them."""
+        text = (
+            "Asylum eligibility is governed by 8 U. S. C. § 1158. The "
+            "persecutor bar appears at § 1158(b)(2)(A)(i), while "
+            "§ 1158(b)(2)(A)(ii) covers conviction of a particularly "
+            "serious crime."
+        )
+        _, _, formatted = self.resolve_text(text)
+        self.assertEqual(
+            formatted,
+            {
+                "8 U. S. C. § 1158": ["8 U. S. C. § 1158"],
+                "§ 1158(b)(2)(A)(i)": ["§ 1158(b)(2)(A)(i)"],
+                "§ 1158(b)(2)(A)(ii)": ["§ 1158(b)(2)(A)(ii)"],
+            },
+        )
+
     def test_shortlaw_pub_l_resolution(self):
         """Does a short cite inherit from a Pub. L. antecedent (uncodified
         statute), skipping the page-based Stat. cite in between?"""

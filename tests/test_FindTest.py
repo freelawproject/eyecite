@@ -1032,6 +1032,14 @@ class FindTest(TestCase):
             ("See § 93a.", "§ 93a", "93a"),
             ("See § 78j(b).", "§ 78j(b)", "78j(b)"),
             ("under § 2000e-2 the", "§ 2000e-2", "2000e-2"),
+            # roman-numeral and 3-digit subsections, wider than a single
+            # letter or two digits
+            (
+                "under § 1158(b)(2)(A)(ii) an alien",
+                "§ 1158(b)(2)(A)(ii)",
+                "1158(b)(2)(A)(ii)",
+            ),
+            ("See § 42(100).", "§ 42(100)", "42(100)"),
         )
         for text, span_text, section in test_triples:
             for tokenizer in tested_tokenizers:
@@ -1050,8 +1058,15 @@ class FindTest(TestCase):
 
         # Shape alone identifies a short cite, so an unparseable number still
         # yields a marker-only cite, which resolution then drops. A partial
-        # "§ 5" match would be wrong data.
-        unparsed_sections = ("A bare § here.", "See § 5th Cir.", "§ ibid")
+        # "§ 5" match would be wrong data. Markers glued to a word must be
+        # found too, since the guard only applies when a number matched.
+        unparsed_sections = (
+            "A bare § here.",
+            "See § 5th Cir.",
+            "§ ibid",
+            "Notwithstanding §Analysis of the code applies.",
+            "mid-word cross§reference too",
+        )
         for text in unparsed_sections:
             for tokenizer in tested_tokenizers:
                 with self.subTest(

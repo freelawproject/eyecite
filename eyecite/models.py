@@ -837,6 +837,21 @@ class CitationToken(Token):
 class SectionToken(Token):
     """Word containing a section symbol."""
 
+    @classmethod
+    def from_match(cls, m, extra, offset=0) -> "Token":
+        """Group 1 of SECTION_REGEX is the bare marker; the section number
+        sits outside it so its trailing guard only applies when a number
+        matched. Extend the span through the section when one is present."""
+        start = m.start(1)
+        end = m.end("section") if m["section"] else m.end(1)
+        return cls(
+            m.string[start:end],
+            start + offset,
+            end + offset,
+            groups=m.groupdict(),
+            **extra,
+        )
+
 
 @dataclass(eq=True, unsafe_hash=True)
 class SupraToken(Token):

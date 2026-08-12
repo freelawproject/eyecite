@@ -95,17 +95,19 @@ STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
-# Regex for SectionToken. Not reporters_db's law_section: its alternation never
-# reaches the parenthetical branch ("484(a)" captures "484") and it rejects a
-# letter glued to the digits ("93a"), which full cites need fixed upstream but
-# short cites can capture today. The trailing guard keeps a partially consumed
-# number out of the group ("§ 5th Cir." would otherwise capture "5t"); it is a
-# consumed char, not a lookahead, because hyperscan rejects zero-width
-# assertions. Section is optional so an unparseable marker is still found.
+# Law subsection, capture a single subsection like "(a)" or "(viii)":
+LAW_SUBSECTION = r"(?:\([0-9a-zA-Z]{1,4}\))"
+
+# Regex for SectionToken. Not reporters_db's law_section, which never reaches
+# its parenthetical branch and rejects letter suffixes ("93a"). The trailing
+# guard stops partial number capture ("§ 5th Cir." would capture "5t"); it is
+# a consumed char, not a lookahead, which hyperscan rejects. Section and guard
+# are optional as a unit so a bare or glued marker ("§Analysis") still counts.
+# Group 1 is the marker alone; SectionToken.from_match extends the span.
 LAW_SECTION_REGEX = (
-    r"(?P<section>\d+[a-z]?(?:[\-.:]\d+){0,3}(?:\((?:[a-zA-Z]|\d{1,2})\))*)"
+    rf"(?P<section>\d+[a-z]?(?:[\-.:]\d+){{0,3}}{LAW_SUBSECTION}*)"
 )
-SECTION_REGEX = rf"(§§?(?:\s*{LAW_SECTION_REGEX})?)(?:[^a-zA-Z0-9]|$)"
+SECTION_REGEX = rf"(§§?)(?:\s*{LAW_SECTION_REGEX}(?:[^a-zA-Z0-9]|$))?"
 
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
@@ -240,14 +242,6 @@ PIN_CITE_REGEX = rf"""
             \ ?[(\[]|    # space and start of parens
             $            # end of text
         )
-    )
-"""
-
-# Law subsection regex:
-# Capture a single subsection like "(a)", "(1)", or "(viii)":
-LAW_SUBSECTION = r"""
-    (?:
-        \([0-9a-zA-Z]{1,4}\)
     )
 """
 
