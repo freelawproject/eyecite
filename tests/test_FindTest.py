@@ -1512,6 +1512,33 @@ class FindTest(TestCase):
                 any(isinstance(cite, ReferenceCitation) for cite in citations)
             )
 
+    def test_markup_text_without_html_clean_step(self) -> None:
+        """Does passing `markup_text` without an `html` clean step auto-add
+        it (with a warning) instead of crashing?
+
+        """
+        markup = "<p>Lissner v. Test, <i>1 U.S. 1</i> (1982)</p>"
+
+        # clean_steps omitted entirely (get_citations defaults it to None)
+        with self.assertLogs("eyecite.models", level="WARNING") as logs:
+            cites = get_citations(markup_text=markup)
+        self.assertEqual([c.matched_text() for c in cites], ["1 U.S. 1"])
+        self.assertTrue(
+            any("`html` has been added" in line for line in logs.output)
+        )
+
+        # clean_steps provided but missing "html", must prepend it
+        with self.assertLogs("eyecite.models", level="WARNING"):
+            cites = get_citations(
+                markup_text=markup, clean_steps=["all_whitespace"]
+            )
+        self.assertEqual([c.matched_text() for c in cites], ["1 U.S. 1"])
+
+        # clean_steps already containing "html" stays untouched and quiet
+        with self.assertNoLogs("eyecite.models", level="WARNING"):
+            cites = get_citations(markup_text=markup, clean_steps=["html"])
+        self.assertEqual([c.matched_text() for c in cites], ["1 U.S. 1"])
+
     def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
         # Can we identify full case names in markup text
         test_pairs = (

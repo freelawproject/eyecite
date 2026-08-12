@@ -978,11 +978,13 @@ class Document:
         elif self.markup_text and not self.plain_text:
             self.source_text = self.markup_text
 
-            if "html" not in self.clean_steps:
-                self.clean_steps.insert("html", 0)
+            clean_steps = list(self.clean_steps or [])
+            if "html" not in clean_steps:
+                clean_steps.insert(0, "html")
                 logger.warning(
                     "`html` has been added to `markup_text` clean_steps list"
                 )
+            self.clean_steps = clean_steps
 
             self.plain_text = clean_text(self.markup_text, self.clean_steps)
 
