@@ -16,6 +16,10 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Match "glued" citations (`846F.2d746`) by relaxing whitespace at the
+  full-cite template's volume-reporter and reporter-page boundaries,
+  completing the #305 relaxation; `_relax_ws` now trims its trailing `\s*`
+  so the reporter group never captures boundary whitespace. #338
 
 ## Current
 
@@ -57,7 +61,7 @@ Features:
 
 Changes:
 - Move dependency management to uv.
-  This shouldn’t have any visible impact to users, except from a few small metadata changes.
+  This shouldn't have any visible impact to users, except from a few small metadata changes.
 
 Fixes:
 - Fixes rendering of AhocorasickTokenizer parameter definition in API docs #279
