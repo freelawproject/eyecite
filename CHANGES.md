@@ -20,6 +20,13 @@ Fixes:
   full-cite template's volume-reporter and reporter-page boundaries,
   completing the #305 relaxation; `_relax_ws` now trims its trailing `\s*`
   so the reporter group never captures boundary whitespace. #338
+- Match both of two adjacent citations that share a single separator
+  character (`347 U.S. 483,349 U.S. 294` silently lost the second
+  citation): `TokenExtractor.get_matches` resumes scanning at the end of
+  the token content, so a separator consumed as one match's trailing
+  boundary stays available as the next match's leading boundary. This
+  aligns the pure-Python tokenizers with `HyperscanTokenizer`, which
+  reports overlapping matches and never had this blind spot. #338
 
 ## Current
 
