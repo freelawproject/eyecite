@@ -19,6 +19,17 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Match "glued" citations (`846F.2d746`) by relaxing whitespace at the
+  full-cite template's volume-reporter and reporter-page boundaries,
+  completing the #305 relaxation; `_relax_ws` now trims its trailing `\s*`
+  so the reporter group never captures boundary whitespace. #338
+- Match both of two adjacent citations that share a single separator
+  character (`347 U.S. 483,349 U.S. 294` silently lost the second
+  citation): `TokenExtractor.get_matches` resumes scanning at the end of
+  the token content, so a separator consumed as one match's trailing
+  boundary stays available as the next match's leading boundary. This
+  aligns the pure-Python tokenizers with `HyperscanTokenizer`, which
+  reports overlapping matches and never had this blind spot. #338
 
 ## Current
 
@@ -60,7 +71,7 @@ Features:
 
 Changes:
 - Move dependency management to uv.
-  This shouldn’t have any visible impact to users, except from a few small metadata changes.
+  This shouldn't have any visible impact to users, except from a few small metadata changes.
 
 Fixes:
 - Fixes rendering of AhocorasickTokenizer parameter definition in API docs #279

@@ -850,8 +850,25 @@ class TokenExtractor:
     strings: list = field(default_factory=list)
 
     def get_matches(self, text):
-        """Return match objects for all matches in text."""
-        return self.compiled_regex.finditer(text)
+        """Return match objects for all matches in text.
+
+        Successive searches resume from the end of the token content
+        (group 1) rather than the end of the full match: boundary
+        wrappers like nonalphanum_boundaries_re consume one character
+        on each side, so under finditer semantics a separator consumed
+        as one match's trailing boundary is unavailable as the next
+        match's leading boundary, and the second of two adjacent
+        citations is silently skipped (e.g. the parallel cite
+        "347 U.S. 483,349 U.S. 294" loses "349 U.S. 294"). Hyperscan
+        reports overlapping matches, so HyperscanTokenizer does not
+        share this blind spot; resuming at the content boundary keeps
+        the two tokenizers consistent.
+        """
+        pos = 0
+        while m := self.compiled_regex.search(text, pos):
+            yield m
+            end = m.end(1) if m.re.groups and m.end(1) != -1 else m.end()
+            pos = end if end > pos else pos + 1
 
     def get_token(self, m, offset=0) -> Token:
         """For a given match object, return a Token."""
