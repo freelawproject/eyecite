@@ -15,6 +15,7 @@ from eyecite.models import (
     FullCaseCitation,
     ReferenceCitation,
     ResourceCitation,
+    ShortLawCitation,
 )
 from eyecite.test_factories import (
     case_citation,
@@ -22,8 +23,8 @@ from eyecite.test_factories import (
     journal_citation,
     law_citation,
     reference_citation,
+    short_law_citation,
     supra_citation,
-    unknown_citation,
 )
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
@@ -608,9 +609,8 @@ class FindTest(TestCase):
              [id_citation("Id.",
                           metadata={'pin_cite': 'at 2',
                                     'parenthetical': 'overruling ...'})]),
-            # Test unknown citation
             ('lorem ipsum see §99 of the U.S. code.',
-             [unknown_citation('§99')]),
+             [short_law_citation('§99', groups={'section': '99'})]),
             # Test address that's not a citation (#1338)
             ('lorem 111 S.W. 12th St.',
              [],),
@@ -1018,6 +1018,112 @@ class FindTest(TestCase):
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Law citation extraction")
+
+    def test_find_short_law_citations(self):
+        """Do bare section references produce ShortLawCitations, spanning the
+        marker through the last character of the section group?"""
+        test_triples = (
+            ("See § 484(a);", "§ 484(a)", "484(a)"),
+            ('... law ...." §484(a).', "§484(a)", "484(a)"),
+            # span mirrors full cites: stops after the first section
+            ("See §§ 24, 93a, 371(a).", "§§ 24", "24"),
+            # letter-suffixed forms, which full cites miss entirely until
+            # reporters_db's law_section is fixed upstream
+            ("See § 93a.", "§ 93a", "93a"),
+            ("See § 78j(b).", "§ 78j(b)", "78j(b)"),
+            ("under § 2000e-2 the", "§ 2000e-2", "2000e-2"),
+            # roman-numeral and 3-digit subsections, wider than a single
+            # letter or two digits
+            (
+                "under § 1158(b)(2)(A)(ii) an alien",
+                "§ 1158(b)(2)(A)(ii)",
+                "1158(b)(2)(A)(ii)",
+            ),
+            ("See § 42(100).", "§ 42(100)", "42(100)"),
+        )
+        for text, span_text, section in test_triples:
+            for tokenizer in tested_tokenizers:
+                with self.subTest(
+                    "Short law spans",
+                    q=text,
+                    tokenizer=type(tokenizer).__name__,
+                ):
+                    cites = get_citations(text, tokenizer=tokenizer)
+                    self.assertEqual(len(cites), 1, f"got {cites}")
+                    cite = cites[0]
+                    self.assertIsInstance(cite, ShortLawCitation)
+                    start, end = cite.span()
+                    self.assertEqual(text[start:end], span_text)
+                    self.assertEqual(cite.groups["section"], section)
+
+        # Shape alone identifies a short cite, so an unparseable number still
+        # yields a marker-only cite, which resolution then drops. A partial
+        # "§ 5" match would be wrong data. Markers glued to a word must be
+        # found too, since the guard only applies when a number matched.
+        unparsed_sections = (
+            "A bare § here.",
+            "See § 5th Cir.",
+            "§ ibid",
+            "Notwithstanding §Analysis of the code applies.",
+            "mid-word cross§reference too",
+        )
+        for text in unparsed_sections:
+            for tokenizer in tested_tokenizers:
+                with self.subTest(
+                    "Unparsed section",
+                    q=text,
+                    tokenizer=type(tokenizer).__name__,
+                ):
+                    cites = get_citations(text, tokenizer=tokenizer)
+                    self.assertEqual(len(cites), 1, f"got {cites}")
+                    cite = cites[0]
+                    self.assertIsInstance(cite, ShortLawCitation)
+                    self.assertIsNone(cite.groups["section"])
+                    start, end = cite.span()
+                    self.assertEqual(text[start:end], "§")
+
+        for tokenizer in tested_tokenizers:
+            with self.subTest(
+                "Multi-space marker", tokenizer=type(tokenizer).__name__
+            ):
+                cites = get_citations("See §  484(a);", tokenizer=tokenizer)
+                self.assertEqual(len(cites), 1)
+                self.assertEqual(cites[0].groups["section"], "484(a)")
+
+        # A multi-byte char after the section number (e.g. curly quote ”) must
+        # not affect detection. HyperscanTokenizer fails this due to matching
+        # bytes and needs the pending multibyte-offsets fix (PR #334) for
+        # parity, so it is excluded here;
+        for tokenizer in tested_tokenizers[:2]:
+            with self.subTest(
+                "Multi-byte follower", tokenizer=type(tokenizer).__name__
+            ):
+                text = "“Nothing in § 484(a)” said"
+                cites = get_citations(text, tokenizer=tokenizer)
+                self.assertEqual(len(cites), 1)
+                start, end = cites[0].span()
+                self.assertEqual(text[start:end], "§ 484(a)")
+
+        # A section token must not swallow the start of a following full
+        # citation whose volume/title abuts the section number.
+        overlap_pairs = (
+            ("As held in § 550 U.S. 544 the rule applies.", "550 U.S. 544"),
+            ("see § 18 U.S.C. § 921 for details.", "18 U.S.C. § 921"),
+        )
+        for text, expected in overlap_pairs:
+            for tokenizer in tested_tokenizers:
+                with self.subTest(
+                    "Citation shadowing",
+                    q=text,
+                    tokenizer=type(tokenizer).__name__,
+                ):
+                    cites = get_citations(text, tokenizer=tokenizer)
+                    spans = [text[c.span()[0] : c.span()[1]] for c in cites]
+                    self.assertIn(expected, spans)
+                    self.assertFalse(
+                        any(isinstance(c, ShortLawCitation) for c in cites),
+                        f"section token should yield to full cite: {cites}",
+                    )
 
     def test_find_journal_citations(self):
         """Can we find citations from journals.json?"""
@@ -1774,7 +1880,7 @@ class FindTest(TestCase):
             (
                 """</span>§ 3.1 (2d ed. 1977), <i>Strawberry Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting);""",
                 [
-                    unknown_citation("§"),
+                    short_law_citation("§ 3.1", groups={"section": "3.1"}),
                     case_citation(
                         page="176",
                         reporter="S.W.2d",
@@ -1793,7 +1899,7 @@ class FindTest(TestCase):
             (
                 """</span>§ 3.1 (2d ed. 1977), <i>(See Hill</i>, 725 S.W.2d at 176 (Gonzalez, J., dissenting));""",
                 [
-                    unknown_citation("§"),
+                    short_law_citation("§ 3.1", groups={"section": "3.1"}),
                     case_citation(
                         page="176",
                         reporter="S.W.2d",

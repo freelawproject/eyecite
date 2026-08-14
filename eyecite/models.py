@@ -419,6 +419,39 @@ class FullLawCitation(FullCitation):
 
 
 @dataclass(eq=False, unsafe_hash=False, repr=False)
+class ShortLawCitation(CitationBase):
+    """A bare section reference, e.g. "§ 484(a)", that inherits its reporter
+    and title from a preceding FullLawCitation. Detection captures only the
+    `section` group; `eyecite.resolve.resolve_citations` backfills the
+    inherited `reporter` and `title` into `metadata` when an antecedent is
+    found."""
+
+    def __hash__(self) -> int:
+        """Always unique: two identical section markers may refer to different
+        laws."""
+        return id(self)
+
+    @dataclass(eq=True, unsafe_hash=True)
+    class Metadata(CitationBase.Metadata):
+        """Define fields on self.metadata."""
+
+        reporter: str | None = None
+        title: str | None = None
+
+    def corrected_citation_full(self):
+        """Return citation with the inherited identity, if resolved. The
+        backfilled metadata carries the antecedent's raw (uncorrected)
+        groups, so the reporter renders as it appeared in the source."""
+        m = self.metadata
+        if not (m.reporter and m.title):
+            return self.matched_text()
+        if m.reporter.startswith("Pub"):
+            # Public Laws read "Pub. L. 116-136, § 3610"
+            return f"{m.reporter} {m.title}, {self.matched_text()}"
+        return f"{m.title} {m.reporter} {self.matched_text()}"
+
+
+@dataclass(eq=False, unsafe_hash=False, repr=False)
 class FullJournalCitation(FullCitation):
     """Citation to a source from `reporters_db/journals.json`."""
 
@@ -803,6 +836,21 @@ class CitationToken(Token):
 @dataclass(eq=True, unsafe_hash=True)
 class SectionToken(Token):
     """Word containing a section symbol."""
+
+    @classmethod
+    def from_match(cls, m, extra, offset=0) -> "Token":
+        """Group 1 of SECTION_REGEX is the bare marker; the section number
+        sits outside it so its trailing guard only applies when a number
+        matched. Extend the span through the section when one is present."""
+        start = m.start(1)
+        end = m.end("section") if m["section"] else m.end(1)
+        return cls(
+            m.string[start:end],
+            start + offset,
+            end + offset,
+            groups=m.groupdict(),
+            **extra,
+        )
 
 
 @dataclass(eq=True, unsafe_hash=True)

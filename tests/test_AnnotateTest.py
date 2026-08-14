@@ -33,6 +33,13 @@ class AnnotateTest(TestCase):
                 "foo. <0>Mass. Gen. Laws ch. 1, § 2</0>. bar",
                 [],
             ),
+            # short law cite: span ends at the section, keeping trailing
+            # punctuation outside the annotation
+            (
+                "foo. See § 484(a); bar §484(a). baz",
+                "foo. See <0>§ 484(a)</0>; bar <1>§484(a)</1>. baz",
+                [],
+            ),
             # journal cite
             (
                 "foo. 1 Minn. L. Rev. 2. bar",
