@@ -33,6 +33,7 @@ from eyecite.regexes import (
     PAGE_NUMBER_REGEX,
     PARAGRAPH_REGEX,
     PLACEHOLDER_CITATIONS,
+    SECTION_LETTER_SUFFIX_REGEX,  # new
     SECTION_REGEX,
     STOP_WORD_REGEX,
     STOP_WORDS,
@@ -137,6 +138,13 @@ def _populate_reporter_extractors():
     raw_regex_variables = deepcopy(RAW_REGEX_VARIABLES)
     raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
     raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
+    raw_regex_variables["law"]["section"] = (
+        rf"(?P<section>"
+        rf"(?:\d+{SECTION_LETTER_SUFFIX_REGEX}"
+        rf"(?:[\-.:]\d+{SECTION_LETTER_SUFFIX_REGEX}){{0,3}})"
+        rf"|(?:\d+(?:\((?:[a-zA-Z]{{1}}|\d{{1,2}})\))+)"
+        rf")"
+    )
     regex_variables = process_variables(raw_regex_variables)
 
     def _substitute_edition(template, *edition_names):

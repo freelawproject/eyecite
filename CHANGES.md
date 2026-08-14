@@ -22,6 +22,16 @@ Fixes:
 
 ## Current
 
+**2.7.9 - 2026-8-05**
+Features:
+-
+
+Changes:
+-
+
+Fixes:
+- Fix citation parser to recognize law-citation section numbers with letter suffixes, including single-letter (`1028A`) and compound dash-separated forms (`300gg-91`, `1749bbb-10c`)
+
 **2.7.8 - 2026-07-01**
 
 Features:
