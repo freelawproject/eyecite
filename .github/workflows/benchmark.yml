@@ -186,6 +186,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
+      - name: Validate dispatch payload
+        # `client_payload` is caller-supplied JSON, and pr_number/commit are
+        # used by every step below (sticky comments, the install URL,
+        # destination_folder), so gate the whole job here. The error output
+        # deliberately omits the raw value: the payload can contain newlines,
+        # and a second echoed line would be parsed by the runner as a
+        # workflow command.
+        env:
+          PR_NUMBER: ${{ github.event.client_payload.pr_number }}
+          COMMIT: ${{ github.event.client_payload.commit }}
+        run: |
+          set -euo pipefail
+          [[ "$PR_NUMBER" =~ ^[0-9]{1,9}$ ]] || { echo "::error::client_payload.pr_number malformed"; exit 1; }
+          [[ "$COMMIT" =~ ^[0-9a-fA-F]{7,40}$ ]] || { echo "::error::client_payload.commit malformed"; exit 1; }
+
       - name: Set up Python
         id: setup-python
         uses: actions/setup-python@v6
@@ -217,14 +232,23 @@ jobs:
           echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
 
       - name: Run Tests
+        # `client_payload` is caller-supplied JSON. Never interpolate it into
+        # the shell as `${{ ... }}` -- that substitutes the raw text before bash
+        # parses the line, so a value like `x$(...)` or `` x`...` `` would
+        # execute in this job, which holds FREELAWBOT_TOKEN. Pass it through the
+        # environment instead (bash never re-parses an env value); the shape of
+        # both values is checked by the "Validate dispatch payload" step above.
+        env:
+          PR_NUMBER: ${{ github.event.client_payload.pr_number }}
+          COMMIT: ${{ github.event.client_payload.commit }}
         run: |
+          set -euo pipefail
           uv pip install "git+https://github.com/freelawproject/reporters-db.git"
-          echo ${{ github.event.client_payload.pr_number }}
           curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
           python benchmark/benchmark.py --branches original
-          uv pip install "git+https://github.com/freelawproject/reporters-db.git@${{ github.event.client_payload.commit }}"
+          uv pip install "git+https://github.com/freelawproject/reporters-db.git@$COMMIT"
           # "original" is the baseline; "update" is the reporters-db PR.
-          python benchmark/benchmark.py --branches original update --base original --reporters --pr ${{ github.event.client_payload.pr_number }}
+          python benchmark/benchmark.py --branches original update --base original --reporters --pr "$PR_NUMBER"
           mkdir results
           mv benchmark/output.csv benchmark/original.json benchmark/update.json benchmark/report.md benchmark/chart.png results/
 
