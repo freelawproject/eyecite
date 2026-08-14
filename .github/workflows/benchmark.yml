@@ -186,6 +186,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v5
 
+      - name: Validate dispatch payload
+        # `client_payload` is caller-supplied JSON, and pr_number/commit are
+        # used by every step below (sticky comments, the install URL,
+        # destination_folder), so gate the whole job here. The error output
+        # deliberately omits the raw value: the payload can contain newlines,
+        # and a second echoed line would be parsed by the runner as a
+        # workflow command.
+        env:
+          PR_NUMBER: ${{ github.event.client_payload.pr_number }}
+          COMMIT: ${{ github.event.client_payload.commit }}
+        run: |
+          set -euo pipefail
+          [[ "$PR_NUMBER" =~ ^[0-9]{1,9}$ ]] || { echo "::error::client_payload.pr_number malformed"; exit 1; }
+          [[ "$COMMIT" =~ ^[0-9a-fA-F]{7,40}$ ]] || { echo "::error::client_payload.commit malformed"; exit 1; }
+
       - name: Set up Python
         id: setup-python
         uses: actions/setup-python@v6
@@ -221,25 +236,14 @@ jobs:
         # the shell as `${{ ... }}` -- that substitutes the raw text before bash
         # parses the line, so a value like `x$(...)` or `` x`...` `` would
         # execute in this job, which holds FREELAWBOT_TOKEN. Pass it through the
-        # environment instead (bash never re-parses an env value) and validate
-        # the shape before either value reaches a command.
+        # environment instead (bash never re-parses an env value); the shape of
+        # both values is checked by the "Validate dispatch payload" step above.
         env:
           PR_NUMBER: ${{ github.event.client_payload.pr_number }}
           COMMIT: ${{ github.event.client_payload.commit }}
         run: |
           set -euo pipefail
-          if ! printf '%s' "$PR_NUMBER" | grep -Eq '^[0-9]{1,9}$'; then
-            echo "::error::client_payload.pr_number is not a plain number: $PR_NUMBER"
-            exit 1
-          fi
-          # A git commit ref: 7-40 hex chars. Rejecting anything else keeps the
-          # value safe to splice into the install URL below.
-          if ! printf '%s' "$COMMIT" | grep -Eiq '^[0-9a-f]{7,40}$'; then
-            echo "::error::client_payload.commit is not a commit sha: $COMMIT"
-            exit 1
-          fi
           uv pip install "git+https://github.com/freelawproject/reporters-db.git"
-          echo "$PR_NUMBER"
           curl https://storage.courtlistener.com/bulk-data/eyecite/tests/one-percent.csv.bz2 --output benchmark/bulk-file.csv.bz2
           python benchmark/benchmark.py --branches original
           uv pip install "git+https://github.com/freelawproject/reporters-db.git@$COMMIT"
