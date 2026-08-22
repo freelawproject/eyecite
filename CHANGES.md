@@ -13,6 +13,8 @@ Changes:
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
 
 Fixes:
+- CI: fix `sed` invocation syntax in the Pdoc workflow on GNU/Linux runners and
+  add `workflow_dispatch` trigger. #316
 - CI: harden the benchmark's `repository_dispatch` job against shell script
   injection by passing `client_payload` values through the environment and
   validating their shape, instead of interpolating them into `run:`. #337
