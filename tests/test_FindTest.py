@@ -1019,6 +1019,39 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Law citation extraction")
 
+    def test_find_usc_citations_without_section_mark(self):
+        """Do we find U.S.C. cites that omit the section mark? (#300)"""
+        # fmt: off
+        test_pairs = (
+            ('50 U.S.C. 1701',
+             [law_citation('50 U.S.C. 1701', reporter='U.S.C.',
+                           groups={'title': '50', 'section': '1701'})]),
+            ('18 U.S.C. 1961',
+             [law_citation('18 U.S.C. 1961', reporter='U.S.C.',
+                           groups={'title': '18', 'section': '1961'})]),
+            # The marked form is unchanged, and is still preferred over the
+            # bare form, so "§ 1701" is not also matched as a second cite.
+            ('50 U.S.C. § 1701',
+             [law_citation('50 U.S.C. § 1701', reporter='U.S.C.',
+                           groups={'title': '50', 'section': '1701'})]),
+            ('50 U.S.C. 1701 et seq.',
+             [law_citation('50 U.S.C. 1701 et seq.', reporter='U.S.C.',
+                           metadata={'pin_cite': 'et seq.'},
+                           groups={'title': '50', 'section': '1701'})]),
+            ('pursuant to the International Emergency Economic Powers Act '
+             '(50 U.S.C. 1701 et seq.)',
+             [law_citation('50 U.S.C. 1701 et seq.', reporter='U.S.C.',
+                           metadata={'pin_cite': 'et seq.'},
+                           groups={'title': '50', 'section': '1701'})]),
+            # Prose mentioning the code needs both a title and a section.
+            ('the U.S.C. is a code', []),
+            ('U.S.C. Title 18', []),
+            ('see U.S.C.', []),
+            ('codified at 50 U.S.C.', []),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "USC citation without section mark")
+
     def test_find_journal_citations(self):
         """Can we find citations from journals.json?"""
         # fmt: off
