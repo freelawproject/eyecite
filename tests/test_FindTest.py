@@ -947,6 +947,44 @@ class FindTest(TestCase):
         self.assertEqual(len(ambiguous.all_editions), 2)
         self.assertEqual(len(set(ambiguous.all_editions)), 2)
 
+    def test_id_citation_with_section_pin_cite(self):
+        """Does an Id. cite keep a section pin cite? (#299)
+
+        The section mark is its own token, and the pin cite scan used to stop
+        at any non-string token, so "Id. § 5" lost the pin cite and left the
+        mark behind as a citation of its own.
+        """
+        # fmt: off
+        test_pairs = (
+            ('42 U.S.C. § 1983. Id. § 1985.',
+             [law_citation('42 U.S.C. § 1983', reporter='U.S.C.',
+                           groups={'title': '42', 'section': '1983'}),
+              id_citation('Id.', metadata={'pin_cite': '§ 1985'})]),
+            ('Foo v. Bar 1 U.S. 12. Id. §§ 5-7.',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo', 'defendant': 'Bar'}),
+              id_citation('Id.', metadata={'pin_cite': '§§ 5-7'})]),
+            # The mark is glued to the number, so it is one token.
+            ('Foo v. Bar 1 U.S. 12. Id. §5.',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo', 'defendant': 'Bar'}),
+              id_citation('Id.', metadata={'pin_cite': '§5'})]),
+            ('Foo v. Bar 1 U.S. 12. Id. § 5, 7.',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo', 'defendant': 'Bar'}),
+              id_citation('Id.', metadata={'pin_cite': '§ 5, 7'})]),
+            # A page pin cite still works.
+            ('Foo v. Bar 1 U.S. 12. Id. at 5.',
+             [case_citation(page='12',
+                            metadata={'plaintiff': 'Foo', 'defendant': 'Bar'}),
+              id_citation('Id.', metadata={'pin_cite': 'at 5'})]),
+            # A mark that no citation absorbs is still reported on its own.
+            ('lorem ipsum see § 99 of the U.S. code.',
+             [unknown_citation('§')]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Id. citation with a section pin cite")
+
     def test_find_law_citations(self):
         """Can we find citations from laws.json?"""
         # fmt: off

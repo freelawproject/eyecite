@@ -19,12 +19,14 @@ from eyecite.models import (
     PlaceholderCitationToken,
     ReferenceCitation,
     ResourceCitation,
+    SectionToken,
     ShortCaseCitation,
     StopWordToken,
     SupraCitation,
     SupraToken,
     Token,
     Tokens,
+    UnknownCitation,
 )
 from eyecite.regexes import (
     POST_FULL_CITATION_REGEX,
@@ -1015,7 +1017,9 @@ def match_on_tokens(
         token = words[index]
 
         # check for stop token
-        if strings_only and not isinstance(token, str):
+        # A section mark is a marker, not a citation: its text is ordinary
+        # pin cite vocabulary, so scanning has to see it rather than stop.
+        if strings_only and not isinstance(token, str | SectionToken):
             break
         if isinstance(token, ParagraphToken):
             break
@@ -1107,6 +1111,11 @@ def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
             paren = last_citation.metadata.parenthetical
             if paren and citation.matched_text() in paren:
                 filtered_citations.append(citation)
+                continue
+
+            # A section mark the previous citation took as its pin cite
+            # is that pin cite, not a citation of its own.
+            if isinstance(citation, UnknownCitation):
                 continue
 
             # Known overlap case are parallel full citations
