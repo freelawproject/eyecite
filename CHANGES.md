@@ -19,6 +19,10 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Keep the pin cite on an `Id.` citation that refers to a section, like
+  `Id. § 1985`. The section mark is its own token and used to stop the pin
+  cite scan, so the pin cite was lost and the mark was reported as a separate
+  `UnknownCitation`. #299
 
 ## Current
 
