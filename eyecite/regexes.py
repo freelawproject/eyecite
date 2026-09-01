@@ -367,6 +367,10 @@ POST_LAW_CITATION_REGEX = rf"""
     (?:\(
         # Consol., McKinney, Deering, West, LexisNexis, etc.
         (?P<publisher>
+            # A parenthetical opening with a month is a bare date. The
+            # publisher token would otherwise take the month name and the
+            # date would lose it.
+            (?!{MONTH_REGEX}[\ ,)])
             [A-Z][a-z]+\.?
             (?:\ Supp\.)?
         )?

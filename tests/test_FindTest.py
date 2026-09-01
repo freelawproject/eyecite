@@ -1019,6 +1019,54 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Law citation extraction")
 
+    def test_law_citation_bare_date_parenthetical(self):
+        """Is a bare date parenthetical read as a date, not a publisher? (#326)
+
+        The publisher group precedes the month group, so a parenthetical that
+        opens with a month name satisfied the publisher first and the month
+        was left empty.
+        """
+        # fmt: off
+        test_pairs = (
+            ('18 U.S.C. § 1 (May 2, 1999)',
+             [law_citation('18 U.S.C. § 1 (May 2, 1999)', reporter='U.S.C.',
+                           metadata={'month': 'May', 'day': '2'},
+                           groups={'title': '18', 'section': '1'},
+                           year=1999)]),
+            ('18 U.S.C. § 1 (Jan. 1, 2012)',
+             [law_citation('18 U.S.C. § 1 (Jan. 1, 2012)', reporter='U.S.C.',
+                           metadata={'month': 'Jan.', 'day': '1'},
+                           groups={'title': '18', 'section': '1'},
+                           year=2012)]),
+            # Month and year, no day.
+            ('18 U.S.C. § 1 (May 1999)',
+             [law_citation('18 U.S.C. § 1 (May 1999)', reporter='U.S.C.',
+                           metadata={'month': 'May'},
+                           groups={'title': '18', 'section': '1'},
+                           year=1999)]),
+            # A publisher before the month was always read correctly.
+            ('18 U.S.C. § 1 (West Jan. 1, 2012)',
+             [law_citation('18 U.S.C. § 1 (West Jan. 1, 2012)',
+                           reporter='U.S.C.',
+                           metadata={'publisher': 'West', 'month': 'Jan.',
+                                     'day': '1'},
+                           groups={'title': '18', 'section': '1'},
+                           year=2012)]),
+            ('18 U.S.C. § 1 (West 1999)',
+             [law_citation('18 U.S.C. § 1 (West 1999)', reporter='U.S.C.',
+                           metadata={'publisher': 'West'},
+                           groups={'title': '18', 'section': '1'},
+                           year=1999)]),
+            # A publisher that merely starts with a month name is not a date.
+            ('18 U.S.C. § 1 (Mayhew 1999)',
+             [law_citation('18 U.S.C. § 1 (Mayhew 1999)', reporter='U.S.C.',
+                           metadata={'publisher': 'Mayhew'},
+                           groups={'title': '18', 'section': '1'},
+                           year=1999)]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Law citation bare date parenthetical")
+
     def test_find_journal_citations(self):
         """Can we find citations from journals.json?"""
         # fmt: off

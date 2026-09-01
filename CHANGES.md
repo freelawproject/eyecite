@@ -19,6 +19,10 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Read a law citation's bare date parenthetical as a date. In
+  `18 U.S.C. § 1 (May 2, 1999)` the publisher token took the month name, so
+  `publisher` held `"May"` and `month` was empty. A parenthetical opening
+  with a month is no longer read as a publisher. #326
 
 ## Current
 
