@@ -19,6 +19,10 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Extract U.S. Code citations written without the section mark, like
+  `50 U.S.C. 1701`. Executive-branch and Federal Register drafting omits the
+  `§`, so those cites were missed entirely. A title and a section number
+  are still both required. #300
 
 ## Current
 

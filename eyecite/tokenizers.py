@@ -137,6 +137,12 @@ def _populate_reporter_extractors():
     raw_regex_variables = deepcopy(RAW_REGEX_VARIABLES)
     raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
     raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
+    # Executive-branch drafting omits the section mark ("50 U.S.C. 1701"),
+    # so the marker is optional. Only the U.S.C. regex uses this variable,
+    # and it still requires both a title and a section number. See #300.
+    raw_regex_variables["section_marker"] = (
+        rf"(?:{raw_regex_variables['section_marker']})?"
+    )
     regex_variables = process_variables(raw_regex_variables)
 
     def _substitute_edition(template, *edition_names):
