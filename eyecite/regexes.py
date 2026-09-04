@@ -259,6 +259,22 @@ LAW_PIN_CITE_REGEX = rf"""
     )
 """
 
+# Law note regex:
+# A trailing "note" points at material filed under a section rather than at the
+# section itself, so it is a different target and not a pin cite. Unlike
+# "et seq." the word is ordinary English, so it only counts as a designator
+# when nothing continues it: "notes that ..." must not match.
+LAW_NOTE_REGEX = r"""
+    (?:
+        \ (?P<note>note)
+        (?=
+            [,.;)\]\\]|  # ending punctuation
+            \ ?[(\[]|    # space and start of parens
+            $            # end of text
+        )
+    )?
+"""
+
 # Short cite antecedent regex:
 # What case does a short cite refer to? For now, we just capture the previous
 # word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
@@ -363,6 +379,7 @@ POST_SHORT_CITATION_REGEX = rf"""
 # and then may be followed by a parenthetical:
 POST_LAW_CITATION_REGEX = rf"""
     {LAW_PIN_CITE_REGEX}?
+    {LAW_NOTE_REGEX}
     \ ?
     (?:\(
         # Consol., McKinney, Deering, West, LexisNexis, etc.

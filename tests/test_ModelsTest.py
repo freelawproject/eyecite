@@ -158,6 +158,18 @@ class ModelsTest(TestCase):
         self.assertNotEqual(hash(citations[0]), hash(citations[1]))
         print("✓")
 
+    def test_law_note_comparison(self):
+        """Is a statutory note a different citation than the section it is
+        filed under?"""
+        citations = [
+            get_citations("42 U.S.C. § 1983")[0],
+            get_citations("42 U.S.C. § 1983 note")[0],
+        ]
+        print("Testing law note comparison...", end=" ")
+        self.assertNotEqual(citations[0], citations[1])
+        self.assertNotEqual(hash(citations[0]), hash(citations[1]))
+        print("✓")
+
     def test_missing_page_cite_conversion(self):
         """Do citations with missing page numbers get their groups['page']
         attribute set to None?"""
@@ -220,6 +232,14 @@ class ModelsTest(TestCase):
         self.assertEqual(
             full_case_citation.corrected_citation_full(),
             "Meritor Sav. Bank v. Vinson, 477 U.S. 57, 60 (scotus 1986)",
+        )
+
+    def test_corrected_full_citation_includes_law_note(self):
+        """Does the corrected_citation_full method keep a note designator?"""
+        law_note_citation = get_citations("42 U.S.C. § 1983 note")[0]
+        self.assertEqual(
+            law_note_citation.corrected_citation_full(),
+            "42 U.S.C. § 1983 note",
         )
 
     def test_page_correction(self):
