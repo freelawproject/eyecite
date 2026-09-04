@@ -890,6 +890,10 @@ def add_law_metadata(citation: FullLawCitation, words: Tokens) -> None:
         return
 
     citation.full_span_end = citation.span()[1] + m.end()
+    # A note is a different provision than the section it is filed under, so it
+    # belongs to the citation's identity, which is built from groups.
+    if m["note"]:
+        citation.groups["note"] = m["note"]
     citation.metadata.pin_cite = clean_pin_cite(m["pin_cite"]) or None
     citation.metadata.publisher = m["publisher"]
     citation.metadata.day = m["day"]

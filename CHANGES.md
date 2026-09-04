@@ -19,6 +19,11 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Keep a statute's trailing `note` designator as part of the citation's
+  identity. A note is a different provision than the section it is filed
+  under, so `42 U.S.C. § 1983 note` now carries `groups["note"]` and no
+  longer resolves to the bare `42 U.S.C. § 1983`. Prose such as
+  "§ 1983 notes that ..." is not treated as a designator. #323
 
 ## Current
 

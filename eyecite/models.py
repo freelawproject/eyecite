@@ -408,6 +408,8 @@ class FullLawCitation(FullCitation):
         m = self.metadata
         if m.pin_cite:
             parts.append(f"{m.pin_cite}")
+        if note := self.groups.get("note"):
+            parts.append(f" {note}")
         publisher_date = " ".join(
             i for i in (m.publisher, m.month, m.day, m.year) if i
         )

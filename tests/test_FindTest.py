@@ -1015,6 +1015,43 @@ class FindTest(TestCase):
              [law_citation('Mass. Gen. Laws ch. 1, §§ 2-3',
                            reporter='Mass. Gen. Laws',
                            groups={'chapter': '1', 'section': '2-3'})]),
+            # note designator, a different provision than the section
+            ('42 U.S.C. § 1983 note',
+             [law_citation('42 U.S.C. § 1983 note', reporter='U.S.C.',
+                           groups={'title': '42', 'section': '1983',
+                                   'note': 'note'})]),
+            ('28 U.S.C. § 994 note',
+             [law_citation('28 U.S.C. § 994 note', reporter='U.S.C.',
+                           groups={'title': '28', 'section': '994',
+                                   'note': 'note'})]),
+            ('8 U.S.C. § 1101 note',
+             [law_citation('8 U.S.C. § 1101 note', reporter='U.S.C.',
+                           groups={'title': '8', 'section': '1101',
+                                   'note': 'note'})]),
+            # note after a subsection pin cite
+            ('Fla. Stat. § 120.68(2) note',
+             [law_citation('Fla. Stat. § 120.68(2) note',
+                           reporter='Fla. Stat.',
+                           metadata={'pin_cite': '(2)'},
+                           groups={'section': '120.68', 'note': 'note'})]),
+            # note before a year parenthetical
+            ('42 U.S.C. § 1983 note (1994)',
+             [law_citation('42 U.S.C. § 1983 note (1994)', reporter='U.S.C.',
+                           groups={'title': '42', 'section': '1983',
+                                   'note': 'note'},
+                           year=1994)]),
+            # et seq. is part of the section, so it stays a pin cite
+            ('42 U.S.C. § 1983 et seq.',
+             [law_citation('42 U.S.C. § 1983 et seq.', reporter='U.S.C.',
+                           metadata={'pin_cite': 'et seq.'},
+                           groups={'title': '42', 'section': '1983'})]),
+            # "note" as prose, not a designator
+            ('42 U.S.C. § 1983 notes that liability attaches',
+             [law_citation('42 U.S.C. § 1983', reporter='U.S.C.',
+                           groups={'title': '42', 'section': '1983'})]),
+            ('42 U.S.C. § 1983. Note that the court',
+             [law_citation('42 U.S.C. § 1983', reporter='U.S.C.',
+                           groups={'title': '42', 'section': '1983'})]),
         )
         # fmt: on
         self.run_test_pairs(test_pairs, "Law citation extraction")
