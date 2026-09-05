@@ -63,6 +63,16 @@ Install eyecite::
 
     pip install eyecite
 
+You can also extract citations without installing eyecite into your current
+environment::
+
+    uvx eyecite extract "410 U.S. 113"
+    uvx eyecite extract < opinion.txt
+
+The command prints JSON. Its JSON Schema is available from::
+
+    uvx eyecite schema
+
 
 Here's a short example of extracting citations and their metadata from text using eyecite's main :code:`get_citations()` function::
 
@@ -98,6 +108,42 @@ Here's a short example of extracting citations and their metadata from text usin
             metadata=Metadata(antecedent_guess='Foo', pin_cite='at 5', ...)
         )
     ]
+
+Testing ``uvx`` before a release
+--------------------------------
+
+Run the checkout directly::
+
+    uvx --from . eyecite extract < tests/assets/opinion.txt
+
+To exercise the artifact that would be uploaded to PyPI, build and run its
+wheel::
+
+    uv build --wheel
+    uvx --from ./dist/eyecite-*.whl eyecite extract "410 U.S. 113"
+
+Agent skills
+------------
+
+An agent skill can use the same interface without requiring a persistent
+eyecite installation. Pin the version in a reusable skill::
+
+    uvx eyecite@X.Y.Z extract < opinion.txt
+
+This repository includes the example ``eyecite-extract`` skill for both Codex
+and Claude Code. Invoke it as ``$eyecite-extract`` in Codex or
+``/eyecite-extract`` in Claude Code. Both agents need an installed,
+authenticated CLI, and invoking either one consumes model usage.
+
+The end-to-end test is optional and uses ``tests/assets/opinion.txt``. Run it
+with one client or both::
+
+    EYECITE_AGENT_CLIENT=codex python -m unittest tests.test_AgentSkillTest
+    EYECITE_AGENT_CLIENT=claude python -m unittest tests.test_AgentSkillTest
+    EYECITE_AGENT_CLIENT=all python -m unittest tests.test_AgentSkillTest
+
+Set ``EYECITE_CODEX_MODEL`` or ``EYECITE_CLAUDE_MODEL`` to override the
+model used by the corresponding CLI test.
 
 Tutorial
 ==========
