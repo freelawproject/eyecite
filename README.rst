@@ -69,9 +69,20 @@ environment::
     uvx eyecite extract "410 U.S. 113"
     uvx eyecite extract < opinion.txt
 
-The command prints JSON. Its JSON Schema is available from::
+The command prints JSON to stdout. Output for a full opinion runs to tens of
+kilobytes, so ``-o`` writes it to a file instead and reports the citation
+count on stderr::
+
+    uvx eyecite extract -o citations.json < opinion.txt
+
+The output's JSON Schema is available from::
 
     uvx eyecite schema
+
+``uvx eyecite --help`` and ``uvx eyecite extract --help`` document the full
+interface, including exit codes: ``0`` on success, and ``2`` for invalid
+arguments or for ``extract`` invoked with neither an argument nor piped
+stdin.
 
 
 Here's a short example of extracting citations and their metadata from text using eyecite's main :code:`get_citations()` function::
@@ -112,9 +123,30 @@ Here's a short example of extracting citations and their metadata from text usin
 Testing ``uvx`` before a release
 --------------------------------
 
-Run the checkout directly::
+Run the checkout directly by passing ``.`` to ``--from`` wherever the docs
+below pass a version specifier::
 
     uvx --from . eyecite extract < tests/assets/opinion.txt
+
+This is how to try local changes against any command in ``SKILL.md``: keep the
+command as written and swap ``--from 'eyecite>=2.8,<3'`` for ``--from .``. The
+skill itself always names the released package, so it stays correct for anyone
+who copies it out of this repository.
+
+``uvx`` caches the wheel it builds from the checkout, so add ``--no-cache``
+after editing eyecite or you will keep running the previous build.
+
+To run the agent skill against unreleased changes — including before the
+first release that ships the ``eyecite`` executable — build a wheel and point
+``uv`` at it::
+
+    uv build --wheel
+    export UV_FIND_LINKS="$PWD/dist"
+
+Start your agent from that shell. The commands in ``SKILL.md`` then resolve
+from ``dist/`` instead of PyPI, unchanged, so the skill needs no repo-local
+edits. ``dist/`` is gitignored and there is nothing to revert once the
+release lands. Rebuild the wheel after each change to eyecite.
 
 To exercise the artifact that would be uploaded to PyPI, build and run its
 wheel::
@@ -128,12 +160,18 @@ Agent skills
 An agent skill can use the same interface without requiring a persistent
 eyecite installation. Pin the version in a reusable skill::
 
-    uvx eyecite@X.Y.Z extract < opinion.txt
+    uvx --from 'eyecite>=2.8,<3' eyecite extract < opinion.txt
+
+The lower bound matters because releases before 2.8.0 ship no ``eyecite``
+executable. Avoid an exact pin: within 2.x the JSON contract is stable, and
+newer releases carry citation-parsing fixes the skill should pick up.
 
 This repository includes the example ``eyecite-extract`` skill for both Codex
-and Claude Code. Invoke it as ``$eyecite-extract`` in Codex or
-``/eyecite-extract`` in Claude Code. Both agents need an installed,
-authenticated CLI, and invoking either one consumes model usage.
+and Claude Code. The identical copies under ``.agents/`` and ``.claude/`` are
+both ordinary files so they work in Windows checkouts; keep them in sync.
+Invoke it as ``$eyecite-extract`` in Codex or ``/eyecite-extract`` in Claude
+Code. Both agents need an installed, authenticated CLI, and invoking either
+one consumes model usage.
 
 The end-to-end test is optional and uses ``tests/assets/opinion.txt``. Run it
 with one client or both::

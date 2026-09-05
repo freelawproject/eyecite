@@ -81,14 +81,11 @@ class AgentSkillTest(unittest.TestCase):
                     )
                     result, commands, trace_chars = getattr(
                         self, f"run_{client}"
-                    )(
-                        tmp_path, env
-                    )
+                    )(tmp_path, env)
                     self.assertEqual(result, expected)
                     self.assertTrue(
                         any(
-                            "uvx" in command
-                            and "eyecite" in command
+                            "uvx" in command and "eyecite" in command
                             for command in commands
                         ),
                         f"{client} did not execute eyecite through uvx",
@@ -139,7 +136,11 @@ class AgentSkillTest(unittest.TestCase):
             if event.get("type") in {"item.started", "item.completed"}
             and event.get("item", {}).get("type") == "command_execution"
         ]
-        return json.loads(result_path.read_text()), commands, len(completed.stdout)
+        return (
+            json.loads(result_path.read_text()),
+            commands,
+            len(completed.stdout),
+        )
 
     def run_claude(self, tmp_path, env):
         command = [
@@ -168,7 +169,9 @@ class AgentSkillTest(unittest.TestCase):
         completed = self.run_command(command, env)
         events = [json.loads(line) for line in completed.stdout.splitlines()]
         result_event = next(
-            event for event in reversed(events) if event.get("type") == "result"
+            event
+            for event in reversed(events)
+            if event.get("type") == "result"
         )
         result = result_event.get("structured_output")
         if result is None:
@@ -177,7 +180,10 @@ class AgentSkillTest(unittest.TestCase):
         for event in events:
             message = event.get("message", {})
             for item in message.get("content", []):
-                if item.get("type") == "tool_use" and item.get("name") == "Bash":
+                if (
+                    item.get("type") == "tool_use"
+                    and item.get("name") == "Bash"
+                ):
                     commands.append(item.get("input", {}).get("command", ""))
         return result, commands, len(completed.stdout)
 
@@ -185,8 +191,10 @@ class AgentSkillTest(unittest.TestCase):
     def prompt(skill):
         return (
             f"Use {skill} to extract citations from {FIXTURE}. "
-            "Run eyecite through uvx using this source checkout. Keep the raw "
-            "JSON out of the tool transcript by redirecting it to a temporary "
+            "Run the skill's commands against this source checkout instead "
+            "of the released package: replace the `--from` package specifier "
+            "with `.`, so they read `uvx --from . eyecite ...`. Keep the raw "
+            "JSON out of the tool transcript by writing it to a temporary "
             "file before inspecting it. Return only the citation count and "
             "the exact text of the first and last citations, matching the "
             "required schema. Do not modify files."
