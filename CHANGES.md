@@ -13,6 +13,10 @@ Changes:
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
 
 Fixes:
+- Stop the court group of `POST_FULL_CITATION_REGEX` from running past a
+  citation's own `(year)` paren into a later `(court year)` paren, which
+  mis-set `year`, `court` and `full_span` on string cites and on citations
+  followed by another citation in the next sentence.
 - CI: harden the benchmark's `repository_dispatch` job against shell script
   injection by passing `client_payload` values through the environment and
   validating their shape, instead of interpolating them into `run:`. #337
