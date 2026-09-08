@@ -2102,3 +2102,32 @@ class FindTest(TestCase):
         citations = get_citations(text)
         self.assertEqual(len(citations), 2)
         mock_warn.assert_not_called()
+
+    def test_court_year_paren_does_not_run_on(self):
+        """The court group must stop at ")" instead of crawling into a later
+        court/date parenthetical. Before the fix the first case reported
+        year=1997 and a full_span reaching the end of the string."""
+        cases = [
+            (
+                "A v. B, 550 U.S. 544, 555 (2007). Later text here (2d Cir. 1997).",
+                2007, "scotus", "A v. B, 550 U.S. 544, 555 (2007)",
+            ),
+            (
+                "See, e.g., A v. B, 550 U.S. 544, 555 (2007); C v. D, 123 F.3d 456, 460 (2d Cir. 1997).",
+                2007, "scotus", "A v. B, 550 U.S. 544, 555 (2007)",
+            ),
+            (
+                "Thole v. U.S. Bank, 590 U.S. 538 (2020). Doe v. Roe, 45 F. Supp. 3d 100 (S.D.N.Y. Feb. 9, 2014).",
+                2020, "scotus", "Thole v. U.S. Bank, 590 U.S. 538 (2020)",
+            ),
+            (
+                "A v. B, 123 F.3d 456, 460 (2d Cir. Feb. 9, 1997) (holding x).",
+                1997, "ca2", "A v. B, 123 F.3d 456, 460 (2d Cir. Feb. 9, 1997) (holding x)",
+            ),
+        ]
+        for text, year, court, full in cases:
+            with self.subTest(text=text):
+                cite = get_citations(text)[0]
+                self.assertEqual(cite.year, year)
+                self.assertEqual(cite.metadata.court, court)
+                self.assertEqual(text[slice(*cite.full_span())], full)
