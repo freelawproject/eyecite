@@ -227,6 +227,16 @@ def _scan_for_case_boundaries(
 
         # Handle year before citation
         if re.match(r"\(\d{4}\)", word_str):
+            if state["v_token"] is not None:
+                # A year found after the v_token must belong to an earlier
+                # citation, unrelated to the one that is already completed
+                # in this iteration.
+                state["start_index"] = index + 2
+                state["candidate_case_name"] = _extract_text(
+                    words, state["start_index"], state["title_starting_index"]
+                )
+                break
+
             state["title_starting_index"] = index - 1
             state["pre_cite_year"] = word_str[1:5]
             continue
@@ -363,7 +373,9 @@ def _process_case_name(
         else:
             plaintiff, defendant = "", splits[0]
         plaintiff = plaintiff.strip(f"{whitespace},(")
-        clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
+        clean_plaintiff = re.sub(
+            r"\b(?!(?:of|and)\b)[a-z]\w*\b", "", plaintiff
+        )
         plaintiff = strip_stop_words(clean_plaintiff)
         citation.metadata.plaintiff = plaintiff
     else:
