@@ -866,6 +866,20 @@ class FindTest(TestCase):
                                       "defendant": "Board of Education",
                                       "year": "1954"}
                             ),
+              ]),
+            # Multi-words plaintiff before another citation year
+            ("Smith v. Jones, 347 U.S. 999 (1952). Association Citizens United v. FEC, 558 U.S. 310 (2010).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="558", reporter="U.S.", page="310",
+                            metadata={
+                                "plaintiff": "Association Citizens United",
+                                "defendant": "FEC",
+                                "year": "2010"}
+                            ),
               ])
         )
 

@@ -231,6 +231,10 @@ def _scan_for_case_boundaries(
                 # A year found after the v_token must belong to an earlier
                 # citation, unrelated to the one that is already completed
                 # in this iteration.
+                state["start_index"] = index + 2
+                state["candidate_case_name"] = _extract_text(
+                    words, state["start_index"], state["title_starting_index"]
+                )
                 break
 
             state["title_starting_index"] = index - 1
