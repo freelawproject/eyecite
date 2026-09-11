@@ -20,6 +20,7 @@ Fixes:
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
 - Add missing stop word "compare". #321
+- Identify boundary when reaching second citation parenthetical year. #321
 
 ## Current
 

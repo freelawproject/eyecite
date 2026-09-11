@@ -227,6 +227,12 @@ def _scan_for_case_boundaries(
 
         # Handle year before citation
         if re.match(r"\(\d{4}\)", word_str):
+            if state["v_token"] is not None:
+                # A year found after the v_token must belong to an earlier
+                # citation, unrelated to the one that is already completed
+                # in this iteration.
+                break
+
             state["title_starting_index"] = index - 1
             state["pre_cite_year"] = word_str[1:5]
             continue
