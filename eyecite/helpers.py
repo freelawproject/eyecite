@@ -373,7 +373,9 @@ def _process_case_name(
         else:
             plaintiff, defendant = "", splits[0]
         plaintiff = plaintiff.strip(f"{whitespace},(")
-        clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
+        clean_plaintiff = re.sub(
+            r"\b(?!(?:of|and)\b)[a-z]\w*\b", "", plaintiff
+        )
         plaintiff = strip_stop_words(clean_plaintiff)
         citation.metadata.plaintiff = plaintiff
     else:

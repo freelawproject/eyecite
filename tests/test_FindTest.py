@@ -880,6 +880,20 @@ class FindTest(TestCase):
                                 "defendant": "FEC",
                                 "year": "2010"}
                             ),
+              ]),
+            # Plaintiff name including exceptional lowercase-only words ('of', 'and')
+            ("Smith v. Jones, 347 U.S. 999 (1952). Trustees of Dartmouth College v. Woodward, 17 U.S. 518 (1819).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="17", reporter="U.S.", page="518",
+                            metadata={
+                                "plaintiff": "Trustees of Dartmouth College",
+                                "defendant": "Woodward",
+                                "year": "1819"}
+                            ),
               ])
         )
 
