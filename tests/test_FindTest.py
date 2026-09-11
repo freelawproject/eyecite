@@ -835,7 +835,24 @@ class FindTest(TestCase):
                             metadata={"plaintiff": "Crane",
                                       "defendant": "Hyde Park"}
                             )],
-             {'clean_steps': ['html', 'inline_whitespace']})
+             {'clean_steps': ['html', 'inline_whitespace']}),
+            ("The court in Smith v. Jones, 347 U.S. 999 (1951), held that \"schools must serve pizza.\" Smith v. Jones, 347 U.S. 999 (1952). Compare Brown v. Board of Education, 347 U.S. 483 (1954).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1951"}
+                            ),
+              case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="347", reporter="U.S.", page="483",
+                            metadata={"plaintiff": "Brown",
+                                      "defendant": "Board of Education",
+                                      "year": "1954"}
+                            ),
+              ])
         )
 
         # fmt: on

@@ -90,6 +90,7 @@ STOP_WORDS = (
     "granted",
     "dismissed",
     "Cf",
+    "compare",
 )
 STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
