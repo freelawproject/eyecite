@@ -19,6 +19,10 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- `AhocorasickTokenizer.get_extractors` now returns extractors in
+  `EXTRACTORS` order instead of set order. Citations like `37 T.C. at 155`,
+  which several extractors match with the same span, no longer switch
+  between full and short depending on `PYTHONHASHSEED`. #352
 
 ## Current
 
