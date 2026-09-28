@@ -835,7 +835,52 @@ class FindTest(TestCase):
                             metadata={"plaintiff": "Crane",
                                       "defendant": "Hyde Park"}
                             )],
-             {'clean_steps': ['html', 'inline_whitespace']})
+             {'clean_steps': ['html', 'inline_whitespace']}),
+            # Handle "compare" stop word
+            ("The court in Smith v. Jones, 347 U.S. 999 (1951), held that \"schools must serve pizza.\" Smith v. Jones, 347 U.S. 999 (1952). Compare Brown v. Board of Education, 347 U.S. 483 (1954).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1951"}
+                            ),
+              case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="347", reporter="U.S.", page="483",
+                            metadata={"plaintiff": "Brown",
+                                      "defendant": "Board of Education",
+                                      "year": "1954"}
+                            ),
+              ]),
+            # Break citation extraction when finding another citation year
+            ("Smith v. Jones, 347 U.S. 999 (1952). Brown v. Board of Education, 347 U.S. 483 (1954).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="347", reporter="U.S.", page="483",
+                            metadata={"plaintiff": "Brown",
+                                      "defendant": "Board of Education",
+                                      "year": "1954"}
+                            ),
+              ]),
+            # Multi-words plaintiff before another citation year
+            ("Smith v. Jones, 347 U.S. 999 (1952). Association Citizens United v. FEC, 558 U.S. 310 (2010).",
+             [case_citation(volume="347", reporter="U.S.", page="999",
+                            metadata={"plaintiff": "Smith",
+                                      "defendant": "Jones",
+                                      "year": "1952"}
+                            ),
+              case_citation(volume="558", reporter="U.S.", page="310",
+                            metadata={
+                                "plaintiff": "Association Citizens United",
+                                "defendant": "FEC",
+                                "year": "2010"}
+                            ),
+              ]),
         )
 
         # fmt: on
