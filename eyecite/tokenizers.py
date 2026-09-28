@@ -117,6 +117,12 @@ def _relax_ws(escaped: str) -> str:
     # (`re.escape` escapes a space as "\ "; match it with or without the
     # backslash so this is robust across Python versions.)
     escaped = re.sub(r"(?:\\?\ )+", r"\\s*", escaped)
+    # Drop a trailing optional-whitespace so the abbreviation pattern never
+    # captures whitespace past its final token: with flexible whitespace at
+    # the template boundaries there is no following literal space to force
+    # the greedy \s* to backtrack, so e.g. `U\.S\.\s*` would capture
+    # "U.S. " (trailing space) into the reporter group.
+    escaped = re.sub(r"(?:\\s\*)+$", "", escaped)
     return escaped
 
 
@@ -135,7 +141,7 @@ def _populate_reporter_extractors():
 
     # Set up regex replacement variables from reporters-db
     raw_regex_variables = deepcopy(RAW_REGEX_VARIABLES)
-    raw_regex_variables["full_cite"][""] = "$volume $reporter,? $page"
+    raw_regex_variables["full_cite"][""] = r"$volume\s*$reporter,?\s*$page"
     raw_regex_variables["page"][""] = rf"(?P<page>{PAGE_NUMBER_REGEX})"
     regex_variables = process_variables(raw_regex_variables)
 

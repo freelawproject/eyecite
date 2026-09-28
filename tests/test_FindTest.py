@@ -905,6 +905,85 @@ class FindTest(TestCase):
         # fmt: on
         self.run_test_pairs(test_pairs, "Relaxed reporter whitespace")
 
+    def test_glued_citations(self):
+        """Do we match citations with no space at the template boundaries?
+
+        Real-world documents (OCR output, but also born-digital PDF text
+        layers) drop the spaces between volume, reporter, and page:
+        "846F.2d746". The full-cite template relaxes both boundaries to
+        `\\s*`, extending #305's within-reporter relaxation, and `_relax_ws`
+        trims its trailing `\\s*` so the reporter group never captures
+        boundary whitespace. See #338.
+        """
+        # fmt: off
+        test_pairs = (
+            # Glued at both boundaries
+            ('846F.2d746',
+             [case_citation(volume='846', page='746', reporter='F.2d')]),
+            ('410U.S.113',
+             [case_citation(volume='410', page='113')]),
+            # Glued at one boundary only
+            ('846F.2d 746',
+             [case_citation(volume='846', page='746', reporter='F.2d')]),
+            ('846 F.2d746',
+             [case_citation(volume='846', page='746', reporter='F.2d')]),
+            # Boundary glue composes with the #305 within-reporter
+            # relaxation (and the reporter group stays clean of boundary
+            # whitespace on the spaced side)
+            ('799N. Y. S. 2d795',
+             [case_citation(volume='799', page='795',
+                            reporter='N.Y.S.2d',
+                            reporter_found='N. Y. S. 2d')]),
+            # Short cite glued at the volume boundary, through the
+            # separate short_cite_re path
+            ('757F.2d at 1241',
+             [case_citation(volume='757', page='1241', reporter='F.2d',
+                            short=True,
+                            metadata={'pin_cite': '1241'})]),
+            # Case-name and year parsing still work around a glued cite
+            ('Lissner v. Test 846F.2d746 (1988)',
+             [case_citation(volume='846', page='746', reporter='F.2d',
+                            year=1988,
+                            metadata={'plaintiff': 'Lissner',
+                                      'defendant': 'Test'})]),
+            # A valid page token must still follow: street addresses and
+            # document labels with a bare reporter-like token do not match
+            ('7F., No. 106, Sec. 5',
+             []),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Glued citations")
+
+    def test_adjacent_citations_share_boundary(self):
+        """Do two citations separated by a single character both match?
+
+        The nonalphanum boundary wrappers consume one character on each
+        side of a match, so under finditer semantics a separator consumed
+        as one citation's trailing boundary was unavailable as the next
+        citation's leading boundary, and the second citation was silently
+        skipped. Parallel cites hit this whenever the separator is a bare
+        comma with no following space — common in OCR output, where it
+        composes with glued citations ("347U.S. 483,349 U.S. 294"), but
+        also present in born-digital text ("347 U.S. 483,349 U.S. 294"),
+        where the swallow predates the glued-citation relaxation.
+        HyperscanTokenizer reports overlapping matches and never had this
+        blind spot; `TokenExtractor.get_matches` now resumes scanning at
+        the end of the token content so the pure-Python tokenizers agree.
+        """
+        # fmt: off
+        test_pairs = (
+            # Parallel cite, second member glued to the shared comma
+            ('347 U.S. 483,349 U.S. 294',
+             [case_citation(volume='347', page='483'),
+              case_citation(volume='349', page='294')]),
+            # Composes with glue inside the first citation itself
+            ('347U.S. 483,349 U.S. 294',
+             [case_citation(volume='347', page='483'),
+              case_citation(volume='349', page='294')]),
+        )
+        # fmt: on
+        self.run_test_pairs(test_pairs, "Adjacent citations")
+
     def test_no_duplicate_editions(self):
         """Is the same Edition never listed twice in all_editions? (#317)
 
