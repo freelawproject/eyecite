@@ -6,6 +6,7 @@ from eyecite.models import CitationToken, IdToken, StopWordToken
 from eyecite.regexes import STOP_WORDS
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
+    EXTRACTORS,
     AhocorasickTokenizer,
     default_tokenizer,
 )
@@ -123,3 +124,18 @@ class TokenizerTest(TestCase):
             frozenset(e.strings) for e in extractors if e.strings
         }
         self.assertEqual(expected_strings, extractor_strings)
+
+    def test_extractor_order_is_stable(self):
+        """Are extractors returned in EXTRACTORS order, so the result does
+        not depend on PYTHONHASHSEED? See #352."""
+        # "37 T.C. at 155" is matched with the same span by a full cite
+        # extractor (via the "T.C. at" variation) and by two short cite
+        # extractors. The first one returned wins the tie.
+        text = "Fuller v. Commissioner, 37 T.C. at 155; Estate of X"
+        extractors = default_tokenizer.get_extractors(text)
+        positions = {id(e): i for i, e in enumerate(EXTRACTORS)}
+        order = [positions[id(e)] for e in extractors]
+        self.assertEqual(order, sorted(order))
+        _, citation_tokens = default_tokenizer.tokenize(text)
+        cites = [t for _, t in citation_tokens if isinstance(t, CitationToken)]
+        self.assertEqual([t.short for t in cites], [True])
