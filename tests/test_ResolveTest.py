@@ -4,7 +4,12 @@ from unittest import TestCase
 from eyecite import get_citations
 from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
-from eyecite.models import Document, FullCitation, Resource
+from eyecite.models import (
+    Document,
+    FullCitation,
+    Resource,
+    ShortLawCitation,
+)
 from eyecite.resolve import resolve_citations
 
 
@@ -258,6 +263,213 @@ class ResolveTest(TestCase):
             (1, "See Foo, 1 U.S. 2."),
             (None, "Foo, 1 U.S., at 2."),
         )
+
+    watters_6_7 = (  # From issue #329
+        "Business activities of national banks are controlled by the "
+        "National Bank Act (NBA or Act), 12 U. S. C. § 1 et seq., and "
+        "regulations promulgated thereunder by the Office of the "
+        "Comptroller of the Currency (OCC). See §§ 24, 93a, 371(a). As "
+        "the agency charged by Congress with supervision of the NBA, OCC "
+        "oversees the operations of national banks and their interactions "
+        "with customers. See NationsBank of N. C., N. A. v. Variable "
+        "Annuity Life Ins. Co., 513 U. S. 251, 254, 256 (1995). The "
+        "agency exercises visitorial powers, including the authority to "
+        "audit the bank's books and records, largely to the exclusion of "
+        "other governmental entities, state or federal. See § 484(a); "
+        "12 CFR § 7.4000 (2006)."
+    )
+
+    def resolve_text(self, text):
+        """Return (citations, resolutions dict, formatted resolution)."""
+        citations = get_citations(text)
+        resolutions = resolve_citations(citations)
+        return citations, resolutions, format_resolution(resolutions)
+
+    def shortlaw_cites(self, citations):
+        return [c for c in citations if isinstance(c, ShortLawCitation)]
+
+    def test_shortlaw_resolution(self):
+        """Do short law citations inherit from the nearest U.S.C. cite,
+        without intervening case citations breaking the chain, and without
+        clustering with the antecedent's own section?"""
+        citations, _, formatted = self.resolve_text(self.watters_6_7)
+        self.assertEqual(
+            formatted,
+            {
+                "12 U. S. C. § 1": ["12 U. S. C. § 1"],
+                "§§ 24": ["§§ 24"],
+                "513 U. S. 251": ["513 U. S. 251"],
+                "§ 484(a)": ["§ 484(a)"],
+                "12 CFR § 7.4000": ["12 CFR § 7.4000"],
+            },
+        )
+        shorts = self.shortlaw_cites(citations)
+        self.assertEqual(len(shorts), 2)
+        for short in shorts:
+            self.assertEqual(short.metadata.title, "12")
+            self.assertEqual(short.metadata.reporter, "U. S. C.")
+
+    def test_shortlaw_no_leapfrog(self):
+        """Does a section bearing CFR cite block resolution rather than
+        being leapfrogged?"""
+        # The leading U.S.C. cite would wrongly resolve the short cite if
+        # the CFR cite were skipped instead of blocking.
+        text = (
+            "12 U. S. C. § 1 authorizes national bank activities. "
+            '... the OCC may "direct the bank or operating subsidiary to '
+            'take appropriate remedial action ...." 12 CFR § 5.34(e)(3) '
+            "(2006). OCC subsequently revised its regulations to track "
+            "the statute. See § 5.34(e)(1), (3); Financial Subsidiaries "
+            "and Operating Subsidiaries, 65 Fed. Reg. 12905, 12911 (2000)."
+        )
+        citations, _, formatted = self.resolve_text(text)
+        self.assertEqual(
+            formatted,
+            {
+                "12 U. S. C. § 1": ["12 U. S. C. § 1"],
+                "12 CFR § 5.34": ["12 CFR § 5.34"],
+                "65 Fed. Reg. 12905": ["65 Fed. Reg. 12905"],
+            },
+        )
+        (short,) = self.shortlaw_cites(citations)
+        self.assertEqual(short.matched_text(), "§ 5.34(e)(1)")
+        self.assertIsNone(short.metadata.reporter)
+        self.assertIsNone(short.metadata.title)
+
+    def test_shortlaw_popular_name_unresolved(self):
+        """Does a section reference with no preceding law cite stay unresolved,
+        while a later one inherits and clusters with the full cite naming the
+        same section? (See issue #324)"""
+        text = (  # From issue #329
+            "Liability under § 1 of the Sherman Act, 15 U. S. C. § 1, "
+            'requires a "contract, combination ..., or conspiracy, in '
+            'restraint of trade or commerce." The question in this '
+            "putative class action is whether a § 1 complaint can survive "
+            "a motion to dismiss ..."
+        )
+        citations, resolutions, formatted = self.resolve_text(text)
+        self.assertEqual(
+            formatted,
+            {"15 U. S. C. § 1": ["15 U. S. C. § 1", "§ 1"]},
+        )
+        shorts = self.shortlaw_cites(citations)
+        self.assertEqual(len(shorts), 2)
+        resolved_cites = [c for v in resolutions.values() for c in v]
+        self.assertNotIn(shorts[0], resolved_cites)
+        self.assertIsNone(shorts[0].metadata.reporter)
+        self.assertIn(shorts[1], resolved_cites)
+        self.assertEqual(shorts[1].metadata.title, "15")
+        self.assertEqual(shorts[1].metadata.reporter, "U. S. C.")
+
+    def test_shortlaw_clustering(self):
+        """Do short cites naming the same section resolve to one minted
+        resource, distinct from other sections, and does that resource
+        merge with a later full cite of the same section?"""
+        watters_11 = (  # From issue #329
+            "The Act vested in nationally chartered banks enumerated "
+            'powers and "all such incidental powers as shall be necessary '
+            'to carry on the business of banking." 12 U. S. C. §24 '
+            "Seventh. To prevent inconsistent or intrusive state "
+            "regulation from impairing the national system, Congress "
+            'provided: "No national bank shall be subject to any '
+            'visitorial powers except as authorized by Federal law ...." '
+            "§484(a)."
+        )
+        _, _, formatted = self.resolve_text(
+            self.watters_6_7 + " " + watters_11
+        )
+        self.assertEqual(
+            formatted,
+            {
+                "12 U. S. C. § 1": ["12 U. S. C. § 1"],
+                "§§ 24": ["§§ 24", "12 U. S. C. §24"],
+                "513 U. S. 251": ["513 U. S. 251"],
+                "§ 484(a)": ["§ 484(a)", "§484(a)"],
+                "12 CFR § 7.4000": ["12 CFR § 7.4000"],
+            },
+        )
+
+    def test_shortlaw_subsection_distinct_resources(self):
+        """Do short cites naming different subsections of the same section
+        mint distinct resources? Roman-numeral subsections used to truncate
+        ("§ 1158(b)(2)(A)(ii)" captured "1158(b)(2)(A)"), merging them."""
+        text = (
+            "Asylum eligibility is governed by 8 U. S. C. § 1158. The "
+            "persecutor bar appears at § 1158(b)(2)(A)(i), while "
+            "§ 1158(b)(2)(A)(ii) covers conviction of a particularly "
+            "serious crime."
+        )
+        _, _, formatted = self.resolve_text(text)
+        self.assertEqual(
+            formatted,
+            {
+                "8 U. S. C. § 1158": ["8 U. S. C. § 1158"],
+                "§ 1158(b)(2)(A)(i)": ["§ 1158(b)(2)(A)(i)"],
+                "§ 1158(b)(2)(A)(ii)": ["§ 1158(b)(2)(A)(ii)"],
+            },
+        )
+
+    def test_shortlaw_pub_l_resolution(self):
+        """Does a short cite inherit from a Pub. L. antecedent (uncodified
+        statute), skipping the page-based Stat. cite in between?"""
+        text = (  # From issue #329
+            "Coronavirus Aid, Relief, and Economic Security (CARES) Act, "
+            "Pub. L. No. 116-136, § 3610, 134 Stat. 281, 414 (2020). ... "
+            "Costs claimed under § 3610 must be supported by evidence of "
+            "paid leave actually provided."
+        )
+        citations, _, formatted = self.resolve_text(text)
+        self.assertEqual(
+            formatted,
+            {
+                "Pub. L. No. 116-136, § 3610": [
+                    "Pub. L. No. 116-136, § 3610",
+                    "§ 3610",
+                ],
+                "134 Stat. 281": ["134 Stat. 281"],
+            },
+        )
+        (short,) = self.shortlaw_cites(citations)
+        self.assertEqual(short.metadata.reporter, "Pub. L.")
+        self.assertEqual(short.metadata.title, "116-136")
+        self.assertEqual(
+            short.corrected_citation_full(), "Pub. L. 116-136, § 3610"
+        )
+
+    def test_shortlaw_id_resolution(self):
+        """Does an Id. following a minted short law resource attach to
+        it?"""
+        # "Id. at 5." exercises the pin cite path in _has_invalid_pin_cite,
+        # where the minted resource's first citation is a ShortLawCitation,
+        # not the FullCitation the code casts to.
+        for id_text in ("Id.", "Id. at 5."):
+            text = (
+                f"12 U. S. C. § 1 et seq. was cited. See § 484(a). {id_text}"
+            )
+            _, _, formatted = self.resolve_text(text)
+            self.assertEqual(
+                formatted,
+                {
+                    "12 U. S. C. § 1": ["12 U. S. C. § 1"],
+                    "§ 484(a)": ["§ 484(a)", "Id."],
+                },
+                f"failed for {id_text!r}",
+            )
+
+    def test_shortlaw_known_failure_quoted_material(self):
+        """Known limitation: quoted material breaks nearest antecedent
+        proximity, inheriting U.S.C. where CFR is correct. This documents
+        the wrong behavior; if it starts failing, the antecedent rule got
+        smarter and the assertions should flip to CFR."""
+        text = (
+            "12 CFR § 5.34(e)(1) (2001). The brief argued that "
+            '"12 USC §24" controls. See § 5.34(e)(3).'
+        )
+        citations, _, _ = self.resolve_text(text)
+        (short,) = self.shortlaw_cites(citations)
+        # Wrong on purpose: inherited from the quoted U.S.C. cite
+        self.assertEqual(short.metadata.reporter, "USC")
+        self.assertEqual(short.metadata.title, "12")
 
     def test_id_resolution(self):
         # Test resolving an Id. citation

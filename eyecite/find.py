@@ -27,10 +27,10 @@ from eyecite.models import (
     ResourceCitation,
     SectionToken,
     ShortCaseCitation,
+    ShortLawCitation,
     SupraCitation,
     SupraToken,
     Tokens,
-    UnknownCitation,
 )
 from eyecite.regexes import SUPRA_ANTECEDENT_REGEX, reference_pin_cite_re
 from eyecite.tokenizers import Tokenizer, default_tokenizer
@@ -118,12 +118,8 @@ def get_citations(
             citation = _extract_supra_citation(document.words, i)
 
         # CASE 4: Token is a section marker.
-        # In this case, it's likely that this is a reference to a citation,
-        # but we're not sure what it is if it doesn't match any of the above.
-        # So we record this marker in order to keep an accurate list of the
-        # possible antecedents for id citations.
         elif token_type is SectionToken:
-            citation = UnknownCitation(cast(SectionToken, token), i)
+            citation = ShortLawCitation(cast(SectionToken, token), i)
 
         # CASE 5: The token is not a citation.
         else:

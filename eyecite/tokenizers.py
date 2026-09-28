@@ -407,6 +407,20 @@ class Tokenizer:
                     # other case citation. See #221 and #174
                     citation_tokens.pop(-1)
                     all_tokens.pop(-1)
+                elif (
+                    last_token
+                    and isinstance(token, CitationToken)
+                    and isinstance(last_token, SectionToken)
+                ):
+                    # a section token like "§ 550" can swallow the start of
+                    # a full citation ("§ 550 U.S. 544"); prefer the citation
+                    citation_tokens.pop(-1)
+                    all_tokens.pop(-1)
+                    # the section token started earlier, so its marker ("§ ")
+                    # would vanish from the token stream without this
+                    self.append_text(
+                        all_tokens, text[last_token.start : token.start]
+                    )
                 else:
                     # skip overlaps
                     continue

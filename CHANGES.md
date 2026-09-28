@@ -5,9 +5,16 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Add `ShortLawCitation`, emitted for bare section references like `§ 484(a)`,
+  with spans covering the marker through the section number (#329)
 
 Changes:
+- `UnknownCitation` is no longer emitted for section markers; section tokens
+  now produce `ShortLawCitation`. Section numbers with a letter glued to the
+  digits (`§ 93a`, `§ 78j(b)`, `§ 2000e-2`) are captured, which
+  `reporters_db`'s `law_section` does not yet allow for full cites. A marker
+  whose number can't be parsed at all still yields a `ShortLawCitation`
+  spanning the bare marker, with `groups["section"]` set to `None` (#329)
 - Add a PR template with an AI Disclosure section.
 - CI: the benchmark now works on fork and Dependabot PRs, with commenting and artifact pushes split into a separate privileged workflow, and fork PRs gated behind a `run-benchmark` label. #332
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332

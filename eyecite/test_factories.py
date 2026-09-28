@@ -10,6 +10,7 @@ from eyecite.models import (
     ReferenceCitation,
     SectionToken,
     ShortCaseCitation,
+    ShortLawCitation,
     SupraCitation,
     SupraToken,
     UnknownCitation,
@@ -110,6 +111,14 @@ def reference_citation(source_text=None, index=0, **kwargs):
 def unknown_citation(source_text=None, index=0, **kwargs):
     """Convenience function for creating mock UnknownCitation objects."""
     return UnknownCitation(SectionToken(source_text, 0, 99), index, **kwargs)
+
+
+def short_law_citation(source_text=None, index=0, **kwargs):
+    """Convenience function for creating mock ShortLawCitation objects."""
+    groups = kwargs.pop("groups", {})
+    return ShortLawCitation(
+        SectionToken(source_text, 0, 99, groups=groups), index, **kwargs
+    )
 
 
 def supra_citation(source_text=None, index=0, **kwargs):
