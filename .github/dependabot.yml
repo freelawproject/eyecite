@@ -9,3 +9,12 @@ updates:
     open-pull-requests-limit: 0
     ignore:
     - dependency-name: "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      core:
+        patterns:
+          - 'actions/*' # The core actions offered by Github
