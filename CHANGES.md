@@ -5,7 +5,8 @@
 The following changes are not yet released, but are code complete:
 
 Features:
--
+- Add a JSON command-line interface that can be run with `uvx`, plus
+  repository-scoped agent skills for Codex and Claude Code. #340
 
 Changes:
 - Add a PR template with an AI Disclosure section.
