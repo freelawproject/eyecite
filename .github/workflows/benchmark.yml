@@ -5,7 +5,7 @@ on:
     # `types:` is set the defaults no longer apply, so they must be listed.
     types: [opened, synchronize, reopened, labeled]
   repository_dispatch:
-    types: [ reporters-db-pr ]
+    types: [reporters-db-pr]
 
 env:
   main: "$(/usr/bin/git log -1 --format='%H')"
