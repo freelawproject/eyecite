@@ -3,7 +3,7 @@ from collections.abc import Callable, Iterable
 from difflib import SequenceMatcher
 from functools import partial
 from logging import getLogger
-from typing import Any
+from typing import TypeVar
 
 import fast_diff_match_patch
 
@@ -121,13 +121,23 @@ class SpanUpdater:
         return updater(offset)
 
 
+# But for their use in `wrap_html_tags()`, these could be unbound.
+_AnnotationBeforeTextT = TypeVar("_AnnotationBeforeTextT", bound=str)
+_AnnotationAfterTextT = TypeVar("_AnnotationAfterTextT", bound=str)
+
+
 def annotate_citations(
     plain_text: str,
-    annotations: Iterable[tuple[tuple[int, int], Any, Any]],
+    annotations: Iterable[
+        tuple[tuple[int, int], _AnnotationBeforeTextT, _AnnotationAfterTextT]
+    ],
     source_text: str = "",
     unbalanced_tags: str = "unchecked",
     use_dmp: bool = True,
-    annotator: Callable[[Any, str, Any], str] | None = None,
+    annotator: Callable[
+        [_AnnotationBeforeTextT, str, _AnnotationAfterTextT], str
+    ]
+    | None = None,
     offset_updater: SpanUpdater | None = None,
 ) -> str:
     """Given a list of citations and the text from which they were parsed,
