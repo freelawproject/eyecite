@@ -2,7 +2,7 @@ import logging
 from bisect import bisect_right
 from datetime import date
 from string import whitespace
-from typing import Any, cast
+from typing import Any, TypeVar, cast
 
 import regex as re
 from courts_db import courts
@@ -1042,9 +1042,12 @@ def match_on_tokens(
     return m
 
 
+_SomeCitationT = TypeVar("_SomeCitationT", bound=CitationBase)
+
+
 def disambiguate_reporters(
-    citations: list[CitationBase],
-) -> list[CitationBase]:
+    citations: list[_SomeCitationT],
+) -> list[_SomeCitationT]:
     """Filter out citations where there is more than one possible reporter."""
     return [
         c
@@ -1062,7 +1065,7 @@ def overlapping_citations(
     return max(start_1, start_2) < min(end_1, end_2)
 
 
-def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
+def filter_citations(citations: list[_SomeCitationT]) -> list[_SomeCitationT]:
     """Filter and order citations, ensuring reference citations are in sequence
 
     This function resolves rare but possible overlaps between ref. citations
@@ -1082,7 +1085,7 @@ def filter_citations(citations: list[CitationBase]) -> list[CitationBase]:
     sorted_citations = sorted(
         citations, key=lambda citation: citation.full_span()
     )
-    filtered_citations: list[CitationBase] = [sorted_citations[0]]
+    filtered_citations: list[_SomeCitationT] = [sorted_citations[0]]
 
     for citation in sorted_citations[1:]:
         last_citation = filtered_citations[-1]

@@ -11,6 +11,8 @@ Changes:
 - Add a PR template with an AI Disclosure section.
 - CI: the benchmark now works on fork and Dependabot PRs, with commenting and artifact pushes split into a separate privileged workflow, and fork PRs gated behind a `run-benchmark` label. #332
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
+- CI: GitHub workflows are brought up-to-date with the sibling repositories `courts-db`, `reporters-db`, and `juriscraper` .
+- Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
 
 Fixes:
 - CI: harden the benchmark's `repository_dispatch` job against shell script
@@ -19,6 +21,7 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- Fix "no changes" label handling for `CHANGES.md`
 - `AhocorasickTokenizer.get_extractors` now returns extractors in
   `EXTRACTORS` order instead of set order. Citations like `37 T.C. at 155`,
   which several extractors match with the same span, no longer switch

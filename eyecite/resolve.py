@@ -1,7 +1,7 @@
 import re
 from collections import defaultdict
 from collections.abc import Callable
-from typing import cast
+from typing import TypeVar, cast
 
 from eyecite.models import (
     CitationBase,
@@ -17,9 +17,9 @@ from eyecite.models import (
 from eyecite.utils import strip_punct
 
 # type shorthand
+_SomeCitationT = TypeVar("_SomeCitationT", bound=CitationBase)
 ResolvedFullCite = tuple[FullCitation, ResourceType]
 ResolvedFullCites = list[ResolvedFullCite]
-Resolutions = dict[ResourceType, list[CitationBase]]
 
 
 # Skip id. citations that imply a page length longer than this,
@@ -227,7 +227,7 @@ def _resolve_reference_citation(
 def _resolve_id_citation(
     id_citation: IdCitation,
     last_resolution: ResourceType,
-    resolutions: Resolutions,
+    resolutions: dict[ResourceType, list[_SomeCitationT]],
 ) -> ResourceType | None:
     """
     Resolve id citations to the resource of the previously resolved
@@ -246,7 +246,7 @@ def _resolve_id_citation(
 
 
 def resolve_citations(
-    citations: list[CitationBase],
+    citations: list[_SomeCitationT],
     resolve_full_citation: Callable[
         [FullCitation], ResourceType
     ] = resolve_full_citation,
@@ -263,9 +263,10 @@ def resolve_citations(
         ResourceType | None,
     ] = _resolve_reference_citation,
     resolve_id_citation: Callable[
-        [IdCitation, ResourceType, Resolutions], ResourceType | None
+        [IdCitation, ResourceType, dict[ResourceType, list[_SomeCitationT]]],
+        ResourceType | None,
     ] = _resolve_id_citation,
-) -> Resolutions:
+) -> dict[ResourceType, list[_SomeCitationT]]:
     """Resolve a list of citations to their associated resources by matching
     each type of Citation object (FullCaseCitation, ShortCaseCitation,
     SupraCitation, and IdCitation) to a "resource" object. A "resource" could
@@ -309,7 +310,7 @@ def resolve_citations(
             to lists of `eyecite.models.CitationBase` objects (the values).
     """
     # Dict of all citation resolutions
-    resolutions: Resolutions = defaultdict(list)
+    resolutions: dict[ResourceType, list[_SomeCitationT]] = defaultdict(list)
 
     # Dict mapping full citations to their resolved resources
     resolved_full_cites: ResolvedFullCites = []
