@@ -21,6 +21,9 @@ Fixes:
 - Fix 2 `TypeError`s raised in `get_citations(markup_text=...)` when
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
+- `is_valid_name` now compares `DISALLOWED_NAMES` case-insensitively, and a
+  missing comma no longer fuses `"commissioner"` with `"Akerman"`. Attorney
+  general names and "Commissioner" no longer produce reference citations. #351
 - Fix "no changes" label handling for `CHANGES.md`
 
 ## Current
