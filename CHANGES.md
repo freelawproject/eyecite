@@ -11,6 +11,8 @@ Changes:
 - Add a PR template with an AI Disclosure section.
 - CI: the benchmark now works on fork and Dependabot PRs, with commenting and artifact pushes split into a separate privileged workflow, and fork PRs gated behind a `run-benchmark` label. #332
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
+- CI: GitHub workflows are brought up-to-date with the sibling repositories `courts-db`, `reporters-db`, and `juriscraper` .
+- Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
 
 Fixes:
 - CI: harden the benchmark's `repository_dispatch` job against shell script
@@ -22,6 +24,7 @@ Fixes:
 - `is_valid_name` now compares `DISALLOWED_NAMES` case-insensitively, and a
   missing comma no longer fuses `"commissioner"` with `"Akerman"`. Attorney
   general names and "Commissioner" no longer produce reference citations. #351
+- Fix "no changes" label handling for `CHANGES.md`
 
 ## Current
 

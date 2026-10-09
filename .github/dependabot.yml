@@ -8,4 +8,13 @@ updates:
     # https://github.com/freelawproject/eyecite/issues/42 for more discussion.
     open-pull-requests-limit: 0
     ignore:
-    - dependency-name: "*"
+      - dependency-name: "*"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: monthly
+    groups:
+      core:
+        patterns:
+          - 'actions/*' # The core actions offered by Github

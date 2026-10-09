@@ -5,7 +5,7 @@ on:
     # `types:` is set the defaults no longer apply, so they must be listed.
     types: [opened, synchronize, reopened, labeled]
   repository_dispatch:
-    types: [ reporters-db-pr ]
+    types: [reporters-db-pr]
 
 env:
   main: "$(/usr/bin/git log -1 --format='%H')"
@@ -59,16 +59,16 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: 3.12
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
           version: "0.7.x"
@@ -129,7 +129,7 @@ jobs:
           cp benchmark/benchmark.py "$RUNNER_TEMP/benchmark.py"
           git stash --include-untracked
 
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           repository: freelawproject/eyecite
           ref: main
@@ -184,7 +184,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out repository
-        uses: actions/checkout@v5
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Validate dispatch payload
         # `client_payload` is caller-supplied JSON, and pr_number/commit are
@@ -203,12 +203,12 @@ jobs:
 
       - name: Set up Python
         id: setup-python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
         with:
           python-version: 3.12
 
       - name: Install uv
-        uses: astral-sh/setup-uv@v7
+        uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
         with:
           enable-cache: true
           version: "0.7.x"
