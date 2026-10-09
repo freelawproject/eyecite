@@ -459,6 +459,9 @@ class AhocorasickTokenizer(Tokenizer):
         """Set up helpers to narrow down possible extractors."""
         # Build a set of all extractors that don't list required strings
         self.unfiltered_extractors = {e for e in EXTRACTORS if not e.strings}
+        # Remember each extractor's position in EXTRACTORS, so
+        # get_extractors() can return them in a stable order (see #352).
+        self.extractor_order = {id(e): i for i, e in enumerate(EXTRACTORS)}
         # Build the filters from whitespace-stripped prefilter strings, and
         # match them against a whitespace-stripped copy of the text (see
         # get_extractors). Reporter regexes allow flexible inter-token
@@ -480,7 +483,7 @@ class AhocorasickTokenizer(Tokenizer):
             for s in e.strings
         )
 
-    def get_extractors(self, text: str) -> set[TokenExtractor]:
+    def get_extractors(self, text: str) -> list[TokenExtractor]:
         """Override get_extractors() to filter out extractors
         that can't possibly match."""
         # Strip whitespace so spaced-out reporter forms (e.g. "N. Y. S. 2d")
@@ -495,7 +498,11 @@ class AhocorasickTokenizer(Tokenizer):
             stripped.lower()
         ):
             unique_extractors.update(extractors)
-        return unique_extractors
+        # Set order follows PYTHONHASHSEED. Tokens with the same span keep
+        # the order of their extractors, so sort to make ties deterministic.
+        return sorted(
+            unique_extractors, key=lambda e: self.extractor_order[id(e)]
+        )
 
     @staticmethod
     def make_ahocorasick_filter(
