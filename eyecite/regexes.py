@@ -95,6 +95,8 @@ STOP_WORD_REGEX = space_boundaries_re(
     strip_punctuation_re(rf"(?P<stop_word>{'|'.join(STOP_WORDS)})")
 )
 
+SECTION_LETTER_SUFFIX_REGEX = r"[A-Z]{0,4}"
+
 # Regex for SectionToken
 SECTION_REGEX = r"(\S*§\S*)"
 
