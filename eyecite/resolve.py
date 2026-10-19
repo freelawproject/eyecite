@@ -26,6 +26,12 @@ ResolvedFullCites = list[ResolvedFullCite]
 # such as "1 U.S. 1. Id. at 200.":
 MAX_OPINION_PAGE_COUNT = 150
 
+# Explanatory parentheticals open with a lowercase present participle, as in
+# "(citing ...)", "(quoting ...)", or "(holding that ...)". This tells them
+# apart from parenthesized citation sentences like "(See 1 U.S. 1.)":
+EXPLANATORY_PARENTHETICAL_REGEX = re.compile(r"\s*[a-z]+ing\b")
+PAREN_REGEX = re.compile(r"[()]")
+
 
 def resolve_full_citation(full_citation: FullCitation) -> Resource:
     """By default, resolve `eyecite.models.FullCaseCitation` objects to a
@@ -224,6 +230,44 @@ def _resolve_reference_citation(
     )
 
 
+def _in_parenthetical(citations: list[_SomeCitationT]) -> list[bool]:
+    """For each citation, return whether it begins inside an explanatory
+    parenthetical, such as the "Levine" cite in "Holley, 379 F. Supp. 3d 809
+    (citing Levine, 555 U.S. at 571)".
+
+    Open parens are tracked in a single pass over each citation's
+    `document.plain_text`, and stray closing parens are ignored. Only parens
+    opening with `EXPLANATORY_PARENTHETICAL_REGEX` make a citation nested.
+    Citations without a document (e.g., constructed by hand) are treated as
+    not being in a parenthetical.
+    """
+    in_paren: list[bool] = []
+    document = None
+    # one entry per open paren: whether it is explanatory
+    stack: list[bool] = []
+    pos = 0
+    for citation in citations:
+        if citation.document is not document:
+            document = citation.document
+            stack = []
+            pos = 0
+        if document is None:
+            in_paren.append(False)
+            continue
+        text = document.plain_text
+        start = citation.span()[0]
+        for m in PAREN_REGEX.finditer(text, pos, max(pos, start)):
+            if m[0] == "(":
+                stack.append(
+                    bool(EXPLANATORY_PARENTHETICAL_REGEX.match(text, m.end()))
+                )
+            elif stack:
+                stack.pop()
+        pos = max(pos, start)
+        in_paren.append(any(stack))
+    return in_paren
+
+
 def _resolve_id_citation(
     id_citation: IdCitation,
     last_resolution: ResourceType,
@@ -231,7 +275,8 @@ def _resolve_id_citation(
 ) -> ResourceType | None:
     """
     Resolve id citations to the resource of the previously resolved
-    citation.
+    citation. `resolve_citations` passes the last citation outside of any
+    explanatory parenthetical, unless the id citation is itself inside one.
     """
     # if last resolution failed, id. cite should also fail
     if not last_resolution:
@@ -280,6 +325,12 @@ def resolve_citations(
     order that they were extracted from the text (i.e., assumes that supra
     citations and id citations can only refer to previous references).
 
+    Citations inside an explanatory parenthetical, such as the "Levine" cite
+    in "Holley, 379 F. Supp. 3d 809 (citing Levine, 555 U.S. at 571). Id. at
+    821.", are resolved normally, but an id citation outside of a
+    parenthetical skips over them and refers back to the last citation that
+    was also outside of one ("Holley").
+
     It returns a dict in the following format:
     ```
         keys = resources
@@ -318,8 +369,13 @@ def resolve_citations(
     # The resource of the most recently resolved citation, if any
     last_resolution: ResourceType | None = None
 
+    # The same, but only counting citations outside of a parenthetical
+    last_unnested_resolution: ResourceType | None = None
+
     # Iterate over each citation and attempt to resolve it to a resource
-    for citation in citations:
+    for citation, in_paren in zip(
+        citations, _in_parenthetical(citations), strict=True
+    ):
         # If the citation is a full citation, try to resolve it
         if isinstance(citation, FullCitation):
             resolution = resolve_full_citation(citation)
@@ -343,7 +399,9 @@ def resolve_citations(
         # If the citation is an id citation, try to resolve it
         elif isinstance(citation, IdCitation):
             resolution = resolve_id_citation(
-                citation, last_resolution, resolutions
+                citation,
+                last_resolution if in_paren else last_unnested_resolution,
+                resolutions,
             )
 
         # If the citation is to an unknown document, ignore for now
@@ -351,6 +409,8 @@ def resolve_citations(
             resolution = None
 
         last_resolution = resolution
+        if not in_paren:
+            last_unnested_resolution = resolution
         if resolution:
             # Record the citation in the appropriate list
             resolutions[resolution].append(citation)

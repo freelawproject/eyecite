@@ -22,6 +22,11 @@ Fixes:
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
 - Fix "no changes" label handling for `CHANGES.md`
+- `resolve_citations()` no longer resolves an `Id.` to a citation inside an
+  explanatory parenthetical, such as `(citing X)` or `(quoting Y)`. It now
+  refers back to the citation the parenthetical belongs to, and is no longer
+  dropped when the parenthetical's citation can't be resolved. An `Id.` that
+  is itself inside a parenthetical behaves as before. #348
 
 ## Current
 
