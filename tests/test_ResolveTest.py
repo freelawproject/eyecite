@@ -392,13 +392,53 @@ class ResolveTest(TestCase):
         # An unclosed paren falls back to the most recent citation, as before.
         self.assertEqual(
             resolve(
-                "Foo v. Bar, 1 U.S. 1. Some text (citing a treatise. Baz v. "
-                "Qux, 2 F.3d 2. Id. at 3."
+                "Foo v. Bar, 1 U.S. 1 (citing a treatise. Baz v. Qux, "
+                "2 F.3d 2. Id. at 3."
             ),
             {
                 "1 U.S. 1": ["1 U.S. 1"],
                 "2 F.3d 2": ["2 F.3d 2", "Id."],
             },
+        )
+        # A paren that doesn't directly follow a citation is a prose aside,
+        # not an explanatory parenthetical, even if it opens with a
+        # participle. Neither is one that opens with a preposition ending in
+        # -ing. In all three, Id. refers to the citation right before it.
+        for text in (
+            "Smith v. Jones, 5 U.S. 5. Courts agree (according to Foo v. "
+            "Bar, 1 U.S. 1, 3). Id. at 4.",
+            "Smith v. Jones, 5 U.S. 5. Courts disagree (citing Foo v. Bar, "
+            "1 U.S. 1, 3). Id. at 4.",
+            "Smith v. Jones, 5 U.S. 5 (including Foo v. Bar, 1 U.S. 1, 3). "
+            "Id. at 4.",
+        ):
+            self.assertEqual(
+                resolve(text),
+                {
+                    "5 U.S. 5": ["5 U.S. 5"],
+                    "1 U.S. 1": ["1 U.S. 1", "Id."],
+                },
+                text,
+            )
+        # Reference citations inside a parenthetical are skipped too.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (1990). Smith v. Jones, 2 U.S. 2, 5 "
+                "(quoting Foo at 3). Id. at 4."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1", "Foo at 3"],
+                "2 U.S. 2": ["2 U.S. 2", "Id."],
+            },
+        )
+
+    def test_resolve_citations_accepts_iterables(self):
+        """resolve_citations() reads its input twice, so a one-shot iterable
+        such as a generator must work the same as a list."""
+        citations = get_citations("Foo v. Bar, 1 U.S. 1. Id. at 2.")
+        self.assertEqual(
+            format_resolution(resolve_citations(c for c in citations)),
+            format_resolution(resolve_citations(citations)),
         )
 
     def test_non_case_resolution(self):

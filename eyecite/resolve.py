@@ -28,8 +28,20 @@ MAX_OPINION_PAGE_COUNT = 150
 
 # Explanatory parentheticals open with a lowercase present participle, as in
 # "(citing ...)", "(quoting ...)", or "(holding that ...)". This tells them
-# apart from parenthesized citation sentences like "(See 1 U.S. 1.)":
-EXPLANATORY_PARENTHETICAL_REGEX = re.compile(r"\s*[a-z]+ing\b")
+# apart from parenthesized citation sentences like "(See 1 U.S. 1.)". Words
+# ending in -ing that act as prepositions, as in "(according to ...)", don't
+# count:
+EXPLANATORY_PARENTHETICAL_REGEX = re.compile(
+    r"\s*(?!(?:during|including|according|regarding|concerning"
+    r"|notwithstanding)\b)[a-z]+ing\b"
+)
+# An explanatory parenthetical must also directly follow a citation: only a
+# pin cite, commas, and complete parentheticals such as "(2d Cir. 2019)" may
+# come between them, as in "Id. at 827 (quoting ...)":
+POST_CITATION_GAP_REGEX = re.compile(
+    r"[\s,]*(?:at\s+)?(?:pp?\.\s*)?[\d\s,*¶&\-–—]*(?:nn?\.\s*[\d\s,\-–—]+)?"
+)
+BALANCED_PARENS_REGEX = re.compile(r"\([^()]*\)")
 PAREN_REGEX = re.compile(r"[()]")
 
 
@@ -230,6 +242,22 @@ def _resolve_reference_citation(
     )
 
 
+def _directly_follows(citation: CitationBase, text: str, index: int) -> bool:
+    """Return whether the text at `index` directly follows `citation`: it is
+    inside the citation's full span, or only a pin cite and complete
+    parentheticals come between them (see `POST_CITATION_GAP_REGEX`)."""
+    end = citation.full_span()[1]
+    if index < end:
+        return True
+    gap = text[end:index]
+    while True:
+        stripped = BALANCED_PARENS_REGEX.sub("", gap)
+        if stripped == gap:
+            break
+        gap = stripped
+    return POST_CITATION_GAP_REGEX.fullmatch(gap) is not None
+
+
 def _in_parenthetical(citations: list[_SomeCitationT]) -> list[bool]:
     """For each citation, return whether it begins inside an explanatory
     parenthetical, such as the "Levine" cite in "Holley, 379 F. Supp. 3d 809
@@ -237,18 +265,21 @@ def _in_parenthetical(citations: list[_SomeCitationT]) -> list[bool]:
 
     Open parens are tracked in a single pass over each citation's
     `document.plain_text`, and stray closing parens are ignored. Only parens
-    opening with `EXPLANATORY_PARENTHETICAL_REGEX` make a citation nested.
-    Citations without a document (e.g., constructed by hand) are treated as
-    not being in a parenthetical.
+    that directly follow a citation and open with
+    `EXPLANATORY_PARENTHETICAL_REGEX` make a citation nested. Citations
+    without a document (e.g., constructed by hand) are treated as not being
+    in a parenthetical.
     """
     in_paren: list[bool] = []
     document = None
+    previous: CitationBase | None = None
     # one entry per open paren: whether it is explanatory
     stack: list[bool] = []
     pos = 0
     for citation in citations:
         if citation.document is not document:
             document = citation.document
+            previous = None
             stack = []
             pos = 0
         if document is None:
@@ -259,11 +290,16 @@ def _in_parenthetical(citations: list[_SomeCitationT]) -> list[bool]:
         for m in PAREN_REGEX.finditer(text, pos, max(pos, start)):
             if m[0] == "(":
                 stack.append(
-                    bool(EXPLANATORY_PARENTHETICAL_REGEX.match(text, m.end()))
+                    previous is not None
+                    and _directly_follows(previous, text, m.start())
+                    and bool(
+                        EXPLANATORY_PARENTHETICAL_REGEX.match(text, m.end())
+                    )
                 )
             elif stack:
                 stack.pop()
         pos = max(pos, start)
+        previous = citation
         in_paren.append(any(stack))
     return in_paren
 
@@ -360,6 +396,9 @@ def resolve_citations(
         A dictionary mapping `eyecite.models.ResourceType` objects (the keys)
             to lists of `eyecite.models.CitationBase` objects (the values).
     """
+    # Citations are read twice below, so accept any iterable, not just lists
+    citations = list(citations)
+
     # Dict of all citation resolutions
     resolutions: dict[ResourceType, list[_SomeCitationT]] = defaultdict(list)
 
