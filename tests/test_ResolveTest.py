@@ -312,6 +312,135 @@ class ResolveTest(TestCase):
             (None, "Id. at 100."),
         )
 
+    def test_id_resolution_skips_parentheticals(self):
+        """Id. refers to the citation an explanatory parenthetical belongs
+        to, not to a citation inside the parenthetical. #348"""
+
+        def resolve(text):
+            resolutions = resolve_citations(get_citations(text))
+            return {
+                k.citation.matched_text(): [c.matched_text() for c in v]
+                for k, v in resolutions.items()
+            }
+
+        # From Sidhu v. Bayer Healthcare Pharmaceuticals Inc. (N.D. Cal.
+        # 2022). The parenthetical short cite to Levine can't be resolved;
+        # that must not cause the first Id. to be dropped, and neither Id.
+        # should resolve to Levine or Gibbons.
+        self.assertEqual(
+            resolve(
+                "[Holley] 379 F. Supp. 3d 809, 821 (N.D. Cal. 2019) (citing "
+                "Levine, 555 U.S. at 571). The court in Holley discussed "
+                "preemption. Id. at 827 (quoting Gibbons v. Bristol-Myers "
+                "Squibb Co., 919 F.3d 699, 708 (2d Cir. 2019)). The Holley "
+                "court chose not to apply preemption. Id. at 821-25."
+            ),
+            {
+                "379 F. Supp. 3d 809": ["379 F. Supp. 3d 809", "Id.", "Id."],
+                "919 F.3d 699": ["919 F.3d 699"],
+            },
+        )
+        # Full cites in nested parentheticals are skipped too.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (1990) (citing Baz v. Qux, 2 F.3d 2 "
+                "(1st Cir. 1991) (quoting Lorem v. Ipsum, 3 F.4th 3 (2d Cir. "
+                "2022))). Id. at 5."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1", "Id."],
+                "2 F.3d 2": ["2 F.3d 2"],
+                "3 F.4th 3": ["3 F.4th 3"],
+            },
+        )
+        # Once the parenthetical closes, the next citation becomes the
+        # antecedent as usual.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (citing Baz v. Qux, 2 F.3d 2). "
+                "Lorem v. Ipsum, 3 F.4th 3. Id. at 5."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1"],
+                "2 F.3d 2": ["2 F.3d 2"],
+                "3 F.4th 3": ["3 F.4th 3", "Id."],
+            },
+        )
+        # An Id. inside a parenthetical still refers to the citation right
+        # before it.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (quoting Baz v. Qux, 2 F.3d 2, 3; "
+                "id. at 4)."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1"],
+                "2 F.3d 2": ["2 F.3d 2", "id."],
+            },
+        )
+        # A parenthesized citation sentence is not an explanatory
+        # parenthetical, so an Id. after it refers to the citation inside.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1. (See Baz v. Qux, 2 F.3d 2.) Id. at 3."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1"],
+                "2 F.3d 2": ["2 F.3d 2", "Id."],
+            },
+        )
+        # An unclosed paren falls back to the most recent citation, as before.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (citing a treatise. Baz v. Qux, "
+                "2 F.3d 2. Id. at 3."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1"],
+                "2 F.3d 2": ["2 F.3d 2", "Id."],
+            },
+        )
+        # A paren that doesn't directly follow a citation is a prose aside,
+        # not an explanatory parenthetical, even if it opens with a
+        # participle. Neither is one that opens with a preposition ending in
+        # -ing. In all three, Id. refers to the citation right before it.
+        for text in (
+            "Smith v. Jones, 5 U.S. 5. Courts agree (according to Foo v. "
+            "Bar, 1 U.S. 1, 3). Id. at 4.",
+            "Smith v. Jones, 5 U.S. 5. Courts disagree (citing Foo v. Bar, "
+            "1 U.S. 1, 3). Id. at 4.",
+            "Smith v. Jones, 5 U.S. 5 (including Foo v. Bar, 1 U.S. 1, 3). "
+            "Id. at 4.",
+        ):
+            self.assertEqual(
+                resolve(text),
+                {
+                    "5 U.S. 5": ["5 U.S. 5"],
+                    "1 U.S. 1": ["1 U.S. 1", "Id."],
+                },
+                text,
+            )
+        # Reference citations inside a parenthetical are skipped too.
+        self.assertEqual(
+            resolve(
+                "Foo v. Bar, 1 U.S. 1 (1990). Smith v. Jones, 2 U.S. 2, 5 "
+                "(quoting Foo at 3). Id. at 4."
+            ),
+            {
+                "1 U.S. 1": ["1 U.S. 1", "Foo at 3"],
+                "2 U.S. 2": ["2 U.S. 2", "Id."],
+            },
+        )
+
+    def test_resolve_citations_accepts_iterables(self):
+        """resolve_citations() reads its input twice, so a one-shot iterable
+        such as a generator must work the same as a list."""
+        citations = get_citations("Foo v. Bar, 1 U.S. 1. Id. at 2.")
+        self.assertEqual(
+            format_resolution(resolve_citations(c for c in citations)),
+            format_resolution(resolve_citations(citations)),
+        )
+
     def test_non_case_resolution(self):
         """Test law and journal resolution."""
         self.checkResolution(

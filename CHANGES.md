@@ -13,6 +13,8 @@ Changes:
 - CI: benchmark runs are superseded when a PR is updated, time out after 15 minutes, and pin their third-party action to a commit SHA. #332
 - CI: GitHub workflows are brought up-to-date with the sibling repositories `courts-db`, `reporters-db`, and `juriscraper` .
 - Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
+- `get_citations()` now sets `document` on `ReferenceCitation` objects, as it
+  already did for other citations.
 
 Fixes:
 - CI: harden the benchmark's `repository_dispatch` job against shell script
@@ -22,6 +24,12 @@ Fixes:
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
 - Fix "no changes" label handling for `CHANGES.md`
+- `resolve_citations()` no longer resolves an `Id.` to a citation inside an
+  explanatory parenthetical, such as `(citing X)` or `(quoting Y)` directly
+  after a citation. It now refers back to the citation the parenthetical
+  belongs to, and is no longer dropped when the parenthetical's citation
+  can't be resolved. Prose asides like `(according to X)` and an `Id.` that
+  is itself inside a parenthetical behave as before. #348
 
 ## Current
 

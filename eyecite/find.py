@@ -101,6 +101,8 @@ def get_citations(
                 # Check for reference citations that follow a full citation
                 # Using the plaintiff or defendant
                 references = extract_reference_citations(citation, document)
+                for reference in references:
+                    reference.document = document
                 citations.extend(references)
 
         # CASE 2: Token is an "Id." or "Ibid." reference.
