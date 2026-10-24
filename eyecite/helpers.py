@@ -1015,7 +1015,12 @@ def match_on_tokens(
         token = words[index]
 
         # check for stop token
-        if strings_only and not isinstance(token, str):
+        is_parenthetical_stop_word = (
+            isinstance(token, StopWordToken)
+            and str(token).startswith("(")
+        )
+
+        if strings_only and not isinstance(token, str) and not is_parenthetical_stop_word:
             break
         if isinstance(token, ParagraphToken):
             break
