@@ -402,13 +402,15 @@ Debugging
 If you want to see what metadata eyecite is able to extract for each citation, you can use :code:`dump_citations`.
 This is primarily useful for developing eyecite, but may also be useful for exploring what data is available to you::
 
-    In [1]: from eyecite import dump_citations, get_citations
+    In [1]: from eyecite import get_citations
 
-    In [2]: text="Mass. Gen. Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1999). Id. at 3. Foo, supra, at 5."
+    In [2]: from eyecite.utils import dump_citations
 
-    In [3]: cites=get_citations(text)
+    In [3]: text="Mass. Gen. Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1999). Id. at 3. Foo, supra, at 5."
 
-    In [4]: print(dump_citations(get_citations(text), text))
+    In [4]: cites=get_citations(text)
+
+    In [5]: print(dump_citations(cites, text))
     FullLawCitation: Mass. Gen. Laws ch. 1, § 2. Foo v. Bar, 1 U.S. 2, 3-4 (1
       * groups
         * reporter='Mass. Gen. Laws'
