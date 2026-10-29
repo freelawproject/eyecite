@@ -1433,6 +1433,54 @@ class FindTest(TestCase):
             cites = get_citations(markup_text=markup, clean_steps=["html"])
         self.assertEqual([c.matched_text() for c in cites], ["1 U.S. 1"])
 
+    def test_apostrophe_abbreviations_in_case_names(self):
+        """Regression test for #296: Indigo Book abbreviations with
+        internal apostrophes (Att'y, Comm'n, P'ship, Nat'l, ...) must
+        not be truncated at the apostrophe in plaintiffs or in
+        short-form and supra antecedents."""
+        # Full citation plaintiffs (the issue's examples, plus
+        # neighbors with straight and curly apostrophes):
+        plaintiff_pairs = [
+            (
+                "Att'y Grievance Comm'n v. Glenn, 341 Md. 448 (2003).",
+                "Att'y Grievance Comm'n",
+            ),
+            (
+                "Keaau Dev. P'ship LLC v. Lawrence, 571 P.3d 958 (2025).",
+                "Keaau Dev. P'ship LLC",
+            ),
+            (
+                "Att’y Grievance Comm’n v. Glenn, 341 Md. 448 (2003).",
+                "Att’y Grievance Comm’n",
+            ),
+            (
+                "Smith v. Dep't of Revenue, 123 U.S. 456 (2000).",
+                "Smith",
+            ),
+        ]
+        for text, expected_plaintiff in plaintiff_pairs:
+            with self.subTest(text=text):
+                cites = [
+                    c
+                    for c in get_citations(text)
+                    if isinstance(c, FullCaseCitation)
+                ]
+                self.assertEqual(
+                    cites[0].metadata.plaintiff, expected_plaintiff
+                )
+
+        # Supra antecedent: was truncated to just "l" for "Nat'l":
+        cites = get_citations(
+            "Nat'l R.R. Passenger Corp. v. X, 123 U.S. 456 (2000). "
+            "Nat'l, supra, at 5."
+        )
+        supra = [c for c in cites if type(c).__name__ == "SupraCitation"]
+        self.assertEqual(supra[0].metadata.antecedent_guess, "Nat'l")
+
+        # Reference-citation antecedent (PRE_FULL_CITATION_REGEX path):
+        cites = get_citations("Att'y at 332, 113 S.Ct. 2106")
+        self.assertEqual(cites[0].metadata.antecedent_guess, "Att'y")
+
     def test_markup_plaintiff_and_antecedent_guesses(self) -> None:
         # Can we identify full case names in markup text
         test_pairs = (

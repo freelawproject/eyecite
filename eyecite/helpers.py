@@ -363,7 +363,10 @@ def _process_case_name(
         else:
             plaintiff, defendant = "", splits[0]
         plaintiff = plaintiff.strip(f"{whitespace},(")
-        clean_plaintiff = re.sub(r"\b[a-z]\w*\b", "", plaintiff)
+        # Remove lowercase words, but not the lowercase tail of an
+        # apostrophe abbreviation like "Att'y" or "Comm'n" (#296): a
+        # fragment directly after an apostrophe is part of the word.
+        clean_plaintiff = re.sub(r"(?<!['’])\b[a-z]\w*\b", "", plaintiff)
         plaintiff = strip_stop_words(clean_plaintiff)
         citation.metadata.plaintiff = plaintiff
     else:
