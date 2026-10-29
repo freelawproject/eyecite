@@ -15,6 +15,12 @@ Changes:
 - Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
 
 Fixes:
+- Case names containing apostrophe abbreviations (Att'y, Comm'n, Nat'l,
+  P'ship, ...) are no longer truncated at the apostrophe. The antecedent
+  regexes in `regexes.py` now allow straight and curly apostrophes, and the
+  plaintiff cleanup in `helpers.py` no longer strips the lowercase tail of
+  such abbreviations (a supra antecedent of "Nat'l" was extracted as just
+  "l"). #296
 - CI: harden the benchmark's `repository_dispatch` job against shell script
   injection by passing `client_payload` values through the environment and
   validating their shape, instead of interpolating them into `run:`. #337

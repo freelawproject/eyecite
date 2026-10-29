@@ -263,7 +263,7 @@ LAW_PIN_CITE_REGEX = rf"""
 # What case does a short cite refer to? For now, we just capture the previous
 # word optionally followed by a comma. Example: Adarand, 515 U.S. at 241.
 SHORT_CITE_ANTECEDENT_REGEX = r"""
-    (?P<antecedent>[A-Za-z][\w\-.]+)\ ?,?
+    (?P<antecedent>[A-Za-z][\w\-.'\u2019]+)\ ?,?
     \   # final space
 """
 
@@ -275,9 +275,9 @@ SHORT_CITE_ANTECEDENT_REGEX = r"""
 # and the word before it (to store as antecedent).
 SUPRA_ANTECEDENT_REGEX = r"""
     (?:
-        (?P<antecedent>[\w\-.]+)\ ?,?\ (?P<volume>\d+)|
+        (?P<antecedent>[\w\-.'\u2019]+)\ ?,?\ (?P<volume>\d+)|
         (?P<volume>\d+)|
-        (?P<antecedent>[\w\-.]+)\ ?,?
+        (?P<antecedent>[\w\-.'\u2019]+)\ ?,?
     )
     \   # final space
 """
@@ -333,7 +333,7 @@ POST_FULL_CITATION_REGEX = rf"""
 # Example without pincite: "Johnson, 515 U. S. 304"
 PRE_FULL_CITATION_REGEX = rf"""
     # single word antecedent
-    (?P<antecedent>[A-Z][a-z\-.]+)\ ?,?
+    (?P<antecedent>[A-Z][a-z\-.'\u2019]+)\ ?,?
     # optional pincite
     {PIN_CITE_REGEX}?
     # `PIN_CITE_REGEX` uses a positive lookahead for end characters, but we
