@@ -15,6 +15,11 @@ Changes:
 - Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
 
 Fixes:
+- `AhocorasickTokenizer.get_extractors()` now returns extractors in
+  `EXTRACTORS` order instead of set order, so citation extraction no longer
+  depends on the process hash seed. When a full and a short citation token
+  shared the same span (e.g. "37 T.C. at 155"), the winner of the tie varied
+  with `PYTHONHASHSEED`. #352
 - CI: harden the benchmark's `repository_dispatch` job against shell script
   injection by passing `client_payload` values through the environment and
   validating their shape, instead of interpolating them into `run:`. #337
