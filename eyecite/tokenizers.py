@@ -507,9 +507,7 @@ class AhocorasickTokenizer(Tokenizer):
         # a bare set here would make the winner of a same-span tie depend
         # on the set's iteration order, which varies with the process
         # hash seed (TokenExtractor hashes by repr). See #352.
-        return sorted(
-            unique_extractors, key=self.extractor_order.__getitem__
-        )
+        return sorted(unique_extractors, key=self.extractor_order.__getitem__)
 
     @staticmethod
     def make_ahocorasick_filter(
