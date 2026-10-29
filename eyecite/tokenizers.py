@@ -457,6 +457,12 @@ class AhocorasickTokenizer(Tokenizer):
 
     def __post_init__(self):
         """Set up helpers to narrow down possible extractors."""
+        # Record each extractor's position in EXTRACTORS so that
+        # get_extractors() can return filtered extractors in that same
+        # deterministic order (see get_extractors()).
+        self.extractor_order = {
+            extractor: i for i, extractor in enumerate(EXTRACTORS)
+        }
         # Build a set of all extractors that don't list required strings
         self.unfiltered_extractors = {e for e in EXTRACTORS if not e.strings}
         # Build the filters from whitespace-stripped prefilter strings, and
@@ -480,7 +486,7 @@ class AhocorasickTokenizer(Tokenizer):
             for s in e.strings
         )
 
-    def get_extractors(self, text: str) -> set[TokenExtractor]:
+    def get_extractors(self, text: str) -> list[TokenExtractor]:
         """Override get_extractors() to filter out extractors
         that can't possibly match."""
         # Strip whitespace so spaced-out reporter forms (e.g. "N. Y. S. 2d")
@@ -495,7 +501,15 @@ class AhocorasickTokenizer(Tokenizer):
             stripped.lower()
         ):
             unique_extractors.update(extractors)
-        return unique_extractors
+        # Return the extractors in EXTRACTORS order, the same order the
+        # base Tokenizer generates tokens in. Tokenizer.tokenize() sorts
+        # tokens by span and keeps generation order for ties, so returning
+        # a bare set here would make the winner of a same-span tie depend
+        # on the set's iteration order, which varies with the process
+        # hash seed (TokenExtractor hashes by repr). See #352.
+        return sorted(
+            unique_extractors, key=self.extractor_order.__getitem__
+        )
 
     @staticmethod
     def make_ahocorasick_filter(

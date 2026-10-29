@@ -1,12 +1,17 @@
+import os
+import subprocess
+import sys
 from unittest import TestCase
 
 from reporters_db import REPORTERS
 
+from eyecite import get_citations
 from eyecite.models import CitationToken, IdToken, StopWordToken
 from eyecite.regexes import STOP_WORDS
 from eyecite.tokenizers import (
     EDITIONS_LOOKUP,
     AhocorasickTokenizer,
+    Tokenizer,
     default_tokenizer,
 )
 
@@ -123,3 +128,48 @@ class TokenizerTest(TestCase):
             frozenset(e.strings) for e in extractors if e.strings
         }
         self.assertEqual(expected_strings, extractor_strings)
+
+    def test_same_span_tie_matches_plain_tokenizer(self):
+        """A full and a short citation token can share the exact same
+        span (e.g. "37 T.C. at 155"). The Ahocorasick tokenizer must
+        resolve the tie the same way the plain Tokenizer does, by
+        generating tokens in EXTRACTORS order."""
+        text = "Fuller v. Commissioner, 37 T.C. at 155; Estate of X"
+        default_cites = get_citations(text)
+        plain_cites = get_citations(text, tokenizer=Tokenizer())
+        self.assertEqual(
+            [type(c).__name__ for c in default_cites],
+            [type(c).__name__ for c in plain_cites],
+        )
+        # The "at" form is a short-form cite:
+        self.assertEqual(
+            [type(c).__name__ for c in default_cites],
+            ["ShortCaseCitation"],
+        )
+        self.assertEqual(
+            default_cites[0].groups,
+            {"volume": "37", "reporter": "T.C.", "page": "155"},
+        )
+
+    def test_extraction_does_not_depend_on_hash_seed(self):
+        """Regression test for #352: extraction results must not vary
+        with PYTHONHASHSEED. TokenExtractor hashes by repr, so any
+        place that iterates extractors in set order can flip the
+        winner of a same-span tie between processes."""
+        code = (
+            "from eyecite import get_citations;"
+            "print([type(c).__name__ for c in get_citations("
+            "'Fuller v. Commissioner, 37 T.C. at 155; Estate of X')])"
+        )
+        results = set()
+        for seed in ("0", "1", "2", "3"):
+            env = dict(os.environ, PYTHONHASHSEED=seed)
+            completed = subprocess.run(
+                [sys.executable, "-c", code],
+                capture_output=True,
+                text=True,
+                env=env,
+                check=True,
+            )
+            results.add(completed.stdout.strip())
+        self.assertEqual(results, {"['ShortCaseCitation']"})
