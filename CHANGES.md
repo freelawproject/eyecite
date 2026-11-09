@@ -22,6 +22,10 @@ Fixes:
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
 - Fix "no changes" label handling for `CHANGES.md`
+- Fix the `html` cleaner putting a space wherever an inline element ends, so
+  `<a>410 U.S. 113</a>, 115` and `<em>Id</em>. at 263` no longer lose their
+  pin cite or citation. Block-level elements, footnote marks, and the start of
+  an element still separate text with a space. #364
 
 ## Current
 

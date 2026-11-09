@@ -424,6 +424,16 @@ class FindTest(TestCase):
             ('<p>before asdf. <i>Id.,</i> at <b>123.</b></p> <p>foo bar</p>',
              [id_citation('Id.,', metadata={'pin_cite': 'at 123'})],
              {'clean_steps': ['html', 'inline_whitespace']}),
+            # Test Id. citation with its period after the italics (#364)
+            ('<p>before asdf. <em>Id</em>. at 263.</p>',
+             [id_citation('Id.', metadata={'pin_cite': 'at 263'})],
+             {'clean_steps': ['html', 'inline_whitespace']}),
+            # Test pin cite after a citation wrapped in a link (#364)
+            ('<p>See <a class="citation">410 U.S. 113</a>, 115 (1973).</p>',
+             [case_citation(volume='410', page='113', year=1973,
+                            metadata={'pin_cite': '115', 'year': '1973',
+                                      'court': 'scotus'})],
+             {'clean_steps': ['html', 'inline_whitespace']}),
             # Test weirder Id. citations (#1344)
             ('Foo v. Bar 1 U.S. 12, 347-348. asdf. Id. ¶ 34. foo bar',
              [case_citation(page='12',

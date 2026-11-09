@@ -2,6 +2,7 @@ import re
 from collections.abc import Callable, Iterable
 
 import lxml.html
+from lxml import etree
 
 
 def clean_text(text, steps: Iterable[str | Callable[[str], str]]) -> str:
@@ -38,6 +39,13 @@ def html(html_content: str) -> str:
     """Given HTML markup, return only text that would be rendered visibly.
     Adopted from freelawproject/juriscraper/lib/html_utils.py#L163.
 
+    Text is joined with a space where the markup separates it: at the start
+    of an element, at block-level elements and footnote marks, and where
+    whitespace-only text lies between. Text that continues after the end of
+    an inline element is joined with nothing, as in
+    `<a>410 U.S. 113</a>, 115` or `<i>Id</i>.`, and so is text around hidden
+    text such as `<page-number>`.
+
     Args:
         html_content: The HTML string.
 
@@ -45,17 +53,93 @@ def html(html_content: str) -> str:
         Text that is visible.
     """
     html_tree = lxml.html.fromstring(html_content)
-    text = html_tree.xpath(
-        """//text()[normalize-space() and not(
-            parent::style |
-            parent::link |
-            parent::head |
-            parent::page-number |
-            parent::script |
-            parent::*[@class="star-pagination"]
-            )]"""
+    parts: list[str] = []
+    separated = False
+    for event, element in etree.iterwalk(
+        html_tree.getroottree().getroot(),
+        events=("start", "end", "comment", "pi"),
+    ):
+        if event == "start":
+            if not _is_hidden(element):
+                separated = True
+            text, parent = element.text, element
+        else:
+            # "end", or a comment or processing instruction, whose content
+            # is not text
+            if event == "end" and _is_separating(element):
+                separated = True
+            text, parent = element.tail, element.getparent()
+        if not text or (parent is not None and _is_hidden(parent)):
+            continue
+        if not text.strip(XML_WHITESPACE):
+            separated = True
+            continue
+        if separated and parts:
+            parts.append(" ")
+        parts.append(text)
+        separated = False
+    return "".join(parts)
+
+
+XML_WHITESPACE = " \t\n\r"
+
+# Elements whose own text is not visible
+HIDDEN_TAGS = frozenset({"head", "link", "page-number", "script", "style"})
+
+# Elements that separate the text before them from the text after them
+SEPARATING_TAGS = frozenset(
+    {
+        "address",
+        "article",
+        "aside",
+        "blockquote",
+        "br",
+        "caption",
+        "dd",
+        "div",
+        "dl",
+        "dt",
+        "figcaption",
+        "figure",
+        "footer",
+        "footnotemark",
+        "h1",
+        "h2",
+        "h3",
+        "h4",
+        "h5",
+        "h6",
+        "header",
+        "hr",
+        "li",
+        "ol",
+        "p",
+        "pre",
+        "section",
+        "sup",
+        "table",
+        "td",
+        "th",
+        "tr",
+        "ul",
+    }
+)
+SEPARATING_CLASSES = frozenset({"footnotemark", "page-label"})
+
+
+def _is_separating(element) -> bool:
+    """Whether an element separates the text around it, like a block-level
+    element or a footnote mark does.
+    """
+    classes = set((element.get("class") or "").split())
+    return element.tag in SEPARATING_TAGS or bool(classes & SEPARATING_CLASSES)
+
+
+def _is_hidden(element) -> bool:
+    """Whether an element's own text is not visible."""
+    return (
+        element.tag in HIDDEN_TAGS or element.get("class") == "star-pagination"
     )
-    return " ".join(text)
 
 
 def inline_whitespace(text: str) -> str:
