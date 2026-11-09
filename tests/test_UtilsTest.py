@@ -18,6 +18,41 @@ class UtilsTest(TestCase):
                 " <style>ignore</style> __ <i> word  word </i>",
                 " word word ",
             ),
+            # text that continues after an inline element is not split
+            # (#364)
+            (
+                ["html"],
+                '<p><a class="citation">410 U.S. 113</a>, 115 (1973)</p>',
+                "410 U.S. 113, 115 (1973)",
+            ),
+            (
+                ["html"],
+                "<a>Conn. Gen. Stat. § 10</a>-236b(f)",
+                "Conn. Gen. Stat. § 10-236b(f)",
+            ),
+            (["html"], "<em>Id</em>. at 263", "Id. at 263"),
+            (
+                ["html", "inline_whitespace"],
+                "104 <i>L.Ed.</i>2d 487",
+                "104 L.Ed.2d 487",
+            ),
+            (["html"], "<i><b>Id</b></i>.", "Id."),
+            (["html"], "can<page-number>*642</page-number>not", "cannot"),
+            # block elements, opening elements, footnote marks and
+            # whitespace still separate text
+            (["html"], "<p>word</p><p>word</p>", "word word"),
+            (["html"], "<div>word<br>word</div>", "word word"),
+            (["html"], "<p>word</p>.", "word ."),
+            (
+                ["html"],
+                "<p>word</p>\n<p><page-number>*2</page-number>word</p>",
+                "word word",
+            ),
+            (["html"], "<td>word</td><td>word</td>", "word word"),
+            (["html"], "<li><i>word</i></li><li>word</li>", "word word"),
+            (["html"], "<em>word</em><em>word</em>", "word word"),
+            (["html"], "word<sup>1</sup>word", "word 1 word"),
+            (["html"], "<i><b>word</b> </i>word", "word word"),
         )
         for steps, text, expected in test_pairs:
             print("Testing clean_text for " + text.replace("\n", " "), end=" ")
