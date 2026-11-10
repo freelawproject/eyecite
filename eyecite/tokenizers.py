@@ -20,6 +20,7 @@ from eyecite.models import (
     IdToken,
     ParagraphToken,
     PlaceholderCitationToken,
+    RecordToken,
     Reporter,
     SectionToken,
     StopWordToken,
@@ -33,6 +34,7 @@ from eyecite.regexes import (
     PAGE_NUMBER_REGEX,
     PARAGRAPH_REGEX,
     PLACEHOLDER_CITATIONS,
+    RECORD_REGEX,
     SECTION_REGEX,
     STOP_WORD_REGEX,
     STOP_WORDS,
@@ -347,6 +349,13 @@ def _populate_reporter_extractors():
                 PLACEHOLDER_CITATIONS,
                 PlaceholderCitationToken.from_match,
                 flags=re.I,
+            ),
+            # Record references interrupt the antecedent chain for Id.
+            TokenExtractor(
+                RECORD_REGEX,
+                RecordToken.from_match,
+                flags=re.I,
+                strings=["Compl.", "Answer", "Dkt.", "Ex.", "Tr."],
             ),
             # tokens containing section symbols
             TokenExtractor(

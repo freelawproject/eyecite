@@ -23,6 +23,7 @@ from eyecite.models import (
     FullLawCitation,
     IdCitation,
     IdToken,
+    RecordToken,
     ReferenceCitation,
     ResourceCitation,
     SectionToken,
@@ -117,13 +118,13 @@ def get_citations(
         elif token_type is SupraToken:
             citation = _extract_supra_citation(document.words, i)
 
-        # CASE 4: Token is a section marker.
+        # CASE 4: Token is a section marker or explicit record reference.
         # In this case, it's likely that this is a reference to a citation,
         # but we're not sure what it is if it doesn't match any of the above.
         # So we record this marker in order to keep an accurate list of the
         # possible antecedents for id citations.
-        elif token_type is SectionToken:
-            citation = UnknownCitation(cast(SectionToken, token), i)
+        elif token_type in (SectionToken, RecordToken):
+            citation = UnknownCitation(token, i)
 
         # CASE 5: The token is not a citation.
         else:

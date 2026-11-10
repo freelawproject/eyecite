@@ -4,8 +4,19 @@ from unittest import TestCase
 from eyecite import get_citations
 from eyecite.find import extract_reference_citations
 from eyecite.helpers import filter_citations
-from eyecite.models import Document, FullCitation, Resource
+from eyecite.models import (
+    Document,
+    FullCitation,
+    IdCitation,
+    Resource,
+    UnknownCitation,
+)
 from eyecite.resolve import resolve_citations
+from eyecite.tokenizers import (
+    AhocorasickTokenizer,
+    HyperscanTokenizer,
+    Tokenizer,
+)
 
 
 def format_resolution(resolution):
@@ -311,6 +322,77 @@ class ResolveTest(TestCase):
             (0, "Foo v. Bar, 1 U.S. ___"),
             (None, "Id. at 100."),
         )
+
+    def test_record_antecedents(self):
+        """Record references break Id. chains, including page-only Id. cites."""
+        records = [
+            "Compl. Claim III ¶¶ 46-53",
+            "Compl. ¶ 12",
+            "Compl. ¶¶ 46–53",
+            "Compl. at 3",
+            "Answer ¶¶ 4-6",
+            "Answer at 4",
+            "Dkt. No. 12",
+            "Dkt. No. 12-1",
+            "Ex. A",
+            "Ex. 12",
+            "Tr. 3:14-4:2",
+            "Tr. at 3",
+            "compl. ¶ 12",
+        ]
+        for tokenizer in (
+            Tokenizer(),
+            AhocorasickTokenizer(),
+            HyperscanTokenizer(cache_dir=".test_cache"),
+        ):
+            for record in records:
+                with self.subTest(
+                    tokenizer=type(tokenizer).__name__, record=record
+                ):
+                    text = f"1 U.S. 1. {record}; Id. at 3. Ibid. at 4. 2 U.S. 2. Id. at 5."
+                    cites = get_citations(text, tokenizer=tokenizer)
+                    self.assertEqual(len(cites), 6)
+                    self.assertIsInstance(cites[1], UnknownCitation)
+                    self.assertEqual(cites[1].matched_text(), record)
+                    start, end = cites[1].span()
+                    self.assertEqual(text[start:end], record)
+                    self.assertEqual(
+                        list(resolve_citations(cites).values()),
+                        [[cites[0]], [cites[4], cites[5]]],
+                    )
+
+    def test_issue_349(self):
+        text = (
+            "Vess v. Ciba-Geigy Corp. USA, 317 F.3d 1097 (9th Cir. 2003). "
+            "Vess, 317 F.3d at 1105. "
+            "Plaintiff brings several common law and consumer protection claims "
+            "that sound in fraud: (1) common law fraud, Compl. Claim III ¶¶ 46-53; "
+            "(2) violation of the fraud prong of the UCL, id. Claim V ¶¶ 58-71; "
+            "(3) violation of the CLRA, id. Claim VI ¶¶ 72-92; and "
+            "(4) violation of the FAL, id. Claim VII ¶¶ 93-99."
+        )
+        cites = get_citations(text)
+        self.assertEqual(sum(isinstance(c, IdCitation) for c in cites), 3)
+        self.assertEqual(list(resolve_citations(cites).values()), [cites[:2]])
+
+    def test_record_words_do_not_interrupt_id(self):
+        for prose in (
+            "The Answer was filed.",
+            "The Compl. alleges fraud.",
+            "Claim III fails.",
+            "Ex. ante analysis is appropriate.",
+            "Ex. a priori analysis is appropriate.",
+            "The Dkt. contains the record.",
+            "The Tr. was reviewed.",
+            "NotAnswer at 3.",
+            "Ex. ABC.",
+        ):
+            with self.subTest(prose=prose):
+                cites = get_citations(f"1 U.S. 1. {prose} Id. at 3.")
+                self.assertEqual(len(cites), 2)
+                self.assertEqual(
+                    list(resolve_citations(cites).values()), [cites]
+                )
 
     def test_non_case_resolution(self):
         """Test law and journal resolution."""

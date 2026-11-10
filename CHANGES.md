@@ -15,6 +15,8 @@ Changes:
 - Use generics in `resolve_citations()`, `filter_citations()`, `annotate_citations()`, and `disambiguate_reporters()`.
 
 Fixes:
+- Recognize explicit record and pleading references as unknown citations, so
+  following Id. citations do not resolve to an earlier case. #349
 - CI: harden the benchmark's `repository_dispatch` job against shell script
   injection by passing `client_payload` values through the environment and
   validating their shape, instead of interpolating them into `run:`. #337
