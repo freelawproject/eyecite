@@ -10,8 +10,8 @@ from typing import (
     cast,
 )
 
-from eyecite import clean_text
 from eyecite.annotate import SpanUpdater
+from eyecite.clean import clean_text
 from eyecite.utils import REPORTERS_THAT_NEED_PAGE_CORRECTION, hash_sha256
 
 logger = logging.getLogger(__name__)

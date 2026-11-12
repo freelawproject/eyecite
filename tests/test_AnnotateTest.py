@@ -297,7 +297,7 @@ class AnnotateTest(TestCase):
         """Does diffing work across a long text with many changes?"""
         opinion_text = (
             Path(__file__).parent / "assets" / "opinion.txt"
-        ).read_text()
+        ).read_text(encoding="utf-8")
         cleaned_text = clean_text(opinion_text, ["all_whitespace"])
         annotated_text = annotate_citations(
             cleaned_text, [((902, 915), "~FOO~", "~BAR~")], opinion_text
