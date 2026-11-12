@@ -32,6 +32,9 @@ jobs:
 
 
       - name: Install Python dependencies
+        env:
+          # pyahocorasick 2.0.0 predates C23's bool keyword.
+          CFLAGS: -std=gnu17
         run: |
           uv sync --frozen
           source .venv/bin/activate
