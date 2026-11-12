@@ -806,6 +806,11 @@ class SectionToken(Token):
 
 
 @dataclass(eq=True, unsafe_hash=True)
+class RecordToken(Token):
+    """A record or pleading reference with an explicit locator."""
+
+
+@dataclass(eq=True, unsafe_hash=True)
 class SupraToken(Token):
     """Word matching "supra" with or without punctuation."""
 

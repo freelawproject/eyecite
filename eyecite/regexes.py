@@ -98,6 +98,23 @@ STOP_WORD_REGEX = space_boundaries_re(
 # Regex for SectionToken
 SECTION_REGEX = r"(\S*§\S*)"
 
+# Recognize explicit record references as unknown antecedents for Id. Do not
+# match bare words such as "Answer" or "Claim", which also occur in prose.
+# Keep this separate from pin cites: opinions can legitimately use paragraphs
+# or page:line locators too. Boundaries consume a character for Hyperscan.
+# Exhibit letters stay uppercase to avoid prose such as "ex. a priori".
+RECORD_REGEX = nonalphanum_boundaries_re(
+    r"(?:"
+    r"(?:Compl\.|Answer)\s+(?:"
+    r"(?:Claim\s+(?:[IVXLCDM]+|\d+)\s+)?(?:¶){1,2}\s*\d+(?:(?:-|–)\d+)?"
+    r"|(?:at\s+)?\d+(?::\d+)?(?:-\d+(?::\d+)?)?"
+    r")"
+    r"|Dkt\.\s*No\.\s*\d+(?:-\d+)?"
+    r"|Ex\.\s+(?:(?-i:[A-Z])|\d+)"
+    r"|Tr\.\s+(?:at\s+)?\d+(?::\d+)?(?:-\d+(?::\d+)?)?"
+    r")"
+)
+
 # Regex for ParagraphToken
 PARAGRAPH_REGEX = r"(\n)"
 
