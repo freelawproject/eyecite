@@ -22,6 +22,9 @@ Fixes:
   `clean_steps` was omitted or lacked `"html"`. The documented fallback that
   prepends the `html` step was both unreachable and broken.
 - Fix "no changes" label handling for `CHANGES.md`
+- CI: lock `pyahocorasick` 2.3.1 instead of 2.0.0. 2.0.0 has no Python 3.12
+  wheels, and building it from source fails with GCC 15 (C23 makes `bool` a
+  keyword), which broke the Python 3.12 test and lint jobs.
 
 ## Current
 
