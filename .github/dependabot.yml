@@ -12,6 +12,12 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    # Skip the changelog check (check_changelog.yml) for CI-only bumps. Setting
+    # `labels` replaces Dependabot's defaults, so they're listed explicitly.
+    labels:
+      - "dependencies"
+      - "github_actions"
+      - "no changelog"
     schedule:
       interval: monthly
     groups:
