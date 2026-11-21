@@ -15,7 +15,7 @@ DISALLOWED_NAMES = [
     "people",
     "commonwealth",
     "mass",
-    "commissioner"
+    "commissioner",
     # AGs
     "Akerman",
     "Ashcroft",
@@ -249,7 +249,7 @@ def is_valid_name(name: str) -> bool:
         and name[0].isupper()
         and not name.endswith(".")
         and not name.isdigit()
-        and name.lower() not in DISALLOWED_NAMES
+        and name.lower() not in {n.lower() for n in DISALLOWED_NAMES}
     )
 
 
